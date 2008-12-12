@@ -1,10 +1,14 @@
 Package: blotter
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2008-12-05
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Title: Tools for transaction-oriented trading systems development.
+Version: 0.3
+Date: 2008-11-21
+Author: Peter Carl, Brian G. Peterson
+Maintainer: Brian G. Peterson <brian@braverock.com>
+Description: Transaction infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation.  Intends to provide portfolio support for multi-asset class and multi-currency portfolios.  Still in heavy development.
+License: GPL
 LazyLoad: yes
+Depends: R (>= 2.4.0), xts, zoo
+Suggests: quantmod
+URL: http://braverock.com/R/
+Copyright: (c) 2008
