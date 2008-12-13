@@ -23,6 +23,10 @@ function(symbols, initPosQty = 0, initDate = '1950-01-01')
     # FUNCTION
     portfolio=vector("list",length=length(symbols))
     names(portfolio)=symbols
+    if(length(initPosQty)==1)
+	initPosQty=rep(initPosQty, length(symbols))
+    if(length(initPosQty)!=length(symbols))
+	stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
     for(instrument in symbols){
     	i = grep(instrument, symbols)
         portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = initPosQty[i])
