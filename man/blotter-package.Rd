@@ -74,7 +74,7 @@ p = addTxn(p, "MMM", '2007-01-09', 50, 77.6, 0.05*50)
 
 print('Updating portfolio \"p\"...')
 p = updatePortf(p,'2007-01-03','2007-01-10')
-getPortfSummary(p)
+calcPortfSummary(p)
 getBySymbol(p,'Pos.Qty')
 
 print('Creating account \"a\" for portfolio \"p\"...')
@@ -82,5 +82,5 @@ a = initAcct(portfolios="p")
 print('Updating account \"a\"...')
 a = updateAcct(a,'2007-01') # Check out the sweet date scoping. Thanks, xts.
 a = updateEndEq(a,'2007-01')
-
+print(a)
 }
