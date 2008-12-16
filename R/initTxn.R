@@ -18,7 +18,7 @@ function(initDate="1950-01-01", initPosQty=0)
     ## @todo: Add 'Txn.Type' column
     ## @todo: DIVIDEND creates a realized gain
     txn <- xts( as.matrix(t(c(0,0,0,0,0,initPosQty,0,0))), order.by=as.Date(initDate) )
-    colnames(txn) <- c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Avg.Txn.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
+    colnames(txn) <- c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
     return(txn)
 }
 
