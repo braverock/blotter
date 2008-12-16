@@ -3,9 +3,9 @@
 \alias{initTxn}
 \alias{initPosPL}
 
-\title{ create a portfolio }
+\title{ create a Portfolio }
 \description{
-Initializes a portfolio object, which contains transactions and position profit-and-loss calculations for a list of symbols.
+Initializes a Portfolio object, which contains transactions and position profit-and-loss calculations for a list of symbols.
   }
 \usage{
 initPortf(symbols, initPosQty = 0, initDate = "1950-01-01")
@@ -13,7 +13,7 @@ initTxn(initDate = "1950-01-01", initPosQty = 0)
 initPosPL(initDate = "1950-01-01", initPosQty = 0)
 }
 \arguments{
-  \item{symbols}{ a list of identfiers of the instruments to be contained in the portfolio.  The name of any associated price objects (xts OHLC objects) should match these  }
+  \item{symbols}{ a list of identfiers of the instruments to be contained in the Portfolio.  The name of any associated price objects (xts prices, usually OHLC) should match these  }
   \item{initDate}{ date (ISO8601) prior to the first close price given, used to contain initial position }
   \item{initPosQty}{ a vector of initial positions for each symbol, default is zero }
 }
@@ -29,6 +29,7 @@ Use 'names(Portfolio)' to get a list of symbols.
 }
 \author{ Peter Carl }
 \note{  
+Likewise, the underlying data can be addressed using '[portfolio name]$[symbol]$txn' or  '[portfolio name]$[symbol]$posPL'
 
 The function 'initTxn' creates the data container used to store details about transactions and their resulting positions for an instrument.  The data series is an irregular time series with the following columns:
   \item{Txn.Qty} { the quantity, usually in units of contracts, changing hands.  Positive values indicate a 'buy' transaction; negative values are used to indicate a 'sell.' }
