@@ -2,11 +2,12 @@
 \alias{getTxn}
 \alias{getTxnFees}
 \alias{getTxnValue}
+\alias{getRealizedPL}
 \alias{getPos}
 \alias{getPosAvgCost}
 \alias{getPosQty}
 
-\title{ read transaction and portfolio values of portfolio objects. }
+\title{ read transaction and portfolio values of portfolio objects }
 \description{
   These functions find and return the attribute value for the symbol and date in a specified portfolio.
 }
@@ -14,6 +15,7 @@
 getTxn(Portfolio, Symbol, Date)
 getTxnFees(Portfolio, Symbol, Date)
 getTxnValue(Portfolio, Symbol, Date)
+getRealizedPL(Portfolio, Symbol, Date)
 getPos(Portfolio, Symbol, Date)
 getPosAvgCost(Portfolio, Symbol, Date)
 getPosQty(Portfolio, Symbol, Date)
