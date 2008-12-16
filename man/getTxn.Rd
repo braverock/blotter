@@ -1,59 +1,52 @@
 \name{getTxn}
 \alias{getTxn}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\alias{getTxnFees}
+\alias{getTxnValue}
+\alias{getPos}
+\alias{getPosAvgCost}
+\alias{getPosQty}
+
+\title{ read transaction and portfolio values of portfolio objects. }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  These functions find and return the attribute value for the symbol and date in a specified portfolio.
 }
 \usage{
 getTxn(Portfolio, Symbol, Date)
+getTxnFees(Portfolio, Symbol, Date)
+getTxnValue(Portfolio, Symbol, Date)
+getPos(Portfolio, Symbol, Date)
+getPosAvgCost(Portfolio, Symbol, Date)
+getPosQty(Portfolio, Symbol, Date)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
-  \item{Portfolio}{ ~~Describe \code{Portfolio} here~~ }
-  \item{Symbol}{ ~~Describe \code{Symbol} here~~ }
-  \item{Date}{ ~~Describe \code{Date} here~~ }
+  \item{Portfolio}{ a portfolio object containing transactions }
+  \item{Symbol}{ an instrument identifier for a symbol included in the portfolio }
+  \item{Date}{ timestamp as of which to have the most recent position }
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+  These functions provide easy access to the values of transactions and resulting positions contained in a Portfolio object.  See \code{\link{initPortf}} for a detailed description of the structure of a Portfolio object.
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+The returned value for each function differs somewhat.  Note that functions use the date scoping differently, as described below.
+  \item{getTxn }{Table (irregular xts time series) of transactions made in the Symbol during the time period given, including values for 'Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', and 'Txn.Avg.Cost'.}
+  \item{getTxnFees }{Numeric value of the sum total of transaction fees given during the period specified}
+  \item{getTxnValue }{Numeric value of the sum total of the notional transaction value given during the period specified}
+  \item{getPos }{Table of the most recent position data for the Symbol relative to the time period given, including values for 'Pos.Qty','Pos.Avg.Cost'}
+  \item{getPosAvgCost }{Numeric value of the average cost of the current position as of the date given}
+  \item{getPosQty }{Numeric value of the quantity of the current position as of the date given}
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
+\author{ Peter Carl }
+\note{ 
+  These functions leverage xts date scoping.  For example, getTxn(p,"XYZ", "2007-01") will retrieve all transactions occuring in January 2007.  
+  
+  Likewise, the values returned for transaction attributes, such as 'getTxnFees', will be the total value during the period specified, in this case the sum of transaction fees in that month.  Note that attributes that don't sum, such as 'Txn.Avg.Cost', don't have get* functions.
 
- ~Make other sections like Warning with \section{Warning }{....} ~
+  Values returned for positions, such as 'getPosAvgCost', returns the value of the position as of the date given.  For example, if there was a transaction on 3 Jan 2007, but not 4 Jan 2007, getPos(p,"XYZ","2007-01-04") will return the position's quantity and average cost (determined in the prior day's transaction) as of 2007-01-04.
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ \code{\link{initPortf}}, \code{\link{addTxn}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function(Portfolio, Symbol, Date)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Gets the value of that period's transactions and returns the sum 
-
-    # Inputs
-    # Portfolio: a portfolio object containing transactions
-    # Symbol: an instrument identifier for a symbol included in the portfolio
-    # Date: timestamp as of which to have the most recent position
-
-    # Outputs
-    # Table of transactions made in the Symbol during the time period given
-    TxnData = Portfolio[[Symbol]]$txn
-    Txns = TxnData[Date,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost')]
-    return(Txns)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
