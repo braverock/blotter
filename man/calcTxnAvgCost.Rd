@@ -1,61 +1,28 @@
 \name{calcTxnAvgCost}
 \alias{calcTxnAvgCost}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{ Calculates the average cost per unit for a transaction }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Calculates a per share or per contract cost of the transaction to match the units the price is quoted in.
 }
 \usage{
 calcTxnAvgCost(TxnValue, TxnQty)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{TxnValue}{ ~~Describe \code{TxnValue} here~~ }
-  \item{TxnQty}{ ~~Describe \code{TxnQty} here~~ }
+  \item{TxnValue}{ total value of the transaction, including fees }
+  \item{TxnQty}{ total units (shares) of the transaction }
 }
-\details{
-  ~~ If necessary, more details than the description above ~~
-}
+
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  Numeric value of the unit normalized (e.g., per share) cost implied by the transaction.
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+\author{ Peter Carl }
+\note{ 
+    Note that the multiplier is missing for other types of instruments
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ \code{\link{getTxn}}, \code{\link{addTxn}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function(TxnValue, TxnQty)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates a per share or per contract cost of the transaction 
-    # to match the units the price is quoted in
-
-    # Inputs
-    # TxnValue: total value of the transaction, including fees
-    # TxnQty: total units (shares) of the transaction
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # TxnAvgCost: unit normalized (per share) cost implied by the transaction
-
-    TxnAvgCost = TxnValue/TxnQty
-    return(TxnAvgCost)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ utilities }
+\keyword{ manip }
