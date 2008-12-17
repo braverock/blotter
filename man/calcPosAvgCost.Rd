@@ -1,66 +1,33 @@
 \name{calcPosAvgCost}
 \alias{calcPosAvgCost}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{ Calculate average cost of a position }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Calculates the average cost of a resulting position from a transaction.  Uses average cost calculation.
 }
 \usage{
 calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{PrevPosQty}{ ~~Describe \code{PrevPosQty} here~~ }
-  \item{PrevPosAvgCost}{ ~~Describe \code{PrevPosAvgCost} here~~ }
-  \item{TxnValue}{ ~~Describe \code{TxnValue} here~~ }
-  \item{PosQty}{ ~~Describe \code{PosQty} here~~ }
+  \item{PrevPosQty}{ Quantity of the previous position }
+  \item{PrevPosAvgCost}{ Average cost of the previous position }
+  \item{TxnValue}{ Total value of the current transaction, net of fees }
+  \item{PosQty}{ Total units (shares) of the resulting position }
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+    Calculated as:
+        (PrevPosQty * PrevPosAvgCost + TxnValue)/PosQty
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  Numeric value of the average cost of the resulting position.
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+\author{ Peter Carl }
+\note{
+ The function will return zero if the resulting position is zero.
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ \code{\link{getPosQty}}, \code{\link{getPosAvgCost}}, \code{\link{getTxnValue}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+    calcPosAvgCost(PrevPosQty=10, PrevPosAvgCost=100, TxnValue=1020, PosQty=20) # ==101
 
-## The function is currently defined as
-function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates the average cost of a resulting position from a transaction
-
-    # Inputs
-    # PrevPosQty: quantity of the previous position
-    # PrevPosAvgCost: average position cost of the previous position
-    # TxnValue: total value of the transaction, including fees
-    # PosQty: total units (shares) of the resulting position
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # PosAvgCost: average cost of the resulting position
-
-    if(PosQty == 0)
-        PosAvgCost = 0
-    else {
-        PosAvgCost = (PrevPosQty*PrevPosAvgCost+TxnValue)/PosQty
-    }
-    return(PosAvgCost)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
