@@ -1,60 +1,31 @@
 \name{calcTxnValue}
 \alias{calcTxnValue}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{ Calculate the notional value of a transaction }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Calculates the notional value of a transaction, net of any fees associated.
 }
 \usage{
-calcTxnValue(TxnQty, TxnPrice, TxnFees)
+    calcTxnValue(TxnQty, TxnPrice, TxnFees)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{TxnQty}{ ~~Describe \code{TxnQty} here~~ }
-  \item{TxnPrice}{ ~~Describe \code{TxnPrice} here~~ }
-  \item{TxnFees}{ ~~Describe \code{TxnFees} here~~ }
+  \item{TxnQty}{ The number of units (shares, contracts) traded }
+  \item{TxnPrice}{ The market clearing price of the transaction }
+  \item{TxnFees}{ The total fees associated with the transaction, with expenses represented as a positive number.  The aggregate of, for example, commissions, ticket charges, exchange fees, etc. }
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+    Calculated as:
+        TxnValue = TxnQty * TxnPrice - TxnFees
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  Numeric value representing the total currency (dollar) value of the transaction, net of fees
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+\author{ Peter Carl }
+\note{ 
+Note that the multiplier is missing for other types of instruments.
 }
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\seealso{ \code{\link{getTxn}}, \code{\link{getTxnFees}}, \code{\link{getTxnValue}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function(TxnQty, TxnPrice, TxnFees)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates the total value of a transaction or trade
-
-    # Inputs
-    # TxnQty: total units (shares) of the transaction
-    # TxnPrice: price at which the transaction was done
-    # TxnFees: fees associated with the transaction, e.g. commissions
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # TxnValue: total dollar value of the transaction, including fees
-
-    TxnValue = TxnQty * TxnPrice - TxnFees
-    return(TxnValue)
-  }
+    calcTxnValue(TxnQty=10, TxnPrice=10, TxnFees=1) # == 99
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
