@@ -1,4 +1,4 @@
-`getByPortfolio` <-
+`getByPortf` <-
 function(Account, Attribute, Date=NULL)
 { # @author Peter Carl
 
