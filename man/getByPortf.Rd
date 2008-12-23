@@ -1,11 +1,11 @@
-\name{getByPortfolio}
-\alias{getByPortfolio}
+\name{getByPortf}
+\alias{getByPortf}
 \title{ Create a portfolio-by-time table of a portfolio summary attribute }
 \description{
     Retrieves calculated attributes for each portfolio in the account from the portfolio summary table.  Assembles into a portfolio-by-time table useful for graphing or calculations.
 }
 \usage{
-getByPortfolio(Account, Attribute, Date = NULL)
+getByPortf(Account, Attribute, Date = NULL)
 }
 \arguments{
   \item{Account}{ An Account object containing Portfolio summaries }
