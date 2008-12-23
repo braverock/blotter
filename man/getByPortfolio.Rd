@@ -1,73 +1,28 @@
 \name{getByPortfolio}
 \alias{getByPortfolio}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{ Create a portfolio-by-time table of a portfolio summary attribute }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+    Retrieves calculated attributes for each portfolio in the account from the portfolio summary table.  Assembles into a portfolio-by-time table useful for graphing or calculations.
 }
 \usage{
 getByPortfolio(Account, Attribute, Date = NULL)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Account}{ ~~Describe \code{Account} here~~ }
-  \item{Attribute}{ ~~Describe \code{Attribute} here~~ }
-  \item{Date}{ ~~Describe \code{Date} here~~ }
+  \item{Account}{ An Account object containing Portfolio summaries }
+  \item{Attribute}{ Column name to be assembled for each symbol, any of: 'Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', or 'Trading.PL' }
+  \item{Date}{ \pkg{xts} date range to return.  If no date is specified, the function returns all available dates }
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+    Retrieves and formats values calculated by the function \code{\link{updateAcct}}.  The resulting xts object is formatted with the portfolio name as the columnname. 
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+  An xts time series object containing the requested value for each portfolio in columns. 
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\author{ Peter Carl }
+\seealso{ \code{\link{initAcct}}, \code{\link{updateAcct}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function(Account, Attribute, Date=NULL)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Retrieves calculated attributes for each portfolio in the account
-    # from the portfolio summary table.  Assembles into a portfolio-by-time table 
-
-    # Inputs
-    # Account: an Account object containing Portfolio summaries
-    # Attribute: column name to be assembled for each symbol, any of:
-    # 'Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees',
-    # 'Realized.PL', 'Unrealized.PL', or 'Trading.PL'
-
-    # Outputs
-    # regular xts object of values by portfolio
-
-    # FUNCTION
-    if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Account[[2]])
-    else
-        Date = time(Account[[2]][Date])
-    table = xts(NULL, order.by=Date) 
-      ## Need a reference time index
-    portfolios=names(Account)[-1]
-    for (i in 1:length(portfolios)) 
-        table = merge(table, Account[[i+1]][Date,Attribute,drop=FALSE])
-    colnames(table) = portfolios
-    return(table)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ utilities }
+\keyword{ manip }

@@ -17,14 +17,13 @@ updatePortf(Portfolio, StartDate, EndDate)
   \item{Prices}{ Close prices in an xts object with a columnname containing a substring "Close". }
 }
 \details{
-  The 'updatePortf' function goes through each symbol in a portfolio and calculates the PL for each day prices are available.
+  The \code{updatePortf} function goes through each symbol in a portfolio and calculates the PL for each day prices are available.
 
-  StartDate and EndDate must appear in the price stream.
+  \kbd{StartDate} and \kbd{EndDate} must appear in the price stream.
 }
 \value{
   Returns the revised portfolio object specified in the input.
 }
-\references{ ~put references to the literature/web site here ~ }
 \author{ Peter Carl }
 \note{ 
 }
@@ -33,5 +32,5 @@ updatePortf(Portfolio, StartDate, EndDate)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ utilities }
+\keyword{ manip }

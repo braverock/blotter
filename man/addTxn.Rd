@@ -14,7 +14,7 @@ addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Portfolio}{ a portfolio object structured with \code{\link{initPortf()}} }
+  \item{Portfolio}{ a portfolio object structured with \code{\link{initPortf}} }
   \item{Symbol}{ an instrument identifier for a symbol included in the portfolio, e.g., "IBM" }
   \item{TxnDate}{ transaction date as ISO 8106, e.g., '2008-09-01'}
   \item{TxnQty}{ total units (such as shares) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell' }
