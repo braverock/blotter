@@ -1,61 +1,27 @@
 \name{getEndEq}
 \alias{getEndEq}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{ ~~function to do ... ~~ }
+\title{ Retrieves the most recent value of the capital account }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Retrieves the most recent value of \emph{Ending Equity} from the Account object.  If the date does not exactly match a date in the Account object, it will return the closest prior value.
 }
 \usage{
 getEndEq(Account, Date)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Account}{ ~~Describe \code{Account} here~~ }
-  \item{Date}{ ~~Describe \code{Date} here~~ }
+  \item{Account}{ An Account object containing Portfolio summaries }
+  \item{Date}{ an ISO 8601 date, such as '2008-01-05' }
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+    Retrieves the value from the \kbd{TOTAL} slot of the Account object. Use \kbd{[account_obj_name]$TOTAL} to review the xts table of calculated data.
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+    Numeric value of the equity account for the date given
 }
-\references{ ~put references to the literature/web site here ~ }
-\author{ ~~who you are~~ }
-\note{ ~~further notes~~ 
-
- ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{ ~~objects to See Also as \code{\link{help}}, ~~~ }
+\author{ Peter Carl }
+\seealso{ \code{\link{initAcct}}, \code{\link{updateAcct}} }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function(Account, Date)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Retrieves the most recent value of the capital account
-
-    # Inputs
-    # Date: most recent date of last calculated equity
-    # AcctData: location of the ACCOUNT data
-
-    # Outputs
-    # Numeric value of the equity account
-     
-    # FUNCTION
-    toDate = paste('::', Date, sep="")
-    EndEq = as.numeric(tail(Account[[1]][toDate,], n=1)[,"End.Eq"])
-    return(EndEq)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ utilities }
+\keyword{ manip }
