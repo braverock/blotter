@@ -25,7 +25,7 @@ Attribute can be any of the following:
   \item{Unrealized.PL}{The sum total increase or decrease in unrealized profits or losses on open positions in the portfolio at the end of the period.}
   \item{Trading.PL}{Net realized profit or loss plus interest income plus change in unrealized profit or loss across all positions in the portfolio.}
 
-The function \fctn{calcPortfSummary} returns all of the columns in an xts object.
+The function \command{calcPortfSummary} returns all of the columns in an xts object.
 }
 \value{
   An xts time series with the calculated attribute values

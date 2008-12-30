@@ -10,7 +10,7 @@ getBySymbol(Portfolio, Attribute, Date = NULL)
 \arguments{
   \item{Portfolio}{ A Portfolio object containing transactions }
   \item{Attribute}{ Column name to be assembled for each symbol in the Portfolio, any of: 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL', or 'Trading.PL' }
-  \item{Date}{ \package{xts} date range to return.  If no date is specified, the function returns all available dates }
+  \item{Date}{ \pkg{xts} date range to return.  If no date is specified, the function returns all available dates }
 }
 \details{
     Retrieves and formats values calculated by the function \code{\link{updatePosPL}}.  The resulting xts object is formatted with the symbol as the columnname. 
