@@ -11,4 +11,4 @@ LazyLoad: yes
 Depends: R (>= 2.4.0), xts, zoo
 Suggests: quantmod
 URL: http://braverock.com/R/
-Copyright: (c) 2008
+Copyright: (c) 2008 - 2009
