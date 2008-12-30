@@ -12,7 +12,7 @@ getEndEq(Account, Date)
   \item{Date}{ an ISO 8601 date, such as '2008-01-05' }
 }
 \details{
-    Retrieves the value from the \kbd{TOTAL} slot of the Account object. Use \kbd{[Account object name]$TOTAL} to review the xts table of calculated data.
+    Retrieves the value from the \code{TOTAL} slot of the Account object. Use \code{[Account object name]$TOTAL} to review the xts table of calculated data.
 }
 \value{
     Numeric value of the equity account for the date given

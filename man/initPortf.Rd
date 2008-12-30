@@ -29,7 +29,7 @@ Use 'names(Portfolio)' to get a list of symbols.
 }
 \author{ Peter Carl }
 \note{  
-Likewise, the underlying data can be addressed using '[portfolio name]$[symbol]$txn' or  '[portfolio name]$[symbol]$posPL'
+Likewise, the underlying data can be addressed using \code{[portfolio name]$[symbol]$txn} or \code{[portfolio name]$[symbol]$posPL}
 
 The function 'initTxn' creates the data container used to store details about transactions and their resulting positions for an instrument.  The data series is an irregular time series with the following columns:
 \itemize{

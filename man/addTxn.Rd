@@ -12,7 +12,6 @@
 \usage{
 addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{Portfolio}{ a portfolio object structured with \code{\link{initPortf}} }
   \item{Symbol}{ an instrument identifier for a symbol included in the portfolio, e.g., "IBM" }
@@ -26,7 +25,7 @@ addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE
   This function will eventually also handle other transaction types, such as adjustments for corporate actions or expire/assign for options.
 }
 \value{
-  Returns the entire portfolio object with the additional transaction in the correct slot: Portfolio[[Symbol]]$txn
+  Returns the entire portfolio object with the additional transaction in the correct slot: \code{Portfolio[[Symbol]]$txn}.
 }
 \author{ Peter Carl }
 \note{ 
