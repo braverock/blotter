@@ -63,6 +63,6 @@ function(Portfolio, Attribute, Date=NULL)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id:  $
+# $Id$
 #
 ###############################################################################
