@@ -18,7 +18,7 @@ calcEndEq(Account, Date)
   \item{Date}{ The ISO 8601 date to update.  No default. }
 }
 \details{
-For each date, the \code{updateAcct} function calculates realized and unrealized P&L based on the performance of each underlying Portfolio, using \code{\link{calcPortfSummary}} (which in turn uses \code{\link{calcPortfAttr}}).  To do that, it first appends the Portfolio summary data to the \kbd{[portfolio_name]} slot, then aggregates the portfolio information into the \kbd{TOTAL} slot.  The \code{updateAcct} function does not calculate the final capital amount (ending equity) for the period -- only the Account trading profit or loss for the period.
+For each date, the \code{updateAcct} function calculates realized and unrealized P&L based on the performance of each underlying Portfolio, using \code{\link{calcPortfSummary}} (which in turn uses \code{\link{calcPortfAttr}}).  To do that, it first appends the Portfolio summary data to the \kbd{[portfolio name]} slot, then aggregates the portfolio information into the \kbd{TOTAL} slot.  The \code{updateAcct} function does not calculate the final capital amount (ending equity) for the period -- only the Account trading profit or loss for the period.
 
 The \code{updateEndEq} function calculates the final capital amount (ending equity) for the period.  It's a wrapper for \code{calcEndEq} that handles a list of dates.  The \code{calcEndEq} function calculates both \kbd{End.Eq} and \kbd{Net.Performance}.
 
