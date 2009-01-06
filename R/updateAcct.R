@@ -33,7 +33,7 @@ function(Account, Dates)
         # Append the portfolio summary data to the portfolio slot
         for(i in 1:length(Portfolios)){
             Portfolio = get(Portfolios[i])
-            row = as.xts(calcPortfSummary(Portfolio, Dates[d]), order.by=as.Date(Dates[d])) ## comes back as zoo?
+            row = xts(calcPortfSummary(Portfolio, Dates[d]), order.by=as.Date(Dates[d])) ## comes back as zoo?
             Account[[i+1]] = rbind(Account[[i+1]],row)
         }
 
@@ -42,7 +42,7 @@ function(Account, Dates)
         RealizedPL = as.numeric(calcAcctAttr(Account, 'Realized.PL', Dates[d]))
         UnrealizedPL = as.numeric(calcAcctAttr(Account, 'Unrealized.PL', Dates[d]))
         TradingPL = as.numeric(calcAcctAttr(Account, 'Trading.PL', Dates[d]))
-        row = as.xts(t(c(0, 0, TxnFees, RealizedPL, UnrealizedPL, 0, TradingPL, 0, 0, 0)), order.by=as.Date(Dates[d]))
+        row = xts(t(c(0, 0, TxnFees, RealizedPL, UnrealizedPL, 0, TradingPL, 0, 0, 0)), order.by=as.Date(Dates[d]))
         colnames(row) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
         Account[['TOTAL']] <- rbind(Account[['TOTAL']], row)
     # This function does not calculate End.Eq 
