@@ -29,7 +29,7 @@ updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopP
 # required libraries
 require(quantmod)
 require(TTR)
-source('pandl.R')
+require(blotter)
 
 # Set initial values
 initDate="2005-01-01"
