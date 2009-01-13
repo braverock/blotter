@@ -1,5 +1,5 @@
 `getBySymbol` <-
-function(Portfolio, Attribute, Date=NULL)
+function(Portfolio, Attribute, Symbols = NULL, Date=NULL)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -23,7 +23,10 @@ function(Portfolio, Attribute, Date=NULL)
         Date = time(Portfolio[[1]]$posPL[Date])
     table = xts(NULL, order.by=Date) 
       ## Need a reference time index
-    symbols=names(Portfolio)
+    if(is.null(Symbols))
+        symbols=names(Portfolio)
+    else
+        symbols = Symbols
     for (i in 1:length(symbols)) 
         table = merge(table, Portfolio[[i]]$posPL[Date,Attribute,drop=FALSE])
     colnames(table) = symbols
