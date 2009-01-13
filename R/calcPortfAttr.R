@@ -16,39 +16,39 @@ function(Portfolio, Attribute, Date=NULL)
         },
         Txn.Fees = {
             table = getBySymbol(Portfolio, 'Txn.Fees', Date)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Txn.Fees'
         },
         Realized.PL = {
             table = getBySymbol(Portfolio, 'Realized.PL', Date)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Realized.PL'
         },
         Unrealized.PL = {
             table = getBySymbol(Portfolio, 'Unrealized.PL', Date)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Unrealized.PL'
         },
         Net.Value = {
             table = getBySymbol(Portfolio, 'Pos.Value', Date)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Net.Value'
         },
         Gross.Value = {
             table = getBySymbol(Portfolio, 'Pos.Value', Date)
-            result = as.xts(t(t(apply(abs(table), FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Gross.Value'
         },
         Long.Value = {
             table = getBySymbol(Portfolio, 'Pos.Value', Date)
             table = apply(table,MARGIN=c(1,2),FUN=max,0)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Long.Value'
         },
         Short.Value = {
             table = getBySymbol(Portfolio, 'Pos.Value', Date)
             table = apply(table,MARGIN=c(1,2),FUN=min,0)
-            result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1)))) ## WTF?
+            result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Short.Value'
         }
     )
