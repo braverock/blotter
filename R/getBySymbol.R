@@ -1,5 +1,5 @@
 `getBySymbol` <-
-function(Portfolio, Attribute, Symbols = NULL, Date=NULL)
+function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -27,8 +27,10 @@ function(Portfolio, Attribute, Symbols = NULL, Date=NULL)
         symbols=names(Portfolio)
     else
         symbols = Symbols
-    for (i in 1:length(symbols)) 
+    for (i in 1:length(symbols)) {
         table = merge(table, Portfolio[[i]]$posPL[Date,Attribute,drop=FALSE])
+        #table = cbind(table, Portfolio[[i]]$posPL[Date,Attribute,drop=FALSE])
+    }
     colnames(table) = symbols
     return(table)
 
