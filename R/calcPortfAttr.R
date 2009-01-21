@@ -1,5 +1,5 @@
 `calcPortfAttr` <-
-function(Portfolio, Attribute, Date=NULL)
+function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
 {
     symbols = names(Portfolio)
     if(is.null(Date)) # if no date is specified, get all available dates
@@ -10,43 +10,43 @@ function(Portfolio, Attribute, Date=NULL)
 
     switch(Attribute,
         Trading.PL = {
-            table = getBySymbol(Portfolio, 'Trading.PL', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Trading.PL', Date = Date, Symbols = Symbols)
             result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1))))
             colnames(result) = 'Trading.PL'
         },
         Txn.Fees = {
-            table = getBySymbol(Portfolio, 'Txn.Fees', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Txn.Fees', Date = Date, Symbols = Symbols)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Txn.Fees'
         },
         Realized.PL = {
-            table = getBySymbol(Portfolio, 'Realized.PL', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Realized.PL', Date = Date, Symbols = Symbols)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Realized.PL'
         },
         Unrealized.PL = {
-            table = getBySymbol(Portfolio, 'Unrealized.PL', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Unrealized.PL', Date = Date, Symbols = Symbols)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Unrealized.PL'
         },
         Net.Value = {
-            table = getBySymbol(Portfolio, 'Pos.Value', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Net.Value'
         },
         Gross.Value = {
-            table = getBySymbol(Portfolio, 'Pos.Value', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Gross.Value'
         },
         Long.Value = {
-            table = getBySymbol(Portfolio, 'Pos.Value', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             table = apply(table,MARGIN=c(1,2),FUN=max,0)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Long.Value'
         },
         Short.Value = {
-            table = getBySymbol(Portfolio, 'Pos.Value', Date)
+            table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             table = apply(table,MARGIN=c(1,2),FUN=min,0)
             result = xts(rowSums(abs(table)), index(table))
             colnames(result) = 'Short.Value'
