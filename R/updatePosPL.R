@@ -55,7 +55,7 @@ function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
         RealizedPL = getRealizedPL(Portfolio, Symbol, CurrentDate)
         UnrealizedPL = TradingPL - RealizedPL #
 
-        NewPeriod = as.xts(t(c(PosQty, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.Date(CurrentDate))
+        NewPeriod = as.xts(t(c(PosQty, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
         colnames(NewPeriod) = c('Pos.Qty', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }

@@ -37,7 +37,7 @@ function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
     RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
 
     # Store the transaction and calculations
-    NewTxn = xts(t(c(TxnQty, TxnPrice, TxnFees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.Date(TxnDate))
+    NewTxn = xts(t(c(TxnQty, TxnPrice, TxnFees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.POSIXct(TxnDate))
     colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
     Portfolio[[Symbol]]$txn <- rbind(Portfolio[[Symbol]]$txn, NewTxn) 
 
