@@ -18,7 +18,7 @@ function(Account, Attribute, Date=NULL)
         Date = time(Account[[2]][Date])
     table = xts(NULL, order.by=Date) ## Reference time index
     table = getByPortf(Account, Attribute, Date)
-    result = as.xts(t(t(apply(table, FUN='sum', MARGIN=1))))
+    result = xts(apply(table, FUN='sum', MARGIN=1), Date)
     colnames(result) = Attribute
     return(result)
 }
