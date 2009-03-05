@@ -165,15 +165,15 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
 cat('Return: ',(getEndEq(Account=account, Date=CurrentDate)-initEq)/initEq,'\n')
 
 if (require(quantmod)) {
-  Buys = portfolio[["XLF"]]$txn$Txn.Price*(Portfolio[[Symbol]]$txn$Txn.Qty>0)
-  Sells = portfolio[["XLF"]]$txn$Txn.Price*(Portfolio[[Symbol]]$txn$Txn.Qty<0)
+  Buys = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn$Txn.Qty>0)
+  Sells = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn$Txn.Qty<0)
   Position = portfolio[["XLF"]]$posPL$Pos.Qty
   CumPL = cumsum(portfolio[["XLF"]]$posPL$Trading.PL)
-  chartSeries(XLF['2006::2009',], TA=NULL)
-  plot(addTA(Buys['2006::2009',],pch=2,type='p',col='green', on=1));
-  plot(addTA(Sells['2006::2009',],pch=6,type='p',col='red', on=1));
-  plot(addTA(Position['2006::2009',],type='h',col='blue', lwd=2));
-  plot(addTA(CumPL['2006::2009',], col='darkgreen', lwd=2))
+  chartSeries(XLF['2008::2009',], TA=NULL, type='bar')
+  plot(addTA(Buys['2008::2009',],pch=2,type='p',col='green', on=1));
+  plot(addTA(Sells['2008::2009',],pch=6,type='p',col='red', on=1));
+  plot(addTA(Position['2008::2009',],type='h',col='blue', lwd=2));
+  plot(addTA(CumPL['2008::2009',], col='darkgreen', lwd=2))
 }
 
 # require(PerformanceAnalytics)
