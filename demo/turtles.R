@@ -176,6 +176,6 @@ if (require(quantmod)) {
   plot(addTA(CumPL['2006::2009',], col='darkgreen', lwd=2))
 }
 
-require(PerformanceAnalytics)
-return = Delt(account[["TOTAL"]]$End.Eq)
-charts.PerformanceSummary(return)
+# require(PerformanceAnalytics)
+# return = Delt(account[["TOTAL"]]$End.Eq)
+# charts.PerformanceSummary(as.zoo(return))
