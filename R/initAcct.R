@@ -45,7 +45,7 @@ function(portfolios, initDate="1950-01-01", initEq=100000)
     # FUNCTION
     account=vector("list",length=(length(portfolios)+1))
     names(account)=c("TOTAL",portfolios)
-    account[["TOTAL"]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,initEq))), order.by=as.Date(initDate) )
+    account[["TOTAL"]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
     colnames(account[["TOTAL"]]) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
     for(portfolio in portfolios){
         account[[portfolio]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
