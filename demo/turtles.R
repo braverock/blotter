@@ -17,7 +17,7 @@ updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopP
     # FUNCTION
     # Store the transaction and calculations, returns the portfolio
     
-    NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.Date(TxnDate))
+    NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
     colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
     Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
     return(Portfolio)
@@ -46,7 +46,7 @@ account = initAcct(portfolios="portfolio", initDate=initDate)
 # This table stores transaction-related information relative to the strategy
 # Placing it into the portfolio object, sure why not?
 for(symbol in symbols){
-  portfolio[[symbol]]$strat <- xts( as.matrix(t(c(0,0,0,0,0))), order.by=as.Date(initDate) )
+  portfolio[[symbol]]$strat <- xts( as.matrix(t(c(0,0,0,0,0))), order.by=as.POSIXct(initDate) )
   colnames(portfolio[[symbol]]$strat) <- c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
 }
 
@@ -103,10 +103,10 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
     Posn = getPosQty(Portfolio=portfolio, Symbol=symbol, Date=CurrentDate)
     s = tail(portfolio[[symbol]]$strat,1)
 #      print(s)
-    Units = as.numeric(s$Pos.Units)
-    TxnPrice = as.numeric(s$Txn.Price)
-    N = as.numeric(s$Txn.N)
-    Stop = as.numeric(s$Stop.Price)
+    Units = as.numeric(s[,'Pos.Units'])
+    TxnPrice = as.numeric(s[,'Txn.Price'])
+    N = as.numeric(s[,'Txn.N'])
+    Stop = as.numeric(s[,'Stop.Price'])
     
     UnitSize = as.numeric(trunc((size * equity)/(x[i-1,'N']*ClosePrice)))
 
@@ -114,44 +114,35 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
     if( Posn == 0 ) { 
       # Initiate Long position
       if( as.numeric(Hi(x[i-1,])) > as.numeric(x[i-2,'Max55']) ) { 
-
-          portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
-	  N = as.numeric(x[i-1,'N'])
-          portfolio = updateStrat(Portfolio=portfolio, Symbol=symbol, TxnDate = CurrentDate, PosUnitsQty = 1, UnitSize = UnitSize, StopPrice = (ClosePrice-2*N), TxnPrice = ClosePrice, TxnN = N)
-
+        portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
+        N = as.numeric(x[i-1,'N'])
+        portfolio = updateStrat(Portfolio=portfolio, Symbol=symbol, TxnDate = CurrentDate, PosUnitsQty = 1, UnitSize = UnitSize, StopPrice = (ClosePrice-2*N), TxnPrice = ClosePrice, TxnN = N)
       } else
       # Initiate Short position
       if( as.numeric(Lo(x[i-1,]))  < as.numeric(x[i-2,'Min55']) ) { 
-
-          portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
-	  N = as.numeric(x[i-1,'N'])
-          portfolio = updateStrat(Portfolio=portfolio, Symbol = symbol, TxnDate = CurrentDate, PosUnitsQty = Units, UnitSize = UnitSize, StopPrice = (ClosePrice +2*N), TxnPrice = ClosePrice, TxnN = N)
+        portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
+        N = as.numeric(x[i-1,'N'])
+        portfolio = updateStrat(Portfolio=portfolio, Symbol = symbol, TxnDate = CurrentDate, PosUnitsQty = Units, UnitSize = UnitSize, StopPrice = (ClosePrice +2*N), TxnPrice = ClosePrice, TxnN = N)
       }
     } else
     # Position exits and stops
     if( ( Posn > 0 && ( as.numeric(Lo(x[i-1,]))  <  as.numeric(x[i-2,'Min20']) || Lo(x[i-1,])  < Stop ) ) || 
         ( Posn < 0 && ( as.numeric(Hi(x[i-1,])) > as.numeric(x[i-2,'Max20']) || Hi(x[i-1,]) > Stop ) ) ) {
-
-          portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
-	  N = as.numeric(x[i-1,'N'])
-          portfolio = updateStrat(Portfolio = portfolio, Symbol = symbol, TxnDate = CurrentDate, PosUnitsQty = 0, UnitSize = UnitSize, StopPrice = NA, TxnPrice = ClosePrice, TxnN = N)
-
+        portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
+        N = as.numeric(x[i-1,'N'])
+        portfolio = updateStrat(Portfolio = portfolio, Symbol = symbol, TxnDate = CurrentDate, PosUnitsQty = 0, UnitSize = UnitSize, StopPrice = NA, TxnPrice = ClosePrice, TxnN = N)
     } else
     # Add to long position
 	if( Posn > 0  && Units < maxUnits && Hi(x[i-1,]) > ( TxnPrice + N * 0.5 ) ) {
-
 	  portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
 	  N = as.numeric(x[i-1,'N'])
 	  portfolio = updateStrat(Portfolio = portfolio, Symbol = symbol, TxnDate = CurrentDate, PosUnitsQty = Units+1, UnitSize = UnitSize, StopPrice = (ClosePrice-2*N), TxnPrice = ClosePrice, TxnN = N)
-
     } else
     # Add to short position
 	if( Posn < 0 && Units < maxUnits && Lo(x[i-1,])  < ( TxnPrice - N * 0.5 ) ) {
-
 	  portfolio = addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate, TxnPrice=Cl(x[i,]), TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
 	  N = as.numeric(x[i-1,'N'])
 	  portfolio = updateStrat(Portfolio=portfolio, Symbol=symbol, TxnDate = CurrentDate, PosUnitsQty = Units+1, UnitSize = UnitSize, StopPrice = (ClosePrice+2*N), TxnPrice = ClosePrice, TxnN = N)
-
     } #else
     # Maintain Position
   } # End symbol loop
@@ -165,13 +156,13 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
 cat('Return: ',(getEndEq(Account=account, Date=CurrentDate)-initEq)/initEq,'\n')
 
 if (require(quantmod)) {
-  Buys = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn$Txn.Qty>0)
-  Sells = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn$Txn.Qty<0)
-  Position = portfolio[["XLF"]]$posPL$Pos.Qty
-  CumPL = cumsum(portfolio[["XLF"]]$posPL$Trading.PL)
+  Buys = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn[,'Txn.Qty']>0)
+  Sells = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn[,'Txn.Qty']<0)
+  Position = portfolio[["XLF"]]$posPL[,'Pos.Qty']
+  CumPL = cumsum(portfolio[["XLF"]]$posPL[,'Trading.PL'])
   chartSeries(XLF['2008::2009',], TA=NULL, type='bar')
-  plot(addTA(Buys['2008::2009',],pch=2,type='p',col='green', on=1));
-  plot(addTA(Sells['2008::2009',],pch=6,type='p',col='red', on=1));
+  plot(addTA(Buys['2008::2009',],pch=2,type='p',col='darkgreen', on=1));
+  plot(addTA(Sells['2008::2009',],pch=6,type='p',col='darkred', on=1));
   plot(addTA(Position['2008::2009',],type='h',col='blue', lwd=2));
   plot(addTA(CumPL['2008::2009',], col='darkgreen', lwd=2))
 }
