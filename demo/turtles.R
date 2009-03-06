@@ -160,7 +160,7 @@ if (require(quantmod)) {
   Sells = portfolio[["XLF"]]$txn$Txn.Price*(portfolio[["XLF"]]$txn[,'Txn.Qty']<0)
   Position = portfolio[["XLF"]]$posPL[,'Pos.Qty']
   CumPL = cumsum(portfolio[["XLF"]]$posPL[,'Trading.PL'])
-  chartSeries(XLF['2008::2009',], TA=NULL, type='bar')
+  chartSeries(XLF['2008::2009',], TA=NULL, type='bar', theme=chartTheme('white',up.col='lightgreen',dn.col='pink'))
   plot(addTA(Buys['2008::2009',],pch=2,type='p',col='darkgreen', on=1));
   plot(addTA(Sells['2008::2009',],pch=6,type='p',col='darkred', on=1));
   plot(addTA(Position['2008::2009',],type='h',col='blue', lwd=2));
