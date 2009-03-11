@@ -16,22 +16,22 @@ function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
         },
         Txn.Fees = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Txn.Fees', Date = Date, Symbols = Symbols)
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Txn.Fees'
         },
         Realized.PL = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Realized.PL', Date = Date, Symbols = Symbols)
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Realized.PL'
         },
         Unrealized.PL = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Unrealized.PL', Date = Date, Symbols = Symbols)
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Unrealized.PL'
         },
         Net.Value = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Net.Value'
         },
         Gross.Value = {
@@ -42,13 +42,13 @@ function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
         Long.Value = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             table = apply(table,MARGIN=c(1,2),FUN=max,0)
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Long.Value'
         },
         Short.Value = {
             table = getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Date = Date, Symbols = Symbols)
             table = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
-            result = xts(rowSums(abs(table)), Date)
+            result = xts(rowSums(table), Date)
             colnames(result) = 'Short.Value'
         }
     )
