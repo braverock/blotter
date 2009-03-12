@@ -1,0 +1,125 @@
+
+R version 2.9.0 Under development (unstable) (2009-03-02 r48041)
+Copyright (C) 2009 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> suppressMessages(library(blotter))	# to suppress the TZ noise from xts
+> library(quantmod)
+Loading required package: Defaults
+quantmod: Quantitative Financial Modelling Framework
+
+Version 0.3-7, Revision 461
+http://www.quantmod.com
+
+> 
+> verbose <- FALSE
+> data(IBM)                               # data included in package
+> symbols <- c("IBM")
+> 
+> ## simple portfolio with one transaction
+> p1 <- initPortf(symbols=symbols)
+> p1 <- addTxn(p1, "IBM", '2007-01-04', 100, 96.5, 0.05*100, verbose)
+> p1 <- updatePortf(p1,'2007-01-03','2007-01-10')
+> a1 <- initAcct(portfolios="p1")
+> a1 <- updateAcct(a1,'2007-01')
+> a1 <- updateEndEq(a1,'2007-01')
+> 
+> ## (really) simple transaction cost function
+> fiveCents <- function(qty, prc) return(0.05*qty)
+> p2 <- initPortf(symbols=symbols)
+> p2 <- addTxn(p2, "IBM", '2007-01-04', 100, 96.5, fiveCents, verbose)
+> p2 <- updatePortf(p2,'2007-01-03','2007-01-10')
+> a2 <- initAcct(portfolios="p2")
+> a2 <- updateAcct(a2,'2007-01')
+> a2 <- updateEndEq(a2,'2007-01')
+> 
+> print(a1)
+$TOTAL
+                    Additions Withdrawals Txn.Fees Realized.PL Unrealized.PL
+1950-01-01 00:00:00         0           0        0           0             0
+2007-01-03 06:00:00         0           0        0           0             0
+2007-01-04 06:00:00         0           0        0           0          9831
+2007-01-05 06:00:00         0           0        0           0           -89
+2007-01-08 06:00:00         0           0        0           0           148
+2007-01-09 06:00:00         0           0        0           0           117
+2007-01-10 06:00:00         0           0        0           0          -118
+                    Int.Income Trading.PL Advisory.Fees Net.Performance End.Eq
+1950-01-01 00:00:00          0          0             0               0 100000
+2007-01-03 06:00:00          0          0             0               0 100000
+2007-01-04 06:00:00          0       9831             0            9831 109831
+2007-01-05 06:00:00          0        -89             0             -89 109742
+2007-01-08 06:00:00          0        148             0             148 109890
+2007-01-09 06:00:00          0        117             0             117 110007
+2007-01-10 06:00:00          0       -118             0            -118 109889
+
+$p1
+                    Long.Value Short.Value Net.Value Gross.Value Txn.Fees
+1950-01-01 00:00:00          0           0         0           0        0
+2007-01-03 06:00:00          0           0         0           0        0
+2007-01-04 06:00:00       9831           0      9831        9831        0
+2007-01-05 06:00:00       9742           0      9742        9742        0
+2007-01-08 06:00:00       9890           0      9890        9890        0
+2007-01-09 06:00:00      10007           0     10007       10007        0
+2007-01-10 06:00:00       9889           0      9889        9889        0
+                    Realized.PL Unrealized.PL Trading.PL
+1950-01-01 00:00:00           0             0          0
+2007-01-03 06:00:00           0             0          0
+2007-01-04 06:00:00           0          9831       9831
+2007-01-05 06:00:00           0           -89        -89
+2007-01-08 06:00:00           0           148        148
+2007-01-09 06:00:00           0           117        117
+2007-01-10 06:00:00           0          -118       -118
+
+> print(a2)
+$TOTAL
+                    Additions Withdrawals Txn.Fees Realized.PL Unrealized.PL
+1950-01-01 00:00:00         0           0        0           0             0
+2007-01-03 06:00:00         0           0        0           0             0
+2007-01-04 06:00:00         0           0        0           0          9831
+2007-01-05 06:00:00         0           0        0           0           -89
+2007-01-08 06:00:00         0           0        0           0           148
+2007-01-09 06:00:00         0           0        0           0           117
+2007-01-10 06:00:00         0           0        0           0          -118
+                    Int.Income Trading.PL Advisory.Fees Net.Performance End.Eq
+1950-01-01 00:00:00          0          0             0               0 100000
+2007-01-03 06:00:00          0          0             0               0 100000
+2007-01-04 06:00:00          0       9831             0            9831 109831
+2007-01-05 06:00:00          0        -89             0             -89 109742
+2007-01-08 06:00:00          0        148             0             148 109890
+2007-01-09 06:00:00          0        117             0             117 110007
+2007-01-10 06:00:00          0       -118             0            -118 109889
+
+$p2
+                    Long.Value Short.Value Net.Value Gross.Value Txn.Fees
+1950-01-01 00:00:00          0           0         0           0        0
+2007-01-03 06:00:00          0           0         0           0        0
+2007-01-04 06:00:00       9831           0      9831        9831        0
+2007-01-05 06:00:00       9742           0      9742        9742        0
+2007-01-08 06:00:00       9890           0      9890        9890        0
+2007-01-09 06:00:00      10007           0     10007       10007        0
+2007-01-10 06:00:00       9889           0      9889        9889        0
+                    Realized.PL Unrealized.PL Trading.PL
+1950-01-01 00:00:00           0             0          0
+2007-01-03 06:00:00           0             0          0
+2007-01-04 06:00:00           0          9831       9831
+2007-01-05 06:00:00           0           -89        -89
+2007-01-08 06:00:00           0           148        148
+2007-01-09 06:00:00           0           117        117
+2007-01-10 06:00:00           0          -118       -118
+
+> print(all.equal(a1, a2))
+[1] "Names: 1 string mismatch"
+> 
