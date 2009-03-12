@@ -25,4 +25,5 @@ a2 <- updateEndEq(a2,'2007-01')
 
 print(a1)
 print(a2)
-print(all.equal(a1, a2))
+#print(all.equal(a1, a2))	## cannot be equal because of names(): p1 != p2
+print(all.equal(p1, p2))

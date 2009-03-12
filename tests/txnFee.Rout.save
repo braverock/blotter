@@ -120,6 +120,7 @@ $p2
 2007-01-09 06:00:00           0           117        117
 2007-01-10 06:00:00           0          -118       -118
 
-> print(all.equal(a1, a2))
-[1] "Names: 1 string mismatch"
+> #print(all.equal(a1, a2))	## cannot be equal because of names(): p1 != p2
+> print(all.equal(p1, p2))
+[1] TRUE
 > 
