@@ -18,7 +18,12 @@ addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE
   \item{TxnDate}{ transaction date as ISO 8106, e.g., '2008-09-01'}
   \item{TxnQty}{ total units (such as shares) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell' }
   \item{TxnPrice}{ market clearing price at which the transaction was done }
-  \item{TxnFees}{ fees associated with the transaction, e.g. commissions.  Fees are   indicated as positive values and will be subtracted from the transaction. }
+  \item{TxnFees}{ fees associated with the transaction,
+    e.g. commissions.  Fees are   indicated as positive values and will
+    be subtracted from the transaction. Optionally, \code{TxnFees} can
+    also provide a function of two argument quantity and price which
+    permits user-defined transaction costs, possibly as function of
+    transaction volume and price.}
   \item{verbose}{ if TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "IBM 2007-01-08 50 @ 77.6". Suppress using FALSE. }
 }
 \details{
