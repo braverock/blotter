@@ -1,5 +1,5 @@
 
-library(blotter)
+suppressMessages(library(blotter))	# to suppress the TZ noise from xts
 library(quantmod)
 
 verbose <- FALSE
@@ -23,4 +23,6 @@ a2 <- initAcct(portfolios="p2")
 a2 <- updateAcct(a2,'2007-01')
 a2 <- updateEndEq(a2,'2007-01')
 
-stopifnot(identical(a1, a2))
+print(a1)
+print(a2)
+print(all.equal(a1, a2))
