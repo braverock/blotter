@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for transaction-oriented trading systems development.
 Version: 0.3
-Date: 2008-11-21
+Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>
 Description: Transaction infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation.  Intends to provide portfolio support for multi-asset class and multi-currency portfolios.  Still in heavy development.
