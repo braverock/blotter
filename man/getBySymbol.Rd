@@ -5,12 +5,15 @@
 Retrieves calculated attributes for each position in the portfolio from the \kbd{posPL} table.  Assembles the results into a symbol-by-time table useful for graphing or calculations.
 }
 \usage{
-getBySymbol(Portfolio, Attribute, Date = NULL)
+getBySymbol(Portfolio, Attribute, Date = NULL, Symbols = NULL)
 }
 \arguments{
   \item{Portfolio}{ A Portfolio object containing transactions }
   \item{Attribute}{ Column name to be assembled for each symbol in the Portfolio, any of: 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL', or 'Trading.PL' }
   \item{Date}{ \pkg{xts} date range to return.  If no date is specified, the function returns all available dates }
+  \item{Symbols}{ If specified, this vector of names provides the
+    symbols for the functions returns results. If no symbols are
+    specified, the function returns results for all symbols in \code{portfolio}. }
 }
 \details{
     Retrieves and formats values calculated by the function \code{\link{updatePosPL}}.  The resulting xts object is formatted with the symbol as the columnname. 
