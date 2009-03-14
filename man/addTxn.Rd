@@ -1,8 +1,9 @@
 \name{addTxn}
 \alias{addTxn}
+\alias{pennyPerShare}
 \title{ Add transactions to a Portfolio }
 \description{
-  When a trade or adjustment is made to the Portfolio, this function calculates:
+  When a trade or adjustment is made to the Portfolio, the \code{addTxn} function calculates:
     - the value and average cost of the transaction;
     - the change in position;
     - the resulting position's average cost; and
@@ -11,6 +12,7 @@
 }
 \usage{
 addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE)
+pennyPerShare(TxnQty, TxnPrice)
 }
 \arguments{
   \item{Portfolio}{ a portfolio object structured with \code{\link{initPortf}} }
@@ -27,7 +29,12 @@ addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE
   \item{verbose}{ if TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "IBM 2007-01-08 50 @ 77.6". Suppress using FALSE. }
 }
 \details{
-  This function will eventually also handle other transaction types, such as adjustments for corporate actions or expire/assign for options.
+  The \code{addTxn} function will eventually also handle other
+  transaction types, such as adjustments for corporate actions or
+  expire/assign for options.
+  .
+  The \code{pennyPerShare} function provides a simple example of a
+  transaction cost function the user could supply.
 }
 \value{
   Returns the entire portfolio object with the additional transaction in the correct slot: \code{Portfolio[[Symbol]]$txn}.
