@@ -1,7 +1,8 @@
 
 suppressMessages(library(blotter))	# to suppress the TZ noise from xts
 library(quantmod)
-Sys.setenv(TZ="America/Chicago")
+Sys.setenv(TZ="America/Chicago")        # as the data set got save with this TZ
+options("width"=78)                     # to tie down the print() statement width
 verbose <- FALSE
 data(IBM)                               # data included in package
 symbols <- c("IBM")
