@@ -6,7 +6,7 @@
     Calculates the attributes of a portfolio from its positions.
 }
 \usage{
-calcPortfAttr(Portfolio, Attribute, Symbols = NULL, Date = NULL)
+calcPortfAttr(Portfolio, Attribute, Date = NULL, Symbols = NULL)
 calcPortfSummary(Portfolio, Date = NULL)
 }
 \arguments{
