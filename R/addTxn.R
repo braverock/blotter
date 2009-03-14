@@ -52,8 +52,8 @@ function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
 }
 
 ## example cost function
-pennyPerShare <- function(Qty, Price) {
-    return(Qty * 0.01)
+pennyPerShare <- function(TxnQty, TxnPrice) {
+    return(TxnQty * 0.01)
 }
 
 ###############################################################################
