@@ -14,7 +14,8 @@ calcAcctAttr(Account, Attribute, Date = NULL)
   \item{Date}{ Date range to return.  If NULL (default), the function returns all available dates }
 }
 \details{
-The attributes for the account are defined as:
+  The attributes for the account are defined as:
+  \itemize{
     \item{Long.Value}{ The aggregated value of the positions held long in each portfolio.} 
     \item{Short.Value}{ The aggregated value of the positions held short in each portfolio.}
     \item{Net.Value}{ The net value of the positions held in each portfolio, calculated as long value less short value.}
@@ -23,6 +24,7 @@ The attributes for the account are defined as:
     \item{Realized.PL}{ The aggregated value of the realized profit and loss for each portfolio.}
     \item{Unrealized.PL}{ The aggregated value of the unrealized profit and loss for each portfolio.}
     \item{Trading.PL}{ The sum of the realized and unrealized profit and loss for each portfolio.}
+  }
 }
 \value{
   An xts time series with the calculated attribute values

@@ -17,10 +17,12 @@ calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL, denominator = c("Gross.Val
 }
 \details{
   Portfolio weights can be calculated several different ways, and this function accommodates several methods.  The denominator may be specified as:
-  \item{Long.Value}{ The sum of the notional value of all positions held long in the portfolio.}
-  \item{Short.Value}{The sum of the notional value of all positions held short in the portfolio.} 
-  \item{Net.Value}{The sum of the notional long and notional short value of the portfolio.}
-  \item{Gross.Value}{Default. The sum of the notional long and absolute value of the notional short value of the portfolio.}
+  \itemize{
+    \item{Long.Value}{ The sum of the notional value of all positions held long in the portfolio.}
+    \item{Short.Value}{The sum of the notional value of all positions held short in the portfolio.} 
+    \item{Net.Value}{The sum of the notional long and notional short value of the portfolio.}
+    \item{Gross.Value}{Default. The sum of the notional long and absolute value of the notional short value of the portfolio.}
+  }
 }
 \value{
   Time series object (xts) with weights by date in rows and symbolname in columns.
