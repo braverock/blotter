@@ -1,5 +1,5 @@
 `updatePortf` <-
-function(Portfolio, StartDate, EndDate)
+function(Portfolio, Dates)
 { # @author Peter Carl
 
     # DESCRIPTION
@@ -9,8 +9,7 @@ function(Portfolio, StartDate, EndDate)
     # Inputs
     # Portfolio: a portfolio object containing transactions
     # Symbol: an instrument identifier for a symbol included in the portfolio
-    # StartDate: Date from which to calculate equity account
-    # EndDate: Date to stop calculating equity account
+    # Dates: Dates for which to calculate equity account
     # These dates must appear in the price stream
 
     # Outputs
@@ -19,7 +18,7 @@ function(Portfolio, StartDate, EndDate)
     # FUNCTION
     symbols = names(Portfolio)
     for(symbol in symbols){
-      Portfolio = updatePosPL(Portfolio, symbol, StartDate, EndDate, Cl(get(symbol)))
+      Portfolio = updatePosPL(Portfolio, symbol, Dates, Cl(get(symbol)))
   }
   return(Portfolio)
 }

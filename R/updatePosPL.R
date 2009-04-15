@@ -1,5 +1,5 @@
 `updatePosPL` <-
-function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
+function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
 { # @author Peter Carl
 
     # DESCRIPTION
@@ -10,8 +10,7 @@ function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
     # Portfolio: a portfolio object structured with initPortf()
     # Symbol: an instrument identifier for a symbol included in the portfolio
     # Prices: close prices in an xts object with a columnname == "Close"
-    # StartDate: Date from which to calculate equity account
-    # EndDate: Date to stop calculating equity account
+    # Dates: xts subset of dates, e.g., "2007-01::2008-04-15"
     ## These dates must appear in the price stream
 
     # Outputs
@@ -21,15 +20,17 @@ function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
     PosAvgCost = 0
     PosQty = 0
 
-    StartDateRow = grep(StartDate, time(Prices))
-    EndDateRow = grep(EndDate, time(Prices))
+    if(is.null(Dates)) # if no date is specified, get all available dates
+        Dates = time(Prices)
+    else # could test to see if it's a list of dates, which would pass through
+        Dates = time(Prices[Dates,])
 
     # For each date, calculate realized and unrealized P&L
-    for(i in StartDateRow:EndDateRow){ ##
+    for(i in 1:length(Dates)){ ##
         # Get the current date and close price
-        CurrentDate = time(Prices)[i]
+        CurrentDate = Dates[i]
         if(i>1) # if it isn't the first price in the time series
-            PrevDate = time(Prices)[i-1]
+            PrevDate = Dates[i-1]
         else
             PrevDate = NA
 
@@ -37,7 +38,7 @@ function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
         TxnFees = getTxnFees(Portfolio, Symbol, CurrentDate)
         PosQty = getPosQty(Portfolio, Symbol, CurrentDate)
         ClosePrice = as.numeric(Prices[i, grep("Close", colnames(Prices))]) #not necessary
-        PosValue = PosQty * ClosePrice # function?
+        PosValue = PosQty * ClosePrice # @todo: calcPosValue(PosQty, ClosePrice)
 
         if(is.na(PrevDate))
             PrevPosQty = 0
@@ -48,12 +49,12 @@ function(Portfolio, Symbol, StartDate, EndDate, Prices=Cl(get(Symbol)))
             PrevClosePrice = 0
         else
             PrevClosePrice = as.numeric(Prices[i-1,grep("Close", colnames(Prices))]) # not necessary
-        PrevPosValue = PrevPosQty * PrevClosePrice
+        PrevPosValue = PrevPosQty * PrevClosePrice # @todo: use calcPosValue()
 
-        TradingPL = PosValue - PrevPosValue - TxnValue #
+        TradingPL = PosValue - PrevPosValue - TxnValue # @todo: calcTradingPL(PosValue, PrevPosValue, TxnValue)
 
         RealizedPL = getRealizedPL(Portfolio, Symbol, CurrentDate)
-        UnrealizedPL = TradingPL - RealizedPL #
+        UnrealizedPL = TradingPL - RealizedPL # @todo: calcUnrealizedPL(TradingPL, RealizedPL)
 
         NewPeriod = as.xts(t(c(PosQty, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
         colnames(NewPeriod) = c('Pos.Qty', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')

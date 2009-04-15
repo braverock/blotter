@@ -8,9 +8,7 @@ function(Account, Dates)
 
     # Inputs
     # Prices: close prices in an xts OHLC object with a columnname == "Close"
-    # StartDate: Date from which to calculate equity account
-    # EndDate: Date to stop calculating equity account
-    # These dates must appear in the price stream
+    # Dates: Dates from which to calculate equity account
 
     # Outputs
     # Account object.
@@ -25,6 +23,7 @@ function(Account, Dates)
         Dates = time(Portfolio[[1]]$posPL)
     else
         Dates = time(Portfolio[[1]]$posPL[Dates,])
+
     # For each date, calculate realized and unrealized P&L
     for(d in 1:length(Dates)){ # d is a date slot counter
     # I shouldn't have to do this but I lose the class for the element when I do
