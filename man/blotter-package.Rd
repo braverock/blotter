@@ -50,7 +50,7 @@ Maintainer: Brian Peterson <brian@braverock.com>
 # Download price data
 symbols = c("IBM","F","MMM")
 require(quantmod)
-getSymbols(symbols, from='2007-01-01', to='2007-02-01')
+getSymbols(symbols, from='2007-01-01', to='2007-01-31')
 
 # Initialize a portfolio object 'p'
 print('Creating portfolio \"p\"...')
@@ -73,7 +73,7 @@ p = addTxn(p, "MMM", '2007-01-08', 50, 77.6, 0.05*50)
 p = addTxn(p, "MMM", '2007-01-09', 50, 77.6, 0.05*50)
 
 print('Updating portfolio \"p\"...')
-p = updatePortf(p,'2007-01-03','2007-01-10')
+p = updatePortf(p,'2007-01')
 calcPortfSummary(p)
 getBySymbol(p,'Pos.Qty')
 
