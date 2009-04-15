@@ -12,8 +12,7 @@ updatePortf(Portfolio, StartDate, EndDate)
 \arguments{
   \item{Portfolio}{ A portfolio object structured with \code{\link{initPortf}}. }
   \item{Symbol}{ An instrument identifier for a symbol included in the portfolio. }
-  \item{StartDate}{ ISO 8601 Date from which to calculate profit or loss. }
-  \item{EndDate}{ ISO 8601 Date to which to calculate profit or loss. }
+  \item{Dates}{ xts date subset or ISO 8601 Dates from which to calculate profit or loss. }
   \item{Prices}{ Close prices in an xts object with a columnname containing a substring "Close". }
 }
 \details{
