@@ -37,10 +37,10 @@ initEq=100000
 print("Initializing portfolio and account structure")
 # Assemble a small portfolio of three stocks
 symbols = c("XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLB", "XLK", "XLU")
-getSymbols(symbols, from=initDate, source="yahoo")
+# getSymbols(symbols, from=initDate, source="yahoo")
 
 # Set up a portfolio object and an account object
-portfolio = initPortf(symbols)
+portfolio = initPortf(symbols, initDate=initDate)
 account = initAcct(portfolios="portfolio", initDate=initDate)
 
 # This table stores transaction-related information relative to the strategy
@@ -147,7 +147,7 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
     # Maintain Position
   } # End symbol loop
   # Now that we've updated all of our trades, its time to mark the book
-  portfolio = updatePortf(Portfolio = portfolio, StartDate = CurrentDate, EndDate = CurrentDate)
+  portfolio = updatePortf(Portfolio = portfolio, Dates = CurrentDate)
   account = updateAcct(Account = account, Dates = CurrentDate)
   account = updateEndEq(Account = account, Dates = CurrentDate)
 } # End dates loop
