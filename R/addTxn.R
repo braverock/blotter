@@ -14,7 +14,7 @@ function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
     #   a 'buy'; negative values indicate a 'sell'
     # TxnPrice: price at which the transaction was done
     # TxnFees: fees associated with the transaction, e.g. commissions.  Fees are
-    #   indicated as positive values and will be subtracted from the transaction.
+    #   indicated as negative values and will be subtracted from the transaction value.
     #   TxnFees can either be a fixed amount, or a function of two arguments
     #   Qty and Price in which case the function is evaluated to determine the
     #   fee amount.
@@ -53,7 +53,7 @@ function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
 
 ## example cost function
 pennyPerShare <- function(TxnQty, TxnPrice) {
-    return(TxnQty * 0.01)
+    return(TxnQty * -0.01)
 }
 
 ###############################################################################
