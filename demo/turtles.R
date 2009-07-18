@@ -32,11 +32,11 @@ require(TTR)
 require(blotter)
 
 # Set initial values
-initDate="2005-01-01"
+initDate="2008-01-01"
 initEq=100000
 print("Initializing portfolio and account structure")
 # Assemble a small portfolio of three stocks
-symbols = c("XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLB", "XLK", "XLU")
+symbols = c("XLF", "XLP", "XLE")#, "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
 
 getSymbols(symbols, from=initDate, source="yahoo")
 # getSymbols now defaults (as originally) to "Date" indexing.  We can change to use POSIXct here.
