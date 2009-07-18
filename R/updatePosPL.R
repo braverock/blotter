@@ -29,15 +29,16 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
     for(i in 1:length(Dates)){ ##
         # Get the current date and close price
         CurrentDate = Dates[i]
-        if(i>1) # if it isn't the first price in the time series
-            PrevDate = Dates[i-1]
-        else
-            PrevDate = NA
+#          if(i>1) # if it isn't the first price in the time series
+            PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
+#          else
+          if(length(PrevDate)==0)
+             PrevDate = NA
 
         TxnValue = getTxnValue(Portfolio, Symbol, CurrentDate)
         TxnFees = getTxnFees(Portfolio, Symbol, CurrentDate)
         PosQty = getPosQty(Portfolio, Symbol, CurrentDate)
-        ClosePrice = as.numeric(Prices[i, grep("Close", colnames(Prices))]) #not necessary
+        ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
         PosValue = PosQty * ClosePrice # @todo: calcPosValue(PosQty, ClosePrice)
 
         if(is.na(PrevDate))
@@ -48,7 +49,8 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         if(PrevPosQty==0)
             PrevClosePrice = 0
         else
-            PrevClosePrice = as.numeric(Prices[i-1,grep("Close", colnames(Prices))]) # not necessary
+            PrevClosePrice = as.numeric(Prices[PrevDate, grep("Close", colnames(Prices))]) # not necessary
+
         PrevPosValue = PrevPosQty * PrevClosePrice # @todo: use calcPosValue()
 
         TradingPL = PosValue - PrevPosValue - TxnValue # @todo: calcTradingPL(PosValue, PrevPosValue, TxnValue)
