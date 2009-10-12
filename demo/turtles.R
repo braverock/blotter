@@ -38,7 +38,7 @@ print("Initializing portfolio and account structure")
 # Assemble a small portfolio of three stocks
 symbols = c("XLF", "XLP", "XLE")#, "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
 
-getSymbols(symbols, from=initDate, source="yahoo")
+getSymbols(symbols, index.class="POSIXct", from=initDate, source="yahoo")
 # getSymbols now defaults (as originally) to "Date" indexing.  We can change to use POSIXct here.
 # getSymbols(symbols, index.class=c("POSIXt","POSIXct"), from=initDate, source="yahoo")
 
