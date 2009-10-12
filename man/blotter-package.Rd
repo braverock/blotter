@@ -50,7 +50,7 @@ Maintainer: Brian Peterson <brian@braverock.com>
 # Download price data
 symbols = c("IBM","F","MMM")
 require(quantmod)
-getSymbols(symbols, from='2007-01-01', to='2007-01-31')
+getSymbols(symbols, from='2007-01-01', to='2007-01-31', index.class="POSIXct")
 
 # Initialize a portfolio object 'p'
 print('Creating portfolio \"p\"...')

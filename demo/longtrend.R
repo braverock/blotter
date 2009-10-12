@@ -53,7 +53,7 @@ initEq=100000
 
 # Load data with quantmod
 print("Loading data")
-getSymbols('^GSPC', src='yahoo', from='1998-01-01')
+getSymbols('^GSPC', src='yahoo', index.class=c("POSIXt","POSIXct"),from='1998-01-01')
 GSPC=to.monthly(GSPC, indexAt='endof')
 
 # Set up indicators with TTR
