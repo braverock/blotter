@@ -28,7 +28,7 @@ function(symbols, initPosQty = 0, initDate = '1950-01-01')
     if(length(initPosQty)!=length(symbols))
 	stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
     for(instrument in symbols){
-    	i = grep(instrument, symbols)
+    	i = match(instrument, symbols)
         portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = initPosQty[i])
         portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = initPosQty[i])
     }
