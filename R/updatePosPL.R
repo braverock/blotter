@@ -39,7 +39,7 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         TxnFees = getTxnFees(Portfolio, Symbol, CurrentDate)
         PosQty = getPosQty(Portfolio, Symbol, CurrentDate)
         ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
-        PosValue = PosQty * ClosePrice # @todo: calcPosValue(PosQty, ClosePrice)
+        PosValue = calcPosValue(PosQty,ClosePrice)
 
         if(is.na(PrevDate))
             PrevPosQty = 0
@@ -51,10 +51,8 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         else
             PrevClosePrice = as.numeric(Prices[PrevDate, grep("Close", colnames(Prices))]) # not necessary
 
-        PrevPosValue = PrevPosQty * PrevClosePrice # @todo: use calcPosValue()
-
-        TradingPL = PosValue - PrevPosValue - TxnValue # @todo: calcTradingPL(PosValue, PrevPosValue, TxnValue)
-
+        PrevPosValue = calcPosValue(PrevPosQty,PrevClosePrice)
+        TradingPL = calcTradingPL(PosValue, PrevPosValue, TxnValue)
         RealizedPL = getRealizedPL(Portfolio, Symbol, CurrentDate)
         UnrealizedPL = TradingPL - RealizedPL # @todo: calcUnrealizedPL(TradingPL, RealizedPL)
 

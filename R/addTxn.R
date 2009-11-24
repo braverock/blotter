@@ -47,7 +47,7 @@ function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
     Portfolio[[Symbol]]$txn <- rbind(Portfolio[[Symbol]]$txn, NewTxn)
 
     if(verbose)
-        print(paste(Symbol, TxnDate, TxnQty, "@",TxnPrice, sep=" "))
+        print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
     return(Portfolio)
 }
 
