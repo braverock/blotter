@@ -1,7 +1,11 @@
 `getPos` <-
 function(Portfolio, Symbol, Date)
 { # @author Peter Carl
-
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    
     # DESCRIPTION:
     # Retrieves all information about the position as of a date
 

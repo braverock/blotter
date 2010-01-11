@@ -62,18 +62,21 @@ GSPC$SMA10m <- SMA(GSPC[,grep('Adj',colnames(GSPC))], 10)
 
 # Set up a portfolio object and an account object in blotter
 print("Initializing portfolio and account structure")
-portfolio = initPortf('GSPC', initDate=initDate)
-account = initAcct(portfolios='portfolio', initDate=initDate)
+portfolio='longtrend'
+account='longtrend'
+initPortf(portfolio,'GSPC', initDate=initDate)
+initAcct(account,portfolios='longtrend', initDate=initDate)
 verbose=TRUE
 
 # Create trades
 for( i in 10:NROW(GSPC) ) { 
+    # browser()
     CurrentDate=time(GSPC)[i]
     cat(".")
     equity = getEndEq(account, CurrentDate)
 
     ClosePrice = as.numeric(Ad(GSPC[i,]))
-    Posn = getPosQty(Portfolio=portfolio, Symbol='GSPC', Date=CurrentDate)
+    Posn = getPosQty(portfolio, Symbol='GSPC', Date=CurrentDate)
     UnitSize = as.numeric(trunc(equity/ClosePrice))
 
     # Position Entry (assume fill at close)
@@ -82,21 +85,21 @@ for( i in 10:NROW(GSPC) ) {
         if( as.numeric(Ad(GSPC[i,])) > as.numeric(GSPC[i,'SMA10m']) ) { 
             cat('\n')
             # Store trade with blotter
-            portfolio = addTxn(Portfolio=portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
+            addTxn(portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
         } 
     } else {
     # Have a position, so check exit
         if( as.numeric(Ad(GSPC[i,]))  <  as.numeric(GSPC[i,'SMA10m'])) { 
             cat('\n')
             # Store trade with blotter
-            portfolio = addTxn(Portfolio=portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
+            addTxn(portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
         } 
     }
 
     # Calculate P&L and resulting equity with blotter
-    portfolio = updatePortf(Portfolio = portfolio, Dates = CurrentDate)
-    account = updateAcct(Account = account, Dates = CurrentDate)
-    account = updateEndEq(Account = account, Dates = CurrentDate)
+    portfolio = updatePortf(portfolio, Dates = CurrentDate)
+    account = updateAcct(account, Dates = CurrentDate)
+    account = updateEndEq(account, Dates = CurrentDate)
 } # End dates loop
 cat('\n')
 # Chart results with quantmod

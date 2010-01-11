@@ -1,23 +1,29 @@
-updateAcct <- function(Account, Dates) 
+#' Constructs the equity account calculations from the portfolio data and
+#' corresponding close prices.
+#'
+#' Inputs
+#' Prices: close prices in an xts OHLC object with a columnname == "Close"
+#' Dates: Dates from which to calculate equity account
+#'
+#' NOTES:
+#' Realized.PL is net of transaction fees.  To support 
+#' 
+#' @param name 
+#' @param Dates 
+#' @export
+updateAcct <- function(name='default', Dates) 
 { # @author Peter Carl
 
-    # DESCRIPTION
-    # Constructs the equity account calculations from the portfolio data and
-    # corresponding close prices. 
-
-    # Inputs
-    # Prices: close prices in an xts OHLC object with a columnname == "Close"
-    # Dates: Dates from which to calculate equity account
-
-    # Outputs
-    # Account object.
-
-    # NOTES:
-    # Realized.PL is net of transaction fees.  To support 
+    Account<-try(get(paste("account",name,sep='.'), envir=.blotter))
+    if(inherits(Account,"try-error"))
+        stop(paste("Account",name," not found, use initAcct() to create a new account"))
+    
 
     # FUNCTION
+    Account<-get(paste("account",name,sep='.'), envir=.blotter)
     Portfolios = names(Account)[-1]
-    Portfolio = get(Portfolios[1])
+    # TODO fix this so that it finds the date range in *any*/all portfolios
+    Portfolio = get(Portfolios[1],envir=.blotter)
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Portfolio[[1]]$posPL)
     else
@@ -29,7 +35,7 @@ updateAcct <- function(Account, Dates)
     # for(date in Dates)
         # Append the portfolio summary data to the portfolio slot
         for(i in 1:length(Portfolios)){
-            Portfolio = get(Portfolios[i])
+            Portfolio = get(Portfolios[i],envir=.blotter)
             row = calcPortfSummary(Portfolio, Dates[d])
             Account[[i+1]] = rbind(Account[[i+1]],row)
         }
@@ -44,7 +50,8 @@ updateAcct <- function(Account, Dates)
         Account[['TOTAL']] <- rbind(Account[['TOTAL']], row)
     # This function does not calculate End.Eq 
     }
-    return(Account) 
+    assign(paste("account",name,sep='.'),Account, envir=.blotter) 
+    return(name) #not sure this is a good idea
 }
 
 ###############################################################################

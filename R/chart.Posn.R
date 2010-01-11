@@ -1,7 +1,11 @@
-`chart.Posn` <- 
-function(Portfolio, Symbol = NULL, Dates = NULL, ...)
+#' @export
+chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
 { # @author Peter Carl
-
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    
     # DESCRIPTION
     # Charts the transaction series of a symbol against prices
 
@@ -17,8 +21,8 @@ function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # FUNCTION
 
     require(quantmod)
-    # @TODO: check that Portfolio is a Portfolio object
-    # @TODO: add date scoping
+    # TODO: check that Portfolio is a Portfolio object
+    # TODO: add date scoping
     Prices=get(Symbol)
 
     Buys = Portfolio[[Symbol]]$txn$Txn.Price*(Portfolio[[Symbol]]$txn$Txn.Qty>0)

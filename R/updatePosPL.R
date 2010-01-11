@@ -1,21 +1,20 @@
-`updatePosPL` <-
-function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
+#' Calculates position PL from the position data and corresponding close price data. 
+#' 
+#' @param Portfolio a portfolio name to a portfolio structured with initPortf()
+#' @param Symbol an instrument identifier for a symbol included in the portfolio
+#' @param Dates xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream
+#' @param Prices close prices in an xts object with a columnname == "Close"
+#' @return Regular time series of position information and PL 
+#' @author Peter Carl
+#' @export
+updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
 { # @author Peter Carl
 
-    # DESCRIPTION
-    # Calculates position PL from the position data and
-    # corresponding close price data. 
-
-    # Inputs
-    # Portfolio: a portfolio object structured with initPortf()
-    # Symbol: an instrument identifier for a symbol included in the portfolio
-    # Prices: close prices in an xts object with a columnname == "Close"
-    # Dates: xts subset of dates, e.g., "2007-01::2008-04-15"
-    ## These dates must appear in the price stream
-
-    # Outputs
-    # Regular time series of position information and PL
-
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter,inherits=TRUE)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    
     # FUNCTION
     PosAvgCost = 0
     PosQty = 0
@@ -35,16 +34,16 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
           if(length(PrevDate)==0)
              PrevDate = NA
 
-        TxnValue = getTxnValue(Portfolio, Symbol, CurrentDate)
-        TxnFees = getTxnFees(Portfolio, Symbol, CurrentDate)
-        PosQty = getPosQty(Portfolio, Symbol, CurrentDate)
+        TxnValue = getTxnValue(pname, Symbol, CurrentDate)
+        TxnFees = getTxnFees(pname, Symbol, CurrentDate)
+        PosQty = getPosQty(pname, Symbol, CurrentDate)
         ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
         PosValue = calcPosValue(PosQty,ClosePrice)
 
         if(is.na(PrevDate))
             PrevPosQty = 0
         else
-            PrevPosQty = getPosQty(Portfolio, Symbol, PrevDate) 
+            PrevPosQty = getPosQty(pname, Symbol, PrevDate) 
 
         if(PrevPosQty==0)
             PrevClosePrice = 0
@@ -53,14 +52,15 @@ function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
 
         PrevPosValue = calcPosValue(PrevPosQty,PrevClosePrice)
         TradingPL = calcTradingPL(PosValue, PrevPosValue, TxnValue)
-        RealizedPL = getRealizedPL(Portfolio, Symbol, CurrentDate)
-        UnrealizedPL = TradingPL - RealizedPL # @todo: calcUnrealizedPL(TradingPL, RealizedPL)
+        RealizedPL = getRealizedPL(pname, Symbol, CurrentDate)
+        UnrealizedPL = TradingPL - RealizedPL # TODO: calcUnrealizedPL(TradingPL, RealizedPL)
 
         NewPeriod = as.xts(t(c(PosQty, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
         colnames(NewPeriod) = c('Pos.Qty', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
-    return(Portfolio)
+    # return(Portfolio)
+    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
 ###############################################################################

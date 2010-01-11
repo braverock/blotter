@@ -1,7 +1,11 @@
-`getPosQty` <-
-function(Portfolio, Symbol, Date)
+#' @export
+getPosQty <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
-
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    
     # DESCRIPTION:
     # Gets the previous position 
 
@@ -14,7 +18,7 @@ function(Portfolio, Symbol, Date)
     # Numeric value of the most recent position.
 
     # FUNCTION
-    PosQty = as.numeric(getPos(Portfolio, Symbol, Date)[,"Pos.Qty"])
+    PosQty = as.numeric(getPos(pname, Symbol, Date)[,"Pos.Qty"])
     return(PosQty)
 }
 

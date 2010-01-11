@@ -1,26 +1,32 @@
-`updatePortf` <-
-function(Portfolio, Dates)
-{ # @author Peter Carl
-
-    # DESCRIPTION
-    # Function goes through each symbol and calculates the PL for each day 
-    # prices are available
-
-    # Inputs
-    # Portfolio: a portfolio object containing transactions
-    # Symbol: an instrument identifier for a symbol included in the portfolio
-    # Dates: Dates for which to calculate equity account
-    # These dates must appear in the price stream
-
-    # Outputs
-    # Regular time series of position information and PL
+#' Function goes through each symbol and calculates the PL for each day prices are available
+#' 
+#' Inputs
+#' Portfolio: a portfolio object containing transactions
+#' Symbol: an instrument identifier for a symbol included in the portfolio
+#' Dates: Dates for which to calculate equity account
+#' These dates must appear in the price stream
+#' 
+#' Outputs
+#' Regular time series of position information and PL
+#' 
+#' @param Portfolio 
+#' @param Dates 
+#' @export
+updatePortf <- function(Portfolio, Dates)
+{ #' @author Peter Carl
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter,inherits=TRUE)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",pname," not found, use initPortf() to create a new account"))
+    
 
     # FUNCTION
     symbols = names(Portfolio)
     for(symbol in symbols){
-      Portfolio = updatePosPL(Portfolio, symbol, Dates, Cl(get(symbol)))
+      Portfolio = updatePosPL(pname, symbol, Dates, Cl(get(symbol)))
   }
-  return(Portfolio)
+  assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter) 
+  return(pname) #not sure this is a good idea
 }
 
 ###############################################################################

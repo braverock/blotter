@@ -1,7 +1,11 @@
 `getRealizedPL` <-
 function(Portfolio, Symbol, Date)
 { # @author Peter Carl
-
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    if(inherits(Portfolio,"try-error"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    
     # DESCRIPTION:
     # Retrieves realized PL for a period
 

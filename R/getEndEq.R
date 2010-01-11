@@ -1,7 +1,11 @@
-`getEndEq` <-
-function(Account, Date)
+#' @export
+getEndEq <- function(Account, Date)
 { # @author Peter Carl
-
+    aname<-Account
+    Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
+    if(inherits(Account,"try-error"))
+        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
+    
     # DESCRIPTION:
     # Retrieves the most recent value of the capital account
 

@@ -1,6 +1,16 @@
-`updateEndEq` <-
-function(Account, Dates)
+#' update ending equity for an account
+#' 
+#' @param Account 
+#' @param Dates 
+#' @author Peter Carl
+#' @export
+updateEndEq <- function(Account, Dates)
 {
+    aname<-Account
+    Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
+    if(inherits(Account,"try-error"))
+        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
+    
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Account[[1]])
     else
@@ -8,9 +18,10 @@ function(Account, Dates)
 
     # For each date, calculate realized and unrealized P&L
     for(d in 1:length(Dates)){ # d is a date slot counter
-	Account = calcEndEq(Account, as.character(Dates[d])) ## WTF?
+	Account = calcEndEq(aname, as.character(Dates[d])) ## WTF?
     }
-    return(Account)
+    assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
+    return(aname) #not sure this is a good idea
 }
 
 ###############################################################################

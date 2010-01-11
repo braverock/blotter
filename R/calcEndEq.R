@@ -1,6 +1,10 @@
 `calcEndEq` <-
 function(Account, Date)
 { 
+    aname<-Account
+    Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
+    if(inherits(Account,"try-error"))
+        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
     # DESCRIPTION
     # Calculates End.Eq and Net.Performance
 
@@ -9,7 +13,7 @@ function(Account, Date)
     # withdrawals, fees, interest, etc.)
     Dates = time(Account[[1]])
     PrevDate = Dates[grep(Date, Dates)-1]
-    PrevEndEq = getEndEq(Account, PrevDate)
+    PrevEndEq = getEndEq(aname, PrevDate)
     Additions = as.numeric(Account[[1]][Date]$Additions)
     Withdrawals = as.numeric(Account[[1]][Date]$Withdrawals)
     IntIncome = as.numeric(Account[[1]][Date]$Int.Income)

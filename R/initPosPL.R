@@ -1,5 +1,7 @@
-`initPosPL` <-
-function(initDate="1950-01-01", initPosQty=0)
+#' initializes position P&L for a portfolio instrument
+#' @param initDate 
+#' @param initPosQty 
+initPosPL <- function(initDate="1950-01-01", initPosQty=0)
 { # @author Peter Carl
 
     # DESCRIPTION
@@ -17,6 +19,7 @@ function(initDate="1950-01-01", initPosQty=0)
     # FUNCTION
     posPL <- xts( as.matrix(t(c(initPosQty,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
     colnames(posPL) <- c('Pos.Qty', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL','Trading.PL')
+    class(posPL)<- c("posPL",class(posPL))
     return(posPL)
 }
 
