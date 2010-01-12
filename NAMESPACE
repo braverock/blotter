@@ -1,4 +1,5 @@
 export(addTxn)
+export(addTxns)
 export(chart.Posn)
 export(getEndEq)
 export(getPosQty)

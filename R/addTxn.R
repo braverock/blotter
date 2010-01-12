@@ -22,9 +22,9 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
 
     # FUNCTION
     # Compute transaction fees if a function was supplied
-    txncost <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
+    txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
     # Calculate the value and average cost of the transaction
-    TxnValue = calcTxnValue(TxnQty, TxnPrice, txncost)
+    TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees)
     TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty)
 
     # Calculate the change in position
@@ -39,9 +39,9 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
     RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
 
     # Store the transaction and calculations
-    NewTxn = xts(t(c(TxnQty, TxnPrice, txncost, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.POSIXct(TxnDate))
-    colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
-    Portfolio[[Symbol]]$txn <- rbind(Portfolio[[Symbol]]$txn, NewTxn)
+    NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.POSIXct(TxnDate))
+    #colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
+    rbind(Portfolio[[Symbol]]$txn, NewTxn)
 
     if(verbose)
         print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
@@ -52,6 +52,49 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
 ## example cost function
 pennyPerShare <- function(TxnQty, TxnPrice) {
     return(TxnQty * -0.01)
+}
+
+#' @export
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
+{
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+
+    #NewTxns=xts()
+    for (row in 1:nrow(TxnData)) {
+        #TODO create vectorized versions of all these functions so we don't have to loop
+        TxnQty         <- TxnData[row,'Quantity']
+        TxnPrice       <- TxnData[row,'Price']
+        TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
+        TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee)
+        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty)
+        PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
+        PosQty         <- PrevPosQty+TxnQty
+        PrevPosAvgCost <- getPosAvgCost(pname, Symbol, index(TxnData[row,]))
+        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
+        RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
+        
+        NewTxn = xts(t(c(TxnQty, 
+                         TxnPrice, 
+                         TxnFee,
+                         TxnValue, 
+                         TxnAvgCost, 
+                         PosQty, 
+                         PosAvgCost, 
+                         RealizedPL)),
+                         order.by=index(TxnData[row,]))
+        if(row==1){
+            NewTxns <- NewTxn
+            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
+        } else {
+            NewTxns<-rbind(NewTxns, NewTxn)
+        }
+    }
+    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn,NewTxns) 
+
+    if(verbose) print(NewTxns)
+    
+    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
 ###############################################################################

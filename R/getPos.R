@@ -1,5 +1,4 @@
-`getPos` <-
-function(Portfolio, Symbol, Date)
+getPos <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
@@ -23,7 +22,7 @@ function(Portfolio, Symbol, Date)
     toDate = paste('::', Date, sep="")
     # It may not make sense to return realized P&L with the position information, so only position and 
     # position average cost are returned.
-    Pos = tail(PosData[toDate,c('Pos.Qty','Pos.Avg.Cost')], n=1)
+    Pos = last(PosData[toDate,c('Pos.Qty','Pos.Avg.Cost')])
     return(Pos)
 }
 
