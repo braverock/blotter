@@ -25,9 +25,12 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # TODO: add date scoping
     Prices=get(Symbol)
 
-    Buys = Portfolio[[Symbol]]$txn$Txn.Price*(Portfolio[[Symbol]]$txn$Txn.Qty>0)
-    Sells = Portfolio[[Symbol]]$txn$Txn.Price*(Portfolio[[Symbol]]$txn$Txn.Qty<0)
-    Position = Portfolio[[Symbol]]$posPL$Pos.Qty
+    Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
+    Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
+    Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
+    #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
+    Position = Portfolio[[Symbol]]$txn$Pos.Qty
+    Position = na.locf(merge(Position,index(Prices)))
     CumPL = cumsum(Portfolio[[Symbol]]$posPL$Trading.PL)
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty<0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
