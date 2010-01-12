@@ -32,6 +32,8 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     Position = Portfolio[[Symbol]]$txn$Pos.Qty
     Position = na.locf(merge(Position,index(Prices)))
     CumPL = cumsum(Portfolio[[Symbol]]$posPL$Trading.PL)
+    if(length(CumPL)>1) CumPL = na.locf(merge(CumPL,index(Prices)))
+    else CumPL = NULL
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty<0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
     # BuyCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty>0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
@@ -44,7 +46,7 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     plot(addTA(Buys,pch=2,type='p',col='green', on=1));
     plot(addTA(Sells,pch=6,type='p',col='red', on=1));
     plot(addTA(Position,type='h',col='blue', lwd=2));
-    plot(addTA(CumPL, col='darkgreen', lwd=2))
+    if(!is.null(CumPL))  plot(addTA(CumPL, col='darkgreen', lwd=2))
 }
 
 ###############################################################################
