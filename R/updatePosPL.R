@@ -29,7 +29,8 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         # Get the current date and close price
         CurrentDate = Dates[i]
 #          if(i>1) # if it isn't the first price in the time series
-            PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
+            #PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
+            PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
 #          else
           if(length(PrevDate)==0)
              PrevDate = NA
