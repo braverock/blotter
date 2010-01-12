@@ -36,7 +36,9 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
 
         ConMult = 1 ## @TODO: Change this to look up the value from instrument
         PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
-
+        CcyMult =1 ## @TODO: Change this to look up the value from instrument?
+        PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
+        
         TxnValue = getTxnValue(pname, Symbol, CurrentDate)
         TxnFees = getTxnFees(pname, Symbol, CurrentDate)
         PosQty = getPosQty(pname, Symbol, CurrentDate)
@@ -58,8 +60,8 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         RealizedPL = getRealizedPL(pname, Symbol, CurrentDate)
         UnrealizedPL = TradingPL - RealizedPL # TODO: calcUnrealizedPL(TradingPL, RealizedPL)
 
-        NewPeriod = as.xts(t(c(PosQty, ConMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
-        colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
+        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
+        colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
     # return(Portfolio)
