@@ -1,5 +1,5 @@
 `calcRealizedPL` <-
-function(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
+function(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult=1)
 { # @author Peter Carl
 
     # DESCRIPTION
@@ -25,7 +25,7 @@ function(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
     # if prev position is positive and position is smaller,
     # then calc RealizedPL
     else
-        RealizedPL = TxnQty * (PrevPosAvgCost - TxnAvgCost)
+        RealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
 
     return(RealizedPL)
 }

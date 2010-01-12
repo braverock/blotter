@@ -1,5 +1,5 @@
 `calcTxnValue` <-
-function(TxnQty, TxnPrice, TxnFees)
+function(TxnQty, TxnPrice, TxnFees, ConMult=1)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -14,7 +14,7 @@ function(TxnQty, TxnPrice, TxnFees)
     # Outputs
     # TxnValue: total dollar value of the transaction, including fees
 
-    TxnValue = TxnQty * TxnPrice - TxnFees
+    TxnValue = TxnQty * TxnPrice * ConMult - TxnFees
     return(TxnValue)
 }
 

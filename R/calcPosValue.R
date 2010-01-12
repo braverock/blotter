@@ -1,4 +1,5 @@
-calcPosValue <- function(PosQty,ClosePrice) {
-  PosValue <- PosQty * ClosePrice
+`calcPosValue` <-
+function(PosQty, ClosePrice, ConMult=1) {
+  PosValue <- PosQty * ClosePrice * ConMult
   return(PosValue)
 }
