@@ -62,16 +62,21 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
 
     #NewTxns=xts()
     for (row in 1:nrow(TxnData)) {
+        if(row==1) {
+            PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
+            PrevPosAvgCost <- getPosAvgCost(pname, Symbol, index(TxnData[row,]))
+        }
         #TODO create vectorized versions of all these functions so we don't have to loop
         TxnQty         <- as.numeric(TxnData[row,'Quantity'])
         TxnPrice       <- as.numeric(TxnData[row,'Price'])
         TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
         TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee)
         TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty)
-        PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
+        #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
-        PrevPosAvgCost <- getPosAvgCost(pname, Symbol, index(TxnData[row,]))
-        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
+        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty) # lag this over the data?
+        PrevPosQty     <- PosQty
+        PrevPosAvgCost <- PosAvgCost
         RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
         
         NewTxn = xts(t(c(TxnQty, 
