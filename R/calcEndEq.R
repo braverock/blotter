@@ -11,8 +11,9 @@ function(Account, Date)
     # Requires that updateAcct has been run and any additional functions
     # have alread appended information into that table (e.g., additions or
     # withdrawals, fees, interest, etc.)
-    Dates = time(Account[[1]])
-    PrevDate = Dates[grep(Date, Dates)-1]
+    # Dates = time(Account[[1]])
+    # PrevDate = Dates[grep(Date, Dates)-1]
+    PrevDate = time(Account[[1]][Account[[1]][Date,which.i=TRUE]-1])
     PrevEndEq = getEndEq(aname, PrevDate)
     Additions = as.numeric(Account[[1]][Date]$Additions)
     Withdrawals = as.numeric(Account[[1]][Date]$Withdrawals)
