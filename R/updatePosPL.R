@@ -34,11 +34,14 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
           if(length(PrevDate)==0)
              PrevDate = NA
 
+        ConMult = 1 ## @TODO: Change this to look up the value from instrument
+        PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
+
         TxnValue = getTxnValue(pname, Symbol, CurrentDate)
         TxnFees = getTxnFees(pname, Symbol, CurrentDate)
         PosQty = getPosQty(pname, Symbol, CurrentDate)
         ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
-        PosValue = calcPosValue(PosQty,ClosePrice)
+        PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
 
         if(is.na(PrevDate))
             PrevPosQty = 0
@@ -50,13 +53,13 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         else
             PrevClosePrice = as.numeric(Prices[PrevDate, grep("Close", colnames(Prices))]) # not necessary
 
-        PrevPosValue = calcPosValue(PrevPosQty,PrevClosePrice)
+        PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
         TradingPL = calcTradingPL(PosValue, PrevPosValue, TxnValue)
         RealizedPL = getRealizedPL(pname, Symbol, CurrentDate)
         UnrealizedPL = TradingPL - RealizedPL # TODO: calcUnrealizedPL(TradingPL, RealizedPL)
 
-        NewPeriod = as.xts(t(c(PosQty, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
-        colnames(NewPeriod) = c('Pos.Qty', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
+        NewPeriod = as.xts(t(c(PosQty, ConMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
+        colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
     # return(Portfolio)
