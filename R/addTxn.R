@@ -41,10 +41,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.POSIXct(TxnDate))
     #colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
-    rbind(Portfolio[[Symbol]]$txn, NewTxn)
+    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
 
     if(verbose)
         print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
+        #print(Portfolio[[Symbol]]$txn)
     
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
