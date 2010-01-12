@@ -63,8 +63,8 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
     #NewTxns=xts()
     for (row in 1:nrow(TxnData)) {
         #TODO create vectorized versions of all these functions so we don't have to loop
-        TxnQty         <- TxnData[row,'Quantity']
-        TxnPrice       <- TxnData[row,'Price']
+        TxnQty         <- as.numeric(TxnData[row,'Quantity'])
+        TxnPrice       <- as.numeric(TxnData[row,'Price'])
         TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
         TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee)
         TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty)
@@ -83,6 +83,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
                          PosAvgCost, 
                          RealizedPL)),
                          order.by=index(TxnData[row,]))
+
         if(row==1){
             NewTxns <- NewTxn
             colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
