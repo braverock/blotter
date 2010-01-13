@@ -24,10 +24,19 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # TODO: check that Portfolio is a Portfolio object
     # TODO: add date scoping
     Prices=get(Symbol)
-
+    freq = periodicity(Prices)
+    switch(freq$scale,
+            seconds = { mult=1 },
+            minute = { mult=60 },
+            hourly = { mult=3600 },
+            daily = { mult=86400 },
+            {mult=86400}
+    )
+    n=round(freq$frequency/mult,0)*mult
+    Prices=align.time(Prices,n)
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
-    Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
-    Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
+    Buys = align.time(Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)],n)
+    Sells = align.time(Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)],n)
     #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
     Position = Portfolio[[Symbol]]$txn$Pos.Qty
     Position = na.locf(merge(Position,index(Prices)))
