@@ -1,5 +1,5 @@
 `calcTxnAvgCost` <-
-function(TxnValue, TxnQty, ConMult=1)
+function(TxnValue, TxnQty)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -14,7 +14,7 @@ function(TxnValue, TxnQty, ConMult=1)
     # Outputs
     # TxnAvgCost: unit normalized (per share) cost implied by the transaction
 
-    TxnAvgCost = TxnValue/(TxnQty*ConMult)
+    TxnAvgCost = TxnValue/TxnQty
     return(TxnAvgCost)
 }
 

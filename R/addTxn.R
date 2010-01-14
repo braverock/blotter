@@ -36,7 +36,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
     # Calculate the value and average cost of the transaction
     TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees, ConMult)
-    TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
+    TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty)
 
     # Calculate the change in position
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
@@ -44,7 +44,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     # Calculate the resulting position's average cost
     PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
-    PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty,ConMult)
+    PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
 
     # Calculate any realized profit or loss (net of fees) from the transaction
     RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
@@ -93,7 +93,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
         #TxnFee         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
         TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee, ConMult)
-        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty, ConMult)
+        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
         PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty) # lag this over the data?
