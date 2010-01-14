@@ -7,11 +7,13 @@
 #' @param TxnDate  transaction date as ISO 8106, e.g., '2008-09-01'
 #' @param TxnQty total units (such as shares) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
 #' @param TxnPrice  price at which the transaction was done
-#' @param TxnFees fees associated with the transaction, e.g. commissions., See Details  
-#' @param verbose 
+#' @param \dots any other passthrough parameters
+#' @param TxnFees fees associated with the transaction, e.g. commissions., See Details
+#' @param ConMult 
+#' @param verbose TRUE/FALSE
 #' @author Peter Carl
 #' @export
-addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verbose=TRUE)
+addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=1, verbose=TRUE)
 { # @author Peter Carl
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
@@ -24,7 +26,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
     # Compute transaction fees if a function was supplied
     txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
     # Calculate the value and average cost of the transaction
-    TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees)
+    TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees, ConMult)
     TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty)
 
     # Calculate the change in position
@@ -39,7 +41,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees=0, verb
     RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
 
     # Store the transaction and calculations
-    NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL)), order.by=as.POSIXct(TxnDate))
+    NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
     #colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
     Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
 
