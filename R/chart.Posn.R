@@ -34,9 +34,12 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     )
     n=round(freq$frequency/mult,0)*mult
     Prices=align.time(Prices,n)
+    tzero = xts(0,order.by=index(Prices[1,]))
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
-    Buys = align.time(Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)],n)
-    Sells = align.time(Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)],n)
+    Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
+    Buys = align.time(rbind(Buys,tzero),n)
+    Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
+    Sells = align.time(rbind(Sells,tzero),n)
     #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
     Position = Portfolio[[Symbol]]$txn$Pos.Qty
     Position = na.locf(merge(Position,index(Prices)))
