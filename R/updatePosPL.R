@@ -40,9 +40,11 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         CcyMult =1 ## @TODO: Change this to look up the value from instrument?
         PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
         
+        #TODO write a single getTxn and use the values instead of these lines
         TxnValue = getTxnValue(pname, Symbol, CurrentDate)
         TxnFees = getTxnFees(pname, Symbol, CurrentDate)
         PosQty = getPosQty(pname, Symbol, CurrentDate)
+        
         ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
 
