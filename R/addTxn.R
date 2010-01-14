@@ -13,11 +13,20 @@
 #' @param verbose TRUE/FALSE
 #' @author Peter Carl
 #' @export
-addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=1, verbose=TRUE)
+addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
     
+    if(is.null(ConMult)){
+        tmp_instr<-try(getInstrument(Symbol))
+        if(inherits(tmp_instr,"try-error")){
+            warning(paste("Instrument",Symbiol," not found, using contract multiplier of 1"))
+            ConMult<-1
+        } else {
+            ConMult<-tmp_instr$multiplier
+        }  
+    }
     # Outputs:
     # Portfolio: hands back the entire portfolio object with the additional
     # transaction in the correct slot: Portfolio[[Symbol]]$txn
@@ -27,7 +36,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
     # Calculate the value and average cost of the transaction
     TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees, ConMult)
-    TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty)
+    TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
 
     # Calculate the change in position
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
@@ -35,10 +44,10 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     # Calculate the resulting position's average cost
     PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
-    PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
+    PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty,ConMult)
 
     # Calculate any realized profit or loss (net of fees) from the transaction
-    RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
+    RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
 
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
@@ -58,12 +67,21 @@ pennyPerShare <- function(TxnQty, TxnPrice) {
 }
 
 #' @export
-addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 {
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 
-    #NewTxns=xts()
+    if(is.null(ConMult)){
+        tmp_instr<-try(getInstrument(Symbol))
+        if(inherits(tmp_instr,"try-error")){
+            warning(paste("Instrument",Symbiol," not found, using contract multiplier of 1"))
+            ConMult<-1
+        } else {
+            ConMult<-tmp_instr$multiplier
+        }  
+    }    
+
     for (row in 1:nrow(TxnData)) {
         if(row==1) {
             PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
@@ -73,14 +91,15 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
         TxnQty         <- as.numeric(TxnData[row,'Quantity'])
         TxnPrice       <- as.numeric(TxnData[row,'Price'])
         TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
-        TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee)
-        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty)
+        #TxnFee         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
+        TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee, ConMult)
+        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty, ConMult)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
         PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty) # lag this over the data?
         PrevPosQty     <- PosQty
         PrevPosAvgCost <- PosAvgCost
-        RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
+        RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
         
         NewTxn = xts(t(c(TxnQty, 
                          TxnPrice, 
@@ -89,12 +108,13 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ... )
                          TxnAvgCost, 
                          PosQty, 
                          PosAvgCost, 
-                         RealizedPL)),
+                         RealizedPL,
+                         ConMult)),
                          order.by=index(TxnData[row,]))
 
         if(row==1){
             NewTxns <- NewTxn
-            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
+            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL', 'Con.Mult')
         } else {
             NewTxns<-rbind(NewTxns, NewTxn)
         }

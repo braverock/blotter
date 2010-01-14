@@ -1,5 +1,5 @@
 `calcPosAvgCost` <-
-function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
+function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -18,7 +18,7 @@ function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
     if(PosQty == 0)
         PosAvgCost = 0
     else {
-        PosAvgCost = (PrevPosQty * PrevPosAvgCost + TxnValue)/(PosQty * ConMult)
+        PosAvgCost = (PrevPosQty * PrevPosAvgCost + TxnValue)/PosQty
     }
     return(PosAvgCost)
 }
