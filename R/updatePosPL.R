@@ -7,7 +7,7 @@
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl
 #' @export
-updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
+updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMult=NULL)
 { # @author Peter Carl
 
     pname<-Portfolio
@@ -19,10 +19,22 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
     PosAvgCost = 0
     PosQty = 0
 
+    freq = periodicity(Prices)
+    switch(freq$scale,
+            seconds = { tformat="%Y-%m-%d %H:%M:%S" },
+            minute = { tformat="%Y-%m-%d %H:%M" },
+            hourly = { tformat="%Y-%m-%d %H" },
+            daily = { tformat="%Y-%m-%d" },
+            {tformat="%Y-%m-%d"}
+    )
+
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Prices)
-    else # could test to see if it's a list of dates, which would pass through
+#     else if(length(Dates)>1)# test to see if it's a vector of dates, which would pass through
+    else 
         Dates = time(Prices[Dates,])
+
+    Dates = strtrim(strptime(Dates, tformat), nchar(tformat)+2)
 
     # For each date, calculate realized and unrealized P&L
     for(i in 1:length(Dates)){ ##
@@ -35,7 +47,15 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
           if(length(PrevDate)==0)
              PrevDate = NA
 
-        ConMult = 1 ## @TODO: Change this to look up the value from instrument
+        if(is.null(ConMult)){
+            tmp_instr<-try(getInstrument(Symbol))
+            if(inherits(tmp_instr,"try-error")){
+                warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
+                ConMult<-1
+            } else {
+                ConMult<-tmp_instr$multiplier
+            }
+        }
         PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
         CcyMult =1 ## @TODO: Change this to look up the value from instrument?
         PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
@@ -45,7 +65,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         TxnFees = getTxnFees(pname, Symbol, CurrentDate)
         PosQty = getPosQty(pname, Symbol, CurrentDate)
         
-        ClosePrice = as.numeric(Prices[CurrentDate, grep("Close", colnames(Prices))]) #not necessary
+        ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))])) #not necessary
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
 
         if(is.na(PrevDate))
@@ -63,7 +83,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)))
         RealizedPL = getRealizedPL(pname, Symbol, CurrentDate)
         UnrealizedPL = TradingPL - RealizedPL # TODO: calcUnrealizedPL(TradingPL, RealizedPL)
 
-        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate))
+        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate, format=tformat))
         colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
