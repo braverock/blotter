@@ -69,7 +69,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         #TODO write a single getTxn and use the values instead of these lines
         TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
         TxnFees = getTxnFees(pname, Symbol, CurrentSpan)
-        PosQty = getPosQty(pname, Symbol, CurrentSpan)
+        PosQty = getPosQty(pname, Symbol, CurrentDate)
         
         ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))])) #not necessary
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
@@ -77,7 +77,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         if(is.na(PrevDate))
             PrevPosQty = 0
         else
-            PrevPosQty = getPosQty(pname, Symbol, PrevSpan) 
+            PrevPosQty = getPosQty(pname, Symbol, PrevDate) 
 
         if(PrevPosQty==0)
             PrevClosePrice = 0
