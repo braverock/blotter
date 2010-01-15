@@ -19,14 +19,14 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
     PosAvgCost = 0
     PosQty = 0
 
-    freq = periodicity(Prices)
-    switch(freq$scale,
-            seconds = { tformat="%Y-%m-%d %H:%M:%S" },
-            minute = { tformat="%Y-%m-%d %H:%M" },
-            hourly = { tformat="%Y-%m-%d %H" },
-            daily = { tformat="%Y-%m-%d" },
-            {tformat="%Y-%m-%d"}
-    )
+#     freq = periodicity(Prices)
+#     switch(freq$scale,
+#             seconds = { tformat="%Y-%m-%d %H:%M:%S" },
+#             minute = { tformat="%Y-%m-%d %H:%M" },
+#             hourly = { tformat="%Y-%m-%d %H" },
+#             daily = { tformat="%Y-%m-%d" },
+#             {tformat="%Y-%m-%d"}
+#     )
 
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Prices)
@@ -34,7 +34,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
     else 
         Dates = time(Prices[Dates,])
 
-    Dates = strtrim(strptime(Dates, tformat), nchar(tformat)+2)
+#     Dates = strtrim(strptime(Dates, tformat), nchar(tformat)+2)
 
     # For each date, calculate realized and unrealized P&L
     for(i in 1:length(Dates)){ ##
@@ -42,9 +42,15 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         CurrentDate = Dates[i]
 #          if(i>1) # if it isn't the first price in the time series
             #PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
-            PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
-#          else
-          if(length(PrevDate)==0)
+        PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
+        PrevDateWidth = xts:::.parseISO8601(PrevDate)
+        PrevDateLast = PrevDateWidth$last.time
+        PriorPrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1])
+        PriorPrevDateWidth = xts:::.parseISO8601(PriorPrevDate)
+        PriorPrevDateLast = PriorPrevDateWidth$last.time
+        CurrentSpan = paste(PrevDateLast, CurrentDate, sep="::")
+        PrevSpan = paste(PriorPrevDateLast, PrevDate, sep="::")
+        if(length(PrevDate)==0)
              PrevDate = NA
 
         if(is.null(ConMult)){
@@ -61,9 +67,9 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
         
         #TODO write a single getTxn and use the values instead of these lines
-        TxnValue = getTxnValue(pname, Symbol, CurrentDate)
-        TxnFees = getTxnFees(pname, Symbol, CurrentDate)
-        PosQty = getPosQty(pname, Symbol, CurrentDate)
+        TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
+        TxnFees = getTxnFees(pname, Symbol, CurrentSpan)
+        PosQty = getPosQty(pname, Symbol, CurrentSpan)
         
         ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))])) #not necessary
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
@@ -71,7 +77,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         if(is.na(PrevDate))
             PrevPosQty = 0
         else
-            PrevPosQty = getPosQty(pname, Symbol, PrevDate) 
+            PrevPosQty = getPosQty(pname, Symbol, PrevSpan) 
 
         if(PrevPosQty==0)
             PrevClosePrice = 0
@@ -80,10 +86,10 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
 
         PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
         TradingPL = calcTradingPL(PosValue, PrevPosValue, TxnValue)
-        RealizedPL = getRealizedPL(pname, Symbol, CurrentDate)
+        RealizedPL = getRealizedPL(pname, Symbol, CurrentSpan)
         UnrealizedPL = TradingPL - RealizedPL # TODO: calcUnrealizedPL(TradingPL, RealizedPL)
 
-        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate, format=tformat))
+        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate)) #, format=tformat
         colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
