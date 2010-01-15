@@ -75,7 +75,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     if(is.null(ConMult)){
         tmp_instr<-try(getInstrument(Symbol))
         if(inherits(tmp_instr,"try-error")){
-            warning(paste("Instrument",Symbiol," not found, using contract multiplier of 1"))
+            warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
             ConMult<-1
         } else {
             ConMult<-tmp_instr$multiplier
