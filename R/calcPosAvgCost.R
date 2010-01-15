@@ -1,5 +1,5 @@
 `calcPosAvgCost` <-
-function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
+function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
 { # @author Peter Carl
 
     # DESCRIPTION:

@@ -1,5 +1,5 @@
 `calcTxnAvgCost` <-
-function(TxnValue, TxnQty, ConMult)
+function(TxnValue, TxnQty, ConMult=1)
 { # @author Peter Carl
 
     # DESCRIPTION:
