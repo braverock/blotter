@@ -18,7 +18,7 @@ function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
     if(PosQty == 0)
         PosAvgCost = 0
     else {
-        PosAvgCost = (PrevPosQty * PrevPosAvgCost + TxnValue)/(PosQty*ConMult)
+        PosAvgCost = (PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult)
     }
     return(PosAvgCost)
 }
