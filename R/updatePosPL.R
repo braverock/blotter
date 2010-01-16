@@ -53,14 +53,14 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         if(length(PrevDate)==0)
              PrevDate = NA
 
-        if(is.null(ConMult)){
+        if(is.null(ConMult) | !hasArg(ConMult)){
             tmp_instr<-try(getInstrument(Symbol))
-            if(inherits(tmp_instr,"try-error")){
+            if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
                 warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
                 ConMult<-1
             } else {
                 ConMult<-tmp_instr$multiplier
-            }
+            }  
         }
         PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
         CcyMult =1 ## @TODO: Change this to look up the value from instrument?
