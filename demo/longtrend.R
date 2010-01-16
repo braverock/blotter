@@ -106,6 +106,10 @@ cat('\n')
 chart.Posn(portfolio, Symbol = 'GSPC', Dates = '1998::', theme=chartTheme('white',up.col='lightgreen',dn.col='pink'), type='bar')
 plot(addTA(GSPC$SMA10['1998::',],pch=1,type='l',col='darkgreen', on=1))
 
+cat('\n')
+cat('cleaning up \n')
+rm("account","ClosePrice","CurrentDate","equity","GSPC","i","initDate","initEq","portfolio","Posn","UnitSize","verbose")
+rm("account.longtrend","portfolio.longtrend",pos=.blotter)
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
