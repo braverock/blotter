@@ -43,6 +43,9 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
 #          if(i>1) # if it isn't the first price in the time series
             #PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
         PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
+        if (length(PrevDate)==0) next() #no price data, keep looking
+        # NOTE the line above iterates to the next Date in the Dates collection, 
+        # this can be the case as with contract rolls, or missing data.  price data may not cover the entire period
         PrevDateWidth = xts:::.parseISO8601(PrevDate)
         PrevDateLast = PrevDateWidth$last.time
         PriorPrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1])
