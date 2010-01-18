@@ -32,8 +32,11 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
             daily = { mult=86400 },
             {mult=86400}
     )
-    n=round(freq$frequency/mult,0)*mult
-    Prices=align.time(Prices,n)
+    n=round(freq$frequency,0)*mult
+    if(!all.equal(freq$frequency*mult,round(freq$frequency,0)*mult)) { 
+        # if the equality
+        Prices=align.time(Prices,n) 
+    }
     tzero = xts(0,order.by=index(Prices[1,]))
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
     Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
