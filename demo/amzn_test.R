@@ -12,3 +12,5 @@ addTxns("amzn_port","amzn",TxnData=amzn.trades,verbose=TRUE)
 updatePortf("amzn_port",Dates="2010-01-14")
 # and look at it
 chart.Posn("amzn_port","amzn",Dates="2010-01-14")
+rm("amzn","amzn.trades")
+rm("portfolio.amzn_port",pos=.blotter)
