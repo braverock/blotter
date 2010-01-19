@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>blotter</name>
+	<comment></comment>
+	<projects>
+		<project>FinancialInstrument</project>
+		<project>PerformanceAnalytics</project>
+		<project>PortfolioAnalytics</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>de.walware.statet.r.builders.RSupport</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>de.walware.statet.base.StatetNature</nature>
+		<nature>de.walware.statet.r.RNature</nature>
+	</natures>
+</projectDescription>

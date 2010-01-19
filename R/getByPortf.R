@@ -1,7 +1,11 @@
 `getByPortf` <-
 function(Account, Attribute, Date=NULL)
 { # @author Peter Carl
-
+    aname<-Account
+    Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
+    if(inherits(Account,"try-error"))
+        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
+    
     # DESCRIPTION:
     # Retrieves calculated attributes for each portfolio in the account
     # from the portfolio summary table.  Assembles into a portfolio-by-time table 
