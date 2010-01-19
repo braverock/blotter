@@ -1,4 +1,4 @@
-buildSpread<- function(primary_id, ..., ) {
+buildSpread<- function(primary_id, ...) {
     tmp_instr<-try(getInstrument(primary_id)
     if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
         stop(paste("Instrument",Symbol," not found, please create it first."))
