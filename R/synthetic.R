@@ -4,6 +4,8 @@ buildSpread<- function(primary_id, ..., Dates = NULL, onelot=FALSE) {
         stop(paste("Instrument",tmp_instr," not found, please create it first."))
     } 
     if(!inherits(tmp_instr,"spread")) stop (paste("Instrument",primary_id," is not a spread, please use the primary_id of a spread."))
+    tmp_currency<-tmp_instr$currency
+    stopifnot(is.currency(tmp_currency))
 
     primary_instr<-getInstrument(tmp_instr$memberlist$members[1])
     if(inherits(primary_instr,"try-error") | !is.instrument(primary_instr)){
@@ -35,6 +37,15 @@ buildSpread<- function(primary_id, ..., Dates = NULL, onelot=FALSE) {
     
     spreadlevel<- (primary*primary_mult*primary_ratio)-(secondary*secondary_mult*secondary_ratio*exchange_rate)
     if(onelot) spreadlevel = spreadlevel/primary_ratio
+    if(!all.equal(tmp_currency,primary_currency)){
+        #convert to the currency of the spread
+        spr_exch_rate <- try(get(paste(tmp_currency,primary_currency,sep='')))
+        if(inherits(spr_exch_rate,"try-error")){
+            stop(paste("Exchange Rate",paste(tmp_currency, primary_currency,sep=''),"not found."))    
+        } else {
+            spreadlevel<-spreadlevel*exchange_rate
+        }
+    }
     return(spreadlevel)
 }
 
