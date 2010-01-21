@@ -1,5 +1,5 @@
-\name{getTxn}
-\alias{getTxn}
+\name{getTxns}
+\alias{getTxns}
 \alias{getTxnFees}
 \alias{getTxnValue}
 \alias{getRealizedPL}
@@ -12,7 +12,7 @@
     These functions find and return the attribute value for the symbol and date in a specified portfolio.
 }
 \usage{
-    getTxn(Portfolio, Symbol, Date)
+    getTxns(Portfolio, Symbol, Date)
     getTxnFees(Portfolio, Symbol, Date)
     getTxnValue(Portfolio, Symbol, Date)
     getRealizedPL(Portfolio, Symbol, Date)
@@ -22,7 +22,7 @@
 }
 
 \arguments{
-    \item{Portfolio}{ a portfolio object containing transactions }
+    \item{Portfolio}{ a string with the identifier of the portfolio }
     \item{Symbol}{ an instrument identifier for a symbol included in the portfolio }
     \item{Date}{ timestamp as of which to have the most recent position }
 }
@@ -31,7 +31,7 @@
 }
 \value{
     The returned value for each function differs somewhat.  Note that functions use the date scoping differently, as described below.
-        \item{getTxn }{Table (irregular xts time series) of transactions made in the Symbol during the time period given, including values for 'Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', and 'Txn.Avg.Cost'.}
+        \item{getTxns }{Table (irregular xts time series) of transactions made in the Symbol during the time period given, including values for 'Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', and 'Txn.Avg.Cost'.}
         \item{getTxnFees }{Numeric value of the sum total of transaction fees given during the period specified}
         \item{getTxnValue }{Numeric value of the sum total of the notional transaction value given during the period specified}
         \item{getPos }{Table of the most recent position data for the Symbol relative to the time period given, including values for 'Pos.Qty','Pos.Avg.Cost'}

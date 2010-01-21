@@ -10,7 +10,7 @@ calcPortfAttr(Portfolio, Attribute, Date = NULL, Symbols = NULL)
 calcPortfSummary(Portfolio, Date = NULL)
 }
 \arguments{
-  \item{Portfolio}{ The Portfolio object for which to calculate the attribute. }
+  \item{Portfolio}{ a string with the identifier of the portfolio for which to calculate the attribute. }
   \item{Attribute}{ The attribute of the Portfolio object to calculate. See detail below.}
   \item{Symbols}{ Specify symbols to return. Default is NULL which returns all symbols.}
   \item{Date}{ The ISO 8601 date to calculate the attribute for.  If no date is specified (NULL by default), the function calculates for all available dates }

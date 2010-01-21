@@ -9,7 +9,7 @@ calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL, denominator = c("Gross.Val
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{Portfolio}{ The Portfolio object for which to calculate the weights. }
+  \item{Portfolio}{ a string with the identifier of the portfolio for which to calculate the weights. }
   \item{Symbols}{ A subset of symbols to calculate.  Default is NULL, for which it returns weights for all symbols. }
   \item{Dates}{ The ISO 8601 date to calculate the attribute for.  If no date is specified (NULL by default), the function calculates for all available dates }
   \item{denominator}{ the aggregate measure of the portfolio to use as the denominator }

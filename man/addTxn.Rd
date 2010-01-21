@@ -1,5 +1,6 @@
 \name{addTxn}
 \alias{addTxn}
+\alias{addTxns}
 \alias{pennyPerShare}
 \title{ Add transactions to a Portfolio }
 \description{
@@ -11,13 +12,15 @@
   Then it stores the transaction and calculations in the Portfolio object.
 }
 \usage{
-addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, verbose = TRUE)
+addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, TxnFees = 0, ConMult=NULL, verbose = TRUE)
+addTxn(Portfolio, Symbol, TxnData, verbose = TRUE, ... , ConMult=NULL)
 pennyPerShare(TxnQty, TxnPrice)
 }
 \arguments{
-  \item{Portfolio}{ a portfolio object structured with \code{\link{initPortf}} }
+  \item{Portfolio}{ the string identifier for a portoflio created by \code{\link{initPortf}} }
   \item{Symbol}{ an instrument identifier for a symbol included in the portfolio, e.g., "IBM" }
   \item{TxnDate}{ transaction date as ISO 8106, e.g., '2008-09-01'}
+  \item{TxnData}{ an xts time series of transactions containing columns 'Price', 'Quantity', and optionally 'Fees'}
   \item{TxnQty}{ total units (such as shares) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell' }
   \item{TxnPrice}{ market clearing price at which the transaction was done }
   \item{TxnFees}{ fees associated with the transaction,
@@ -26,6 +29,7 @@ pennyPerShare(TxnQty, TxnPrice)
     also provide a function of two argument quantity and price which
     permits user-defined transaction costs, possibly as function of
     transaction volume and price.}
+  \item{ConMult}{ contract/instrument multiplier for the Symbol if it is not defined in an instrument specification }
   \item{verbose}{ if TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "IBM 2007-01-08 50 @ 77.6". Suppress using FALSE. }
 }
 \details{

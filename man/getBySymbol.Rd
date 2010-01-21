@@ -8,7 +8,7 @@ Retrieves calculated attributes for each position in the portfolio from the \kbd
 getBySymbol(Portfolio, Attribute, Date = NULL, Symbols = NULL)
 }
 \arguments{
-  \item{Portfolio}{ A Portfolio object containing transactions }
+  \item{Portfolio}{ a string with the identifier of the portfolio }
   \item{Attribute}{ Column name to be assembled for each symbol in the Portfolio, any of: 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL', or 'Trading.PL' }
   \item{Date}{ \pkg{xts} date range to return.  If no date is specified, the function returns all available dates }
   \item{Symbols}{ If specified, this vector of names provides the
