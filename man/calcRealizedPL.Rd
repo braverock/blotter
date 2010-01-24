@@ -5,7 +5,7 @@
   Calculates any realized gain or loss resulting from a transaction
 }
 \usage{
-calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
+calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -14,6 +14,7 @@ calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
   \item{PrevPosAvgCost}{ average position cost of the previous position }
   \item{PosQty}{ total units (shares) of the resulting position }
   \item{PrevPosQty}{ quantity of the previous position }
+  \item{ConMult}{ multiplier required from contract specifications, default=1 }
 }
 \details{
     Calculated using the following conditions:
@@ -24,7 +25,7 @@ calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
     - if prev position is negative and position is larger, OR
     - if prev position is positive and position is smaller,
     then calc RealizedPL as:
-        RealizedPL = TxnQty * (PrevPosAvgCost - TxnAvgCost)
+        RealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
 
 }
 \value{
@@ -32,7 +33,7 @@ calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty)
 }
 \author{ Peter Carl }
 \note{ 
-    Note that the multiplier is missing for other types of instruments
+    The contract multiplier should be passed in for other types of instruments.
 }
 \seealso{ \code{\link{addTxn}}, \code{\link{getTxn}}, \code{\link{getPosAvgCost}}, \code{\link{calcTxnAvgCost}} }
 \examples{

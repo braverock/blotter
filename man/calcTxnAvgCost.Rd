@@ -10,14 +10,18 @@ calcTxnAvgCost(TxnValue, TxnQty)
 \arguments{
   \item{TxnValue}{ total value of the transaction, including fees }
   \item{TxnQty}{ total units (shares) of the transaction }
+  \item{ConMult}{ multiplier required from contract specifications, default=1 }
 }
-
+\details{
+    Calculated as:
+        TxnAvgCost = TxnValue/(TxnQty * ConMult)
+}
 \value{
   Numeric value of the unit normalized (e.g., per share) cost implied by the transaction.
 }
 \author{ Peter Carl }
 \note{ 
-    Note that the multiplier is missing for other types of instruments
+    The contract multiplier should be passed in for other types of instruments.
 }
 \seealso{ \code{\link{getTxn}}, \code{\link{addTxn}} }
 \examples{

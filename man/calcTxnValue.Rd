@@ -5,23 +5,24 @@
   Calculates the notional value of a transaction, net of any fees associated.
 }
 \usage{
-    calcTxnValue(TxnQty, TxnPrice, TxnFees)
+    calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult=1)
 }
 \arguments{
   \item{TxnQty}{ The number of units (shares, contracts) traded }
   \item{TxnPrice}{ The market clearing price of the transaction }
   \item{TxnFees}{ The total fees associated with the transaction, with expenses represented as a positive number.  The aggregate of, for example, commissions, ticket charges, exchange fees, etc. }
+  \item{ConMult}{ multiplier required from contract specifications, default=1 }
 }
 \details{
     Calculated as:
-        TxnValue = TxnQty * TxnPrice - TxnFees
+        TxnValue = TxnQty * TxnPrice * ConMult - TxnFees
 }
 \value{
   Numeric value representing the total currency (dollar) value of the transaction, net of fees
 }
 \author{ Peter Carl }
 \note{ 
-Note that the multiplier is missing for other types of instruments.
+    The contract multiplier should be passed in for other types of instruments.
 }
 \seealso{ \code{\link{getTxn}}, \code{\link{getTxnFees}}, \code{\link{getTxnValue}} }
 \examples{

@@ -12,10 +12,12 @@ calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty)
   \item{PrevPosAvgCost}{ Average cost of the previous position }
   \item{TxnValue}{ Total value of the current transaction, net of fees }
   \item{PosQty}{ Total units (shares) of the resulting position }
+  \item{ConMult}{ Multiplier required from contract specifications, default=1 }
 }
 \details{
     Calculated as:
-        (PrevPosQty * PrevPosAvgCost + TxnValue)/PosQty
+        PosAvgCost = (PrevPosQty * PrevPosAvgCost * ConMult +
+            TxnValue)/(PosQty * ConMult)
 }
 \value{
   Numeric value of the average cost of the resulting position.
