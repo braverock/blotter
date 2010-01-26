@@ -4,7 +4,7 @@ function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
     
     # DESCRIPTION:
     # Retrieves calculated attributes for each position in the portfolio
