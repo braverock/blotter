@@ -7,7 +7,7 @@
 #' These dates must appear in the price stream
 #' 
 #' Outputs
-#' Regular time series of position information and PL
+#' assigns position information and PL into the environment
 #' 
 #' @param Portfolio 
 #' @param Dates 
@@ -15,18 +15,23 @@
 updatePortf <- function(Portfolio, Dates)
 { #' @author Peter Carl
     pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter,inherits=TRUE)
+    Portfolio<-try(get(paste("portfolio",pname,sep='.'),envir=.blotter),silent=TRUE)
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new account"))
+        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
     
 
     # FUNCTION
     symbols = names(Portfolio)
     for(symbol in symbols){
-      Portfolio = updatePosPL(pname, symbol, Dates, Cl(get(symbol)))
-  }
-  assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter) 
-  return(pname) #not sure this is a good idea
+        tmp_instr<-try(getInstrument(symbol))
+        if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
+            message(paste("Instrument",symbol," not found, assuming non-synthetic"))
+        } else {
+            updatePosPL(pname, symbol, Dates, Cl(get(symbol)))            
+        }  
+    }
+    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter) 
+    return(pname) #not sure this is a good idea
 }
 
 ###############################################################################

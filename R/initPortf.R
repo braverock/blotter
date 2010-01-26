@@ -21,7 +21,7 @@
 initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01')
 { # @author Peter Carl
     if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
-        stop(paste("Portfolio",name,"already exists, use updatePortf() to update it."))
+        stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
     
     # FUNCTION
     portfolio=vector("list",length=length(symbols))
