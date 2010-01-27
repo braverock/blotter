@@ -53,6 +53,8 @@ initEq=100000
 
 # Load data with quantmod
 print("Loading data")
+currency("USD")
+stock("GSPC",currency="USD",multiplier=1)
 getSymbols('^GSPC', src='yahoo', index.class=c("POSIXt","POSIXct"),from='1998-01-01')
 GSPC=to.monthly(GSPC, indexAt='endof')
 
@@ -110,6 +112,7 @@ cat('\n')
 cat('cleaning up \n')
 rm("account","ClosePrice","CurrentDate","equity","GSPC","i","initDate","initEq","portfolio","Posn","UnitSize","verbose")
 rm("account.longtrend","portfolio.longtrend",pos=.blotter)
+rm("GSPC",pos=.instrument)
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
