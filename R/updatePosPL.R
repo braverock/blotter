@@ -11,9 +11,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
 { # @author Peter Carl
 
     pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter,inherits=TRUE)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    Portfolio<-getPortfolio(pname) #TODO add Dates
     
     # FUNCTION
     PosAvgCost = 0
@@ -32,7 +30,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         Dates = time(Prices)
 #     else if(length(Dates)>1)# test to see if it's a vector of dates, which would pass through
     else 
-        Dates = time(Prices[Dates,])
+        Dates = time(Prices[Dates])
 
 #     Dates = strtrim(strptime(Dates, tformat), nchar(tformat)+2)
 
@@ -97,7 +95,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMul
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
     # return(Portfolio)
-    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
+    assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
 ###############################################################################

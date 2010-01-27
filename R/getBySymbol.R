@@ -17,9 +17,10 @@
 
     # FUNCTION
     if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Portfolio[[1]]$txn)
-#    else
-#        Date = time(Portfolio[[1]]$txn[Date])
+        Date = time(Portfolio[[1]]$posPL)
+    else
+        Date = time(Portfolio[[1]]$posPL[Date])
+
     table = xts(NULL, order.by=Date) 
       ## Need a reference time index
     if(is.null(Symbols))
@@ -29,7 +30,6 @@
     
     for (symbol in symbols) {
         table = merge(table, Portfolio[[symbol]]$posPL[Date,Attribute,drop=FALSE])
-        #table = cbind(table, Portfolio[[i]]$posPL[Date,Attribute,drop=FALSE])
     }
     colnames(table) = symbols
     return(table)

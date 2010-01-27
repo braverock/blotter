@@ -1,11 +1,11 @@
-`calcPortfAttr` <-
-function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
+calcPortfAttr <- function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
 {
+    if(!inherits(Portfolio,"portfolio")) stop("Portfolio passed is not a portfolio object.")
     symbols = names(Portfolio)
-    if(is.null(Date)) # if no date is specified, get all available dates
+    if(is.null(Date)|is.na(Date)) # if no date is specified, get all available dates
         Date = time(Portfolio[[1]]$posPL)
-    else
-        Date = time(Portfolio[[1]]$posPL[Date])
+    else Date = time(Portfolio[[1]]$posPL[Date])
+
     table = xts(NULL, order.by=Date) ## Reference time index
 
     switch(Attribute,

@@ -1,15 +1,14 @@
-`calcPortfSummary` <-
-function(Portfolio, Date=NULL)
+calcPortfSummary <- function(Portfolio, Date=NULL)
 { # @ author Peter Carl
-
+    if(!inherits(Portfolio,"portfolio")) stop("Portfolio passed is not a portfolio object.")
     # DESCRIPTION
     # Create portfolio summary with the following columns
     # Long.Value, Short.Value, Net.Value, Trading.PL
 
-    if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Portfolio[[1]]$posPL)
-    else
-        Date = time(Portfolio[[1]]$posPL[Date])
+    if(is.null(Date) | is.na(Date)) # if no date is specified, get all available dates
+        Date = time(Portfolio[[1]]$posPL )
+    else Date = time(Portfolio[[1]]$posPL[Date])
+    
     TradingPL = calcPortfAttr(Portfolio, 'Trading.PL', Date)
     RealizedPL = calcPortfAttr(Portfolio, 'Realized.PL', Date)
     UnrealizedPL = calcPortfAttr(Portfolio, 'Unrealized.PL', Date)

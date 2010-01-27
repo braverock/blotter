@@ -15,10 +15,7 @@
 updatePortf <- function(Portfolio, Dates)
 { #' @author Peter Carl
     pname<-Portfolio
-    Portfolio<-try(get(paste("portfolio",pname,sep='.'),envir=.blotter),silent=TRUE)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-    
+    Portfolio<-getPortfolio(pname) # TODO add Date handling
 
     # FUNCTION
     symbols = names(Portfolio)
@@ -30,7 +27,6 @@ updatePortf <- function(Portfolio, Dates)
             updatePosPL(pname, symbol, Dates, Cl(get(symbol)))            
         }  
     }
-    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter) 
     return(pname) #not sure this is a good idea
 }
 
