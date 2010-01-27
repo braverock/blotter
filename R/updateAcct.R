@@ -20,15 +20,15 @@ updateAcct <- function(name='default', Dates=NULL)
     
 
     # FUNCTION
-    Account<-get(paste("account",name,sep='.'), envir=.blotter)
     Portfolios = names(Account)[-1]
-    # TODO fix this so that it finds the date range in *any*/all portfolios
-    Portfolio = get(Portfolios[1],envir=.blotter)
+    Portfolio = getPortfolio(Portfolios[1])
+    # TODO FIXME this so that it finds the date range in *any*/all portfolios, not just the first
     if(is.null(Dates)) 
-        Dates = time(Portfolio[[1]]$posPL) # if no date is specified, get all available dates
+        #[[1]] here is the first instrument in the portfolio
+        Dates = time(Portfolio[[1]]$txn ) # if no date is specified, get all available dates
     if(length(Dates)==1){
         # Dates is an xts range, turn it into a list of Dates
-        Dates = time(Portfolio[[1]]$posPL[Dates])
+        Dates = time(Portfolio[[1]]$txn[Dates])
     } 
 
     # For each date, calculate realized and unrealized P&L
@@ -43,7 +43,7 @@ updateAcct <- function(name='default', Dates=NULL)
         }
 
         # Now aggregate the portfolio information into the TOTAL slot
-        TxnFees = as.numeric(calcAcctAttr(Account = Account, Attribute = 'Txn.Fees', Date = Dates[d]))
+        TxnFees = as.numeric(calcAcctAttr(Account, Attribute = 'Txn.Fees', Date = Dates[d]))
         RealizedPL = as.numeric(calcAcctAttr(Account, 'Realized.PL', Dates[d]))
         UnrealizedPL = as.numeric(calcAcctAttr(Account, 'Unrealized.PL', Dates[d]))
         TradingPL = as.numeric(calcAcctAttr(Account, 'Trading.PL', Dates[d]))
