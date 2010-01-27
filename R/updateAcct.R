@@ -11,7 +11,7 @@
 #' @param name 
 #' @param Dates 
 #' @export
-updateAcct <- function(name='default', Dates) 
+updateAcct <- function(name='default', Dates=NULL) 
 { # @author Peter Carl
 
     Account<-try(get(paste("account",name,sep='.'), envir=.blotter))
@@ -24,10 +24,12 @@ updateAcct <- function(name='default', Dates)
     Portfolios = names(Account)[-1]
     # TODO fix this so that it finds the date range in *any*/all portfolios
     Portfolio = get(Portfolios[1],envir=.blotter)
-    if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = time(Portfolio[[1]]$posPL)
-    else
-        Dates = time(Portfolio[[1]]$posPL[Dates,])
+    if(is.null(Dates)) 
+        Dates = time(Portfolio[[1]]$posPL) # if no date is specified, get all available dates
+    if(length(Dates)==1){
+        # Dates is an xts range, turn it into a list of Dates
+        Dates = time(Portfolio[[1]]$posPL[Dates])
+    } 
 
     # For each date, calculate realized and unrealized P&L
     for(d in 1:length(Dates)){ # d is a date slot counter

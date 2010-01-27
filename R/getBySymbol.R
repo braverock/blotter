@@ -1,11 +1,6 @@
-`getBySymbol` <-
-function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
+.getBySymbol <- function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
 { # @author Peter Carl
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-    
+
     # DESCRIPTION:
     # Retrieves calculated attributes for each position in the portfolio
     # from the posPL table.  Assembles into a symbol-by-time table useful
