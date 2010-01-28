@@ -14,10 +14,7 @@
 updateAcct <- function(name='default', Dates=NULL) 
 { # @author Peter Carl
 
-    Account<-try(get(paste("account",name,sep='.'), envir=.blotter))
-    if(inherits(Account,"try-error"))
-        stop(paste("Account",name," not found, use initAcct() to create a new account"))
-    
+    Account<-getAccount(name)
 
     # FUNCTION
     Portfolios = names(Account)[-1]
@@ -28,27 +25,49 @@ updateAcct <- function(name='default', Dates=NULL)
         Dates = time(Portfolio[[1]]$posPL ) # if no date is specified, get all available dates
 #    if(!is.timeBased(Dates) ){
         # Dates is an xts range, turn it into a list of Dates
-    else Dates = time(Portfolio[[1]]$posPL[Dates])
+#    else Dates = time(Portfolio[[1]]$posPL[Dates])
 #    } 
+    
+    #TODO FIXME do two loops, one over portfolios to update each portfolio 
+    # and one over accounts, to aggregate, probably via matrix addition
+    
     # For each date, calculate realized and unrealized P&L
     for(d in 1:length(Dates)){ # d is a date slot counter
     # I shouldn't have to do this but I lose the class for the element when I do
     # for(date in Dates)
-        # Append the portfolio summary data to the portfolio slot
-        for(i in 1:length(Portfolios)){
-            Portfolio = getPortfolio(Portfolios[i])
-            row = calcPortfSummary(Portfolio, Dates[d])
-            Account[[i+1]] = rbind(Account[[i+1]],row)
-        }
 
+
+        # Append the portfolio summary data to the portfolio slot
+        for(pname in Portfolios){
+            Portfolio = getPortfolio(pname)
+
+            CurrentDate = Dates[d]
+            PrevDate = time(Portfolio[[1]]$posPL[Portfolio[[1]]$posPL[CurrentDate,which.i=TRUE]-1 ] ) # which.i is new in [.xts
+            if (length(PrevDate)==0) next() #no price data, keep looking
+            PrevDateWidth = xts:::.parseISO8601(PrevDate)
+            PrevDateLast = PrevDateWidth$last.time
+            CurrentSpan = paste(PrevDateLast, CurrentDate, sep="::")
+            
+            rows = calcPortfSummary(Portfolio, CurrentSpan)
+            rows = na.omit(rows)
+            Account[[pname]] = rbind(Account[[pname]],rows)
+        }
+        if(is.null(CurrentSpan)) next()
         # Now aggregate the portfolio information into the TOTAL slot
-        TxnFees = as.numeric(calcAcctAttr(Account, Attribute = 'Txn.Fees', Date = Dates[d]))
-        RealizedPL = as.numeric(calcAcctAttr(Account, 'Realized.PL', Dates[d]))
-        UnrealizedPL = as.numeric(calcAcctAttr(Account, 'Unrealized.PL', Dates[d]))
-        TradingPL = as.numeric(calcAcctAttr(Account, 'Trading.PL', Dates[d]))
-        row = xts(t(c(0, 0, TxnFees, RealizedPL, UnrealizedPL, 0, TradingPL, 0, 0, 0)), order.by=Dates[d])
-        colnames(row) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
-        Account[['TOTAL']] <- rbind(Account[['TOTAL']], row)
+        TxnFees = calcAcctAttr(Account, Attribute = 'Txn.Fees', CurrentSpan)
+        Additions = xts(rep(0,length(index(TxnFees))),order.by=index(TxnFees))
+        Withdrawals = Additions
+        IntIncome = Additions
+        AdvisoryFees = Additions
+        NetPerformance = Additions
+        EndEq = Additions
+        RealizedPL = calcAcctAttr(Account, 'Realized.PL', CurrentSpan)
+        UnrealizedPL = calcAcctAttr(Account, 'Unrealized.PL', CurrentSpan)
+        TradingPL = calcAcctAttr(Account, 'Trading.PL', CurrentSpan)
+        rows = cbind(Additions, Withdrawals, TxnFees, RealizedPL, UnrealizedPL, IntIncome, TradingPL, AdvisoryFees,NetPerformance, EndEq)
+        browser()
+        colnames(rows) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+        Account[['TOTAL']] <- rbind(Account[['TOTAL']], rows)
     # This function does not calculate End.Eq 
     }
     assign(paste("account",name,sep='.'),Account, envir=.blotter) 

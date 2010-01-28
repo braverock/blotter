@@ -8,11 +8,12 @@
 Initializes a Portfolio object, which contains transactions and position profit-and-loss calculations for a list of symbols.
   }
 \usage{
-initPortf(symbols, initPosQty = 0, initDate = "1950-01-01")
+initPortf(name='default', symbols, initPosQty = 0, initDate = "1950-01-01")
 initTxn(initDate = "1950-01-01", initPosQty = 0)
 initPosPL(initDate = "1950-01-01", initPosQty = 0)
 }
 \arguments{
+  \item{name}{ a unique string identifier for a portfolio }
   \item{symbols}{ a list of identfiers of the instruments to be contained in the Portfolio.  The name of any associated price objects (xts prices, usually OHLC) should match these  }
   \item{initDate}{ date (ISO8601) prior to the first close price given, used to contain initial position }
   \item{initPosQty}{ a vector of initial positions for each symbol, default is zero }

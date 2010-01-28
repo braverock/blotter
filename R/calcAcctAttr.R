@@ -1,5 +1,4 @@
-`calcAcctAttr` <-
-function(Account, Attribute, Date=NULL)
+calcAcctAttr <- function(Account, Attribute, Dates=NULL)
 { # @author Peter Carl
 
     # DESCRIPTION
@@ -12,13 +11,13 @@ function(Account, Attribute, Date=NULL)
     # 'Realized.PL', 'Unrealized.PL', or 'Trading.PL'
 
     portfolios = names(Account)[-1]
-    if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Account[[2]])
-    else
-        Date = time(Account[[2]][Date])
-    table = xts(NULL, order.by=Date) ## Reference time index
-    table = .getByPortf(Account, Attribute, Date)
-    result = xts(apply(table, FUN='sum', MARGIN=1), Date)
+    if(is.null(Dates)) # if no date is specified, get all available dates
+        Dates = time(Account[[2]])
+#    else
+#        Dates = time(Account[[2]][Dates])
+    
+    table = .getByPortf(Account, Attribute, Dates)
+    result = xts(rowSums(table),order.by=index(table),na.rm=TRUE)
     colnames(result) = Attribute
     return(result)
 }

@@ -10,7 +10,7 @@ updatePosPL(Portfolio, Symbol, StartDate, EndDate, Prices = Cl(get(Symbol)))
 updatePortf(Portfolio, StartDate, EndDate)
 }
 \arguments{
-  \item{Portfolio}{ A portfolio object structured with \code{\link{initPortf}}. }
+  \item{Portfolio}{ the string identifier for a portoflio created by \code{\link{initPortf}} }
   \item{Symbol}{ An instrument identifier for a symbol included in the portfolio. }
   \item{Dates}{ xts date subset or ISO 8601 Dates from which to calculate profit or loss. }
   \item{Prices}{ Close prices in an xts object with a columnname containing a substring "Close". }

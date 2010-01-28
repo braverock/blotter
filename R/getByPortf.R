@@ -1,4 +1,4 @@
-.getByPortf <- function(Account, Attribute, Date=NULL)
+.getByPortf <- function(Account, Attribute, Dates=NULL)
 { # @author Peter Carl
     
     # DESCRIPTION:
@@ -15,16 +15,18 @@
     # regular xts object of values by portfolio
 
     # FUNCTION
-    if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Account[[2]])
-    else
-        Date = time(Account[[2]][Date])
-    table = xts(NULL, order.by=Date) 
-      ## Need a reference time index
+    if(is.null(Dates)) # if no date is specified, get all available dates
+        Dates = time(Account[[2]])
+
+    table = NULL 
+    i=1
     portfolios=names(Account)[-1]
-    for (i in 1:length(portfolios)) 
-        table = merge(table, Account[[i+1]][Date,Attribute,drop=FALSE])
-    colnames(table) = portfolios
+    for (portfolio in portfolios) {
+        tmp_col= Account[[portfolio]][Dates,Attribute,drop=FALSE]
+        colnames(tmp_col)<-portfolio
+        if(is.null(table)) table = tmp_col
+        else table = cbind(table, tmp_col)
+    }
     return(table)
 }
 

@@ -1,4 +1,4 @@
-.getBySymbol <- function(Portfolio, Attribute, Date=NULL, Symbols = NULL)
+.getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -16,12 +16,11 @@
     # regular xts object of values by symbol
 
     # FUNCTION
-    if(is.null(Date)) # if no date is specified, get all available dates
-        Date = time(Portfolio[[1]]$posPL)
-    else
-        Date = time(Portfolio[[1]]$posPL[Date])
+    if(is.null(Dates)) # if no date is specified, get all available dates
+        Dates = time(Portfolio[[1]]$posPL)
+    # else  Dates = time(Portfolio[[1]]$posPL[Dates])
 
-    table = xts(NULL, order.by=Date) 
+    table = NULL 
       ## Need a reference time index
     if(is.null(Symbols))
         symbols=names(Portfolio)
@@ -29,9 +28,12 @@
         symbols = Symbols
     
     for (symbol in symbols) {
-        table = merge(table, Portfolio[[symbol]]$posPL[Date,Attribute,drop=FALSE])
+        tmp_col = Portfolio[[symbol]]$posPL[Dates,Attribute,drop=FALSE]
+        if(is.null(table)) table = tmp_col
+        else table = merge(table, tmp_col)
     }
     colnames(table) = symbols
+    class(table)<-class(xts())
     return(table)
 
 ## TODO: append summary information in last columns based on Attribute requested
