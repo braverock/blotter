@@ -21,11 +21,7 @@ updatePortf <- function(Portfolio, Dates)
     symbols = names(Portfolio)
     for(symbol in symbols){
         tmp_instr<-try(getInstrument(symbol))
-        if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
-            message(paste("Instrument",symbol," not found, assuming non-synthetic"))
-        } else {
-            updatePosPL(pname, symbol, Dates, Cl(get(symbol)))            
-        }  
+        updatePosPL(pname, symbol, Dates, Cl(get(symbol)))            
     }
     return(pname) #not sure this is a good idea
 }
