@@ -1,6 +1,7 @@
 export(addTxn)
 export(addTxns)
 export(chart.Posn)
+export(getAccount)
 export(getEndEq)
 export(getPosQty)
 export(getPortfAcct)

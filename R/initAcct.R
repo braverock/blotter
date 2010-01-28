@@ -62,7 +62,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=1
         colnames(account[[paste("portfolio",portfolio,sep=".")]]) = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees','Realized.PL', 'Unrealized.PL', 'Trading.PL')
     }
     # return(account)
-    class("portfolio_account")
+    class(account)<-c("portfolio_account","account")
     assign(paste("account",as.character(name),sep='.'),account,envir=.blotter)  
     return(name) # not sure this is a good idea
 }
