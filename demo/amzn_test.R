@@ -18,6 +18,7 @@ updatePortf("amzn_port",Dates="2010-01-14")
 
 # update the account P&L
 updateAcct("amzn_acct",Dates="2010-01-14")
+# getAccount("amzn_acct")
 
 # and look at it
 chart.Posn("amzn_port","amzn",Dates="2010-01-14",theme='white')
