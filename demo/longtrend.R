@@ -99,9 +99,9 @@ for( i in 10:NROW(GSPC) ) {
     }
 
     # Calculate P&L and resulting equity with blotter
-    portfolio = updatePortf(portfolio, Dates = CurrentDate)
-    account = updateAcct(account, Dates = CurrentDate)
-    account = updateEndEq(account, Dates = CurrentDate)
+    updatePortf(portfolio, Dates = CurrentDate)
+    updateAcct(account, Dates = CurrentDate)
+    updateEndEq(account, Dates = CurrentDate)
 } # End dates loop
 cat('\n')
 # Chart results with quantmod
