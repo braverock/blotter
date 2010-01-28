@@ -65,7 +65,6 @@ updateAcct <- function(name='default', Dates=NULL)
         UnrealizedPL = calcAcctAttr(Account, 'Unrealized.PL', CurrentSpan)
         TradingPL = calcAcctAttr(Account, 'Trading.PL', CurrentSpan)
         rows = cbind(Additions, Withdrawals, TxnFees, RealizedPL, UnrealizedPL, IntIncome, TradingPL, AdvisoryFees,NetPerformance, EndEq)
-        browser()
         colnames(rows) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
         Account[['TOTAL']] <- rbind(Account[['TOTAL']], rows)
     # This function does not calculate End.Eq 

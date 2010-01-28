@@ -17,7 +17,7 @@ calcAcctAttr <- function(Account, Attribute, Dates=NULL)
 #        Dates = time(Account[[2]][Dates])
     
     table = .getByPortf(Account, Attribute, Dates)
-    result = xts(rowSums(table),order.by=index(table),na.rm=TRUE)
+    result = xts(rowSums(table,na.rm=TRUE),order.by=index(table))
     colnames(result) = Attribute
     return(result)
 }
