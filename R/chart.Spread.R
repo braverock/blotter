@@ -76,10 +76,18 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
 
     #FIXME right now we don't separate trading PL by *Spread*, just by *Portfolios*, so this isn't quite right in the general case
     #TODO change this to use a two-line shaded graphic as soon as Jeff provides the infrastructure
-    TradingPL = pacctdata$Trading.PL
-    if(length(TradingPL)>1) TradingPL = na.locf(merge(TradingPL,index(Prices)))
-    else TradingPL = NULL
-    if(!is.null(TradingPL))  plot(addTA(TradingPL, col='darkgreen', lwd=2))
+    UnrealizedPL = pacctdata$Unrealized.PL
+
+    if(length(UnrealizedPL)>1) UnrealizedPL = na.locf(merge(UnrealizedPL,index(Prices)))
+    else UnrealizedPL = NULL
+    if(!is.null(UnrealizedPL))  plot(addTA(UnrealizedPL, col='darkgreen', lwd=2))
+
+    RealizedPL = pacctdata$Realized.PL
+    CumPL=cumsum(RealizedPL+UnrealizedPL)
+    if(length(CumPL)>1) CumPL = na.locf(merge(CumPL,index(Prices)))
+    else CumPL = NULL
+    if(!is.null(CumPL))  plot(addTA(CumPL, col='green', lwd=2))
+    
 }
 
 ###############################################################################
