@@ -27,7 +27,7 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     require(quantmod)
     Prices=get(Spread)
     #buys and sells will be done on the first positive ratio instrument in a spread
-    Symbol<-tmp_instr$memberlist$members[which(tmp_instr$memberlist$memberratio>0)][1]
+    Symbol<-as.character(tmp_instr$memberlist$members[which(tmp_instr$memberlist$memberratio>0)][1])
     
     
     freq = periodicity(Prices)
@@ -42,17 +42,17 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
         # if the equality
         n=round((freq$frequency/mult),0)*mult
     } else { n=mult }
-    Prices=align.time(Prices,n) 
     tzero = xts(0,order.by=index(Prices[1,]))
+    Prices=align.time(Prices,n) 
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
     Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
     Buys = align.time(rbind(Buys,tzero),n)[-1]
     #because this is a spread, we need to use the price of the spread at the time of the synthetic 'buy'
-    Buys = Prices[index(Buys)]
+    Buys = Prices[unique(Hmisc::find.matches(index(Buys),index(Prices))[[1]])]
     Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
     Sells = align.time(rbind(Sells,tzero),n)[-1]
     #because this is a spread, we need to use the price of the spread at the time of the synthetic 'sell'
-    Sells = Prices[index(Sells)]
+    Sells = Prices[unique(Hmisc::find.matches(index(Sells),index(Prices))[[1]])]
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty<0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
     # BuyCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty>0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
@@ -61,7 +61,7 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     # addTA(BuyCover,pch=24,type="p",col="green", bg="orange", on=1)
     # addTA(SellCover,pch=25,type="p",col="red", bg="orange", on=1)
 
-    chartSeries(Prices, TA=NULL,...)
+    chartSeries(Prices, TA=NULL,theme='white',...)
     plot(addTA(Buys,pch=2,type='p',col='green', on=1));
     plot(addTA(Sells,pch=6,type='p',col='red', on=1));
 
@@ -70,7 +70,7 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     for(Symbol in tmp_instr$memberlist$members){
         Position = Portfolio[[Symbol]]$txn$Pos.Qty
         Position = na.locf(merge(Position,index(Prices)))
-        plot(addTA(Position,type='b',col=i, lwd=1, on=2));
+        plot(addTA(Position,type='b',col=i, lwd=1));
         i=i+1
     }
 
