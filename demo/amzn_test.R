@@ -1,4 +1,8 @@
 require(blotter)
+
+# Remove portfolio and account data if run previously
+try(rm("portfolio.amzn_port","account.amzn_acct",pos=.blotter))
+
 # load the example data
 data("amzn")
 currency("USD")
@@ -14,15 +18,12 @@ addTxns("amzn_port","amzn",TxnData=amzn.trades,verbose=TRUE)
 
 # update the portfolio stats
 updatePortf("amzn_port",Dates="2010-01-14")
-# getPortfolio("amzn_port")
 
 # update the account P&L
 updateAcct("amzn_acct",Dates="2010-01-14")
-# getAccount("amzn_acct")
 
 # and look at it
 chart.Posn("amzn_port","amzn",Dates="2010-01-14",theme='white')
 
-#and clean up the side effects of the demo
-rm("amzn","amzn.trades")
-rm("portfolio.amzn_port","account.amzn_acct",pos=.blotter)
+portfolio = getPortfolio("amzn_port")
+account = getAccount("amzn_acct")

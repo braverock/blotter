@@ -47,6 +47,10 @@ require(quantmod)
 require(TTR)
 require(blotter)
 
+# Try to clean up in case the demo was run previously
+try(rm("account.longtrend","portfolio.longtrend",pos=.blotter))
+
+
 # Set initial values
 initDate='1997-12-31'
 initEq=100000
@@ -104,15 +108,17 @@ for( i in 10:NROW(GSPC) ) {
     updateEndEq(account, Dates = CurrentDate)
 } # End dates loop
 cat('\n')
+
 # Chart results with quantmod
 chart.Posn(portfolio, Symbol = 'GSPC', Dates = '1998::', theme=chartTheme('white',up.col='lightgreen',dn.col='pink'), type='bar')
 plot(addTA(GSPC$SMA10['1998::',],pch=1,type='l',col='darkgreen', on=1))
 
-cat('\n')
-cat('cleaning up \n')
-rm("account","ClosePrice","CurrentDate","equity","GSPC","i","initDate","initEq","portfolio","Posn","UnitSize","verbose")
-rm("account.longtrend","portfolio.longtrend",pos=.blotter)
-rm("GSPC",pos=.instrument)
+getTxns(Portfolio="longtrend", Symbol="GSPC", Date="2000::2004")
+
+# Copy the results into the local environment
+print("Retrieving resulting portfolio and account")
+portfolio = getPortfolio("longtrend")
+account = getAccount("longtrend")
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
