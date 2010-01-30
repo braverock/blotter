@@ -48,7 +48,8 @@ require(TTR)
 require(blotter)
 
 # Try to clean up in case the demo was run previously
-try(rm("account.longtrend","portfolio.longtrend",pos=.blotter))
+try(rm("account.longtrend","portfolio.longtrend",pos=.blotter),silent=TRUE)
+try(rm("ltaccount","ltportfolio","ClosePrice","CurrentDate","equity","GSPC","i","initDate","initEq","Posn","UnitSize","verbose"),silent=TRUE)
 
 
 # Set initial values
@@ -68,10 +69,10 @@ GSPC$SMA10m <- SMA(GSPC[,grep('Adj',colnames(GSPC))], 10)
 
 # Set up a portfolio object and an account object in blotter
 print("Initializing portfolio and account structure")
-portfolio='longtrend'
-account='longtrend'
-initPortf(portfolio,'GSPC', initDate=initDate)
-initAcct(account,portfolios='longtrend', initDate=initDate)
+ltportfolio='longtrend'
+ltaccount='longtrend'
+initPortf(ltportfolio,'GSPC', initDate=initDate)
+initAcct(ltaccount,portfolios='longtrend', initDate=initDate)
 verbose=TRUE
 
 # Create trades
@@ -79,10 +80,10 @@ for( i in 10:NROW(GSPC) ) {
     # browser()
     CurrentDate=time(GSPC)[i]
     cat(".")
-    equity = getEndEq(account, CurrentDate)
+    equity = getEndEq(ltaccount, CurrentDate)
 
     ClosePrice = as.numeric(Ad(GSPC[i,]))
-    Posn = getPosQty(portfolio, Symbol='GSPC', Date=CurrentDate)
+    Posn = getPosQty(ltportfolio, Symbol='GSPC', Date=CurrentDate)
     UnitSize = as.numeric(trunc(equity/ClosePrice))
 
     # Position Entry (assume fill at close)
@@ -91,34 +92,34 @@ for( i in 10:NROW(GSPC) ) {
         if( as.numeric(Ad(GSPC[i,])) > as.numeric(GSPC[i,'SMA10m']) ) { 
             cat('\n')
             # Store trade with blotter
-            addTxn(portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
+            addTxn(ltportfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
         } 
     } else {
     # Have a position, so check exit
         if( as.numeric(Ad(GSPC[i,]))  <  as.numeric(GSPC[i,'SMA10m'])) { 
             cat('\n')
             # Store trade with blotter
-            addTxn(portfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
+            addTxn(ltportfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
         } 
     }
 
     # Calculate P&L and resulting equity with blotter
-    updatePortf(portfolio, Dates = CurrentDate)
-    updateAcct(account, Dates = CurrentDate)
-    updateEndEq(account, Dates = CurrentDate)
+    updatePortf(ltportfolio, Dates = CurrentDate)
+    updateAcct(ltaccount, Dates = CurrentDate)
+    updateEndEq(ltaccount, Dates = CurrentDate)
 } # End dates loop
 cat('\n')
 
 # Chart results with quantmod
-chart.Posn(portfolio, Symbol = 'GSPC', Dates = '1998::', theme=chartTheme('white',up.col='lightgreen',dn.col='pink'), type='bar')
-plot(addTA(GSPC$SMA10['1998::',],pch=1,type='l',col='darkgreen', on=1))
+chart.Posn(ltportfolio, Symbol = 'GSPC', Dates = '1998::',theme='white')
+plot(addSMA(n=10,col='darkgreen', on=1))
 
 getTxns(Portfolio="longtrend", Symbol="GSPC", Date="2000::2004")
 
 # Copy the results into the local environment
 print("Retrieving resulting portfolio and account")
-portfolio = getPortfolio("longtrend")
-account = getAccount("longtrend")
+ltportfolio = getPortfolio("longtrend")
+ltaccount = getAccount("longtrend")
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
