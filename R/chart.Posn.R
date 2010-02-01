@@ -60,7 +60,7 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     chartSeries(Prices, TA=NULL,...)
     plot(addTA(Buys,pch=2,type='p',col='green', on=1));
     plot(addTA(Sells,pch=6,type='p',col='red', on=1));
-    plot(addTA(Position,type='b',col='blue', lwd=2));
+    plot(addTA(Position,type='h',col='blue', lwd=2));
     if(!is.null(CumPL))  plot(addTA(CumPL, col='darkgreen', lwd=2))
 }
 
