@@ -2,10 +2,8 @@
 chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
 { # @author Peter Carl
     pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
-    
+    Portfolio<-getPortfolio(pname)
+
     # DESCRIPTION
     # Charts the transaction series of a symbol against prices
 
@@ -21,8 +19,6 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # FUNCTION
 
     require(quantmod)
-    # TODO: check that Portfolio is a Portfolio object
-    # TODO: add date scoping
     Prices=get(Symbol)
     freq = periodicity(Prices)
     switch(freq$scale,
@@ -36,8 +32,10 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
         # if the equality
         n=round((freq$frequency/mult),0)*mult
     } else { n=mult }
-    Prices=align.time(Prices,n) 
+    
     tzero = xts(0,order.by=index(Prices[1,]))
+    Prices=align.time(Prices,n) 
+    
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
     Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
     Buys = align.time(rbind(Buys,tzero),n)[-1]
@@ -57,10 +55,13 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # addTA(BuyCover,pch=24,type="p",col="green", bg="orange", on=1)
     # addTA(SellCover,pch=25,type="p",col="red", bg="orange", on=1)
 
+    # scope the date, this is heavy-handed, but should work
+    if(!is.null(Dates)) Prices=Prices[Dates]
+    
     chartSeries(Prices, TA=NULL,...)
-    plot(addTA(Buys,pch=2,type='p',col='green', on=1));
-    plot(addTA(Sells,pch=6,type='p',col='red', on=1));
-    plot(addTA(Position,type='h',col='blue', lwd=2));
+    if(nrow(Buys)>=1) plot(addTA(Buys,pch=2,type='p',col='green', on=1));
+    if(nrow(Sells)>=1) plot(addTA(Sells,pch=6,type='p',col='red', on=1));
+    if(nrow(Position)>=1) plot(addTA(Position,type='b',col='blue', lwd=2));
     if(!is.null(CumPL))  plot(addTA(CumPL, col='darkgreen', lwd=2))
 }
 
