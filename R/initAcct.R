@@ -46,7 +46,7 @@
 #' @param initDate 
 #' @param initEq 
 #' @export
-initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=100000)
+initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0)
 { # @author Peter Carl
 
     if(exists(paste("account",name,sep='.'), envir=.blotter,inherits=TRUE)) 

@@ -2,9 +2,10 @@
 getPosQty <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
     pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+    # portfolio retrieval happens in getPos
+    #Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    #if(inherits(Portfolio,"try-error"))
+    #    stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
     
     # DESCRIPTION:
     # Gets the previous position 
