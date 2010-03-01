@@ -50,7 +50,7 @@ getSymbols(symbols, index.class="POSIXct", from=initDate, source="yahoo")
 portfolio = "turtles" 
 initPortf(name=portfolio,symbols, initDate=initDate)
 account = "turtles"
-initAcct(name=account,portfolios="turtles", initDate=initDate)
+initAcct(name=account,portfolios="turtles", initDate=initDate, initEq=initEq)
 
 # This table stores transaction-related information relative to the strategy
 # Placing it into the portfolio object, sure why not?

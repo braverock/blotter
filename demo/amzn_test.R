@@ -9,7 +9,7 @@ currency("USD")
 stock("amzn",currency="USD",multiplier=1)
 # Initialize the Portfolio
 initPortf("amzn_port",symbols="amzn",initDate="2010-01-14")
-initAcct("amzn_acct",portfolios="amzn_port",initDate="2010-01-14")
+initAcct("amzn_acct",portfolios="amzn_port",initDate="2010-01-14", initEq=10000)
 # look at the transactions data
 amzn.trades
 # Add the transactions to the portfolio

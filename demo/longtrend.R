@@ -71,8 +71,9 @@ GSPC$SMA10m <- SMA(GSPC[,grep('Adj',colnames(GSPC))], 10)
 print("Initializing portfolio and account structure")
 ltportfolio='longtrend'
 ltaccount='longtrend'
+
 initPortf(ltportfolio,'GSPC', initDate=initDate)
-initAcct(ltaccount,portfolios='longtrend', initDate=initDate)
+initAcct(ltaccount,portfolios='longtrend', initDate=initDate, initEq=initEq)
 verbose=TRUE
 
 # Create trades
