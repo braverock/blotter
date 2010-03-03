@@ -1,7 +1,7 @@
 getAccount <- function(Account, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     aname<-Account
-    if(!grepl("account",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter))
+    if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter))
     else Account<-try(get(aname,envir=.blotter))
     if(inherits(Account,"try-error"))
         stop(paste("Account ",aname," not found, use initAcct() to create a new account"))

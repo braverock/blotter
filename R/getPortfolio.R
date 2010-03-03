@@ -1,7 +1,7 @@
 getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     pname<-Portfolio
-    if(!grepl("portfolio",pname)) Portfolio<-try(get(paste("portfolio",pname,sep='.'),envir=.blotter))
+    if(!grepl("portfolio\\.",pname)) Portfolio<-try(get(paste("portfolio",pname,sep='.'),envir=.blotter))
     else Portfolio<-try(get(pname,envir=.blotter))
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
