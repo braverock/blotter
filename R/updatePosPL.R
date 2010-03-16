@@ -7,7 +7,7 @@
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl
 #' @export
-updatePosPL <- function(Portfolio, Symbol, Dates, Prices=Cl(get(Symbol)), ConMult=NULL)
+updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=Cl(get(Symbol)))
 { # @author Peter Carl
 
     pname<-Portfolio

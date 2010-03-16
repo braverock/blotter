@@ -10,18 +10,25 @@
 #' assigns position information and PL into the environment
 #' 
 #' @param Portfolio 
+#' @param Symbols
 #' @param Dates 
+#' @param Prices
 #' @export
-updatePortf <- function(Portfolio, Dates)
+updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
 { #' @author Peter Carl
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) # TODO add Date handling
 
     # FUNCTION
-    symbols = names(Portfolio)
-    for(symbol in symbols){
+    if(is.null(Symbols)){
+        Symbols = names(Portfolio)
+    } 
+    for(symbol in Symbols){
+        if(is.null(Prices)){
+            Prices=Cl(get(symbol))
+        } 
         tmp_instr<-try(getInstrument(symbol))
-        updatePosPL(pname, symbol, Dates, Cl(get(symbol)))            
+        updatePosPL(pname, symbol, Dates, Prices=Prices)            
     }
     return(pname) #not sure this is a good idea
 }
