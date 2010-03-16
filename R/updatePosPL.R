@@ -7,7 +7,7 @@
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl
 #' @export
-updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=Cl(get(Symbol)))
+updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL)
 { # @author Peter Carl
 
     pname<-Portfolio
@@ -16,6 +16,11 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=Cl(get(Symbol)))
     # FUNCTION
     PosAvgCost = 0
     PosQty = 0
+    
+    if(is.null(Prices)){
+        Prices=Cl(get(symbol))
+    } 
+    
 
 #     freq = periodicity(Prices)
 #     switch(freq$scale,
