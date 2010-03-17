@@ -4,10 +4,11 @@
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
 #' @param Dates xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream
 #' @param Prices close prices in an xts object with a columnname == "Close"
+#' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl
 #' @export
-updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL)
+updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl
 
     pname<-Portfolio
@@ -18,7 +19,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL)
     PosQty = 0
     
     if(is.null(Prices)){
-        Prices=Cl(get(symbol))
+        Prices=Cl(get(Symbol))
     } 
     
 
@@ -33,18 +34,27 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL)
 
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Prices)
-#     else if(length(Dates)>1)# test to see if it's a vector of dates, which would pass through
     else 
         Dates = time(Prices[Dates])
 
-#     Dates = strtrim(strptime(Dates, tformat), nchar(tformat)+2)
-
+    #TODO if ConMuilt is a time series, this won't work right
+    if(is.null(ConMult) | !hasArg(ConMult)){
+        tmp_instr<-try(getInstrument(Symbol))
+        if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
+            warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
+            ConMult<-1
+        } else {
+            ConMult<-tmp_instr$multiplier
+        }  
+    }
+    PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
+    CcyMult =1 ## @TODO: Change this to look up the value from instrument?
+    PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
+    
     # For each date, calculate realized and unrealized P&L
     for(i in 1:length(Dates)){ ##
         # Get the current date and close price
         CurrentDate = Dates[i]
-#          if(i>1) # if it isn't the first price in the time series
-            #PrevDate = time(Prices[grep(CurrentDate,time(Prices))-1])
         PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
         if (length(PrevDate)==0) next() #no price data, keep looking
         # NOTE the line above iterates to the next Date in the Dates collection, 
@@ -58,19 +68,6 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL)
         PrevSpan = paste(PriorPrevDateLast, PrevDate, sep="::")
         if(length(PrevDate)==0)
              PrevDate = NA
-
-        if(is.null(ConMult) | !hasArg(ConMult)){
-            tmp_instr<-try(getInstrument(Symbol))
-            if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
-                warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
-                ConMult<-1
-            } else {
-                ConMult<-tmp_instr$multiplier
-            }  
-        }
-        PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
-        CcyMult =1 ## @TODO: Change this to look up the value from instrument?
-        PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
         
         #TODO write a single getTxn and use the values instead of these lines
         TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
