@@ -55,11 +55,11 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
     # FUNCTION
     account=vector("list",length=(length(portfolios)+1))
     names(account)=c("TOTAL",paste("portfolio",portfolios,sep='.'))
-    account[["TOTAL"]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
-    colnames(account[["TOTAL"]]) = c('Additions', 'Withdrawals', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    account[["TOTAL"]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
+    colnames(account[["TOTAL"]]) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
     for(portfolio in portfolios){
-        account[[paste("portfolio",portfolio,sep=".")]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
-        colnames(account[[paste("portfolio",portfolio,sep=".")]]) = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees','Realized.PL', 'Unrealized.PL', 'Trading.PL')
+        account[[paste("portfolio",portfolio,sep=".")]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
+        colnames(account[[paste("portfolio",portfolio,sep=".")]]) = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL','Txn.Fees','Net.Trading.PL')
     }
     # return(account)
     class(account)<-c("portfolio_account","account")

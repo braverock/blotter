@@ -9,7 +9,8 @@ calcPortfSummary <- function(Portfolio, Dates=NULL)
         Dates = time(Portfolio[[1]]$posPL )
 #    else Dates = time(Portfolio[[1]]$posPL[Dates])
     
-    TradingPL = calcPortfAttr(Portfolio, 'Trading.PL', Dates)
+    GrossTradingPL = calcPortfAttr(Portfolio, 'Gross.Trading.PL', Dates)
+    NetTradingPL = calcPortfAttr(Portfolio, 'Net.Trading.PL', Dates)
     RealizedPL = calcPortfAttr(Portfolio, 'Realized.PL', Dates)
     UnrealizedPL = calcPortfAttr(Portfolio, 'Unrealized.PL', Dates)
     # UnrealizedPL = TradingPL - RealizedPL
@@ -19,9 +20,8 @@ calcPortfSummary <- function(Portfolio, Dates=NULL)
     LongValue = calcPortfAttr(Portfolio, 'Long.Value', Dates)
     ShortValue = calcPortfAttr(Portfolio, 'Short.Value', Dates)
 
-    summary=merge(LongValue, ShortValue, NetValue, GrossValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)
-#     colnames(summary)=c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees','Realized.PL', 'Unrealized.PL', 'Trading.PL')
-# Needed?
+    summary=merge(LongValue, ShortValue, NetValue, GrossValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)
+#     colnames(summary)=c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL','Txn.Fees','Net.Trading.PL')
     return(summary)
 }
 

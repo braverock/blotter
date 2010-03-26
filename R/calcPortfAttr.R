@@ -7,16 +7,22 @@ calcPortfAttr <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
 #    else Dates = time(Portfolio[[1]]$posPL[Dates])
 
     switch(Attribute,
-        Trading.PL = {
-            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Trading.PL', Dates = Dates, Symbols = Symbols)
+        Gross.Trading.PL = {
+            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Gross.Trading.PL', Dates = Dates, Symbols = Symbols)
 #            result = xts(apply(table, FUN='sum', MARGIN=1), Dates)
             result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
-            colnames(result) = 'Trading.PL'
+            colnames(result) = 'Gross.Trading.PL'
         },
         Txn.Fees = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Txn.Fees', Dates = Dates, Symbols = Symbols)
             result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
             colnames(result) = 'Txn.Fees'
+        },
+        Net.Trading.PL = {
+            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Net.Trading.PL', Dates = Dates, Symbols = Symbols)
+#            result = xts(apply(table, FUN='sum', MARGIN=1), Dates)
+            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            colnames(result) = 'Net.Trading.PL'
         },
         Realized.PL = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Realized.PL', Dates = Dates, Symbols = Symbols)
