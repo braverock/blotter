@@ -88,10 +88,12 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
             PrevClosePrice = as.numeric(Cl(Prices)[as.character(PrevDate)])
 
         PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
-        TradingPL = calcTradingPL(PosValue, PrevPosValue, TxnValue)
-        RealizedPL = getRealizedPL(pname, Symbol, CurrentSpan)
-        #$unrealized_gl    = $end_return['calc_position'] * ($end_return['last_price'] - $end_return['average_cost']);
+        TradingPL = PosValue - PrevPosValue - TxnValue
+
         UnrealizedPL = PosQty*(ClosePrice-getPosAvgCost(Portfolio=pname, Symbol, CurrentDate))*ConMult
+
+        RealizedPL = round(TradingPL - UnrealizedPL,2)
+        #$unrealized_gl    = $end_return['calc_position'] * ($end_return['last_price'] - $end_return['average_cost']);
 
         NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, TxnFees, RealizedPL, UnrealizedPL, TradingPL)), order.by=as.POSIXct(CurrentDate)) #, format=tformat
         colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL', 'Trading.PL')

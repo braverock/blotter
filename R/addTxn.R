@@ -114,7 +114,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 
         if(row==1){
             NewTxns <- NewTxn
-            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL', 'Con.Mult')
+            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Txn.Realized.PL', 'Con.Mult')
         } else {
             NewTxns<-rbind(NewTxns, NewTxn)
         }
