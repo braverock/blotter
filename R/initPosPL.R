@@ -9,19 +9,16 @@ initPosPL <- function(initDate="1950-01-01", ..., initPosQty=0, initConMult=1, i
 
     # DESCRIPTION
     # Constructs the data container used to store calculated P&L values from 
-    # transactions and close prices. The data series will be a regular time series.
+    # transactions and close prices.
 
     # Inputs
-    # initDate: 
-    #           
-    # initPosQty: 
 
     # Outputs
     # Constructs multi-column xts object used to store derived position information
 
     # FUNCTION
-    posPL <- xts( as.matrix(t(c(initPosQty,initConMult,initCcyMult,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
-    colnames(posPL) <- c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value', 'Txn.Fees', 'Realized.PL', 'Unrealized.PL','Trading.PL')
+    posPL <- xts( as.matrix(t(c(initPosQty,initConMult,initCcyMult,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
+    colnames(posPL) <- c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     class(posPL)<- c("posPL",class(posPL))
     return(posPL)
 }

@@ -35,7 +35,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     # Compute transaction fees if a function was supplied
     txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
     # Calculate the value and average cost of the transaction
-    TxnValue = calcTxnValue(TxnQty, TxnPrice, txnfees, ConMult)
+    TxnValue = calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
     TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
 
     # Calculate the change in position
@@ -47,11 +47,12 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult)
 
     # Calculate any realized profit or loss (net of fees) from the transaction
-    RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
+    GrossTxnRealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
+    NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
 
     # Store the transaction and calculations
-    NewTxn = xts(t(c(TxnQty, TxnPrice, txnfees, TxnValue, TxnAvgCost, PosQty, PosAvgCost, RealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
-    #colnames(NewTxn) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Realized.PL')
+    NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, txnfees, NetTxnRealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
+    #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
     Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
 
     if(verbose)
@@ -96,25 +97,27 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty, ConMult)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
-        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult) # lag this over the data?
-        RealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
+        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
+        GrossTxnRealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
+        NetTxnRealizedPL = GrossTxnRealizedPL - TxnFee
         PrevPosQty     <- PosQty
         PrevPosAvgCost <- PosAvgCost
         
         NewTxn = xts(t(c(TxnQty, 
                          TxnPrice, 
-                         TxnFee,
                          TxnValue, 
                          TxnAvgCost, 
                          PosQty, 
                          PosAvgCost, 
-                         RealizedPL,
+                         GrossTxnRealizedPL,
+                         TxnFee,
+                         NetTxnRealizedPL,
                          ConMult)),
                          order.by=index(TxnData[row,]))
 
         if(row==1){
             NewTxns <- NewTxn
-            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Txn.Realized.PL', 'Con.Mult')
+            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
         } else {
             NewTxns<-rbind(NewTxns, NewTxn)
         }
