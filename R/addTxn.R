@@ -129,6 +129,59 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
+addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
+{ # @author Peter Carl
+    pname<-Portfolio
+    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+
+    if(is.null(ConMult) | !hasArg(ConMult)){
+        tmp_instr<-try(getInstrument(Symbol))
+        if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
+            warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
+            ConMult<-1
+        } else {
+            ConMult<-tmp_instr$multiplier
+        }
+    }
+    # Outputs:
+    # Portfolio: hands back the entire portfolio object with the additional
+    # transaction in the correct slot: Portfolio[[Symbol]]$txn
+
+    # FUNCTION
+    # Adding a Dividend does not affect position
+    TxnQty = 0
+    TxnPrice = 0
+#     TxnType = "Dividend"
+# TODO add TxnTypes to $txn table
+
+    # Get the current position quantity
+    PrevPosQty = getPosQty(pname, Symbol, TxnDate)
+    PosQty = PrevPosQty # no change to position, but carry it forward
+    # Calculate the value and average cost of the transaction
+    # The -1 multiplier allows a positive DivPerShare value to create a
+    # positive realized gain
+    TxnValue = -1 * PrevPosQty * DivPerShare * ConMult # Calc total dividend paid
+    TxnAvgCost = DivPerShare
+
+    # No change to the the resulting position's average cost
+    PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
+    PosAvgCost = PrevPosAvgCost # but carry it forward in $txn
+
+    # Calculate any realized profit or loss (net of fees) from the transaction
+    GrossTxnRealizedPL = PrevPosQty * DivPerShare * ConMult
+    NetTxnRealizedPL = GrossTxnRealizedPL + TxnFees
+
+    # Store the transaction and calculations
+    NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, TxnFees, NetTxnRealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
+    #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
+    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
+
+    if(verbose)
+        print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", TxnValue, sep=" "))
+        #print(Portfolio[[Symbol]]$txn)
+
+    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
+}
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/)
