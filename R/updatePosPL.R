@@ -49,6 +49,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     }
     CcyMult = NULL 
     FXrate = NULL
+    invert=FALSE
     if(!is.null(attr(Portfolio,'currency'))) {
         p.ccy.str<-attr(Portfolio,'currency')
         if (tmp_instr$currency==p.ccy.str) {
@@ -67,6 +68,8 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
                     if(inherits(FXrate,"try-error")){ 
                         warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
                         CcyMult<-1
+                    } else {
+                        invert=TRUE
                     }
                 }
             }
@@ -107,6 +110,12 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
             CcyMult<-1
             PrevCcyMult<-CcyMult
         }
+        if(isTRUE(invert)){
+            # portfolio and instrument have different currencies, and FXrate was in the wrong direction
+            CcyMult<-1/CcyMult
+            PrevCcyMult<-1/PrevCcyMult
+        }
+        
         #TODO write a single getTxn and use the values instead of these lines
         TxnValue = getTxnValue(pname, Symbol, CurrentSpan)*CcyMult
         TxnFees = getTxnFees(pname, Symbol, CurrentSpan)*CcyMult
