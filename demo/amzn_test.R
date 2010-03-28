@@ -23,7 +23,7 @@ updatePortf("amzn_port",Dates="2010-01-14")
 updateAcct("amzn_acct",Dates="2010-01-14")
 
 # and look at it
-chart.Posn("amzn_port","amzn",Dates="2010-01-14",theme='white')
+chart.Posn("amzn_port","amzn",Dates="2010-01-14")
 
 portfolio = getPortfolio("amzn_port")
 account = getAccount("amzn_acct")

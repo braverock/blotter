@@ -112,8 +112,8 @@ for( i in 10:NROW(GSPC) ) {
 cat('\n')
 
 # Chart results with quantmod
-chart.Posn(ltportfolio, Symbol = 'GSPC', Dates = '1998::',theme=chartTheme('white', up.col='lightgreen', dn.col='pink'), type='bar')
-plot(addSMA(n=10,col='darkgreen', on=1))
+chart.Posn(ltportfolio, Symbol = 'GSPC', Dates = '1998::')
+plot(add_SMA(n=10,col='darkgreen', on=1))
 
 getTxns(Portfolio="longtrend", Symbol="GSPC", Date="2000::2004")
 
