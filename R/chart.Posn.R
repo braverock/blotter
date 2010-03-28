@@ -34,19 +34,21 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     } else { n=mult }
     
     tzero = xts(0,order.by=index(Prices[1,]))
-    Prices=align.time(Prices,n) 
+#    Prices=align.time(Prices,n) 
     
     Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
     Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
-    Buys = align.time(rbind(Buys,tzero),n)[-1]
+#    Buys = align.time(rbind(Buys,tzero),n)[-1]
     Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
-    Sells = align.time(rbind(Sells,tzero),n)[-1]
+#    Sells = align.time(rbind(Sells,tzero),n)[-1]
     #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
     Position = Portfolio[[Symbol]]$txn$Pos.Qty
     Position = na.locf(merge(Position,index(Prices)))
-    CumPL = cumsum(Portfolio[[Symbol]]$posPL$Trading.PL)
-    if(length(CumPL)>1) CumPL = na.locf(merge(CumPL,index(Prices)))
-    else CumPL = NULL
+    CumPL = cumsum(Portfolio[[Symbol]]$posPL$Net.Trading.PL)
+    if(length(CumPL)>1)
+        CumPL = na.locf(merge(CumPL,index(Prices)))
+    else 
+        CumPL = NULL
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty<0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
     # BuyCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty>0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
@@ -58,11 +60,11 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # scope the date, this is heavy-handed, but should work
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chartSeries(Prices, TA=NULL,...)
-    if(nrow(Buys)>=1) plot(addTA(Buys,pch=2,type='p',col='green', on=1));
-    if(nrow(Sells)>=1) plot(addTA(Sells,pch=6,type='p',col='red', on=1));
-    if(nrow(Position)>=1) plot(addTA(Position,type='b',col='blue', lwd=2));
-    if(!is.null(CumPL))  plot(addTA(CumPL, col='darkgreen', lwd=2))
+    chart_Series(Prices, TA=NULL,...)
+    if(nrow(Buys)>=1) plot(add_TA(Buys,pch=2,type='p',col='green', on=1));
+    if(nrow(Sells)>=1) plot(add_TA(Sells,pch=6,type='p',col='red', on=1));
+    if(nrow(Position)>=1) plot(add_TA(Position,type='b',col='blue', lwd=2));
+    if(!is.null(CumPL))  plot(add_TA(CumPL, col='darkgreen', lwd=2))
 }
 
 ###############################################################################
