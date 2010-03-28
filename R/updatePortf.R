@@ -25,7 +25,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
     } 
     for(symbol in Symbols){
         tmp_instr<-try(getInstrument(symbol))
-        updatePosPL(pname, symbol, Dates, Prices=Prices)            
+        updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices)            
     }
     return(pname) #not sure this is a good idea
 }

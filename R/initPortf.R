@@ -18,7 +18,7 @@
 #' @param initDate date prior to the first close price given, used to contain initial account equity and initial position
 #' @author Peter Carl
 #' @export
-initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01')
+initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01', currency='USD')
 { # @author Peter Carl
     if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
         stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
@@ -36,6 +36,7 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
         portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = initPosQty[i])
     }
     class(portfolio)<-c("blotter_portfolio", "portfolio")
+    attr(portfolio,'currency')<-currency
     #return(portfolio)
     assign(paste("portfolio",as.character(name),sep='.'),portfolio,envir=.blotter)
     return(name) # not sure this is a good idea

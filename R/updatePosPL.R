@@ -41,15 +41,41 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol))
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
-            warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
+            warning("Instrument",Symbol," not found, using contract multiplier of 1")
             ConMult<-1
         } else {
-            ConMult<-tmp_instr$multiplier
+            ConMult<-tmp_instr$multiplier # TODO ultimately this needs to be time series aware
         }  
     }
-    PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
-    CcyMult =1 ## @TODO: Change this to look up the value from instrument?
-    PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
+    CcyMult = NULL 
+    FXrate = NULL
+    if(!is.null(attr(Portfolio,'currency'))) {
+        p.ccy.str<-attr(Portfolio,'currency')
+        if (tmp_instr$currency==p.ccy.str) {
+            CcyMult<-1
+        } else {
+            port_currency<-try(getInstrument(p.ccy.str))
+            if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
+                warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
+                CcyMult<-1
+            } else {
+                FXrate.str<-paste(tmp_instr$currency,p.ccy.str,sep='')
+                FXrate<-try(get(FXrate.str))
+                if(inherits(FXrate,"try-error")){
+                    FXrate.str<-paste(p.ccy.str,tmp_instr$currency,sep='')
+                    FXrate<-try(get(FXrate.str))
+                    if(inherits(FXrate,"try-error")){ 
+                        warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
+                        CcyMult<-1
+                    }
+                }
+            }
+        }
+    } else {
+        message("no currency multiplier set on portfolio, using currency multiplier of 1")
+        CcyMult =1
+    }
+    #PrevCcyMult =1 ## @TODO: Change this to look up the value from instrument?
     
     # For each date, calculate realized and unrealized P&L
     for(i in 1:length(Dates)){ ##
@@ -68,13 +94,25 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         PrevSpan = paste(PriorPrevDateLast, PrevDate, sep="::")
         if(length(PrevDate)==0)
              PrevDate = NA
-        
+
+        if(is.null(CcyMult) & !is.null(FXrate)) {
+            if(inherits(FXrate,'xts')){
+                CcyMult<-as.numeric(last(FXrate[paste('::',as.character(CurrentDate),sep='')]))
+                PrevCcyMult<-as.numeric(last(FXrate[paste('::',as.character(PrevDateLast),sep='')]))
+            } else {
+                CcyMult<-as.numeric(FXrate)
+                PrevCcyMult<-CcyMult
+            }
+        } else {
+            CcyMult<-1
+            PrevCcyMult<-CcyMult
+        }
         #TODO write a single getTxn and use the values instead of these lines
-        TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
-        TxnFees = getTxnFees(pname, Symbol, CurrentSpan)
+        TxnValue = getTxnValue(pname, Symbol, CurrentSpan)*CcyMult
+        TxnFees = getTxnFees(pname, Symbol, CurrentSpan)*CcyMult
         PosQty = getPosQty(pname, Symbol, as.character(CurrentDate))
         
-        ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))])) #not necessary
+        ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))]))*CcyMult
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
 
         if(is.na(PrevDate))
@@ -85,16 +123,14 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         if(PrevPosQty==0)
             PrevClosePrice = 0
         else
-            PrevClosePrice = as.numeric(Cl(Prices)[as.character(PrevDate)])
+            PrevClosePrice = as.numeric(Cl(Prices)[as.character(PrevDate)])*PrevCcyMult
 
         PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
         GrossTradingPL = PosValue - PrevPosValue - TxnValue
         NetTradingPL = GrossTradingPL + TxnFees # Fees are assumed to have negative values
-
-        UnrealizedPL = PosQty*(ClosePrice-getPosAvgCost(Portfolio=pname, Symbol, CurrentDate))*ConMult
-
-        RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
         #$unrealized_gl    = $end_return['calc_position'] * ($end_return['last_price'] - $end_return['average_cost']);
+        UnrealizedPL = PosQty*(ClosePrice-(getPosAvgCost(Portfolio=pname, Symbol, CurrentDate)*CcyMult))*ConMult
+        RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
 
         NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)), order.by=as.POSIXct(CurrentDate)) #, format=tformat
         colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')

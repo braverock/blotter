@@ -45,8 +45,9 @@
 #' @param portfolios 
 #' @param initDate 
 #' @param initEq 
+#' @param currency
 #' @export
-initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0)
+initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0, currency='USD')
 { # @author Peter Carl
 
     if(exists(paste("account",name,sep='.'), envir=.blotter,inherits=TRUE)) 
@@ -63,6 +64,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
     }
     # return(account)
     class(account)<-c("portfolio_account","account")
+    attr(account,'currency')<-currency
     assign(paste("account",as.character(name),sep='.'),account,envir=.blotter)  
     return(name) # not sure this is a good idea
 }
