@@ -18,9 +18,9 @@ function(Account, Date)
     Additions = as.numeric(Account[[1]][Date]$Additions)
     Withdrawals = as.numeric(Account[[1]][Date]$Withdrawals)
     IntIncome = as.numeric(Account[[1]][Date]$Int.Income)
-    TradingPL = as.numeric(Account[[1]][Date]$Trading.PL)
+    NetTradingPL = as.numeric(Account[[1]][Date]$Net.Trading.PL)
     AdvisoryFees = as.numeric(Account[[1]][Date]$Advisory.Fees)
-    NetPerformance = IntIncome + TradingPL + AdvisoryFees
+    NetPerformance = IntIncome + NetTradingPL + AdvisoryFees
     Account[[1]][Date,'Net.Performance'] = as.numeric(NetPerformance) 
     Account[[1]][Date,'End.Eq'] = as.numeric(PrevEndEq + Additions + Withdrawals + NetPerformance)
     return(Account)
