@@ -48,39 +48,43 @@ Maintainer: Brian Peterson <brian@braverock.com>
 # Construct a portfolio object and add some transactions
 
 # Download price data
+currency("USD")
 symbols = c("IBM","F","MMM")
+for(symbol in symbols){ # establish tradable instruments
+    stock(symbol, currency="USD",multiplier=1)
+}
 require(quantmod)
-getSymbols(symbols, from='2007-01-01', to='2007-01-31', index.class="POSIXct")
+getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct"))
 
 # Initialize a portfolio object 'p'
 print('Creating portfolio \"p\"...')
-p = initPortf(symbols=symbols)
+initPortf('p', symbols=symbols)
 
 ## Trades must be made in date order.
 print('Adding trades to \"p\"...')
 # Make a couple of trades in IBM
-p = addTxn(p, "IBM", '2007-01-03', 50, 96.5, -0.05*50)
-p = addTxn(p, "IBM", '2007-01-04', 50, 97.1, -0.05*50)
+addTxn("p", "IBM", '2007-01-03', 50, 96.5, -0.05*50)
+addTxn("p", "IBM", '2007-01-04', 50, 97.1, -0.05*50)
 
 # ...a few in F...
-p = addTxn(p, "F", '2007-01-03', -100, 7.60, -0.05*100)
-p = addTxn(p, "F", '2007-01-04', 50, 7.70, -0.05*50)
-p = addTxn(p, "F", '2007-01-10', 50, 7.78, -0.05*50)
+addTxn("p", "F", '2007-01-03', -100, 7.60, -0.05*100)
+addTxn("p", "F", '2007-01-04', 50, 7.70, -0.05*50)
+addTxn("p", "F", '2007-01-10', 50, 7.78, -0.05*50)
 
 # ...and some in MMM
-p = addTxn(p, "MMM", '2007-01-05', -50, 77.9, -0.05*50)
-p = addTxn(p, "MMM", '2007-01-08', 50, 77.6, -0.05*50)
-p = addTxn(p, "MMM", '2007-01-09', 50, 77.6, -0.05*50)
+addTxn("p", "MMM", '2007-01-05', -50, 77.9, -0.05*50)
+addTxn("p", "MMM", '2007-01-08', 50, 77.6, -0.05*50)
+addTxn("p", "MMM", '2007-01-09', 50, 77.6, -0.05*50)
 
 print('Updating portfolio \"p\"...')
-p = updatePortf(p,'2007-01')
-calcPortfSummary(p)
-getBySymbol(p,'Pos.Qty')
+updatePortf(Portfolio="p",Dates='2007-01')
+blotter:::calcPortfSummary(getPortfolio("p"), Dates='2007')
+blotter:::.getBySymbol(getPortfolio("p"),'Pos.Qty')
 
 print('Creating account \"a\" for portfolio \"p\"...')
-a = initAcct(portfolios="p")
+initAcct(name="a", portfolios="p")
 print('Updating account \"a\"...')
-a = updateAcct(a,'2007-01') # Check out the sweet date scoping. Thanks, xts.
-a = updateEndEq(a,'2007-01')
-print(a)
+updateAcct("a",'2007-01') # Check out the sweet date scoping. Thanks, xts.
+updateEndEq("a",'2007-01')
+getAccount("a")
 }
