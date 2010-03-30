@@ -19,7 +19,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     PosQty = 0
     
     if(is.null(Prices)){
-        Prices=Cl(get(Symbol))
+        Prices=Cl(get(Symbol, envir=as.environment(.GlobalEnv)))
     } 
     
 
@@ -141,7 +141,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         UnrealizedPL = PosQty*(ClosePrice-(getPosAvgCost(Portfolio=pname, Symbol, CurrentDate)*CcyMult))*ConMult
         RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
 
-        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)), order.by=as.POSIXct(CurrentDate)) #, format=tformat
+        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)), order.by=CurrentDate) #, format=tformat
         colnames(NewPeriod) = c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
         Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
     }
