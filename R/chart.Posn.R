@@ -43,7 +43,7 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
 #    Sells = align.time(rbind(Sells,tzero),n)[-1]
     #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
     Position = Portfolio[[Symbol]]$txn$Pos.Qty
-    Position = na.locf(merge(Position,index(Prices)))
+    Positionfill = na.locf(merge(Position,index(Prices)))
     CumPL = cumsum(Portfolio[[Symbol]]$posPL$Net.Trading.PL)
     if(length(CumPL)>1)
         CumPL = na.locf(merge(CumPL,index(Prices)))
@@ -60,10 +60,13 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     # scope the date, this is heavy-handed, but should work
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chart_Series(Prices, TA=NULL,...)
+    chart_Series(Prices, name=Symbol, TA=NULL,...)
     if(nrow(Buys)>=1) (add_TA(Buys,pch=2,type='p',col='green', on=1));
     if(nrow(Sells)>=1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
-    if(nrow(Position)>=1) (add_TA(Position,type='b',col='blue', lwd=2));
+    if(nrow(Position)>=1) {
+        (add_TA(Positionfill,type='l',col='blue', lwd=2))   
+        (add_TA(Position,type='p',col='blue', lwd=2, on=2))   
+    }
     if(!is.null(CumPL))  (add_TA(CumPL, col='darkgreen', lwd=2))
     plot(current.chob())
 }
