@@ -61,10 +61,11 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     if(!is.null(Dates)) Prices=Prices[Dates]
     
     chart_Series(Prices, TA=NULL,...)
-    if(nrow(Buys)>=1) plot(add_TA(Buys,pch=2,type='p',col='green', on=1));
-    if(nrow(Sells)>=1) plot(add_TA(Sells,pch=6,type='p',col='red', on=1));
-    if(nrow(Position)>=1) plot(add_TA(Position,type='b',col='blue', lwd=2));
-    if(!is.null(CumPL))  plot(add_TA(CumPL, col='darkgreen', lwd=2))
+    if(nrow(Buys)>=1) (add_TA(Buys,pch=2,type='p',col='green', on=1));
+    if(nrow(Sells)>=1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
+    if(nrow(Position)>=1) (add_TA(Position,type='b',col='blue', lwd=2));
+    if(!is.null(CumPL))  (add_TA(CumPL, col='darkgreen', lwd=2))
+    plot(current.chob())
 }
 
 ###############################################################################
