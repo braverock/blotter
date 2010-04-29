@@ -34,6 +34,7 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
     	i = match(instrument, symbols)
         portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = initPosQty[i])
         portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = initPosQty[i])
+        portfolio[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio[[instrument]]$posPL
     }
     class(portfolio)<-c("blotter_portfolio", "portfolio")
     attr(portfolio,'currency')<-currency

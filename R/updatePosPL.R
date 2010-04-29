@@ -3,7 +3,7 @@
 #' @param Portfolio a portfolio name to a portfolio structured with initPortf()
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
 #' @param Dates xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream
-#' @param Prices close prices in an xts object with a columnname == "Close"
+#' @param Prices periodic prices in an xts object with a columnname compatible with \code{getPrice}
 #' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl
@@ -19,7 +19,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     PosQty = 0
     
     if(is.null(Prices)){
-        Prices=Cl(get(Symbol, envir=as.environment(.GlobalEnv)))
+        Prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
     } 
     
 
@@ -34,8 +34,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = time(Prices)
-    else 
-        Dates = time(Prices[Dates])
+    else if(!is.timeBased(Dates)) Dates = time(Prices[Dates])
 
     #TODO if ConMuilt is a time series, this won't work right
     if(is.null(ConMult) | !hasArg(ConMult)){
@@ -104,7 +103,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         TxnFees = getTxnFees(pname, Symbol, CurrentSpan)
         PosQty = getPosQty(pname, Symbol, as.character(CurrentDate))
         
-        ClosePrice = as.numeric(last(Prices[CurrentDate, grep("Close", colnames(Prices))])) #not necessary
+        ClosePrice = as.numeric(last(getPrice(Prices[CurrentDate,]))) #not necessary
         PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
 
         if(is.na(PrevDate))
@@ -115,7 +114,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         if(PrevPosQty==0)
             PrevClosePrice = 0
         else
-            PrevClosePrice = as.numeric(Cl(Prices)[as.character(PrevDate)])
+            PrevClosePrice = as.numeric(getPrice(Prices)[as.character(PrevDate)])
 
         PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
         GrossTradingPL = PosValue - PrevPosValue - TxnValue
