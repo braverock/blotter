@@ -1,4 +1,4 @@
-.getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
+.getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols=NULL, Local=FALSE)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -16,9 +16,17 @@
     # regular xts object of values by symbol
 
     # FUNCTION
-    if(is.null(Dates)) # if no date is specified, get all available dates
+    if(is.null(Dates) | is.na(Dates)) # if no date is specified, get all available dates
         Dates = time(Portfolio[[1]]$posPL)
     # else  Dates = time(Portfolio[[1]]$posPL[Dates])
+    if(!is.null(attr(Portfolio,'currency')) & Local==FALSE) {
+        p.ccy.str<-attr(Portfolio,'currency')
+        namePosPL = paste("posPL", p.ccy.str, sep=".")
+    } else {
+        print("Returning position values in Local values")
+        namePosPL = "posPL"
+        # Alternatively, we could just use posPL without ccy extension
+    }
 
     table = NULL 
       ## Need a reference time index
@@ -28,7 +36,7 @@
         symbols = Symbols
     
     for (symbol in symbols) {
-        tmp_col = Portfolio[[symbol]]$posPL[Dates,Attribute,drop=FALSE]
+        tmp_col = Portfolio[[symbol]][[namePosPL]][Dates,Attribute,drop=FALSE]
         if(is.null(table)) table = tmp_col
         else table = merge(table, tmp_col)
     }
