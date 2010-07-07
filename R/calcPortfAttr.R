@@ -10,50 +10,50 @@ calcPortfAttr <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
         Gross.Trading.PL = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Gross.Trading.PL', Dates = Dates, Symbols = Symbols)
 #            result = xts(apply(table, FUN='sum', MARGIN=1), Dates)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Gross.Trading.PL'
         },
         Txn.Fees = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Txn.Fees', Dates = Dates, Symbols = Symbols)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Txn.Fees'
         },
         Net.Trading.PL = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Net.Trading.PL', Dates = Dates, Symbols = Symbols)
 #            result = xts(apply(table, FUN='sum', MARGIN=1), Dates)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Net.Trading.PL'
         },
         Realized.PL = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Realized.PL', Dates = Dates, Symbols = Symbols)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Realized.PL'
         },
         Unrealized.PL = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Unrealized.PL', Dates = Dates, Symbols = Symbols)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Unrealized.PL'
         },
         Net.Value = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Dates = Dates, Symbols = Symbols)
-            result = xts(rowSums(table), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Net.Value'
         },
         Gross.Value = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Dates = Dates, Symbols = Symbols)
-            result = xts(rowSums(abs(table)), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Gross.Value'
         },
         Long.Value = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Dates = Dates, Symbols = Symbols)
             tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
-            result = xts(rowSums(tmat), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Long.Value'
         },
         Short.Value = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Dates = Dates, Symbols = Symbols)
             tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
-            result = xts(rowSums(tmat), na.rm=TRUE ,order.by=index(table))
+            result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Short.Value'
         }
     )
