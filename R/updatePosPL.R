@@ -22,6 +22,8 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         Prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
     } 
     
+    if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
+    
 
 #     freq = periodicity(Prices)
 #     switch(freq$scale,
@@ -36,7 +38,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         Dates = time(Prices)
     else if(!is.timeBased(Dates)) Dates = time(Prices[Dates])
 
-    #TODO if ConMuilt is a time series, this won't work right
+    #TODO if ConMult is a time series, this won't work right
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol))
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
