@@ -38,6 +38,7 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
     }
     class(portfolio)<-c("blotter_portfolio", "portfolio")
     attr(portfolio,'currency')<-currency
+	attr(portfolio,'initDate')<-initDate
     #return(portfolio)
     assign(paste("portfolio",as.character(name),sep='.'),portfolio,envir=.blotter)
     return(name) # not sure this is a good idea

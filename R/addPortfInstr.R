@@ -1,23 +1,18 @@
-addPortfInstr <- function(Portfolio,symbols,...,verbose=TRUE) 
+addPortfInstr <- function(Portfolio,symbols,...) 
 {
     pname<-Portfolio
-    portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)	
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-
-    msymbols<-match(names(portfolio),symbols)
-    symbols<-symbols[which(is.na(msymbols))]
-    
-    if(missing(initPosQty)) initPosQty=rep(0, length(symbols))
-    
+	initDate <- attr(portfolio, "initDate")    
+	currency <- attr(portfolio, "currency")
     for(instrument in symbols){
-        i = match(instrument, symbols)
-        portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = initPosQty[i])
-        portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = initPosQty[i])
+        portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = 0)
+        portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = 0)
+		portfolio[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio[[instrument]]$posPL		
     }
-    
-    assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)
-    
+
+    assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    
 }
 
 ###############################################################################

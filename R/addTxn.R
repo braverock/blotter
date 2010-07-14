@@ -15,6 +15,7 @@
 #' @export
 addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
+	
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
     
@@ -27,6 +28,15 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
             ConMult<-tmp_instr$multiplier
         }  
     }
+	
+	
+	
+	#If there is no table for the symbol then create a new one
+	if (is.null(Portfolio[[Symbol]])){ 
+		addPortfInstr(Portfolio=pname, symbols=Symbol)
+		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+	}
+
     # Outputs:
     # Portfolio: hands back the entire portfolio object with the additional
     # transaction in the correct slot: Portfolio[[Symbol]]$txn
