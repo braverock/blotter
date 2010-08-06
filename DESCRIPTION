@@ -9,6 +9,6 @@ Description: Transaction infrastructure for defining instruments, transactions, 
 License: GPL
 LazyLoad: yes
 Depends: R (>= 2.9.0), xts (>= 0.7-1), quantmod (>= 0.3-14), FinancialInstrument
-Suggests: PerformanceAnalytics, PortfolioAnalytics
+Suggests: PerformanceAnalytics, PortfolioAnalytics, Hmisc, RUnit
 URL: http://braverock.com/R/
 Copyright: (c) 2008-2010
