@@ -33,13 +33,11 @@
 #' columns will be useful.  
 #' Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees
 
-#' TODO:
-#' Add calcPeriodROR function
-#' add functions addCapital, drawCapital, addFees
+#' TODO Add calcPeriodROR function
+#' TODO Adddd functions addCapital, drawCapital, addFees
 #' initDate and initEq can be used in addCapital to initalize the account?
 #' Track cash at this level???
 #' Calc gross PL and subtract fees? Or calc net PL and add fees.
-#' use getPortfSummary to populate portfolio tables?
 
 #' @param name 
 #' @param portfolios 
