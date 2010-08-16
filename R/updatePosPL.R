@@ -97,8 +97,8 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         PriorPrevDateLast = PriorPrevDateWidth$last.time
         CurrentSpan = paste(PrevDateLast, CurrentDate, sep="::")
         PrevSpan = paste(PriorPrevDateLast, PrevDate, sep="::")
-        if(length(PrevDate)==0)
-             PrevDate = NA
+
+		if(length(PrevDate)==0) PrevDate = NA
         
         #TODO write a single getTxn and use the values instead of these lines
         TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
@@ -106,26 +106,24 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
         PosQty = getPosQty(pname, Symbol, as.character(CurrentDate))
         
         ClosePrice = as.numeric(last(getPrice(Prices[CurrentDate,]))) #not necessary
-        PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
-
-        if(is.na(PrevDate))
+        #PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
+		PosValue <- PosQty * ClosePrice * ConMult			
+	
+        if(is.na(PrevDate)){
             PrevPosQty = 0
-        else
+            PrevPosValue = 0
+        } else {
             PrevPosQty = getPosQty(pname, Symbol, as.character(PrevDate)) 
+            PrevPosValue <- as.numeric(Portfolio[[Symbol]]$posPL[PrevDate, 'Pos.Value'])
+        }    
 
-        if(PrevPosQty==0)
-            PrevClosePrice = 0
-        else
-            PrevClosePrice = as.numeric(getPrice(Prices)[as.character(PrevDate)])
+        ifelse(PrevPosQty==0, PrevClosePrice <- 0 , PrevClosePrice <- as.numeric(getPrice(Prices)[as.character(PrevDate)]))
 
-        PrevPosValue = calcPosValue(PrevPosQty, PrevClosePrice, ConMult) ### @TODO: PrevConMult?
-        GrossTradingPL = PosValue - PrevPosValue - TxnValue
-        NetTradingPL = GrossTradingPL + TxnFees # Fees are assumed to have negative values
-
-        UnrealizedPL = PosQty*(ClosePrice-getPosAvgCost(Portfolio=pname, Symbol, CurrentDate))*ConMult
-
-        RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
-        #$unrealized_gl    = $end_return['calc_position'] * ($end_return['last_price'] - $end_return['average_cost']);
+		GrossTradingPL = PosValue - PrevPosValue - TxnValue
+		NetTradingPL = GrossTradingPL + TxnFees # Fees are assumed to have negative values
+		PosAvgCost = as.numeric(last(Portfolio[[Symbol]]$txn[paste('::', CurrentDate, sep=""),'Pos.Avg.Cost']))			
+		UnrealizedPL = PosQty*(ClosePrice-PosAvgCost)*ConMult			
+		RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
 
         NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)), order.by=CurrentDate) #, format=tformat
         colnames(NewPeriod) =  c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
