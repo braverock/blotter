@@ -1,3 +1,4 @@
+# Author: Peter Carl, RUnit port by Ben McCann
 
 #Sys.setenv(TZ="America/Chicago")        # as the data set got save with this TZ
 #options("width"=78)                     # to tie down the print() statement width

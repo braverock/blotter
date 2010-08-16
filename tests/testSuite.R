@@ -1,11 +1,14 @@
+# RUnit blotter port/framework by Ben McCann
+
 # Set working directory to this directory before running
 
 # Load deps
 library(RUnit)
 library(quantmod)
+library(blotter)
 
-# Load blotter
-for (file in dir("../R", pattern="*.R", full.names=TRUE)) {
+#Load blotter files.  When is this necessary?
+for (file in list.files("../R", pattern="*.R$", full.names=TRUE)) {
   source(file)
 }
 

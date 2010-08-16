@@ -1,4 +1,4 @@
-# Copyright 2010.  All rights reserved.
+# Author: Peter Carl, RUnit port by Ben McCann
 
 test.calcTxnValue <- function() {
   checkEquals(99, calcTxnValue(TxnQty=10, TxnPrice=10, TxnFees=1))

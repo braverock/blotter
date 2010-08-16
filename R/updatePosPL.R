@@ -114,7 +114,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
             PrevPosValue = 0
         } else {
             PrevPosQty = getPosQty(pname, Symbol, as.character(PrevDate)) 
-            PrevPosValue <- as.numeric(Portfolio[[Symbol]]$posPL[PrevDate, 'Pos.Value'])
+			ifelse(PrevPosQty != 0 , PrevPosValue <- as.numeric(Portfolio[[Symbol]]$posPL[PrevDate, 'Pos.Value']), PrevPosValue<-0) 			
         }    
 
         ifelse(PrevPosQty==0, PrevClosePrice <- 0 , PrevClosePrice <- as.numeric(getPrice(Prices)[as.character(PrevDate)]))
