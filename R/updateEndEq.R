@@ -4,7 +4,7 @@
 #' @param Dates 
 #' @author Peter Carl
 #' @export
-updateEndEq <- function(Account, Dates)
+updateEndEq <- function(Account, Dates=NULL)
 {
     aname<-Account
     Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
