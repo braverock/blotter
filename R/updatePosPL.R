@@ -6,151 +6,138 @@
 #' @param Prices periodic prices in an xts object with a columnname compatible with \code{getPrice}
 #' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
 #' @return Regular time series of position information and PL 
-#' @author Peter Carl
+#' @author Peter Carl, Brian Peterson
 #' @export
 updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
-{ # @author Peter Carl
+{ # @author Peter Carl, Brian Peterson
 
     pname<-Portfolio
-    Portfolio<-getPortfolio(pname) #TODO add Dates
-    
-    # FUNCTION
-    PosAvgCost = 0
-    PosQty = 0
-    
-    if(is.null(Prices)){
-        Prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
-    } 
-    
-    if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
-    
-
-#     freq = periodicity(Prices)
-#     switch(freq$scale,
-#             seconds = { tformat="%Y-%m-%d %H:%M:%S" },
-#             minute = { tformat="%Y-%m-%d %H:%M" },
-#             hourly = { tformat="%Y-%m-%d %H" },
-#             daily = { tformat="%Y-%m-%d" },
-#             {tformat="%Y-%m-%d"}
-#     )
-
-    if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = time(Prices)
-    else if(!is.timeBased(Dates)) Dates = time(Prices[Dates])
-
-    #TODO if ConMult is a time series, this won't work right
-    if(is.null(ConMult) | !hasArg(ConMult)){
-        tmp_instr<-try(getInstrument(Symbol))
-        if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
-            warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
-            ConMult<-1
-        } else {
-            ConMult<-tmp_instr$multiplier
-        }  
+    Portfolio<-getPortfolio(pname) 
+	p.ccy.str<-attr(Portfolio,'currency')
+	if(is.null(p.ccy.str)) p.ccy.str<-'NA'
+    tmp_instr<-try(getInstrument(Symbol))
+    if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
+	    warning(paste("Instrument",Symbol," not found, things may break"))
     }
-    PrevConMult = 1 ## @TODO: Change this to look up the value from instrument?
-
-    CcyMult = NA 
-    FXrate = NA
-    invert=FALSE
-    if(!is.null(attr(Portfolio,'currency'))) {
-        p.ccy.str<-attr(Portfolio,'currency')
-        if (tmp_instr$currency==p.ccy.str) {
-            CcyMult<-1
-        } else {
-            port_currency<-try(getInstrument(p.ccy.str))
-            if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
-                warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
-                CcyMult<-1
-            } else {
-                FXrate.str<-paste(tmp_instr$currency,p.ccy.str,sep='')
-                FXrate<-try(get(FXrate.str))
-                if(inherits(FXrate,"try-error")){
-                    FXrate.str<-paste(p.ccy.str,tmp_instr$currency,sep='')
-                    FXrate<-try(get(FXrate.str))
-                    if(inherits(FXrate,"try-error")){ 
-                        warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
-                        CcyMult<-1
-                    } else {
-                        invert=TRUE
-                    }
-                }
-            }
-        }
-    } else {
-        message("no currency set on portfolio, using currency multiplier of 1")
-        CcyMult =1
-    }
-    
-    # For each date, calculate realized and unrealized P&L
-    for(i in 1:length(Dates)){ ##
-        # Get the current date and close price
-        CurrentDate = Dates[i]
-        PrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1]) # which.i is new in [.xts
-        if (length(PrevDate)==0) next() #no price data, keep looking
-        # NOTE the line above iterates to the next Date in the Dates collection, 
-        # this can be the case as with contract rolls, or missing data.  price data may not cover the entire period
-        PrevDateWidth = xts:::.parseISO8601(PrevDate)
-        PrevDateLast = PrevDateWidth$last.time
-        PriorPrevDate = time(Prices[Prices[CurrentDate,which.i=TRUE]-1])
-        PriorPrevDateWidth = xts:::.parseISO8601(PriorPrevDate)
-        PriorPrevDateLast = PriorPrevDateWidth$last.time
-        CurrentSpan = paste(PrevDateLast, CurrentDate, sep="::")
-        PrevSpan = paste(PriorPrevDateLast, PrevDate, sep="::")
-
-		if(length(PrevDate)==0) PrevDate = NA
-        
-        #TODO write a single getTxn and use the values instead of these lines
-        TxnValue = getTxnValue(pname, Symbol, CurrentSpan)
-        TxnFees = getTxnFees(pname, Symbol, CurrentSpan)
-        PosQty = getPosQty(pname, Symbol, as.character(CurrentDate))
-        
-        ClosePrice = as.numeric(last(getPrice(Prices[CurrentDate,]))) #not necessary
-        #PosValue = calcPosValue(PosQty, ClosePrice, ConMult)
-		PosValue <- PosQty * ClosePrice * ConMult			
 	
-        if(is.na(PrevDate)){
-            PrevPosQty = 0
-            PrevPosValue = 0
-        } else {
-            PrevPosQty = getPosQty(pname, Symbol, as.character(PrevDate)) 
-			ifelse(PrevPosQty != 0 , PrevPosValue <- as.numeric(Portfolio[[Symbol]]$posPL[PrevDate, 'Pos.Value']), PrevPosValue<-0) 			
-        }    
+	if(is.null(Prices)){
+		Prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
+	} 
+	
+    if(is.null(Dates)) {# if no date is specified, get all available dates
+        Dates = time(Prices)
+	} else if(!is.timeBased(Dates)) Dates = time(Prices[Dates])
 
-        ifelse(PrevPosQty==0, PrevClosePrice <- 0 , PrevClosePrice <- as.numeric(getPrice(Prices)[as.character(PrevDate)]))
+	# line up Prices dates with Dates set/index/span passed in.
+	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller delta for millisecond data?
+	endDate   = xts:::.parseISO8601(last(Dates))$last.time
+	dateRange = paste(startDate,endDate,sep='::')
 
-		GrossTradingPL = PosValue - PrevPosValue - TxnValue
-		NetTradingPL = GrossTradingPL + TxnFees # Fees are assumed to have negative values
-		PosAvgCost = as.numeric(last(Portfolio[[Symbol]]$txn[paste('::', CurrentDate, sep=""),'Pos.Avg.Cost']))			
-		UnrealizedPL = PosQty*(ClosePrice-PosAvgCost)*ConMult			
-		RealizedPL = round(GrossTradingPL - UnrealizedPL,2)
+	if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
+	Prices <- Prices[dateRange][,1] # only take the first column, if there is more than one
+	colnames(Prices)<-'Prices' # name it so we can refer to it by name later
+	
+	#	***** Vectorization *****#
+	# trim posPL slot to not double count, related to bug 831 on R-Forge 
+	Portfolio[[Symbol]]$posPL<-Portfolio[[Symbol]]$posPL[paste('::',startDate,sep='')]
+	Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
+	
+	Txns <- Portfolio[[Symbol]]$txn[dateRange]
+	#	 line up transaction with Dates list
+	tmpPL <- merge(Txns, Prices) # most Txn columns will get discarded later
+	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
+	tmpPL$Prices <- na.locf(tmpPL$Prices)
 
-        NewPeriod = as.xts(t(c(PosQty, ConMult, CcyMult, PosValue, TxnValue, RealizedPL, UnrealizedPL, GrossTradingPL, TxnFees, NetTradingPL)), order.by=CurrentDate) #, format=tformat
-        colnames(NewPeriod) =  c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-        Portfolio[[Symbol]]$posPL <- rbind(Portfolio[[Symbol]]$posPL, NewPeriod) 
-    }
+	# na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows
+	tmpPL$Pos.Qty <- na.locf(tmpPL$Pos.Qty)
+	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty),0, tmpPL$Pos.Qty)
+	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
+	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
+	tmpPL$Pos.Avg.Cost <- na.locf(tmpPL$Pos.Avg.Cost) # Pos.Avg.Cost column will get discarded later
+	tmpPL$Pos.Avg.Cost <- ifelse(is.na(tmpPL$Pos.Avg.Cost),0, tmpPL$Pos.Avg.Cost)
+	
+	# zerofill Txn.Value, Txn.Fees
+	tmpPL$Txn.Value <- ifelse(is.na(tmpPL$Txn.Value),0, tmpPL$Txn.Value)
+	tmpPL$Txn.Fees  <- ifelse(is.na(tmpPL$Txn.Fees) ,0, tmpPL$Txn.Fees)
+	
+	# matrix calc Pos.Qty * Price * Con.Mult to get Pos.Value
+	tmpPL$Pos.Value <- tmpPL$Pos.Qty * tmpPL$Con.Mult * tmpPL$Prices
+	
+	# matrix calc Unrealized.PL as Pos.Qty*(Price-Pos.Avg.Cost)*Con.Mult
+	tmpPL$Unrealized.PL <- tmpPL$Pos.Qty*(tmpPL$Prices-tmpPL$Pos.Avg.Cost)*tmpPL$Con.Mult
+	
+	# matrix calc Gross.Trading.PL as Pos.Value-Lag(Pos.Value)-Txn.Value
+	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value-Lag(tmpPL$Pos.Value)- tmpPL$Txn.Value
+	tmpPL$Gross.Trading.PL[1] <- 0
+	
+	# matrix calc Realized.PL as Gross.Trading.PL - Unrealized.PL
+	tmpPL$Realized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Unrealized.PL,2)
+	
+	# matrix calc Net.Trading.PL as Gross.Trading.PL + Txn.Fees
+	tmpPL$Net.Trading.PL <- tmpPL$Gross.Trading.PL + tmpPL$Txn.Fees
+
+	# Ccy.Mult for this step is always 1
+	tmpPL$Ccy.Mult<-rep(1,nrow(tmpPL))
+	
+	# reorder,discard  columns for insert into portfolio object
+	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
+
+	# rbind to $posPL slot
+	Portfolio[[Symbol]]$posPL<-rbind(Portfolio[[Symbol]]$posPL,tmpPL)
+		
+
     
     # now do the currency conversions for the whole date range
-    startDate = xts:::.parseISO8601(first(Dates))$first.time-1
-    endDate   = xts:::.parseISO8601(last(Dates))$last.time
-    dateRange = paste(startDate,endDate,sep='::')
     TmpPeriods<-Portfolio[[Symbol]]$posPL[dateRange]
-    if(is.na(CcyMult) & !is.na(FXrate)) {
-        if(inherits(FXrate,'xts')){
-            CcyMult <- FXrate[dateRange]
-            CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
-            CcyMult <- CcyMult[index(TmpPeriods)]
-        } else {
-            CcyMult<-as.numeric(FXrate)
-        }
-    } else {
-        CcyMult<-1
-    }
-    if(isTRUE(invert)){
-        # portfolio and instrument have different currencies, and FXrate was in the wrong direction
-        CcyMult<-1/CcyMult
-    }
-    #multiply the correct columns, (probably one at a time?)    
+
+	CcyMult = NA 
+	FXrate = NA
+	invert=FALSE
+	if(!is.null(attr(Portfolio,'currency'))) {
+		if (tmp_instr$currency==p.ccy.str) {
+			CcyMult<-1			
+		} else {
+			port_currency<-try(getInstrument(p.ccy.str))
+			if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
+				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
+				CcyMult<-1
+			} else {
+				FXrate.str<-paste(tmp_instr$currency,p.ccy.str,sep='')
+				FXrate<-try(get(FXrate.str))
+				if(inherits(FXrate,"try-error")){
+					FXrate.str<-paste(p.ccy.str,tmp_instr$currency,sep='')
+					FXrate<-try(get(FXrate.str))
+					if(inherits(FXrate,"try-error")){ 
+						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
+						CcyMult<-1
+					} else {
+						invert=TRUE
+					}
+				}
+			}		
+			
+		}
+	} else {
+		message("no currency set on portfolio, using currency multiplier of 1")
+		CcyMult =1
+	}
+	if(is.na(CcyMult) & !is.na(FXrate)) {
+		if(inherits(FXrate,'xts')){
+			CcyMult <- FXrate[dateRange]
+			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
+			CcyMult <- CcyMult[index(TmpPeriods)]
+		} else {
+			CcyMult<-as.numeric(FXrate)
+		}
+	} else {
+		CcyMult<-1
+	}
+	if(isTRUE(invert)){
+		# portfolio and instrument have different currencies, and FXrate was in the wrong direction
+		CcyMult<-1/CcyMult
+	}
+	
+	#multiply the correct columns    
     columns<-c('Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     for (column in columns){
         TmpPeriods[,column]<-TmpPeriods[,column]*CcyMult
@@ -158,7 +145,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     TmpPeriods[,'Ccy.Mult']<-CcyMult
     #stick it in posPL.ccy
     Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
-    # return(Portfolio)
+    # assign Portfolio to environment
     assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
