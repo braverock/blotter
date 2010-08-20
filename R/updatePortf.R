@@ -27,6 +27,32 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
         tmp_instr<-try(getInstrument(symbol))
         updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices)            
     }
+    # Calculate and store portfolio summary table
+    Portfolio<-getPortfolio(pname) # refresh with an updated object
+    Symbols = names(Portfolio)
+    Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+    summary = matrix()
+    for(attribute in Attributes) {
+        table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
+        switch(attribute,
+            Gross.Value = {
+                result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))
+            },
+            Long.Value = {
+                tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
+                result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+            },
+            Short.Value = {
+                tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
+                result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+            },
+            { result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
+            }
+        )
+        colnames(result) = attribute
+        summary = merge(summary, result)
+    }
+    # TODO: Now store summary in the correct slot in the Portfolio object
     return(pname) #not sure this is a good idea
 }
 
