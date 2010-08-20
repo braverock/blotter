@@ -1,10 +1,10 @@
 calcPortfAttr <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
 {
     if(!inherits(Portfolio,"portfolio")) stop("Portfolio passed is not a portfolio object.")
-    symbols = names(Portfolio)
+    symbols = names(Portfolio$symbols)
     if(is.null(Dates)|is.na(Dates)) # if no date is specified, get all available dates
-        Dates = time(Portfolio[[1]]$posPL)
-#    else Dates = time(Portfolio[[1]]$posPL[Dates])
+        Dates = time(Portfolio$symbols[[1]]$posPL)
+#    else Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
 
     switch(Attribute,
         Gross.Trading.PL = {

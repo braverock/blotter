@@ -6,8 +6,8 @@ calcPortfSummary <- function(Portfolio, Dates=NULL)
     # Long.Value, Short.Value, Net.Value, Trading.PL
 
     if(is.null(Dates) || is.na(Dates)) # if no date is specified, get all available dates
-        Dates = time(Portfolio[[1]]$posPL )
-#    else Dates = time(Portfolio[[1]]$posPL[Dates])
+        Dates = time(Portfolio$symbols[[1]]$posPL )
+#    else Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
     
     GrossTradingPL = calcPortfAttr(Portfolio, 'Gross.Trading.PL', Dates)
     NetTradingPL = calcPortfAttr(Portfolio, 'Net.Trading.PL', Dates)

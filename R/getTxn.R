@@ -15,7 +15,7 @@ getTxns <- function(Portfolio, Symbol, Date)
 
     # Outputs
     # Table of transactions made in the Symbol during the time period given
-    TxnData = Portfolio[[Symbol]]$txn
+    TxnData = Portfolio$symbols[[Symbol]]$txn
     Txns = TxnData[Date,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost')]
     return(Txns)
 }

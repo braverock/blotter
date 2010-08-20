@@ -39,10 +39,16 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	
 	#	***** Vectorization *****#
 	# trim posPL slot to not double count, related to bug 831 on R-Forge 
-	Portfolio[[Symbol]]$posPL<-Portfolio[[Symbol]]$posPL[paste('::',startDate,sep='')]
-	Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
+	Portfolio$symbols[[Symbol]]$posPL<-Portfolio$symbols[[Symbol]]$posPL[paste('::',startDate,sep='')]
+	Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
 	
-	Txns <- Portfolio[[Symbol]]$txn[dateRange]
+	Txns <- Portfolio$symbols[[Symbol]]$txn[dateRange]
+	if(nrow(Txns)==0) {
+		message("No Transactions to process for ",Symbol," in ",dateRange)
+		return()
+		#TODO this isn't quite right either, but it will suffice to avoid errors for what we need for the moment...
+		#eventually, we'll need to get the last row in the posPL table, and mark from there if we have a position
+	}
 	#	 line up transaction with Dates list
 	tmpPL <- merge(Txns, Prices) # most Txn columns will get discarded later
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
@@ -83,12 +89,12 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
 
 	# rbind to $posPL slot
-	Portfolio[[Symbol]]$posPL<-rbind(Portfolio[[Symbol]]$posPL,tmpPL)
+	Portfolio$symbols[[Symbol]]$posPL<-rbind(Portfolio$symbols[[Symbol]]$posPL,tmpPL)
 		
 
     
     # now do the currency conversions for the whole date range
-    TmpPeriods<-Portfolio[[Symbol]]$posPL[dateRange]
+    TmpPeriods<-Portfolio$symbols[[Symbol]]$posPL[dateRange]
 
 	CcyMult = NA 
 	FXrate = NA
@@ -144,7 +150,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     }
     TmpPeriods[,'Ccy.Mult']<-CcyMult
     #stick it in posPL.ccy
-    Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
+    Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
     # assign Portfolio to environment
     assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }

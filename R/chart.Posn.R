@@ -36,22 +36,22 @@ chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
     tzero = xts(0,order.by=index(Prices[1,]))
 #    Prices=align.time(Prices,n) 
     
-    Trades = Portfolio[[Symbol]]$txn$Txn.Price*Portfolio[[Symbol]]$txn$Txn.Qty
-    Buys = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades>0)]
+    Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Price*Portfolio$symbols[[Symbol]]$txn$Txn.Qty
+    Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
 #    Buys = align.time(rbind(Buys,tzero),n)[-1]
-    Sells = Portfolio[[Symbol]]$txn$Txn.Price[which(Trades<0)]
+    Sells = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
 #    Sells = align.time(rbind(Sells,tzero),n)[-1]
-    #Position = Portfolio[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
-    Position = Portfolio[[Symbol]]$txn$Pos.Qty
+    #Position = Portfolio$symbols[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
+    Position = Portfolio$symbols[[Symbol]]$txn$Pos.Qty
     Positionfill = na.locf(merge(Position,index(Prices)))
-    CumPL = cumsum(Portfolio[[Symbol]]$posPL$Net.Trading.PL)
+    CumPL = cumsum(Portfolio$symbols[[Symbol]]$posPL$Net.Trading.PL)
     if(length(CumPL)>1)
         CumPL = na.locf(merge(CumPL,index(Prices)))
     else 
         CumPL = NULL
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
-    # SellCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty<0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
-    # BuyCover = Portfolio[[Symbol]]$txn$Txn.Price * (Portfolio[[Symbol]]$txn$Txn.Qty>0) * (Portfolio[[Symbol]]$txn$Pos.Qty==0)
+    # SellCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty<0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
+    # BuyCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty>0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
     # 
     #     #Symbol 24 (up) and 25 (dn) can take bkgd colors
     # addTA(BuyCover,pch=24,type="p",col="green", bg="orange", on=1)

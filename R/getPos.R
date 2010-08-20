@@ -14,7 +14,7 @@ getPos <- function(Portfolio, Symbol, Date)
     # This should get much more complicated from here, particularly when it's conditional on symbol, etc.
     
     # FUNCTION
-    PosData = Portfolio[[Symbol]]$txn
+    PosData = Portfolio$symbols[[Symbol]]$txn
     toDate = paste('::', Date, sep="")
     # It may not make sense to return realized P&L with the position information, so only position and 
     # position average cost are returned.

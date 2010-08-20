@@ -21,19 +21,22 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
 
     # FUNCTION
     if(is.null(Symbols)){
-        Symbols = names(Portfolio)
+        Symbols = names(Portfolio$symbols)
     } 
     for(symbol in Symbols){
         tmp_instr<-try(getInstrument(symbol))
         updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices)            
     }
+	
     # Calculate and store portfolio summary table
     Portfolio<-getPortfolio(pname) # refresh with an updated object
-    Symbols = names(Portfolio)
+    #Symbols = names(Portfolio$symbols)
     Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-    summary = matrix()
+    summary = NULL
     for(attribute in Attributes) {
+		result=NULL
         table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
+		
         switch(attribute,
             Gross.Value = {
                 result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))
@@ -49,10 +52,19 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
             { result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             }
         )
+		
         colnames(result) = attribute
-        summary = merge(summary, result)
+		if(is.null(summary)) {summary=result}
+		else {summary=cbind(summary,result)}
     }
-    # TODO: Now store summary in the correct slot in the Portfolio object
+	
+	if(!is.timeBased(Dates)) Dates = time(Portfolio$summary[Dates])
+	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller delta for millisecond data?
+	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
+	Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
+	# assign Portfolio to environment
+	assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+	
     return(pname) #not sure this is a good idea
 }
 

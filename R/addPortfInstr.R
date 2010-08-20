@@ -7,9 +7,9 @@ addPortfInstr <- function(Portfolio,symbols,...)
 	initDate <- attr(portfolio, "initDate")    
 	currency <- attr(portfolio, "currency")
     for(instrument in symbols){
-        portfolio[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = 0)
-        portfolio[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = 0)
-		portfolio[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio[[instrument]]$posPL		
+        portfolio$symbols[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = 0)
+        portfolio$symbols[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = 0)
+		portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL		
     }
 
     assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    

@@ -19,7 +19,7 @@ function(Portfolio, Symbol, Date)
     # Realized PL calculated for the transaction
 
     # FUNCTION
-    PosData = Portfolio[[Symbol]]$txn
+    PosData = Portfolio$symbols[[Symbol]]$txn
     RealizedPL = sum(as.numeric(PosData[Date, 'Realized.PL', drop=FALSE]))
     return(RealizedPL)
 }

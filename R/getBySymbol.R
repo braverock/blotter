@@ -17,8 +17,8 @@
 
     # FUNCTION
     if(is.null(Dates) | is.na(Dates)) # if no date is specified, get all available dates
-        Dates = time(Portfolio[[1]]$posPL)
-    # else  Dates = time(Portfolio[[1]]$posPL[Dates])
+        Dates = time(Portfolio$symbols[[1]]$posPL)
+    # else  Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
     if(!is.null(attr(Portfolio,'currency')) & Local==FALSE) {
         p.ccy.str<-attr(Portfolio,'currency')
         namePosPL = paste("posPL", p.ccy.str, sep=".")
@@ -31,12 +31,12 @@
     table = NULL 
       ## Need a reference time index
     if(is.null(Symbols))
-        symbols=names(Portfolio)
+        symbols=names(Portfolio$symbols)
     else
         symbols = Symbols
     
     for (symbol in symbols) {
-        tmp_col = Portfolio[[symbol]][[namePosPL]][Dates,Attribute,drop=FALSE]
+        tmp_col = Portfolio$symbols[[symbol]][[namePosPL]][Dates,Attribute,drop=FALSE]
         if(is.null(table)) table = tmp_col
         else table = merge(table, tmp_col)
     }

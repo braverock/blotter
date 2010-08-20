@@ -18,7 +18,7 @@ function(Portfolio, Symbol, Date)
     # Numeric value of the most recent position.
 
     # FUNCTION
-    TxnData = Portfolio[[Symbol]]$txn
+    TxnData = Portfolio$symbols[[Symbol]]$txn
     TxnValue = sum(TxnData[Date,'Txn.Value'])
     return(TxnValue)
 }

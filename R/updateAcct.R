@@ -22,10 +22,10 @@ updateAcct <- function(name='default', Dates=NULL)
     # TODO FIXME this so that it finds the date range in *any*/all portfolios, not just the first
     if(is.null(Dates)) 
         #[[1]] here is the first instrument in the portfolio
-        Dates = time(Portfolio[[1]]$posPL ) # if no date is specified, get all available dates
+        Dates = time(Portfolio$symbols[[1]]$posPL ) # if no date is specified, get all available dates
 #    if(!is.timeBased(Dates) ){
         # Dates is an xts range, turn it into a list of Dates
-#    else Dates = time(Portfolio[[1]]$posPL[Dates])
+#    else Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
 #    } 
     
     #TODO FIXME do two loops, one over portfolios to update each portfolio 
@@ -42,7 +42,7 @@ updateAcct <- function(name='default', Dates=NULL)
             Portfolio = getPortfolio(pname)
 
             CurrentDate = Dates[d]
-            PrevDate = time(Portfolio[[1]]$posPL[Portfolio[[1]]$posPL[CurrentDate,which.i=TRUE]-1 ] ) # which.i is new in [.xts
+            PrevDate = time(Portfolio$symbols[[1]]$posPL[Portfolio$symbols[[1]]$posPL[CurrentDate,which.i=TRUE]-1 ] ) # which.i is new in [.xts
             if (length(PrevDate)==0) next() #no price data, keep looking
             PrevDateWidth = xts:::.parseISO8601(PrevDate)
             PrevDateLast = PrevDateWidth$last.time

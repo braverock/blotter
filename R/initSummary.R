@@ -1,14 +1,9 @@
-`getTxnFees` <-
-function(Portfolio, Symbol, Date)
-{
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
-    
-    TxnData = Portfolio$symbols[[Symbol]]$txn
-    TxnFees = sum(TxnData[Date,'Txn.Fees'])
-    return(TxnFees)
+initSummary <- function(initDate="1950-01-01")
+{ # @author Brian Peterson
+    summary <- xts( as.matrix(t(rep(0,9))), order.by=as.POSIXct(initDate) )
+    colnames(summary) <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+    class(summary)<-c("portfolio_summary",class(summary))
+    return(summary)
 }
 
 ###############################################################################
@@ -19,6 +14,6 @@ function(Portfolio, Symbol, Date)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: initTxn.R 306 2010-03-26 21:19:51Z peter_carl $
 #
 ###############################################################################

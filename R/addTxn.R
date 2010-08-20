@@ -32,14 +32,14 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 	
 	
 	#If there is no table for the symbol then create a new one
-	if (is.null(Portfolio[[Symbol]])){ 
+	if (is.null(Portfolio$symbols[[Symbol]])){ 
 		addPortfInstr(Portfolio=pname, symbols=Symbol)
 		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 	}
 
     # Outputs:
     # Portfolio: hands back the entire portfolio object with the additional
-    # transaction in the correct slot: Portfolio[[Symbol]]$txn
+    # transaction in the correct slot: Portfolio$symbols[[Symbol]]$txn
 
     # FUNCTION
     # Compute transaction fees if a function was supplied
@@ -63,11 +63,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, txnfees, NetTxnRealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
     #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
-    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
+    Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
     if(verbose)
         print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
-        #print(Portfolio[[Symbol]]$txn)
+        #print(Portfolio$symbols[[Symbol]]$txn)
     
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
@@ -132,7 +132,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
             NewTxns<-rbind(NewTxns, NewTxn)
         }
     }
-    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn,NewTxns) 
+    Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn,NewTxns) 
 
     if(verbose) print(NewTxns)
     
@@ -155,7 +155,7 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     }
     # Outputs:
     # Portfolio: hands back the entire portfolio object with the additional
-    # transaction in the correct slot: Portfolio[[Symbol]]$txn
+    # transaction in the correct slot: Portfolio$symbols[[Symbol]]$txn
 
     # FUNCTION
     # Adding a Dividend does not affect position
@@ -184,11 +184,11 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, TxnFees, NetTxnRealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
     #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
-    Portfolio[[Symbol]]$txn<-rbind(Portfolio[[Symbol]]$txn, NewTxn)
+    Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
     if(verbose)
         print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", TxnValue, sep=" "))
-        #print(Portfolio[[Symbol]]$txn)
+        #print(Portfolio$symbols[[Symbol]]$txn)
 
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
