@@ -33,23 +33,38 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
     #Symbols = names(Portfolio$symbols)
     Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     summary = NULL
+	tmp.attr=NULL
     for(attribute in Attributes) {
 		result=NULL
-        table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
-		
         switch(attribute,
-            Gross.Value = {
-                result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))
+			Net.Value =,	
+            Gross.Value =,
+			Long.Value =,
+			Short.Value =,{
+				# all these use Pos.Value
+				if(is.null(tmp.attr)){
+					table = .getBySymbol(Portfolio = Portfolio, Attribute = "Pos.Value", Dates = Dates, Symbols = Symbols)
+					tmp.attr="Pos.Value"
+				}	
+				switch(attribute,
+						Gross.Value = {	result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))},
+						Long.Value  = { tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
+										result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+						},
+						Short.Value = { tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
+										result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+						},
+						Net.Value   = {	result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))	}
+				)
             },
-            Long.Value = {
-                tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
-                result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
-            },
-            Short.Value = {
-                tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
-                result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
-            },
-            { result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
+			Realized.PL =,
+			Unrealized.PL =,
+			Gross.Trading.PL =,
+			Txn.Fees =,
+			Net.Trading.PL = { 
+				table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
+				tmp.attr = NULL
+				result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             }
         )
 		
