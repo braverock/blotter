@@ -17,8 +17,8 @@ initPosPL <- function(initDate="1950-01-01", ..., initPosQty=0, initConMult=1, i
     # Constructs multi-column xts object used to store derived position information
 
     # FUNCTION
-    posPL <- xts( as.matrix(t(c(initPosQty,initConMult,initCcyMult,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
-    colnames(posPL) <- c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+    posPL <- xts( as.matrix(t(c(initPosQty,initConMult,initCcyMult,0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
+    colnames(posPL) <- c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     class(posPL)<- c("posPL",class(posPL))
     return(posPL)
 }

@@ -105,18 +105,17 @@ verbose=TRUE
 # Create trades
 for( i in 57:NROW(x) ) { # Assumes all dates are the same
   CurrentDate=time(x)[i]
-  print(CurrentDate)
+  #print(CurrentDate)
   equity = getEndEq(account, CurrentDate)
 
   for(symbol in symbols){
-#      print(symbol)
     x=get(symbol)
     ClosePrice = as.numeric(Cl(x[i,]))
 
     Posn = getPosQty(Portfolio=portfolio, Symbol=symbol, Date=CurrentDate)
     s = tail(getPortfolio(portfolio)[[symbol]]$strat,1)
-#      print(s)
-    Units = as.numeric(s[,'Pos.Units'])
+
+	Units = as.numeric(s[,'Pos.Units'])
     TxnPrice = as.numeric(s[,'Txn.Price'])
     N = as.numeric(s[,'Txn.N'])
     Stop = as.numeric(s[,'Stop.Price'])
@@ -169,19 +168,14 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
 cat('Return: ',(getEndEq(Account=account, Date=CurrentDate)-initEq)/initEq,'\n')
 
 if (require(quantmod)) {
-  Portfolio<-getPortfolio(portfolio)  
-  Buys = Portfolio[["XLF"]]$txn$Txn.Price*(Portfolio[["XLF"]]$txn[,'Txn.Qty']>0)
-  Sells = Portfolio[["XLF"]]$txn$Txn.Price*(Portfolio[["XLF"]]$txn[,'Txn.Qty']<0)
-  Position = Portfolio[["XLF"]]$posPL[,'Pos.Qty']
-  CumPL = cumsum(Portfolio[["XLF"]]$posPL[,'Trading.PL'])
-  chartSeries(XLF['2008::2009',], TA=NULL, type='bar', theme=chartTheme("white",up.col='lightgreen',dn.col='pink'))
-  plot(addTA(Buys['2008::2009',],pch=2,type='p',col='darkgreen', on=1));
-  plot(addTA(Sells['2008::2009',],pch=6,type='p',col='darkred', on=1));
-  plot(addTA(Position['2008::2009',],type='h',col='blue', lwd=2));
-  plot(addTA(CumPL['2008::2009',], col='darkgreen', lwd=2))
+	for(symbol in symbols){
+		dev.new()
+		chart.Posn(Portfolio='turtles',Symbol=symbol)
+	}
 }
 
 if(require(PerformanceAnalytics)){
     return = Delt(getAccount(account)[["TOTAL"]]$End.Eq)
+	dev.new()
     charts.PerformanceSummary(as.zoo(return),main="Turtle Demo Performance")   
 }

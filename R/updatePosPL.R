@@ -10,7 +10,7 @@
 #' @export
 updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl, Brian Peterson
-
+	rmfirst=FALSE
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) 
 	p.ccy.str<-attr(Portfolio,'currency')
@@ -21,20 +21,25 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
     }
 	
 	if(is.null(Prices)){
-		Prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
+		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
 	} 
 	
     if(is.null(Dates)) {# if no date is specified, get all available dates
-        Dates = time(Prices)
-	} else if(!is.timeBased(Dates)) Dates = time(Prices[Dates])
+        Dates = time(prices)
+	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
 
 	# line up Prices dates with Dates set/index/span passed in.
-	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller delta for millisecond data?
+	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller/larger delta for millisecond data?
 	endDate   = xts:::.parseISO8601(last(Dates))$last.time
 	dateRange = paste(startDate,endDate,sep='::')
-
-	if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
-	Prices <- Prices[dateRange][,1] # only take the first column, if there is more than one
+	
+	#subset Prices by dateRange too...
+	Prices<-prices[dateRange]
+	
+	if(ncol(Prices)>1) Prices=getPrice(prices,Symbol)[dateRange] 
+	
+	# Prices <- Prices[dateRange][,1] # only take the first column, if there is more than one
+	
 	colnames(Prices)<-'Prices' # name it so we can refer to it by name later
 	
 	#	***** Vectorization *****#
@@ -43,23 +48,34 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
 	
 	Txns <- Portfolio$symbols[[Symbol]]$txn[dateRange]
-	if(nrow(Txns)==0) {
-		message("No Transactions to process for ",Symbol," in ",dateRange)
-		return()
-		#TODO this isn't quite right either, but it will suffice to avoid errors for what we need for the moment...
-		#eventually, we'll need to get the last row in the posPL table, and mark from there if we have a position
+	if(nrow(Txns)==1){
+		newtxn <- last(Portfolio$symbols[[Symbol]]$posPL)[,colnames(Txns)]
+		Txns <- rbind(Txns,newtxn)
+		rmfirst=TRUE
 	}
+	if(nrow(Txns)==0) {
+		Txns <- last(Portfolio$symbols[[Symbol]]$posPL)
+		rmfirst=TRUE
+	} 
+	
 	#	 line up transaction with Dates list
 	tmpPL <- merge(Txns, Prices) # most Txn columns will get discarded later
+
+	if(is.na(tmpPL$Prices[1])){
+		tmpPL$Prices[1] <- last(prices[paste('::',startDate,sep='')])
+	}
+
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
 	tmpPL$Prices <- na.locf(tmpPL$Prices)
 
 	# na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows
 	tmpPL$Pos.Qty <- na.locf(tmpPL$Pos.Qty)
 	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty),0, tmpPL$Pos.Qty)
+
 	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
 	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
-	tmpPL$Pos.Avg.Cost <- na.locf(tmpPL$Pos.Avg.Cost) # Pos.Avg.Cost column will get discarded later
+	
+	tmpPL$Pos.Avg.Cost <- na.locf(tmpPL$Pos.Avg.Cost)
 	tmpPL$Pos.Avg.Cost <- ifelse(is.na(tmpPL$Pos.Avg.Cost),0, tmpPL$Pos.Avg.Cost)
 	
 	# zerofill Txn.Value, Txn.Fees
@@ -70,7 +86,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	tmpPL$Pos.Value <- tmpPL$Pos.Qty * tmpPL$Con.Mult * tmpPL$Prices
 	
 	# matrix calc Unrealized.PL as Pos.Qty*(Price-Pos.Avg.Cost)*Con.Mult
-	tmpPL$Unrealized.PL <- tmpPL$Pos.Qty*(tmpPL$Prices-tmpPL$Pos.Avg.Cost)*tmpPL$Con.Mult
+	tmpPL$Unrealized.PL <- round(tmpPL$Pos.Qty*(tmpPL$Prices-tmpPL$Pos.Avg.Cost)*tmpPL$Con.Mult,2)
 	
 	# matrix calc Gross.Trading.PL as Pos.Value-Lag(Pos.Value)-Txn.Value
 	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value-Lag(tmpPL$Pos.Value)- tmpPL$Txn.Value
@@ -86,9 +102,10 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	tmpPL$Ccy.Mult<-rep(1,nrow(tmpPL))
 	
 	# reorder,discard  columns for insert into portfolio object
-	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
+	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
 
 	# rbind to $posPL slot
+	if(isTRUE(rmfirst)) tmpPL<-tmpPL[-1,] #remove the constructed first row, so we don't insert dups in the table
 	Portfolio$symbols[[Symbol]]$posPL<-rbind(Portfolio$symbols[[Symbol]]$posPL,tmpPL)
 		
 
@@ -145,10 +162,11 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	
 	#multiply the correct columns    
     columns<-c('Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-    for (column in columns){
-        TmpPeriods[,column]<-TmpPeriods[,column]*CcyMult
-    }
-    TmpPeriods[,'Ccy.Mult']<-CcyMult
+#    for (column in columns){
+#        TmpPeriods[,column]<-TmpPeriods[,column]*CcyMult
+#    }
+	TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
+	TmpPeriods[,'Ccy.Mult']<-CcyMult
     #stick it in posPL.ccy
     Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
     # assign Portfolio to environment
