@@ -76,7 +76,11 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
 	if(!is.timeBased(Dates)) Dates = time(Portfolio$summary[Dates])
 	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller delta for millisecond data?
 	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
-	Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
+	if(attr(Portfolio,'initDate')>=startDate){
+		Portfolio$summary<-summary #changes to subset might not return a empty dimnames set of columns
+	}else{
+		Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
+	}
 	# assign Portfolio to environment
 	assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 	
