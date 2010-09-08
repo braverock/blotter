@@ -144,7 +144,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 		if(inherits(FXrate,'xts')){
 			CcyMult <- FXrate[dateRange]
 			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
-			CcyMult <- CcyMult[index(TmpPeriods)]
+			CcyMult <- drop(CcyMult[index(TmpPeriods)])
 		} else {
 			CcyMult<-as.numeric(FXrate)
 		}
