@@ -3,10 +3,10 @@ getTxns <- function(Portfolio, Symbol, Date)
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new account"))
+        stop(paste("Portfolio",name," not found, use initPortf() to create a new portfolio first"))
     
     # DESCRIPTION:
-    # Gets the value of that period's transactions and returns the sum 
+    # Gets the transactions and returns 
 
     # Inputs
     # Portfolio: a portfolio object containing transactions

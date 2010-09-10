@@ -1,4 +1,16 @@
-
+#' extract transactions from a portfolio in a manner suitable for creating tests
+#' 
+#' This function reverse-engineers \code{\link{addTxn}} calls for all the transactions in \code{Portfolio}.
+#' This is the fundamental task required to create a reproducible example, as it would replicate the 
+#' state of the $txn slot in the portfolio after each addTxn call.  
+#' While market data, expected results, portfolio and account setup, etc, are also required, 
+#' these can usually be deduced or equivalent formulations can be found.  
+#' 
+#' For transactions, only the exact addTxn parameters will recreate the $txn slot.  This function creates that reproducibility.  
+#' 
+#' @param Portfolio string identifying the portfolio to extract from
+#' @return string vector of \code{\link{addTxn}} calls that would replicate the given portfolio
+#' @export
 extractTxns <- function(Portfolio)
 { # @author Brian G. Peterson, Josh Ulrich
 	
@@ -43,6 +55,6 @@ extractTxns <- function(Portfolio)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id: getTxn.R 378 2010-08-20 18:12:00Z braverock $
+# $Id$
 #
 ###############################################################################
