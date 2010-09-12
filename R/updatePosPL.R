@@ -24,9 +24,10 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
 	} 
 	
-    if(is.null(Dates)) {# if no date is specified, get all available dates
-        Dates = time(prices)
+        if(is.null(Dates)) {# if no date is specified, get all available dates
+            Dates = time(prices)
 	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
+    
 
 	# line up Prices dates with Dates set/index/span passed in.
 	startDate = xts:::.parseISO8601(first(Dates))$first.time-1 #does this need to be a smaller/larger delta for millisecond data?

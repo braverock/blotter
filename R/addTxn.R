@@ -15,10 +15,10 @@
 #' @export
 addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
-	
+
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-    
+
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol))
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
@@ -26,11 +26,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
             ConMult<-1
         } else {
             ConMult<-tmp_instr$multiplier
-        }  
+        }
     }
-	
-	
-	
+
+
+
 	#If there is no table for the symbol then create a new one
 	if (is.null(Portfolio$symbols[[Symbol]])){ 
 		addPortfInstr(Portfolio=pname, symbols=Symbol)
@@ -43,7 +43,9 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     # FUNCTION
     # Compute transaction fees if a function was supplied
-    txnfees <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
+    if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- eval(as.numeric(TxnFees))
+    if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
+
     # Calculate the value and average cost of the transaction
     TxnValue = calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
     TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
