@@ -82,7 +82,8 @@ for( i in 10:NROW(GSPC) ) {
     CurrentDate=time(GSPC)[i]
     cat(".")
     equity = getEndEq(ltaccount, CurrentDate)
-
+	hasTxns= FALSE
+	
     ClosePrice = as.numeric(Ad(GSPC[i,]))
     Posn = getPosQty(ltportfolio, Symbol='GSPC', Date=CurrentDate)
     UnitSize = as.numeric(trunc(equity/ClosePrice))
@@ -94,6 +95,7 @@ for( i in 10:NROW(GSPC) ) {
             cat('\n')
             # Store trade with blotter
             addTxn(ltportfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
+			hasTxns=TRUE
         } 
     } else {
     # Have a position, so check exit
@@ -101,15 +103,21 @@ for( i in 10:NROW(GSPC) ) {
             cat('\n')
             # Store trade with blotter
             addTxn(ltportfolio, Symbol='GSPC', TxnDate=CurrentDate, TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
+			hasTxns=TRUE
         } 
     }
 
     # Calculate P&L and resulting equity with blotter
-    updatePortf(ltportfolio, Dates = CurrentDate)
-    updateAcct(ltaccount, Dates = CurrentDate)
-    updateEndEq(ltaccount, Dates = CurrentDate)
+	if(isTRUE(hasTxns)){
+		updatePortf(ltportfolio, Dates = CurrentDate)
+		updateAcct(ltaccount, Dates = CurrentDate)
+		updateEndEq(ltaccount, Dates = CurrentDate)
+	}
 } # End dates loop
 cat('\n')
+updatePortf(ltportfolio, Dates = CurrentDate)
+updateAcct(ltaccount, Dates = CurrentDate)
+updateEndEq(ltaccount, Dates = CurrentDate)
 
 # Chart results with quantmod
 chart.Posn(ltportfolio, Symbol = 'GSPC', Dates = '1998::')
