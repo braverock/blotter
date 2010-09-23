@@ -30,6 +30,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
 	
     # Calculate and store portfolio summary table
     Portfolio<-getPortfolio(pname) # refresh with an updated object
+	if(is.null(Dates)) Dates <- time(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
     #Symbols = names(Portfolio$symbols)
     Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     summary = NULL

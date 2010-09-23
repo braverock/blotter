@@ -32,6 +32,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	# line up Prices dates with Dates set/index/span passed in.
 	startDate = first(xts:::.parseISO8601(Dates))$first.time-1 #does this need to be a smaller/larger delta for millisecond data?
 	endDate   = last(xts:::.parseISO8601(Dates))$last.time
+	if(is.na(endDate)) endDate<-NULL
 	dateRange = paste(startDate,endDate,sep='::')
 	
 	#subset Prices by dateRange too...
