@@ -87,8 +87,9 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	tmpPL$Unrealized.PL <- round(tmpPL$Pos.Qty*(tmpPL$Prices-tmpPL$Pos.Avg.Cost)*tmpPL$Con.Mult,2)
 	
 	# matrix calc Gross.Trading.PL as Pos.Value-Lag(Pos.Value)-Txn.Value
-	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value-Lag(tmpPL$Pos.Value)- tmpPL$Txn.Value
-	tmpPL$Gross.Trading.PL[1] <- 0
+	LagValue<-Lag(tmpPL$Pos.Value)
+	LagValue<-ifelse(is.na(LagValue),0,LagValue) # needed to avoid a possible NA on the first value that would mess up the Gross.Trading.PL calc
+	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value- LagValue - tmpPL$Txn.Value
 	
 	# matrix calc Realized.PL as Gross.Trading.PL - Unrealized.PL
 	tmpPL$Realized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Unrealized.PL,2)
