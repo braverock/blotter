@@ -15,7 +15,7 @@
 #' @param Prices
 #' @export
 updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
-{ #' @author Peter Carl
+{ #' @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) # TODO add Date handling
 
@@ -32,7 +32,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
     Portfolio<-getPortfolio(pname) # refresh with an updated object
 	if(is.null(Dates)) Dates <- time(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
     #Symbols = names(Portfolio$symbols)
-    Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+    Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     summary = NULL
 	tmp.attr=NULL
     for(attribute in Attributes) {
@@ -58,8 +58,8 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
 						Net.Value   = {	result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))	}
 				)
             },
-			Realized.PL =,
-			Unrealized.PL =,
+			Period.Realized.PL =,
+			Period.Unrealized.PL =,
 			Gross.Trading.PL =,
 			Txn.Fees =,
 			Net.Trading.PL = { 

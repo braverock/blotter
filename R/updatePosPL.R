@@ -48,51 +48,64 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	# trim posPL slot to not double count, related to bug 831 on R-Forge 
 	Portfolio$symbols[[Symbol]]$posPL<-Portfolio$symbols[[Symbol]]$posPL[paste('::',startDate,sep='')]
 	Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
+	priorPL<-last(Portfolio$symbols[[Symbol]]$posPL)
 	
 	Txns <- Portfolio$symbols[[Symbol]]$txn[dateRange]
 	# if there are no transactions, get the last one before the current dateRange, we'll discard later
 	if(nrow(Txns)==0) {
 		Txns <- last(Portfolio$symbols[[Symbol]]$txn[paste('::',startDate,sep='')])
-		rmfirst=TRUE
 	} 
 	
 	#	 line up transaction with Dates list
-	tmpPL <- merge(Txns, Prices) # most Txn columns will get discarded later
-
+	tmpPL <- merge(Txns, priorPL, Prices) # most Txn columns will get discarded later, as will the rows from 'before' the startDate
+	
+	#browser()
+	
 	if(is.na(tmpPL$Prices[1])){
-		tmpPL$Prices[1] <- last(prices[paste('::',startDate,sep='')])
+		#first price is NA, it would be nice to fill it in with a previous last valid price
+		fprice <- last(prices[paste('::',startDate,sep='')])
+		if (length(fprice)==1) tmpPL$Prices[1] <- fprice 
 	}
-
+	
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
 	tmpPL$Prices <- na.locf(tmpPL$Prices)
 
-	# na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows
+	# na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows	
+	#tmpPL$Pos.Qty.1 <- na.locf(tmpPL$Pos.Qty.1)
+	#lagPosQty<-Lag(tmpPL$Pos.Qty.1)
+	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(tmpPL$Pos.Qty.1), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
+	#tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(lagPosQty), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
 	tmpPL$Pos.Qty <- na.locf(tmpPL$Pos.Qty)
-	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty),0, tmpPL$Pos.Qty)
 
+	tmpPL$Con.Mult.1 <- na.locf(tmpPL$Con.Mult.1)
+	tmpPL$Con.Mult.1 <- ifelse(is.na(tmpPL$Con.Mult) & !is.na(tmpPL$Con.Mult.1) , tmpPL$Con.Mult.1, tmpPL$Con.Mult)
 	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
 	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
 	
+	tmpPL$Pos.Avg.Cost.1 <- na.locf(tmpPL$Pos.Avg.Cost.1)
+	tmpPL$Pos.Avg.Cost <- ifelse(is.na(tmpPL$Pos.Avg.Cost) & !is.na(tmpPL$Pos.Avg.Cost.1) ,tmpPL$Pos.Avg.Cost.1, tmpPL$Pos.Avg.Cost)
 	tmpPL$Pos.Avg.Cost <- na.locf(tmpPL$Pos.Avg.Cost)
-	tmpPL$Pos.Avg.Cost <- ifelse(is.na(tmpPL$Pos.Avg.Cost),0, tmpPL$Pos.Avg.Cost)
 	
 	# zerofill Txn.Value, Txn.Fees
 	tmpPL$Txn.Value <- ifelse(is.na(tmpPL$Txn.Value),0, tmpPL$Txn.Value)
+	
 	tmpPL$Txn.Fees  <- ifelse(is.na(tmpPL$Txn.Fees) ,0, tmpPL$Txn.Fees)
 	
 	# matrix calc Pos.Qty * Price * Con.Mult to get Pos.Value
 	tmpPL$Pos.Value <- tmpPL$Pos.Qty * tmpPL$Con.Mult * tmpPL$Prices
 	
-	# matrix calc Unrealized.PL as Pos.Qty*(Price-Pos.Avg.Cost)*Con.Mult
-	tmpPL$Unrealized.PL <- round(tmpPL$Pos.Qty*(tmpPL$Prices-tmpPL$Pos.Avg.Cost)*tmpPL$Con.Mult,2)
-	
-	# matrix calc Gross.Trading.PL as Pos.Value-Lag(Pos.Value)-Txn.Value
 	LagValue<-Lag(tmpPL$Pos.Value)
 	LagValue<-ifelse(is.na(LagValue),0,LagValue) # needed to avoid a possible NA on the first value that would mess up the Gross.Trading.PL calc
 	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value- LagValue - tmpPL$Txn.Value
 	
-	# matrix calc Realized.PL as Gross.Trading.PL - Unrealized.PL
-	tmpPL$Realized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Unrealized.PL,2)
+	
+	# alternate matrix calc for Realized&Unrealized PL that is only dependent on Txn PL and Gross.Trading.PL
+	tmpPL$Net.Txn.Realized.PL <- ifelse(is.na(tmpPL$Net.Txn.Realized.PL),0,tmpPL$Net.Txn.Realized.PL)
+	tmpPL$Gross.Txn.Realized.PL <- ifelse(is.na(tmpPL$Gross.Txn.Realized.PL),0,tmpPL$Gross.Txn.Realized.PL)
+	
+	#tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value - (tmpPL$Pos.Qty*tmpPL$Pos.Avg.Cost) +  tmpPL$Gross.Txn.Realized.PL
+	tmpPL$Period.Realized.PL <- tmpPL$Net.Txn.Realized.PL
+	tmpPL$Period.Unrealized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Period.Realized.PL,2)
 	
 	# matrix calc Net.Trading.PL as Gross.Trading.PL + Txn.Fees
 	tmpPL$Net.Trading.PL <- tmpPL$Gross.Trading.PL + tmpPL$Txn.Fees
@@ -101,10 +114,10 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	tmpPL$Ccy.Mult<-rep(1,nrow(tmpPL))
 	
 	# reorder,discard  columns for insert into portfolio object
-	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
+	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
 
 	# rbind to $posPL slot
-	if(isTRUE(rmfirst)) tmpPL<-tmpPL[-1,] #remove the constructed first row, so we don't insert dups in the table
+	tmpPL <- tmpPL[dateRange] #subset to get rid of any prior period Txn or PosPL rows we inserted
 	Portfolio$symbols[[Symbol]]$posPL<-rbind(Portfolio$symbols[[Symbol]]$posPL,tmpPL)
 		
 
@@ -160,7 +173,7 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	}
 	
 	#multiply the correct columns    
-    columns<-c('Pos.Value', 'Txn.Value',  'Realized.PL', 'Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+    columns<-c('Pos.Value', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
 #    for (column in columns){
 #        TmpPeriods[,column]<-TmpPeriods[,column]*CcyMult
 #    }

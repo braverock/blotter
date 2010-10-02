@@ -1,5 +1,10 @@
+#' chart trades against market data, position through time, and equity curve
+#' @param Portfolio string identifying the portfolio to chart
+#' @param Symbol string identifying the symbol to chart
+#' @param Dates date range, currently not used
+#' @param ... any other passthru parameters (typically parameters to \code{chart_Series})
 #' @export
-chart.Posn <- function(Portfolio, Symbol = NULL, Dates = NULL, ...)
+chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 { # @author Peter Carl
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)

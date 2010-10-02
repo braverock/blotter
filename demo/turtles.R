@@ -1,28 +1,3 @@
-updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)
-{ # @author Peter Carl
-
-    # DESCRIPTION:
-    # Adds transactions-related data to the STRATEGY timeseries.
-
-    # Inputs
-    # TxnDate: transaction date as ISO 8106, e.g., '2008-09-01'
-    # PosUnitsQty: total units (shares) of the transaction
-    # StopPrice: price at which the transaction was done
-    # TxnPrice: last trade price
-    # TxnN: calculated N for last transaction
-
-    # Outputs:
-    # No output.  Modifies STRATEGY in local namespace.
-
-    # FUNCTION
-    # Store the transaction and calculations, returns the portfolio
-    pname=Portfolio
-    NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
-    colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
-    Portfolio<-getPortfolio(Portfolio)
-    Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
-    assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
-}
 
 # - Turtle System #1
 
@@ -30,6 +5,11 @@ updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopP
 require(quantmod)
 require(TTR)
 require(blotter)
+
+# Try to clean up in case the demo was run previously
+try(rm("account.turtles","portfolio.turtles",pos=.blotter),silent=TRUE)
+try(rm("portfolio","account","N","symbol","symbols","ClosePrice","CurrentDate","equity","Units","maxUnits","size","Stop","equity","TxnPrice","initDate","initEq","Posn","verbose"),silent=TRUE)
+
 
 # Set initial values
 initDate="2008-01-01"
@@ -40,6 +20,33 @@ symbols = c("XLF", "XLP", "XLE")#, "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
 currency("USD")
 for(symbol in symbols){
     stock(symbol, currency="USD",multiplier=1)
+}
+
+#set function for storing intermediate values
+updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)
+{ # @author Peter Carl
+	
+	# DESCRIPTION:
+	# Adds transactions-related data to the STRATEGY timeseries.
+	
+	# Inputs
+	# TxnDate: transaction date as ISO 8106, e.g., '2008-09-01'
+	# PosUnitsQty: total units (shares) of the transaction
+	# StopPrice: price at which the transaction was done
+	# TxnPrice: last trade price
+	# TxnN: calculated N for last transaction
+	
+	# Outputs:
+	# No output.  Modifies STRATEGY in local namespace.
+	
+	# FUNCTION
+	# Store the transaction and calculations, returns the portfolio
+	pname=Portfolio
+	NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
+	colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
+	Portfolio<-getPortfolio(Portfolio)
+	Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
+	assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
 getSymbols(symbols, index.class="POSIXct", from=initDate, source="yahoo")

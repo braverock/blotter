@@ -24,15 +24,15 @@ calcPortfAttr <- function(Portfolio, Attribute, Dates=NULL, Symbols = NULL)
             result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
             colnames(result) = 'Net.Trading.PL'
         },
-        Realized.PL = {
-            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Realized.PL', Dates = Dates, Symbols = Symbols)
+        Period.Realized.PL = {
+            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Period.Realized.PL', Dates = Dates, Symbols = Symbols)
             result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
-            colnames(result) = 'Realized.PL'
+            colnames(result) = 'Period.Realized.PL'
         },
-        Unrealized.PL = {
-            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Unrealized.PL', Dates = Dates, Symbols = Symbols)
+        Period.Unrealized.PL = {
+            table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Period.Unrealized.PL', Dates = Dates, Symbols = Symbols)
             result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
-            colnames(result) = 'Unrealized.PL'
+            colnames(result) = 'Period.Unrealized.PL'
         },
         Net.Value = {
             table = .getBySymbol(Portfolio = Portfolio, Attribute = 'Pos.Value', Dates = Dates, Symbols = Symbols)

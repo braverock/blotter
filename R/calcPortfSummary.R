@@ -11,8 +11,8 @@ calcPortfSummary <- function(Portfolio, Dates=NULL)
     
     GrossTradingPL = calcPortfAttr(Portfolio, 'Gross.Trading.PL', Dates)
     NetTradingPL = calcPortfAttr(Portfolio, 'Net.Trading.PL', Dates)
-    RealizedPL = calcPortfAttr(Portfolio, 'Realized.PL', Dates)
-    UnrealizedPL = calcPortfAttr(Portfolio, 'Unrealized.PL', Dates)
+    RealizedPL = calcPortfAttr(Portfolio, 'Period.Realized.PL', Dates)
+    UnrealizedPL = calcPortfAttr(Portfolio, 'Period.Unrealized.PL', Dates)
     # UnrealizedPL = TradingPL - RealizedPL
     TxnFees = calcPortfAttr(Portfolio, 'Txn.Fees', Dates)
     NetValue = calcPortfAttr(Portfolio, 'Net.Value', Dates)
