@@ -52,13 +52,13 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
         stop(paste("Account",name,"already exists, use updateAcct() or create a new account."))
     
     # FUNCTION
-    account=vector("list",length=(length(portfolios)+1))
-    names(account)=c("TOTAL",paste("portfolio",portfolios,sep='.'))
-    account[["TOTAL"]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
-    colnames(account[["TOTAL"]]) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    account=list()
+    account$portfolios=vector("list",length=length(portfolios))
+    names(account$portfolios)=portfolios
+    account$summary = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
+    colnames(account$summary) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
     for(portfolio in portfolios){
-        account[[paste("portfolio",portfolio,sep=".")]] = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate) )
-        colnames(account[[paste("portfolio",portfolio,sep=".")]]) = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL','Txn.Fees','Net.Trading.PL')
+        account$portfolios[[portfolio]] = initSummary(initDate=initDate)
     }
     # return(account)
     class(account)<-c("portfolio_account","account")

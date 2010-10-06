@@ -3,7 +3,8 @@
     
     # DESCRIPTION:
     # Retrieves calculated attributes for each portfolio in the account
-    # from the portfolio summary table.  Assembles into a portfolio-by-time table 
+    # from the portfolio summary table.  Assembles into a portfolio-by-time table,
+    # normalized to the Account currency 
 
     # Inputs
     # Account: an Account object containing Portfolio summaries
@@ -15,18 +16,39 @@
     # regular xts object of values by portfolio
 
     # FUNCTION
-    if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = time(Account[[2]])
+    zerofill <- function (x) 
+    { # kind of like PerformanceAnalytics, but not quite
+        for (column in 1:NCOL(x)) {
+            x[,column] <- ifelse(is.na(x[,column]),0, x[,column])
+        }
+        return(x)
+    }
 
     table = NULL 
-    i=1
-    portfolios=names(Account)[-1]
+    portfolios=names(Account$portfolios)
     for (portfolio in portfolios) {
-        tmp_col= Account[[portfolio]][Dates,Attribute,drop=FALSE]
+        tmp_col= Account$portfolios[[portfolio]][Dates,Attribute,drop=FALSE]
         colnames(tmp_col)<-portfolio
         if(is.null(table)) table = tmp_col
         else table = cbind(table, tmp_col)
     }
+    switch(Attribute,
+        Long.Value =, 
+        Short.Value =, 
+        Net.Value =, 
+        Gross.Value = {
+            if(NROW(table) > 1) 
+                table = na.locf(table)
+        },
+        Txn.Fees =,
+        Realized.PL =, 
+        Unrealized.PL =, 
+		Net.Trading.PL =,		
+        Gross.Trading.PL = {
+            if(NROW(table) > 1)
+                table = zerofill(table)
+        }
+    )
     return(table)
 }
 

@@ -18,7 +18,7 @@ getEndEq <- function(Account, Date)
      
     # FUNCTION
     toDate = paste('::', Date, sep="")
-    EndEq = as.numeric(tail(Account[[1]][toDate,], n=1)[,"End.Eq"])
+    EndEq = as.numeric(tail(Account$summary[toDate,], n=1)[,"End.Eq"])
     return(EndEq)
 }
 

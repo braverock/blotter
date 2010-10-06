@@ -1,4 +1,4 @@
-.getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols=NULL, Local=FALSE)
+.getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols=NULL, native=FALSE)
 { # @author Peter Carl
 
     # DESCRIPTION:
@@ -19,11 +19,11 @@
     if(is.null(Dates) | is.na(Dates)) # if no date is specified, get all available dates
         Dates = time(Portfolio$symbols[[1]]$posPL)
     # else  Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
-    if(!is.null(attr(Portfolio,'currency')) & Local==FALSE) {
+    if(!is.null(attr(Portfolio,'currency')) & native==FALSE) {
         p.ccy.str<-attr(Portfolio,'currency')
         namePosPL = paste("posPL", p.ccy.str, sep=".")
     } else {
-        print("Returning position values in Local values")
+        print("Returning position values in native currency values")
         namePosPL = "posPL"
         # Alternatively, we could just use posPL without ccy extension
     }
@@ -43,6 +43,7 @@
     colnames(table) = symbols
     class(table)<-class(xts())
     return(table)
+### TODO: NA fill like getByPortfolio
 
 ## TODO: append summary information in last columns based on Attribute requested
 # e.g., 'Pos.Value' would append Net.Value, Gross.Value, Long.Value, Short.Value
