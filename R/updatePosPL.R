@@ -49,6 +49,11 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	Portfolio$symbols[[Symbol]]$posPL<-Portfolio$symbols[[Symbol]]$posPL[paste('::',startDate,sep='')]
 	Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][paste('::',startDate,sep='')]
 	priorPL<-last(Portfolio$symbols[[Symbol]]$posPL)
+	if(nrow(priorPL)==0) {
+		cn<-colnames(priorPL)
+		priorPL = xts(t(rep(0,ncol(priorPL))),order.by=startDate-1)
+		colnames(priorPL)<-cn
+	}
 	
 	Txns <- Portfolio$symbols[[Symbol]]$txn[dateRange]
 	# if there are no transactions, get the last one before the current dateRange, we'll discard later
