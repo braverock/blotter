@@ -18,10 +18,19 @@ updateAcct <- function(name='default', Dates=NULL)
     if(!is.null(attr(Account,'currency'))) {
         a.ccy.str<-attr(Account,'currency')
     } 
-	
-	#TODO trim to only time prior to Dates
 
-    Portfolios = names(Account$portfolios)
+	Portfolios = names(Account$portfolios)
+	
+	if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)
+	
+	#trim to only time prior to Dates
+	if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
+		whichi<-first(Account$summary[paste(.parseISO8601(Dates)$first.time,'::',sep=''), which.i = TRUE])
+		if(!is.null(whichi)) whichi=whichi-1
+		if(whichi<1) whichi=1 
+		Account$summary = Account$summary[1:whichi,]
+	}
+
 
     # Append the portfolio summary data to the portfolio slot
     for(pname in Portfolios){
