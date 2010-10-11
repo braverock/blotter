@@ -118,8 +118,8 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
         PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
-        GrossTxnRealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
-        NetTxnRealizedPL = GrossTxnRealizedPL - TxnFee
+		GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
+		NetTxnRealizedPL = GrossTxnRealizedPL - TxnFee
         PrevPosQty     <- PosQty
         PrevPosAvgCost <- PosAvgCost
         
