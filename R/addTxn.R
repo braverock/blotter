@@ -4,8 +4,8 @@
 #' 
 #' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
-#' @param TxnDate  transaction date as ISO 8106, e.g., '2008-09-01'
-#' @param TxnQty total units (such as shares) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
+#' @param TxnDate  transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
+#' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
 #' @param TxnPrice  price at which the transaction was done
 #' @param \dots any other passthrough parameters
 #' @param TxnFees fees associated with the transaction, e.g. commissions., See Details
