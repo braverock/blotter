@@ -58,9 +58,17 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
     PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult)
 
+	
     # Calculate any realized profit or loss (net of fees) from the transaction
-    GrossTxnRealizedPL = calcRealizedPL(TxnQty, TxnAvgCost, PrevPosAvgCost, PosQty, PrevPosQty, ConMult)
-    NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
+    GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
+
+	# if the previous position is zero, RealizedPL = 0
+	# if previous position is positive and position is larger, RealizedPL =0
+	# if previous position is negative and position is smaller, RealizedPL =0
+	if(abs(PrevPosQty) < abs(PosQty) | (PrevPosQty = 0))
+		GrossTxnRealizedPL = 0
+	
+	NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
 
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, txnfees, NetTxnRealizedPL, ConMult)), order.by=as.POSIXct(TxnDate))
