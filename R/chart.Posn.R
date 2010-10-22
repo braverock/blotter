@@ -25,6 +25,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 
     require(quantmod)
     Prices=get(Symbol)
+	Prices=getPrice(Prices,...)
     freq = periodicity(Prices)
     switch(freq$scale,
             seconds = { mult=1 },
