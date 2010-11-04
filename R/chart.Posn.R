@@ -13,7 +13,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 
     require(quantmod)
     Prices=get(Symbol)
-	Prices=getPrice(Prices)
+    if(!is.OHLC(Prices)) Prices=getPrice(Prices)
     freq = periodicity(Prices)
     switch(freq$scale,
             seconds = { mult=1 },
