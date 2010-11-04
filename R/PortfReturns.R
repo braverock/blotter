@@ -8,7 +8,9 @@
 #' 
 #' TODO explicitly handle portfolio weights
 #' 
-#' TODO provide additionalcd  methods of calculating returns
+#' TODO provide additional  methods of calculating returns
+#' 
+#' TODO support additions and withdrawals to available capital 
 #' 
 #' This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton 
 #' @param Account string name of the account to generate returns for
@@ -36,8 +38,12 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 		
 		#TODO check portfolio and account currencies and convert if necessary
 		
+		#TODO handle additions and withdrawals in equity
+		
 		if(!is.null(attr(Account,'initEq'))){
-			ptable = ptable/as.numeric(attr(Account,'initEq'))
+			initEq<-as.numeric(attr(Account,'initEq'))
+			if(initEq==0) stop("Initial equity of zero would produce div by zero NaN,Inf,-Inf returns, please fix in initAcct().")
+			ptable = ptable/initEq
 		}
 		if(is.null(table)) table=ptable
 		else table=cbind(table,ptable)

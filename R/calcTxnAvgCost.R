@@ -1,19 +1,10 @@
-`calcTxnAvgCost` <-
-function(TxnValue, TxnQty, ConMult=1)
+#' Calculates a per share or per contract cost of the transaction to match the units the price is quoted in
+#' @param TxnValue total value of the transaction, including fees
+#' @param TxnQty total units (shares) of the transaction
+#' @param ConMult multiplier from instrument data
+#' @return TxnAvgCost: unit normalized (per share) cost implied by the transaction
+calcTxnAvgCost <- function(TxnValue, TxnQty, ConMult=1)
 { # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates a per share or per contract cost of the transaction 
-    # to match the units the price is quoted in
-
-    # Inputs
-    # TxnValue: total value of the transaction, including fees
-    # TxnQty: total units (shares) of the transaction
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # TxnAvgCost: unit normalized (per share) cost implied by the transaction
-
     TxnAvgCost = TxnValue/(TxnQty*ConMult)
     return(TxnAvgCost)
 }

@@ -25,20 +25,20 @@
 #' No reason to persist Period.ROR, and Beg.Eq = Previous End.Eq,
 #' So we're left with four columns.  Note that Period.ROR can be calc'd 
 #' several different ways and is best left as a function.
-
+#' 
 #' To get to the CFTC thirteen columns add:
 #' Gross.Realized, Commission, Net.Realized, Int.Income, Ch.Unrealized,
 #' Advisory.Fees, Wealth.Index 
 #' Again, no need to add Wealth.Index. Eventually, these additional 
 #' columns will be useful.  
 #' Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees
-
+#' 
 #' TODO Add calcPeriodROR function
 #' TODO Adddd functions addCapital, drawCapital, addFees
 #' initDate and initEq can be used in addCapital to initalize the account?
 #' Track cash at this level???
 #' Calc gross PL and subtract fees? Or calc net PL and add fees.
-
+#' 
 #' @param name 
 #' @param portfolios 
 #' @param initDate 
@@ -58,7 +58,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
     account$summary = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
     colnames(account$summary) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
     for(portfolio in portfolios){
-        account$portfolios[[portfolio]] = initSummary(initDate=initDate)
+        account$portfolios[[portfolio]] = .initSummary(initDate=initDate)
     }
     # return(account)
     attr(account,'currency')<-currency

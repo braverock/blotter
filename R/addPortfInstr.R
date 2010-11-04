@@ -1,3 +1,8 @@
+#' 
+#' @param Portfolio 
+#' @param symbols 
+#' @param ... 
+#' @export
 addPortfInstr <- function(Portfolio,symbols,...) 
 {
     pname<-Portfolio
@@ -7,8 +12,8 @@ addPortfInstr <- function(Portfolio,symbols,...)
 	initDate <- attr(portfolio, "initDate")    
 	currency <- attr(portfolio, "currency")
     for(instrument in symbols){
-        portfolio$symbols[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = 0)
-        portfolio$symbols[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = 0)
+        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = 0)
+        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = 0)
 		portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL		
     }
 

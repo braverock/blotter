@@ -1,20 +1,13 @@
-`calcPosAvgCost` <-
-function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
+#' Calculates the average cost of a resulting position from a transaction
+#' 
+#' @return PosAvgCost: average cost of the resulting position
+#' @param PrevPosQty quantity of the previous position
+#' @param PrevPosAvgCost average position cost of the previous position
+#' @param TxnValue total value of the transaction, including fees
+#' @param PosQty total units (shares) of the resulting position
+#' @param ConMult multiplier from instrument data
+calcPosAvgCost <- function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
 { # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates the average cost of a resulting position from a transaction
-
-    # Inputs
-    # PrevPosQty: quantity of the previous position
-    # PrevPosAvgCost: average position cost of the previous position
-    # TxnValue: total value of the transaction, including fees
-    # PosQty: total units (shares) of the resulting position
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # PosAvgCost: average cost of the resulting position
-
     if(PosQty == 0)
         PosAvgCost = 0
     else {

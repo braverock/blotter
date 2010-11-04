@@ -1,21 +1,20 @@
+#' get attributes from each portfolio in an account
+#' 
+#' Retrieves calculated attributes for each portfolio in the account
+#' from the portfolio summary table.  Assembles into a portfolio-by-time table,
+#' normalized to the Account currency 
+#' 
+#' 
+#' Attribute: typically any of:
+#'  'Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees',
+#'  'Realized.PL', 'Unrealized.PL', or 'Trading.PL'
+#' @param Account an Account object containing Portfolio summaries
+#' @param Attribute column name to be assembled for each symbol
+#' @param Dates 
+#' @return regular xts object of values by portfolio
 .getByPortf <- function(Account, Attribute, Dates=NULL)
 { # @author Peter Carl
     
-    # DESCRIPTION:
-    # Retrieves calculated attributes for each portfolio in the account
-    # from the portfolio summary table.  Assembles into a portfolio-by-time table,
-    # normalized to the Account currency 
-
-    # Inputs
-    # Account: an Account object containing Portfolio summaries
-    # Attribute: column name to be assembled for each symbol, any of:
-    # 'Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees',
-    # 'Realized.PL', 'Unrealized.PL', or 'Trading.PL'
-
-    # Outputs
-    # regular xts object of values by portfolio
-
-    # FUNCTION
     zerofill <- function (x) 
     { # kind of like PerformanceAnalytics, but not quite
         for (column in 1:NCOL(x)) {

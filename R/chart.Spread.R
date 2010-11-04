@@ -1,3 +1,10 @@
+#' Charts the transaction series, positions, and P&L of a spread against prices
+#' @param Account 
+#' @param Portfolio string identifying the portfolio to chart
+#' @param Symbols string identifying the symbols to chart for positions
+#' @param Dates date range, currently not used
+#' @param ... any other passthru parameters (typically parameters to \code{chart_Series})
+#' @author brian
 #' @export
 chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates = NULL, ...)
 { # @author Peter Carl
@@ -10,19 +17,6 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     tmp_instr<-getInstrument(Spread)
     if(!inherits(tmp_instr,"spread")) stop (paste("Instrument",Spread," is not a spread, please use the primary_id of a spread."))
     
-    # DESCRIPTION
-    # Charts the transaction series of a symbol against prices
-
-    # Inputs
-    # Portfolio: a portfolio object structured with initPortf()
-    # Symbol: an instrument identifier for a symbol included in the portfolio,
-    #   e.g., IBM
-    # Dates: dates to return the calculation over formatted as xts range
-
-    # Outputs
-    # Timeseries object with weights by date in rows and symbolname in columns
-
-    # FUNCTION
 
     require(quantmod)
     Prices=get(Spread)

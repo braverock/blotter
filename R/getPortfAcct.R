@@ -1,3 +1,7 @@
+#' 
+#' @param Account 
+#' @param Portfolio 
+#' @param Dates 
 getPortfAcct <- function(Account,Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     acct<-try(get(paste("account",Account,sep='.'),envir=.blotter),silent=TRUE)

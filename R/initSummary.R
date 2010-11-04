@@ -1,4 +1,10 @@
-initSummary <- function(initDate="1950-01-01")
+#' initialize the summary table used in portfolio and account lists
+#' @param initDate 
+#' @returnType 
+#' @return 
+#' @author brian
+#' @export
+.initSummary <- function(initDate="1950-01-01")
 { # @author Brian Peterson
     summary <- xts( as.matrix(t(rep(0,9))), order.by=as.POSIXct(initDate) )
     colnames(summary) <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')

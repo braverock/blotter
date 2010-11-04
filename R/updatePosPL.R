@@ -7,8 +7,7 @@
 #' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl, Brian Peterson
-#' @export
-updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
+.updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl, Brian Peterson
 	rmfirst=FALSE
     pname<-Portfolio
@@ -179,9 +178,6 @@ updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL
 	
 	#multiply the correct columns    
     columns<-c('Pos.Value', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-#    for (column in columns){
-#        TmpPeriods[,column]<-TmpPeriods[,column]*CcyMult
-#    }
 	TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
 	TmpPeriods[,'Ccy.Mult']<-CcyMult
     #stick it in posPL.ccy

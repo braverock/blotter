@@ -1,18 +1,17 @@
 #' update ending equity for an account
 #' 
-#' @param Account 
-#' @param Dates 
-#' @author Peter Carl
+#' Calculates End.Eq and Net.Performance
+#' 
+#' Requires that updateAcct has been run and any additional functions
+#' have alread appended information into that table (e.g., additions or
+#' withdrawals, fees, interest, etc.)
+#' 
+#' @param Account string identifying account
+#' @param Dates Dates from which to calculate equity account
+#' @author Peter Carl, Brian G. Peterson
 #' @export
 updateEndEq <- function(Account, Dates=NULL)
 {
-	# DESCRIPTION
-	# Calculates End.Eq and Net.Performance
-	
-	# Requires that updateAcct has been run and any additional functions
-	# have alread appended information into that table (e.g., additions or
-	# withdrawals, fees, interest, etc.)
-	
 	aname<-Account
     Account<-try(get(paste("account",aname,sep='.'), envir=.blotter))
     if(inherits(Account,"try-error"))
@@ -23,12 +22,6 @@ updateEndEq <- function(Account, Dates=NULL)
     else
         Dates = time(Account$summary[Dates])
 
-	### TODO Vectorize this
-	#     # For each date, calculate realized and unrealized P&L
-	#     for(d in 1:length(Dates)){ # d is a date slot counter
-	# 	Account = calcEndEq(aname, as.character(Dates[d])) ## WTF?
-	#     }
-
     PrevDate = time(Account$summary[first(Account$summary[Dates,which.i=TRUE])-1,]) # get index of previous end date 
     PrevEndEq = getEndEq(aname, PrevDate)
     Additions = Account$summary[Dates]$Additions
@@ -37,7 +30,7 @@ updateEndEq <- function(Account, Dates=NULL)
 	# assign NetPerformance into the account slot
     Account$summary$Net.Performance[Dates] <- NetPerformance
 
-    # Create a vector of end equity without the previous value?
+    # Create a vector of end equity
     EndCapital = PrevEndEq + Additions + Withdrawals + NetPerformance
     Account$summary$End.Eq[Dates] <- EndCapital
 	

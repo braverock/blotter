@@ -1,3 +1,8 @@
+#' 
+#' @param Portfolio 
+#' @param Dates 
+#' @returnType 
+#' @export
 getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     pname<-Portfolio

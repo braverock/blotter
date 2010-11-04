@@ -1,3 +1,9 @@
+#' Gets the transactions and returns 
+#' @param Portfolio a string identifying a portfolio object containing transactions
+#' @param Symbol an instrument identifier for a symbol included in the portfolio
+#' @param Date timestamp as of which to get transactions
+#' @return xts of transactions made in the Symbol during the time period given
+#' @export
 getTxns <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
     pname<-Portfolio
@@ -5,16 +11,6 @@ getTxns <- function(Portfolio, Symbol, Date)
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",name," not found, use initPortf() to create a new portfolio first"))
     
-    # DESCRIPTION:
-    # Gets the transactions and returns 
-
-    # Inputs
-    # Portfolio: a portfolio object containing transactions
-    # Symbol: an instrument identifier for a symbol included in the portfolio
-    # Date: timestamp as of which to have the most recent position
-
-    # Outputs
-    # Table of transactions made in the Symbol during the time period given
     TxnData = Portfolio$symbols[[Symbol]]$txn
     Txns = TxnData[Date,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Net.Txn.Realized.PL')]
     return(Txns)

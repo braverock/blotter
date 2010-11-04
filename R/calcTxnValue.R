@@ -1,19 +1,11 @@
-`calcTxnValue` <-
-function(TxnQty, TxnPrice, TxnFees, ConMult=1)
+#' Calculates the total value of a transaction or trade
+#' @param TxnQty total units (shares) of the transaction
+#' @param TxnPrice price at which the transaction was done
+#' @param TxnFees fees associated with the transaction, e.g. commissions
+#' @param ConMult multiplier from instrument data
+#' @return TxnValue: total dollar value of the transaction, including fees
+calcTxnValue <- function(TxnQty, TxnPrice, TxnFees, ConMult=1)
 { # @author Peter Carl
-
-    # DESCRIPTION:
-    # Calculates the total value of a transaction or trade
-
-    # Inputs
-    # TxnQty: total units (shares) of the transaction
-    # TxnPrice: price at which the transaction was done
-    # TxnFees: fees associated with the transaction, e.g. commissions
-    # Note that the multiplier is missing for other types of instruments
-
-    # Outputs
-    # TxnValue: total dollar value of the transaction, including fees
-
     TxnValue = TxnQty * TxnPrice * ConMult - TxnFees
     return(TxnValue)
 }

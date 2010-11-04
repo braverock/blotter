@@ -1,4 +1,9 @@
-#' @export
+#' gets position at Date
+#' @param Portfolio a string identifying a portfolio object containing transactions
+#' @param Symbol an instrument identifier for a symbol included in the portfolio
+#' @param Date timestamp as of which to have the most recent position
+#' @return Numeric value of the most recent position.
+#' @export 
 getPosQty <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
     pname<-Portfolio
@@ -11,12 +16,12 @@ getPosQty <- function(Portfolio, Symbol, Date)
     # Gets the previous position 
 
     # Inputs
-    # Portfolio: a portfolio object containing transactions
-    # Symbol: an instrument identifier for a symbol included in the portfolio
-    # Date: timestamp as of which to have the most recent position
+    # Portfolio: 
+    # Symbol: 
+    # Date: 
 
     # Outputs
-    # Numeric value of the most recent position.
+    # 
 
     # FUNCTION
     PosQty = as.numeric(getPos(pname, Symbol, Date)[,"Pos.Qty"])

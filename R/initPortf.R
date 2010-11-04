@@ -33,11 +33,11 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
 	stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
     for(instrument in symbols){
     	i = match(instrument, symbols)
-        portfolio$symbols[[instrument]]$txn = initTxn(initDate = initDate, initPosQty = initPosQty[i])
-        portfolio$symbols[[instrument]]$posPL = initPosPL(initDate = initDate, initPosQty = initPosQty[i])
+        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i])
+        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i])
         portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL
     }
-	portfolio$summary<-initSummary(initDate=initDate)
+	portfolio$summary<-.initSummary(initDate=initDate)
     class(portfolio)<-c("blotter_portfolio", "portfolio")
     attr(portfolio,'currency')<-currency
 	attr(portfolio,'initDate')<-initDate

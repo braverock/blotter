@@ -55,7 +55,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     PosQty = PrevPosQty + TxnQty
 
     # Calculate the resulting position's average cost
-    PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
+    PrevPosAvgCost = .getPosAvgCost(pname, Symbol, TxnDate)
     PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult)
 
 	
@@ -87,6 +87,13 @@ pennyPerShare <- function(TxnQty, TxnPrice) {
     return(TxnQty * -0.01)
 }
 
+#' 
+#' @param Portfolio 
+#' @param Symbol 
+#' @param TxnData 
+#' @param verbose 
+#' @param ... 
+#' @param ConMult 
 #' @export
 addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 {
@@ -106,7 +113,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     for (row in 1:nrow(TxnData)) {
         if(row==1) {
             PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
-            PrevPosAvgCost <- getPosAvgCost(pname, Symbol, index(TxnData[row,]))
+            PrevPosAvgCost <- .getPosAvgCost(pname, Symbol, index(TxnData[row,]))
         }
         #TODO create vectorized versions of all these functions so we don't have to loop
         TxnQty         <- as.numeric(TxnData[row,'Quantity'])
@@ -149,6 +156,16 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
+#' 
+#' @param Portfolio 
+#' @param Symbol 
+#' @param TxnDate 
+#' @param DivPerShare 
+#' @param ... 
+#' @param TxnFees 
+#' @param ConMult 
+#' @param verbose 
+#' @export
 addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
     pname<-Portfolio
@@ -184,7 +201,7 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     TxnAvgCost = DivPerShare
 
     # No change to the the resulting position's average cost
-    PrevPosAvgCost = getPosAvgCost(pname, Symbol, TxnDate)
+    PrevPosAvgCost = .getPosAvgCost(pname, Symbol, TxnDate)
     PosAvgCost = PrevPosAvgCost # but carry it forward in $txn
 
     # Calculate any realized profit or loss (net of fees) from the transaction

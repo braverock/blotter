@@ -1,15 +1,8 @@
 #' Constructs the equity account calculations from the portfolio data and
 #' corresponding close prices.
-#'
-#' Inputs
-#' Prices: close prices in an xts OHLC object with a columnname == "Close"
-#' Dates: Dates from which to calculate equity account
-#'
-#' NOTES:
-#' Realized.PL is net of transaction fees.  To support 
 #' 
-#' @param name 
-#' @param Dates 
+#' @param name  string identifying account
+#' @param Dates Dates from which to calculate equity account
 #' @export
 updateAcct <- function(name='default', Dates=NULL) 
 { # @author Peter Carl

@@ -9,23 +9,11 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
 
-    # DESCRIPTION
-    # Charts the transaction series of a symbol against prices
-
-    # Inputs
-    # Portfolio: a portfolio object structured with initPortf()
-    # Symbol: an instrument identifier for a symbol included in the portfolio,
-    #   e.g., IBM
-    # Dates: dates to return the calculation over formatted as xts range
-
-    # Outputs
-    # Timeseries object with weights by date in rows and symbolname in columns
-
     # FUNCTION
 
     require(quantmod)
     Prices=get(Symbol)
-	Prices=getPrice(Prices,...)
+	Prices=getPrice(Prices)
     freq = periodicity(Prices)
     switch(freq$scale,
             seconds = { mult=1 },

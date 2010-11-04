@@ -1,19 +1,11 @@
-initTxn <- function(initDate="1950-01-01", initPosQty=0)
+#' Constructs the data container used to store transactions and resulting positions.
+#' 
+#' The data series stored here will be an irregular time series.
+#' @param initDate date prior to the first close price given, used to contain initial account equity and initial position
+#' @param initPosQty initial position, default is zero
+#' @return Constructs multi-column xts object used to store transactions
+.initTxn <- function(initDate="1950-01-01", initPosQty=0)
 { # @author Peter Carl
-
-    # DESCRIPTION
-    # Constructs the data container used to store transactions and resulting positions.
-    # The data series will be an irregular time series.
-
-    # Inputs
-    # initDate: date prior to the first close price given, used to contain
-    #           initial account equity and initial position
-    # initPosQty: initial position, default is zero
-
-    # Outputs
-    # Constructs multi-column xts object used to store transactions
-
-    # FUNCTION
     ## TODO: Add 'Txn.Type' column
     ## TODO: DIVIDEND Txn.Type creates a realized gain
     txn <- xts( as.matrix(t(c(0,0,0,0,initPosQty,0,0,0,0,0))), order.by=as.POSIXct(initDate) )

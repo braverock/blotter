@@ -1,19 +1,19 @@
+#' Retrieves calculated attributes for each position in the portfolio
+#' 
+#' Retrieves calculated attributes for each position in the portfolio
+#' from the posPL table.  Assembles into a symbol-by-time table useful
+#' for graphing or calculations
+#' 
+#' items typically include things like
+#' 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL',or 'Trading.PL'
+#' @param Portfolio a portfolio object containing transactions
+#' @param Attribute column name to be assembled for each symbol
+#' @param Dates 
+#' @param Symbols 
+#' @param native 
+#' @return regular xts object of values by symbol
 .getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols=NULL, native=FALSE)
 { # @author Peter Carl
-
-    # DESCRIPTION:
-    # Retrieves calculated attributes for each position in the portfolio
-    # from the posPL table.  Assembles into a symbol-by-time table useful
-    # for graphing or calculations
-
-    # Inputs
-    # Portfolio: a portfolio object containing transactions
-    # Item: column name to be assembled for each symbol, any of:
-    #   'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL',
-    #    or 'Trading.PL'
-
-    # Outputs
-    # regular xts object of values by symbol
 
     # FUNCTION
     if(is.null(Dates) | is.na(Dates)) # if no date is specified, get all available dates
