@@ -115,7 +115,8 @@ cat('\n')
 chart.Posn(ltportfolio, Symbol = 'GSPC', Dates = '1998::')
 plot(add_SMA(n=10,col='darkgreen', on=1))
 
-getTxns(Portfolio="longtrend", Symbol="GSPC", Date="2000::2004")
+#look at a transaction summary
+getTxns(Portfolio="longtrend", Symbol="GSPC")
 
 # Copy the results into the local environment
 print("Retrieving resulting portfolio and account")

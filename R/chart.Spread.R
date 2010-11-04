@@ -1,10 +1,10 @@
 #' Charts the transaction series, positions, and P&L of a spread against prices
-#' @param Account 
+#' @param Account string identifying the account
 #' @param Portfolio string identifying the portfolio to chart
-#' @param Symbols string identifying the symbols to chart for positions
+#' @param Symbols string identifying the underlying symbols to chart for positions
+#' @param Spread identifier of a spread instrument
 #' @param Dates date range, currently not used
-#' @param ... any other passthru parameters (typically parameters to \code{chart_Series})
-#' @author brian
+#' @param \dots any other passthru parameters (typically parameters to \code{chart_Series})
 #' @export
 chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates = NULL, ...)
 { # @author Peter Carl
@@ -12,7 +12,7 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     pname<-Portfolio
     Portfolio<-getPortfolio(pname,Dates)
 
-    pacctdata<-getPortfAcct(Account,Portfolio=pname, Dates=NULL)
+    pacctdata<-.getPortfAcct(Account,Portfolio=pname, Dates=NULL)
     
     tmp_instr<-getInstrument(Spread)
     if(!inherits(tmp_instr,"spread")) stop (paste("Instrument",Spread," is not a spread, please use the primary_id of a spread."))

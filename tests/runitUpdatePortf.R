@@ -30,5 +30,5 @@ test.txnFees <- function() {
   a2 <- updateAcct(a2,'2007-01')
   a2 <- updateEndEq(a2,'2007-01')
 
-  checkEquals(getAccount('a1')$TOTAL$End.Eq, getAccount('a2')$TOTAL$End.Eq)
+  checkEquals(getAccount('a1')$summary$End.Eq, getAccount('a2')$summary$End.Eq)
 }

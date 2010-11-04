@@ -11,11 +11,13 @@ TODO handle portfolio and account in different currencies (not hard, just not do
 
 TODO explicitly handle portfolio weights
 
-TODO provide additionalcd  methods of calculating returns
+TODO provide additional  methods of calculating returns
+
+TODO support additions and withdrawals to available capital 
 
 This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton}
 \arguments{\item{Account}{string name of the account to generate returns for}
 \item{method}{for now, only 'contribution' is supported}
-\item{\dots}{any other passthru parameters (like \code{native} for \code{\link{.getBySymbol}}}
+\item{\dots}{any other passthru parameters (like \code{native} for \code{.getBySymbol}}
 \item{Dates}{xts style ISO 8601 date subset to retrieve, default NULL (all dates)}
 \item{Portfolios}{concatenated string vector for portfolio names to retrieve returns on, default NULL (all portfolios)}}

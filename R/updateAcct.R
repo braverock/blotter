@@ -42,10 +42,10 @@ updateAcct <- function(name='default', Dates=NULL)
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1
 			} else {
-				FXrate.str<-paste(tmp_instr$currency,p.ccy.str,sep='')
+				FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
 				FXrate<-try(get(FXrate.str))
 				if(inherits(FXrate,"try-error")){
-					FXrate.str<-paste(p.ccy.str,tmp_instr$currency,sep='')
+					FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='')
 					FXrate<-try(get(FXrate.str))
 					if(inherits(FXrate,"try-error")){ 
 						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")

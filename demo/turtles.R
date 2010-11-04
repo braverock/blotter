@@ -182,7 +182,9 @@ if (require(quantmod)) {
 }
 
 if(require(PerformanceAnalytics)){
-    return = Delt(getAccount(account)[["TOTAL"]]$End.Eq)
+    return = Delt(getAccount(account)$summary$End.Eq)
 	dev.new()
     charts.PerformanceSummary(as.zoo(return),main="Turtle Demo Performance")   
+	dev.new()
+	charts.PerformanceSummary(PortfReturns('turtles'),main='Turtle Demo Instrument Return on Equity')
 }

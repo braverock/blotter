@@ -2,6 +2,7 @@
 #' @param Account string identifier for the account
 #' @param Dates 
 #' @return Account object
+#' @export
 getAccount <- function(Account, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     aname<-Account

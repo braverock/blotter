@@ -15,7 +15,7 @@
 #' This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton 
 #' @param Account string name of the account to generate returns for
 #' @param method for now, only 'contribution' is supported
-#' @param \dots any other passthru parameters (like \code{native} for \code{\link{.getBySymbol}}
+#' @param \dots any other passthru parameters (like \code{native} for \code{.getBySymbol}
 #' @param Dates xts style ISO 8601 date subset to retrieve, default NULL (all dates)
 #' @param Portfolios concatenated string vector for portfolio names to retrieve returns on, default NULL (all portfolios)
 #' @export

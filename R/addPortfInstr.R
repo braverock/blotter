@@ -1,7 +1,10 @@
+#' add an instrument to a portfolio
 #' 
-#' @param Portfolio 
-#' @param symbols 
-#' @param ... 
+#' thanks to WolfGang Wu for making this function more usable
+#' 
+#' @param Portfolio portfolio identifier string
+#' @param symbols character vector of symbols to add to the portfolio
+#' @param \dots any other passthru parameters
 #' @export
 addPortfInstr <- function(Portfolio,symbols,...) 
 {

@@ -9,7 +9,7 @@ getTxns <- function(Portfolio, Symbol, Date)
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",name," not found, use initPortf() to create a new portfolio first"))
+        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio first"))
     
     TxnData = Portfolio$symbols[[Symbol]]$txn
     Txns = TxnData[Date,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Net.Txn.Realized.PL')]

@@ -1,10 +1,9 @@
 #' Retrieves all information about the position as of a date
 #' 
-#' NOTE This should get much more complicated from here, particularly when it's conditional on symbol, etc.
+#' NOTE This could get much more complicated from here, particularly when it's conditional on symbol, etc.
 #' @param Portfolio string identifying a portfolio object containing transactions
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
 #' @param Date timestamp as of which to have the most recent position
-#' @returnType 
 #' @return All data elements related to position in a row of an xts object
 #' @export
 getPos <- function(Portfolio, Symbol, Date)

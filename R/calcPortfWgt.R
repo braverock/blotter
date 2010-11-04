@@ -14,7 +14,7 @@ calcPortfWgt <- function(Portfolio, Symbols = NULL, Dates = NULL, denominator = 
     # FUNCTION
 
     pos.value = .getBySymbol(Portfolio = Portfolio, Dates = Dates, Attribute = "Pos.Value", Symbols = Symbols)
-    portf.value = calcPortfAttr(Portfolio = Portfolio, Date = Dates, Attribute = denominator[1])
+    portf.value = .calcPortfAttr(Portfolio = Portfolio, Date = Dates, Attribute = denominator[1])
     weights = apply(pos.value, MARGIN = 2, FUN = function(x,y){return(x/y)}, y=portf.value) 
 
     return(weights)

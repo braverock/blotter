@@ -37,9 +37,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 	}
 
-    # Outputs:
-    # Portfolio: hands back the entire portfolio object with the additional
-    # transaction in the correct slot: Portfolio$symbols[[Symbol]]$txn
 
     # FUNCTION
     # Compute transaction fees if a function was supplied
@@ -82,19 +79,23 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
-## example cost function
+#' example TxnFee cost function
+#' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
+#' @param TxnPrice  price at which the transaction was done
+#' @export
 pennyPerShare <- function(TxnQty, TxnPrice) {
     return(TxnQty * -0.01)
 }
 
+#' add multiple transactions to a portfolio, partially vectorized
 #' 
-#' @param Portfolio 
-#' @param Symbol 
-#' @param TxnData 
-#' @param verbose 
-#' @param ... 
+#' TODO figure out if we can fully vectorize this function to make it faster
+#' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
+#' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
+#' @param TxnData  a n xts object containing all required txn fields
+#' @param \dots any other passthrough parameters
+#' @param verbose TRUE/FALSE
 #' @param ConMult 
-#' @export
 addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 {
     pname<-Portfolio
@@ -156,13 +157,20 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
+#' add cash dividend transactions to a portfolio
 #' 
-#' @param Portfolio 
-#' @param Symbol 
-#' @param TxnDate 
+#' Adding a cash Dividend does not affect position
+#' 
+#' # TODO add TxnTypes to $txn table
+#' 
+#' # TODO add AsOfDate 
+#' 
+#' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
+#' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
+#' @param TxnDate  transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
 #' @param DivPerShare 
-#' @param ... 
-#' @param TxnFees 
+#' @param \dots any other passthrough parameters
+#' @param TxnFees fees associated with the transaction, e.g. commissions., See Details
 #' @param ConMult 
 #' @param verbose 
 #' @export
@@ -180,12 +188,9 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
             ConMult<-tmp_instr$multiplier
         }
     }
-    # Outputs:
-    # Portfolio: hands back the entire portfolio object with the additional
-    # transaction in the correct slot: Portfolio$symbols[[Symbol]]$txn
 
     # FUNCTION
-    # Adding a Dividend does not affect position
+    # 
     TxnQty = 0
     TxnPrice = 0
 #     TxnType = "Dividend"

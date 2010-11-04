@@ -1,7 +1,6 @@
-#' 
-#' @param Portfolio 
-#' @param Dates 
-#' @returnType 
+#' get a portfolio object
+#' @param Portfolio string identifying portfolio
+#' @param Dates dates subset, not yet supported
 #' @export
 getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
