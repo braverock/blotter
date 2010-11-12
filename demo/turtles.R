@@ -186,5 +186,7 @@ if(require(PerformanceAnalytics)){
 	dev.new()
     charts.PerformanceSummary(as.zoo(return),main="Turtle Demo Performance")   
 	dev.new()
-	charts.PerformanceSummary(PortfReturns('turtles'),main='Turtle Demo Instrument Return on Equity')
+	charts.PerformanceSummary(PortfReturns('turtles'),main='Turtle Demo Instrument Return on Equity',geometric=FALSE)
 }
+
+getEndEq(account,Sys.time())
