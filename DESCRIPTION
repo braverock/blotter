@@ -11,7 +11,7 @@ Description: Transaction infrastructure for defining instruments,
     multi-currency portfolios.  Still in heavy development.
 License: GPL
 LazyLoad: yes
-Depends: R (>= 2.11.1), xts (>= 0.7-6.1), quantmod (>= 0.3-14),
+Depends: R (>= 2.11.1), xts (>= 0.7-6.8), quantmod (>= 0.3-14),
     FinancialInstrument
 Suggests: PerformanceAnalytics, PortfolioAnalytics, Hmisc, RUnit
 Contributors: Wolfgang Wu, Ben McCann
