@@ -3,33 +3,27 @@
 \alias{blotter}
 \docType{package}
 \title{
-portfolio and transaction infrastructure for trading
+Portfolio and transaction infrastructure for trading
 }
 \description{
-Transaction-oriented infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation.  Intends to provide portfolio support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
+Transaction-oriented infrastructure for construcing transactions, portfolios and accounts for trading systems and simulation.  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
 }
 \details{
-\tabular{ll}{
-Package: \tab blotter\cr
-Type: \tab Package\cr
-Version: \tab 0.3\cr
-Date: \tab 2008-12-05\cr
-License: \tab GPL\cr
-LazyLoad: \tab yes\cr
-}
-The blotter package provides an infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for defining tradable contracts (referred to as instruments, e.g., stocks, futures, options, etc.), tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
+The blotter package provides an infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
 
-As used here, 'instruments' are xts objects that contain price series for a tradable contract such as 'IBM'.  When defined as instruments, these objects are extended to include descriptive information and contract specifications that help identify and value the contract.
+Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as instruments, e.g., stocks, futures, options, etc.), to support multi-asset portfolios, including derivatives and multiple currencies.  As used here, 'instruments' are xts objects that define contract specifications for price series for a tradable contract, such as IBM common stock.  When defined as instruments, these objects are extended to include descriptive information and contract specifications that help identify and value the contract.
 
-In the most common use, 'transactions' are trades in an instrument.  Instruments are bought or sold in a transaction.  Other transaction types include splits, dividends, expirations, assignments, etc.  
+Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
 
 Those transactions are aggregated into 'positions'.  Positions are held in a 'portfolio' that contains positions in several instruments.  Positions are valued regularly (usually daily) using the price history associated with each instrument.  That results in a position profit-and-loss (or P&L) statement that can be aggregated across the portfolio.
 
 Portfolios are associated with an 'account'.  The account is a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
 
-The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.  Blotter is intended to work with other financial packages for R, such as quantmod and PerformanceAnalytics.  
+The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.
 
-The instrument class is intended to be easily extensible to handle multiple asset classes.  Eventually, blotter should be able to handle multi-asset portfolios, including derivatives and multiple currencies.
+Blotter's functions build and manipulate objects that are stored in an environment named ".blotter" rather than the global environment, \code{.GlobalEnv}.  Objects may be listed using \code{ls(envir=.blotter)}. See \code{\link{environment}} for more detail.  
+
+We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the Account and Portfolio objects directly.  Instead, we recommend copying them into the local workspace using getPortfolio or getAccount functions, or simply using blotter functions.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.
 
 }
 \author{
@@ -46,13 +40,20 @@ Maintainer: Brian Peterson <brian@braverock.com>
 }
 \examples{
 # Construct a portfolio object and add some transactions
+## These two lines are here to deal with frame issues in R CMD check
+## and ARE NOT NECESSARY to run by hand in your own environment.
+if(!exists(".instrument")) .instrument <<- new.env()
+if(!exists(".blotter")) .blotter <<- new.env()
 
-# Download price data
+# Define a currency and some stocks
+require(FinancialInstrument)
 currency("USD")
 symbols = c("IBM","F","MMM")
 for(symbol in symbols){ # establish tradable instruments
     stock(symbol, currency="USD",multiplier=1)
 }
+
+# Download price data
 require(quantmod)
 getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct"))
 
@@ -78,8 +79,6 @@ addTxn("p", "MMM", '2007-01-09', 50, 77.6, -0.05*50)
 
 print('Updating portfolio \"p\"...')
 updatePortf(Portfolio="p",Dates='2007-01')
-blotter:::calcPortfSummary(getPortfolio("p"), Dates='2007')
-blotter:::.getBySymbol(getPortfolio("p"),'Pos.Qty')
 
 print('Creating account \"a\" for portfolio \"p\"...')
 initAcct(name="a", portfolios="p")
