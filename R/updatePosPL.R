@@ -9,7 +9,8 @@
 #' @author Peter Carl, Brian Peterson
 .updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl, Brian Peterson
-	rmfirst=FALSE
+    rmfirst=FALSE
+    prices=NULL
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) 
 	p.ccy.str<-attr(Portfolio,'currency')
@@ -21,9 +22,11 @@
 	
 	if(is.null(Prices)){
 		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
-	} 
+	} else {
+        prices=Prices
+    }
 	
-        if(is.null(Dates)) {# if no date is specified, get all available dates
+    if(is.null(Dates)) {# if no date is specified, get all available dates
             Dates = time(prices)
 	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
     
