@@ -81,10 +81,10 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
 #' example TxnFee cost function
 #' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
-#' @param TxnPrice  price at which the transaction was done
+#' This is an example intended to demonstrate how a cost function could be used in place of a flat numeric fee.
 #' @export
-pennyPerShare <- function(TxnQty, TxnPrice) {
-    return(TxnQty * -0.01)
+pennyPerShare <- function(TxnQty) {
+    return(abs(TxnQty) * -0.01)
 }
 
 #' add multiple transactions to a portfolio, partially vectorized
