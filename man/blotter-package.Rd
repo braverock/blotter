@@ -48,7 +48,7 @@ if(!exists(".blotter")) .blotter <<- new.env()
 # Define a currency and some stocks
 require(FinancialInstrument)
 currency("USD")
-symbols = c("IBM","F","MMM")
+symbols = c("IBM","F")
 for(symbol in symbols){ # establish tradable instruments
     stock(symbol, currency="USD",multiplier=1)
 }
@@ -59,31 +59,62 @@ getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo', index.class
 
 # Initialize a portfolio object 'p'
 print('Creating portfolio \"p\"...')
-initPortf('p', symbols=symbols)
+initPortf('p', symbols=symbols, currency="USD")
 
 ## Trades must be made in date order.
 print('Adding trades to \"p\"...')
 # Make a couple of trades in IBM
-addTxn("p", "IBM", '2007-01-03', 50, 96.5, -0.05*50)
-addTxn("p", "IBM", '2007-01-04', 50, 97.1, -0.05*50)
+addTxn(Portfolio = "p", Symbol = "IBM", TxnDate = '2007-01-03', TxnQty = 50, TxnPrice = 96.5, TxnFees = -0.05*50)
+addTxn("p", "IBM", '2007-01-04', 50, 97.1, TxnFees = -0.05*50)
 
 # ...a few in F...
-addTxn("p", "F", '2007-01-03', -100, 7.60, -0.05*100)
-addTxn("p", "F", '2007-01-04', 50, 7.70, -0.05*50)
-addTxn("p", "F", '2007-01-10', 50, 7.78, -0.05*50)
+addTxn("p", "F", '2007-01-03', -100, 7.60, TxnFees = pennyPerShare(-100))
+addTxn("p", "F", '2007-01-04', 50, 7.70, TxnFees = pennyPerShare(50))
+addTxn("p", "F", '2007-01-10', 50, 7.78, TxnFees = pennyPerShare(50))
+# pennyPerShare is an example of how a cost function could be used in place of a flat numeric fee.
 
 # ...and some in MMM
-addTxn("p", "MMM", '2007-01-05', -50, 77.9, -0.05*50)
-addTxn("p", "MMM", '2007-01-08', 50, 77.6, -0.05*50)
-addTxn("p", "MMM", '2007-01-09', 50, 77.6, -0.05*50)
+# We didn't include this in the list of symbols for the portfolio, so first we have to download prices and add a slot for MMM to the portfolio
+getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct"))
+addPortfInstr("p",symbols="MMM")
+# Now we can add transactions:
+addTxn("p", "MMM", '2007-01-05', -50, 77.9, TxnFees = -0.05*50)
+addTxn("p", "MMM", '2007-01-08', 50, 77.6, TxnFees = -0.05*50)
+addTxn("p", "MMM", '2007-01-09', 50, 77.6, TxnFees = -0.05*50)
 
 print('Updating portfolio \"p\"...')
 updatePortf(Portfolio="p",Dates='2007-01')
 
 print('Creating account \"a\" for portfolio \"p\"...')
-initAcct(name="a", portfolios="p")
+initAcct(name="a", portfolios="p", initEq=10000, currency="USD")
 print('Updating account \"a\"...')
 updateAcct("a",'2007-01') # Check out the sweet date scoping. Thanks, xts.
 updateEndEq("a",'2007-01')
-getAccount("a")
+PortfReturns(Account="a",Dates="2007", Portfolios="p")
+# Examine the contents of the portfolio
+## Here is the transaction record
+getTxns(Portfolio="p", Symbol="MMM", Date="2007-01")
+getTxns(Portfolio="p", Symbol="MMM", Date="2007-01-03::2007-01-05")
+## Here are the resulting positions
+getPos(Portfolio="p", Symbol="MMM", Date="2007-01")
+getPos(Portfolio="p", Symbol="MMM", Date="2007-01-05")
+getPosQty(Portfolio="p", Symbol="MMM", Date="2007-01")
+
+# Alternatively, you can copy the objects into the local workspace
+p = getPortfolio("p") # make a local copy of the portfolio object 
+a = getAccount("a") # make a local copy of the account object
+
+chart.Posn(Portfolio="p", Symbol="MMM", Dates="2007-01")
+
+## Not Run
+## Here is the transaction record in the local object
+p$symbols$MMM$txn
+
+## Here is the position and any gains or losses associated in the local currency and the portfolio currency (which are the same in this example)
+p$symbols$MMM$posPL
+p$symbols$MMM$posPL.USD
+
+## Here is the calculated portfolio summary denominated in the portfolio currency
+p$summary
+
 }
