@@ -45,12 +45,13 @@ Maintainer: Brian Peterson <brian@braverock.com>
 if(!exists(".instrument")) .instrument <<- new.env()
 if(!exists(".blotter")) .blotter <<- new.env()
 
-# Define a currency and some stocks
+# Use the FinancialInstrument package to manage information about tradable instruments
 require(FinancialInstrument)
+# Define a currency and a couple stocks
 currency("USD")
 symbols = c("IBM","F")
 for(symbol in symbols){ # establish tradable instruments
-    stock(symbol, currency="USD",multiplier=1)
+    stock(symbol, currency="USD", multiplier=1)
 }
 
 # Download price data
@@ -75,8 +76,9 @@ addTxn("p", "F", '2007-01-10', 50, 7.78, TxnFees = pennyPerShare(50))
 
 # ...and some in MMM
 # We didn't include this in the list of symbols for the portfolio, so first we have to download prices and add a slot for MMM to the portfolio
-getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct"))
-addPortfInstr("p",symbols="MMM")
+getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct")) # Download price data
+stock("MMM", currency="USD", multiplier=1) # Add the instrument
+
 # Now we can add transactions:
 addTxn("p", "MMM", '2007-01-05', -50, 77.9, TxnFees = -0.05*50)
 addTxn("p", "MMM", '2007-01-08', 50, 77.6, TxnFees = -0.05*50)
