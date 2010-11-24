@@ -18,6 +18,7 @@
     tmp_instr<-try(getInstrument(Symbol))
     if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
 	    warning(paste("Instrument",Symbol," not found, things may break"))
+		tmp_instr<-list(currency="USD",multiplier=1)
     }
 	
 	if(is.null(Prices)){
