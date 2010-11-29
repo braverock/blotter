@@ -42,6 +42,11 @@
 	Prices<-prices[dateRange]
 	
 	if(ncol(Prices)>1) Prices=getPrice(prices,Symbol)[dateRange] 
+    
+    if(nrow(Prices)<1) {
+        Prices=xts(cbind(Prices=as.numeric(last(prices[paste('::',endDate,sep='')]))),as.Date(endDate))
+        warning('no Prices available for ',Symbol,' in ',dateRange,' : using last available price and marking to ', endDate)
+    }
 	
 	# Prices <- Prices[dateRange][,1] # only take the first column, if there is more than one
 	
