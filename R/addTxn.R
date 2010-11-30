@@ -1,16 +1,20 @@
-#' Adds transactions to a portfolio.
+#' Add transactions to a portfolio.
 #' 
+#' When a trade or adjustment is made to the Portfolio, the addTxn function calculates the value and average cost of the transaction,  the change in position, the resulting position’s average cost, and any realized proﬁt or loss (net of fees) from the transaction. Then it stores the transaction and calculations in the Portfolio object.
+#'
 #' Fees are indicated as negative values and will be subtracted from the transaction value. TxnFees can either be a fixed amount, or a function of two arguments Qty and Price in which case the function is evaluated to determine the fee amount.
 #' 
-#' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
-#' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
-#' @param TxnDate  transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
-#' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
-#' @param TxnPrice  price at which the transaction was done
-#' @param \dots any other passthrough parameters
-#' @param TxnFees fees associated with the transaction, e.g. commissions., See Details
-#' @param ConMult 
-#' @param verbose TRUE/FALSE
+#' @param Portfolio  A portfolio name that points to a portfolio object structured with initPortf()
+#' @param Symbol An instrument identifier for a symbol included in the portfolio,e.g., IBM
+#' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
+#' @param TxnQty Total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
+#' @param TxnPrice  Price at which the transaction was done
+#' @param \dots Any other passthrough parameters
+#' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
+#' @param ConMult Contract/instrument multiplier for the Symbol if it is not deﬁned in an instrument speciﬁcation
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.
+#' @note The addTxn function will eventually also handle other transaction types, such as adjustments for corporate actions or expire/assign for options. . The pennyPerShare function provides a simple example of a transaction cost function the user could supply.
+#' @seealso \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
 #' @author Peter Carl
 #' @export
 addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
@@ -28,8 +32,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
             ConMult<-tmp_instr$multiplier
         }
     }
-
-
 
 	#If there is no table for the symbol then create a new one
 	if (is.null(Portfolio$symbols[[Symbol]])){ 
@@ -79,7 +81,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
-#' example TxnFee cost function
+#' Example TxnFee cost function
 #' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
 #' This is an example intended to demonstrate how a cost function could be used in place of a flat numeric fee.
 #' @export
@@ -87,15 +89,16 @@ pennyPerShare <- function(TxnQty) {
     return(abs(TxnQty) * -0.01)
 }
 
-#' add multiple transactions to a portfolio, partially vectorized
+#' Add multiple transactions to a portfolio
 #' 
 #' TODO figure out if we can fully vectorize this function to make it faster
-#' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
-#' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
-#' @param TxnData  a n xts object containing all required txn fields
-#' @param \dots any other passthrough parameters
-#' @param verbose TRUE/FALSE
-#' @param ConMult 
+#' @param Portfolio  A portfolio name that points to a portfolio object structured with initPortf()
+#' @param Symbol An instrument identifier for a symbol included in the portfolio,e.g., IBM
+#' @param TxnData  An xts object containing all required txn fields
+#' @param \dots Any other passthrough parameters
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.
+#' @param ConMult Contract or instrument multiplier for the Symbol if it is not deﬁned in an instrument speciﬁcation
+#' @seealso \code{\link{addTxn}}, \code{\link{initPortf}}
 addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 {
     pname<-Portfolio
@@ -157,22 +160,22 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
-#' add cash dividend transactions to a portfolio
+#' Add cash dividend transactions to a portfolio.
 #' 
-#' Adding a cash Dividend does not affect position
+#' Adding a cash dividend does not affect position quantity, like a split would.
 #' 
 #' # TODO add TxnTypes to $txn table
 #' 
 #' # TODO add AsOfDate 
 #' 
-#' @param Portfolio  a portfolio name that points to a portfolio object structured with initPortf()
-#' @param Symbol an instrument identifier for a symbol included in the portfolio,e.g., IBM
-#' @param TxnDate  transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
-#' @param DivPerShare 
-#' @param \dots any other passthrough parameters
-#' @param TxnFees fees associated with the transaction, e.g. commissions., See Details
-#' @param ConMult 
-#' @param verbose 
+#' @param Portfolio  A portfolio name that points to a portfolio object structured with initPortf().
+#' @param Symbol An instrument identifier for a symbol included in the portfolio,e.g., IBM.
+#' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'.
+#' @param DivPerShare The amount of the cash dividend paid per share or per unit quantity.
+#' @param \dots Any other passthrough parameters.
+#' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.
+#' @param ConMult Contract or instrument multiplier for the Symbol if it is not deﬁned in an instrument speciﬁcation.
 #' @export
 addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
