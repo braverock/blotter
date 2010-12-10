@@ -9,9 +9,9 @@ Portfolio and transaction infrastructure for trading
 Transaction-oriented infrastructure for construcing transactions, portfolios and accounts for trading systems and simulation.  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
 }
 \details{
-The blotter package provides an infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
+The blotter package provides infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
 
-Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as instruments, e.g., stocks, futures, options, etc.), to support multi-asset portfolios, including derivatives and multiple currencies.  As used here, 'instruments' are xts objects that define contract specifications for price series for a tradable contract, such as IBM common stock.  When defined as instruments, these objects are extended to include descriptive information and contract specifications that help identify and value the contract.
+Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as instruments, e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, 'instruments' are objects that define contract specifications for a tradable contract, such as IBM common stock.  When defined as instruments, these objects include descriptive information and attributes that help identify and value the contract.
 
 Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
 
@@ -80,6 +80,7 @@ getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c
 stock("MMM", currency="USD", multiplier=1) # Add the instrument
 
 # Now we can add transactions:
+# TODO: convert this to addTxns
 addTxn("p", "MMM", '2007-01-05', -50, 77.9, TxnFees = -0.05*50)
 addTxn("p", "MMM", '2007-01-08', 50, 77.6, TxnFees = -0.05*50)
 addTxn("p", "MMM", '2007-01-09', 50, 77.6, TxnFees = -0.05*50)
