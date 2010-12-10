@@ -4,14 +4,6 @@
 #' in the portfolio or portfolios that make up an account.  These columns will be additive
 #' to return on capital of each portfolio, or of the entire account.
 #' 
-#' TODO handle portfolio and account in different currencies (not hard, just not done)
-#' 
-#' TODO explicitly handle portfolio weights
-#' 
-#' TODO provide additional  methods of calculating returns
-#' 
-#' TODO support additions and withdrawals to available capital 
-#' 
 #' This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton 
 #' @param Account string name of the account to generate returns for
 #' @param method for now, only 'contribution' is supported
@@ -19,6 +11,13 @@
 #' @param Dates xts style ISO 8601 date subset to retrieve, default NULL (all dates)
 #' @param Portfolios concatenated string vector for portfolio names to retrieve returns on, default NULL (all portfolios)
 #' @export
+#' TODO handle portfolio and account in different currencies (not hard, just not done)
+#' 
+#' TODO explicitly handle portfolio weights
+#' 
+#' TODO provide additional  methods of calculating returns
+#' 
+#' TODO support additions and withdrawals to available capital 
 PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portfolios=NULL) 
 { # @author Brian Peterson
 	aname<-Account

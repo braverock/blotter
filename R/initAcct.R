@@ -33,18 +33,19 @@
 #' columns will be useful.  
 #' Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees
 #' 
+#' @param name Account name, as string
+#' @param portfolios character vector of strigs naming portfolios included in this account
+#' @param initDate A date prior to the first close price given, used to contain initial account equity and initial position
+#' @param currency ISO currency identifier used to locate the portfolio currency
+#' @param initEq initial account equity in the currency of the portfolio, as a floating point number.
+#' @export
 #' TODO Add calcPeriodROR function
+#' 
 #' TODO Adddd functions addCapital, drawCapital, addFees
+#' 
 #' initDate and initEq can be used in addCapital to initalize the account?
 #' Track cash at this level???
 #' Calc gross PL and subtract fees? Or calc net PL and add fees.
-#' 
-#' @param name 
-#' @param portfolios 
-#' @param initDate 
-#' @param initEq 
-#' @param currency
-#' @export
 initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0, currency='USD')
 { # @author Peter Carl
 
