@@ -5,6 +5,7 @@
 #' @param Dates xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream
 #' @param Prices periodic prices in an xts object with a columnname compatible with \code{getPrice}
 #' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
+#' @param \dots any other passthru parameters
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl, Brian Peterson
 .updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
@@ -22,7 +23,7 @@
     }
 	
 	if(is.null(Prices)){
-		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)))
+		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)),...=...)
 	} else {
         prices=Prices
     }
@@ -30,6 +31,8 @@
     if(is.null(Dates)) {# if no date is specified, get all available dates
             Dates = time(prices)
 	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
+    
+    if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
     
 
 	# line up Prices dates with Dates set/index/span passed in.

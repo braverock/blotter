@@ -13,9 +13,10 @@
 #' @param Symbols
 #' @param Dates 
 #' @param Prices
+#' @param dots any other passthrough parameters
 #' @export
 #' @callGraph
-updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
+updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 { #' @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) # TODO add Date handling
@@ -26,7 +27,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL)
     } 
     for(symbol in Symbols){
         tmp_instr<-try(getInstrument(symbol))
-        .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices)            
+        .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, ...=...)            
     }
 	
     # Calculate and store portfolio summary table
