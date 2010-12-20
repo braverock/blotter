@@ -32,7 +32,7 @@
             Dates = time(prices)
 	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
     
-    if(ncol(Prices)>1) Prices=getPrice(Prices,Symbol)
+    if(ncol(prices)>1) prices=getPrice(Prices,Symbol)
     
 
 	# line up Prices dates with Dates set/index/span passed in.
@@ -43,8 +43,6 @@
 	
 	#subset Prices by dateRange too...
 	Prices<-prices[dateRange]
-	
-	if(ncol(Prices)>1) Prices=getPrice(prices,Symbol)[dateRange] 
     
     if(nrow(Prices)<1) {
         Prices=xts(cbind(Prices=as.numeric(last(prices[paste('::',endDate,sep='')]))),as.Date(endDate))
