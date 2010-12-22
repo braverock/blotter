@@ -90,10 +90,13 @@
 	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(tmpPL$Pos.Qty.1), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
 	#tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(lagPosQty), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
 	tmpPL$Pos.Qty <- na.locf(tmpPL$Pos.Qty)
-
+    
+    
+    #TODO check for instrument multiplier rather than doing all this messing around, if possible.
 	tmpPL$Con.Mult.1 <- na.locf(tmpPL$Con.Mult.1)
 	tmpPL$Con.Mult.1 <- ifelse(is.na(tmpPL$Con.Mult) & !is.na(tmpPL$Con.Mult.1) , tmpPL$Con.Mult.1, tmpPL$Con.Mult)
 	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
+    tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult, fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
 	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
 	
 	tmpPL$Pos.Avg.Cost.1 <- na.locf(tmpPL$Pos.Avg.Cost.1)
