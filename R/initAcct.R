@@ -38,6 +38,7 @@
 #' @param initDate A date prior to the first close price given, used to contain initial account equity and initial position
 #' @param currency ISO currency identifier used to locate the portfolio currency
 #' @param initEq initial account equity in the currency of the portfolio, as a floating point number.
+#' @param \dots any other passthrough parameters  
 #' @export
 #' TODO Add calcPeriodROR function
 #' 
@@ -46,7 +47,7 @@
 #' initDate and initEq can be used in addCapital to initalize the account?
 #' Track cash at this level???
 #' Calc gross PL and subtract fees? Or calc net PL and add fees.
-initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0, currency='USD')
+initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0, currency='USD', ...)
 { # @author Peter Carl
 
     if(exists(paste("account",name,sep='.'), envir=.blotter,inherits=TRUE)) 
@@ -56,7 +57,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
     account=list()
     account$portfolios=vector("list",length=length(portfolios))
     names(account$portfolios)=portfolios
-    account$summary = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate) )
+    account$summary = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate,...=...), ...=... )
     colnames(account$summary) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
     for(portfolio in portfolios){
         account$portfolios[[portfolio]] = .initSummary(initDate=initDate)

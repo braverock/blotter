@@ -54,9 +54,10 @@
 #' @param initPosQty Initial position quantity, default is zero
 #' @param initDate A date prior to the first close price given, used to contain initial account equity and initial position
 #' @param currency ISO currency identifier used to locate the portfolio currency
+#' @param \dots any other passthrough parameters  
 #' @author Peter Carl
 #' @export
-initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01', currency='USD')
+initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01', currency='USD', ...)
 { # @author Peter Carl
     if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
         stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
@@ -71,8 +72,8 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
 	stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
     for(instrument in symbols){
     	i = match(instrument, symbols)
-        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i])
-        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i])
+        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i],...=...)
+        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i],...=...)
         portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL
     }
 	portfolio$summary<-.initSummary(initDate=initDate)

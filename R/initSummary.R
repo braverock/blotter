@@ -1,8 +1,9 @@
 #' initialize the summary table used in portfolio and account lists
 #' @param initDate date prior to the first close price given, used to contain initial account equity and initial position
-.initSummary <- function(initDate="1950-01-01")
+#' @param \dots any other passthrough parameters  
+.initSummary <- function(initDate="1950-01-01",...)
 { # @author Brian Peterson
-    summary <- xts( as.matrix(t(rep(0,9))), order.by=as.POSIXct(initDate) )
+    summary <- xts( as.matrix(t(rep(0,9))), order.by=as.POSIXct(initDate,...=...), ...=... )
     colnames(summary) <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Realized.PL', 'Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     class(summary)<-c("portfolio_summary",class(summary))
     return(summary)
