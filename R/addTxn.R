@@ -44,7 +44,8 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     # Compute transaction fees if a function was supplied
     if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
     if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
-
+    if(TxnFees>0) warning('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
+    
     # Calculate the value and average cost of the transaction
     TxnValue = calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
     TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
@@ -111,7 +112,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         } else {
             ConMult<-tmp_instr$multiplier
         }  
-    }    
+    }
 
     for (row in 1:nrow(TxnData)) {
         if(row==1) {
