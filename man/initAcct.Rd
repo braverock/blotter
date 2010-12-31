@@ -1,8 +1,7 @@
 \name{initAcct}
 \alias{initAcct}
 \title{Constructs the data container used to store calculated account values such as aggregated P&L, equity, etc.}
-\usage{initAcct(name="default", portfolios, initDate="1950-01-01", initEq=0,
-    currency="USD")}
+\usage{initAcct(name="default", portfolios, initDate="1950-01-01", initEq=0, currency="USD", ...)}
 \description{Constructs the data container used to store calculated account values such as aggregated P&L, equity, etc.}
 \details{Inputs
 portfolios: a list of portfolio object names to attach to the account
@@ -29,15 +28,17 @@ Gross.Realized, Commission, Net.Realized, Int.Income, Ch.Unrealized,
 Advisory.Fees, Wealth.Index 
 Again, no need to add Wealth.Index. Eventually, these additional 
 columns will be useful.  
-Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees
+Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees}
+\note{TODO Add calcPeriodROR function
 
-TODO Add calcPeriodROR function
 TODO Adddd functions addCapital, drawCapital, addFees
+
 initDate and initEq can be used in addCapital to initalize the account?
 Track cash at this level???
 Calc gross PL and subtract fees? Or calc net PL and add fees.}
-\arguments{\item{name}{}
-\item{portfolios}{}
-\item{initDate}{}
-\item{initEq}{}
-\item{currency}{}}
+\arguments{\item{name}{Account name, as string}
+\item{portfolios}{character vector of strigs naming portfolios included in this account}
+\item{initDate}{A date prior to the first close price given, used to contain initial account equity and initial position}
+\item{currency}{ISO currency identifier used to locate the portfolio currency}
+\item{initEq}{initial account equity in the currency of the portfolio, as a floating point number.}
+\item{\dots}{any other passthrough parameters}}

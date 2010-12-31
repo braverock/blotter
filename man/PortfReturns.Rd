@@ -7,15 +7,14 @@
 in the portfolio or portfolios that make up an account.  These columns will be additive
 to return on capital of each portfolio, or of the entire account.
 
-TODO handle portfolio and account in different currencies (not hard, just not done)
+This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton}
+\note{TODO handle portfolio and account in different currencies (not hard, just not done)
 
 TODO explicitly handle portfolio weights
 
 TODO provide additional  methods of calculating returns
 
-TODO support additions and withdrawals to available capital 
-
-This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton}
+TODO support additions and withdrawals to available capital}
 \arguments{\item{Account}{string name of the account to generate returns for}
 \item{method}{for now, only 'contribution' is supported}
 \item{\dots}{any other passthru parameters (like \code{native} for \code{.getBySymbol}}

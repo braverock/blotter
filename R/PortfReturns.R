@@ -5,12 +5,13 @@
 #' to return on capital of each portfolio, or of the entire account.
 #' 
 #' This function exists because of R/Finance community requests by Mark Breman and Thomas Bolton 
+#' @export
 #' @param Account string name of the account to generate returns for
 #' @param method for now, only 'contribution' is supported
 #' @param \dots any other passthru parameters (like \code{native} for \code{.getBySymbol}
 #' @param Dates xts style ISO 8601 date subset to retrieve, default NULL (all dates)
 #' @param Portfolios concatenated string vector for portfolio names to retrieve returns on, default NULL (all portfolios)
-#' @export
+#' @note
 #' TODO handle portfolio and account in different currencies (not hard, just not done)
 #' 
 #' TODO explicitly handle portfolio weights

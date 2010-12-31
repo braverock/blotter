@@ -1,6 +1,6 @@
 #' Retrieves the transactions and their attributes.
 #'
-#' Find and return the transactions and attribute values for the symbol and date in a speciﬁed portfolio.
+#' Find and return the transactions and attribute values for the symbol and date in a specied portfolio.
 #' 
 #' This function provides easy access to the values of transactions contained in a Portfolio object. See initPortf for a detailed description of the structure of a Portfolio object.
 #'

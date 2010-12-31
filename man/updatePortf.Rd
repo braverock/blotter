@@ -1,7 +1,7 @@
 \name{updatePortf}
 \alias{updatePortf}
 \title{Function goes through each symbol and calculates the PL for each period prices are available...}
-\usage{updatePortf(Portfolio, Symbols, Dates, Prices)}
+\usage{updatePortf(Portfolio, Symbols, Dates, Prices, ...)}
 \description{Function goes through each symbol and calculates the PL for each period prices are available}
 \details{Inputs
 Portfolio: a portfolio object containing transactions
@@ -14,4 +14,5 @@ assigns position information and PL into the environment}
 \arguments{\item{Portfolio}{}
 \item{Symbols}{}
 \item{Dates}{}
-\item{Prices}{}}
+\item{Prices}{}
+\item{dots}{any other passthrough parameters}}

@@ -9,4 +9,5 @@
 \item{Symbol}{an instrument identifier for a symbol included in the portfolio}
 \item{Dates}{xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream}
 \item{Prices}{periodic prices in an xts object with a columnname compatible with \code{getPrice}}
-\item{ConMult}{if necessary, numeric contract multiplier, not needed if instrument is defined.}}
+\item{ConMult}{if necessary, numeric contract multiplier, not needed if instrument is defined.}
+\item{\dots}{any other passthru parameters}}

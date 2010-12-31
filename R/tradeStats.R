@@ -1,3 +1,4 @@
+
 #' calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios
 #' 
 #' This function calculates trade-level statistics on a symbol or symbols within a portfolio or portfolios.
@@ -21,18 +22,19 @@
 #' calculated independently of strategy rules could be considered proprietary.
 #' 
 #' Special Thanks for contributions to this function from:
-#' \itemize{
+#' \describe{
 #'   \item{Josh Ulrich}{ for adding multiple-portfolio support, fixing bugs, and improving readability of the code }
 #'   \item{Klemen Koselj}{ for median stats, num trades, and win/loss ratios }
-#'   \item{Mark Knect}{ for suggesting Profit Factor and largest winner/largest loser }
+#'   \item{Mark Knecht}{ for suggesting Profit Factor and largest winner/largest loser }
 #' }  
 #' 
 #' WARNING: we're not sure this function is stable/complete yet.  If you're using it, please give us feedback!
 #' 
-#' @param Portfolio portfolio string 
+#' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
 #' @author Lance Levenson
 #' @export
+#' @note
 #' TODO document each statistic included in this function, with equations 
 tradeStats <- function(Portfolios, Symbols)
 {
@@ -47,7 +49,9 @@ tradeStats <- function(Portfolios, Symbols)
     		stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
         if (!inherits(Portfolio, "portfolio")) 
                 stop("Portfolio", pname, "passed is not the name of a portfolio object.")
-            
+        
+        
+        
         ## FIXME: need a way to define symbols for each portfolio    
         if(missing(Symbols)) symbols <- names(Portfolio$symbols)
         else symbols <- Symbols
@@ -88,9 +92,10 @@ tradeStats <- function(Portfolios, Symbols)
             AvgWinLoss <- AvgWinTrade/-AvgLossTrade
             MedWinLoss <- MedWinTrade/-MedLossTrade
             
-            AvgDailyPL <- mean(apply.daily(PL.ne0,sum))
-            MedDailyPL <- median(apply.daily(PL.ne0,sum))
-            StdDailyPL <- as.numeric(sd(apply.daily(PL.ne0,sum)))
+            DailyPL <- apply.daily(PL.ne0,sum)
+            AvgDailyPL <- mean(DailyPL)
+            MedDailyPL <- median(DailyPL)
+            StdDailyPL <- as.numeric(sd(DailyPL))
             
             Equity <- cumsum(posPL$Net.Trading.PL)
 	        Equity.max <- cummax(Equity)
@@ -141,10 +146,103 @@ tradeStats <- function(Portfolios, Symbols)
             ret <- rbind(ret,tmpret)
         } # end symbol loop
     } # end portfolio loop
-        
     return(ret)
 }
 
+#' generate daily Transaction Realized or Equity Curve P&L by instrument
+#' 
+#' designed to collate information for high frequency portfolios
+#' 
+#' @aliases dailyEqPL
+#' @param Portfolios portfolio string 
+#' @param Symbols character vector of symbol strings
+#' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
+#' @author Brian G. Peterson
+#' @export
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
+{
+    ret<-NULL
+    for (Portfolio in Portfolios){
+        ## Error Handling Borrowed from getPortfolio
+        pname <- Portfolio
+        if (!grepl("portfolio\\.", pname)) 
+            Portfolio <- try(get(paste("portfolio", pname, sep = "."),  envir = .blotter))
+        else Portfolio <- try(get(pname, envir = .blotter))
+        if (inherits(Portfolio, "try-error")) 
+            stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
+        if (!inherits(Portfolio, "portfolio")) 
+            stop("Portfolio", pname, "passed is not the name of a portfolio object.")
+        
+        
+        
+        ## FIXME: need a way to define symbols for each portfolio    
+        if(missing(Symbols)) symbols <- names(Portfolio$symbols)
+        else symbols <- Symbols
+        
+        ## Trade Statistics
+        for (symbol in symbols){
+            txn <- Portfolio$symbols[[symbol]]$txn
+            posPL <- Portfolio$symbols[[symbol]]$posPL
+            posPL <- posPL[-1,]
+            
+            #PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
+            #PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
+            PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
+            
+            DailyPL <- apply.daily(PL.ne0,sum)
+            colnames(DailyPL)<-paste(symbol,'DailyTxnPL',sep='.')
+            if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
+            
+        } # end symbol loop
+    } # end portfolio loop
+    ret<-apply.daily(ret,colSums,na.rm=TRUE)  
+    if(drop.time) index(ret)<-as.Date(index(ret))
+    return(ret)
+}
+
+#' @export
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
+{
+    ret<-NULL
+    for (Portfolio in Portfolios){
+        ## Error Handling Borrowed from getPortfolio
+        pname <- Portfolio
+        if (!grepl("portfolio\\.", pname)) 
+            Portfolio <- try(get(paste("portfolio", pname, sep = "."),  envir = .blotter))
+        else Portfolio <- try(get(pname, envir = .blotter))
+        if (inherits(Portfolio, "try-error")) 
+            stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
+        if (!inherits(Portfolio, "portfolio")) 
+            stop("Portfolio", pname, "passed is not the name of a portfolio object.")
+        
+        
+        
+        ## FIXME: need a way to define symbols for each portfolio    
+        if(missing(Symbols)) symbols <- names(Portfolio$symbols)
+        else symbols <- Symbols
+        
+        ## Trade Statistics
+        for (symbol in symbols){
+            txn <- Portfolio$symbols[[symbol]]$txn
+            posPL <- Portfolio$symbols[[symbol]]$posPL
+            posPL <- posPL[-1,]
+            
+            #PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
+            #PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
+            PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
+            Equity <- cumsum(posPL$Net.Trading.PL)
+            
+            #DailyPL <- apply.daily(Equity,last)
+            DailyPL <- apply.daily(posPL$Net.Trading.PL,colSums)
+            colnames(DailyPL)<-paste(symbol,'DailyEndEq',sep='.')
+            if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
+            
+        } # end symbol loop
+    } # end portfolio loop
+    ret<-apply.daily(ret,colSums,na.rm=TRUE)  
+    if(drop.time) index(ret)<-as.Date(index(ret))
+    return(ret)
+}
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development

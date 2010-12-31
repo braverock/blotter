@@ -40,6 +40,7 @@
 #' @param initEq initial account equity in the currency of the portfolio, as a floating point number.
 #' @param \dots any other passthrough parameters  
 #' @export
+#' @note
 #' TODO Add calcPeriodROR function
 #' 
 #' TODO Adddd functions addCapital, drawCapital, addFees

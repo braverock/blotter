@@ -1,8 +1,7 @@
 \name{.initPosPL}
 \alias{.initPosPL}
 \title{initializes position P&L for a portfolio instrument...}
-\usage{.initPosPL(initDate="1950-01-01", ..., initPosQty=0, initConMult=1,
-    initCcyMult=1)}
+\usage{.initPosPL(initDate="1950-01-01", ..., initPosQty=0, initConMult=1, initCcyMult=1)}
 \description{initializes position P&L for a portfolio instrument}
 \details{Constructs the data container used to store calculated P&L values from
 transactions and close prices.
