@@ -13,8 +13,7 @@ initAcct("amzn_acct",portfolios="amzn_port",initDate="2010-01-14", initEq=10000)
 # look at the transactions data
 amzn.trades
 # Add the transactions to the portfolio
-# if you wanted to avoid the contract multiplier warning, you would add an instrument first
-addTxns("amzn_port","amzn",TxnData=amzn.trades,verbose=TRUE)
+blotter:::addTxns("amzn_port","amzn",TxnData=amzn.trades,verbose=TRUE)
 
 # update the portfolio stats
 updatePortf("amzn_port",Dates="2010-01-14")
