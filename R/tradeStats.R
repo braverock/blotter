@@ -36,6 +36,19 @@
 #' @export
 #' @note
 #' TODO document each statistic included in this function, with equations 
+#' 
+#' TODO add more stats, potentially
+#' PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sharpe/Sortino
+#' 
+#' mean absolute deviation stats
+#' 
+#' more Tharpe/Kestner/Tradestation stats, e.g.
+#' K-factor
+#' RINA Index
+#' Percent time in the market
+#' Buy and hold return
+#' 
+#' Josh has suggested adding %-return based stats too
 tradeStats <- function(Portfolios, Symbols)
 {
     ret<-NULL
