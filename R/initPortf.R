@@ -89,7 +89,7 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/) 
-# Copyright (c) 2008-2010 Peter Carl and Brian G. Peterson
+# Copyright (c) 2008-2011 Peter Carl and Brian G. Peterson
 #
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
