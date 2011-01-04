@@ -57,8 +57,8 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     if(TxnFees>0) warning('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
     # Calculate the value and average cost of the transaction
-    TxnValue = calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
-    TxnAvgCost = calcTxnAvgCost(TxnValue, TxnQty, ConMult)
+    TxnValue = .calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
+    TxnAvgCost = .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
 
     # Calculate the change in position
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
@@ -66,7 +66,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     # Calculate the resulting position's average cost
     PrevPosAvgCost = .getPosAvgCost(pname, Symbol, TxnDate)
-    PosAvgCost = calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult)
+    PosAvgCost = .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult)
 
 	
     # Calculate any realized profit or loss (net of fees) from the transaction
@@ -134,11 +134,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         TxnPrice       <- as.numeric(TxnData[row,'Price'])
         TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
         #TxnFee         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
-        TxnValue       <- calcTxnValue(TxnQty, TxnPrice, TxnFee, ConMult)
-        TxnAvgCost     <- calcTxnAvgCost(TxnValue, TxnQty, ConMult)
+        TxnValue       <- .calcTxnValue(TxnQty, TxnPrice, TxnFee, ConMult)
+        TxnAvgCost     <- .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
-        PosAvgCost     <- calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
+        PosAvgCost     <- .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
 		GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
 		NetTxnRealizedPL = GrossTxnRealizedPL - TxnFee
         PrevPosQty     <- PosQty

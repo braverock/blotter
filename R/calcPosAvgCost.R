@@ -6,12 +6,13 @@
 #' @param TxnValue total value of the transaction, including fees
 #' @param PosQty total units (shares) of the resulting position
 #' @param ConMult multiplier from instrument data
-calcPosAvgCost <- function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
+.calcPosAvgCost <- function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
 { # @author Peter Carl
     if(PosQty == 0)
         PosAvgCost = 0
     else {
-        PosAvgCost = abs((PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult))
+        # PosAvgCost = abs((PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult))
+        PosAvgCost = (PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult)
     }
     return(PosAvgCost)
 }
