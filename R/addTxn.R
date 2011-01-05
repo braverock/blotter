@@ -110,7 +110,7 @@ pennyPerShare <- function(TxnQty) {
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
 #' @param ConMult Contract or instrument multiplier for the Symbol if it is not dened in an instrument specication
 #' @seealso \code{\link{addTxn}}, \code{\link{initPortf}}
-#' @notes
+#' @note
 #' TODO figure out if we can fully vectorize this function to make it faster
 addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 {
