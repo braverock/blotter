@@ -11,19 +11,21 @@ Transaction-oriented infrastructure for construcing transactions, portfolios and
 \details{
 The blotter package provides infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
 
-Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as instruments, e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, 'instruments' are objects that define contract specifications for a tradable contract, such as IBM common stock.  When defined as instruments, these objects include descriptive information and attributes that help identify and value the contract.
+Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as "instruments", e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, instruments are objects that define contract specifications for a tradable contract, such as IBM common stock.  These objects include descriptive information and attributes that help identify and value the contract.
 
 Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
 
 Those transactions are aggregated into 'positions'.  Positions are held in a 'portfolio' that contains positions in several instruments.  Positions are valued regularly (usually daily) using the price history associated with each instrument.  That results in a position profit-and-loss (or P&L) statement that can be aggregated across the portfolio.
 
-Portfolios are associated with an 'account'.  The account is a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
+Portfolios are associated with an 'account'.  An account is modeled as a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
 
 The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.
 
 Blotter's functions build and manipulate objects that are stored in an environment named ".blotter" rather than the global environment, \code{.GlobalEnv}.  Objects may be listed using \code{ls(envir=.blotter)}. See \code{\link{environment}} for more detail.  
 
-We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the Account and Portfolio objects directly.  Instead, we recommend copying them into the local workspace using getPortfolio or getAccount functions, or simply using blotter functions.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.
+We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the account and portfolio objects directly.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.  Instead, we recommend copying them into the local workspace using \code{getPortfolio} or \code{getAccount} functions, or simply using blotter functions.  
+
+The sole example in the documentation of blotter follows, providing a simple but more complete overview of how blotter can be used.  More extensive examples can be seen in the demos.  The \code{longtrend} demo shows a simple trend-following example, and \code{turtles} shows a more complicated trend-following example.  The \code{amzn_test} demo shows blotter's use with tick data.
 
 }
 \author{
@@ -34,8 +36,8 @@ Maintainer: Brian Peterson <brian@braverock.com>
 }
 \keyword{ package }
 \seealso{
-\code{\link[quantmod:quantmod-package]{quantmod}}
-\code{\link[xts:xts-package]{xts}}
+\code{\link[quantmod:quantmod-package]{quantmod}}, 
+\code{\link[xts:xts-package]{xts}}, 
 \code{\link[PerformanceAnalytics:PerformanceAnalytics-package]{PerformanceAnalytics}}
 }
 \examples{
@@ -45,7 +47,8 @@ Maintainer: Brian Peterson <brian@braverock.com>
 if(!exists(".instrument")) .instrument <<- new.env()
 if(!exists(".blotter")) .blotter <<- new.env()
 
-# Use the FinancialInstrument package to manage information about tradable instruments
+# Use the FinancialInstrument package to manage information about tradable 
+# instruments
 require(FinancialInstrument)
 # Define a currency and a couple stocks
 currency("USD")
@@ -65,17 +68,20 @@ initPortf('p', symbols=symbols, currency="USD")
 ## Trades must be made in date order.
 print('Adding trades to \"p\"...')
 # Make a couple of trades in IBM
-addTxn(Portfolio = "p", Symbol = "IBM", TxnDate = '2007-01-03', TxnQty = 50, TxnPrice = 96.5, TxnFees = -0.05*50)
+addTxn(Portfolio = "p", Symbol = "IBM", TxnDate = '2007-01-03', TxnQty = 50, 
+TxnPrice = 96.5, TxnFees = -0.05*50)
 addTxn("p", "IBM", '2007-01-04', 50, 97.1, TxnFees = -0.05*50)
 
 # ...a few in F...
 addTxn("p", "F", '2007-01-03', -100, 7.60, TxnFees = pennyPerShare(-100))
 addTxn("p", "F", '2007-01-04', 50, 7.70, TxnFees = pennyPerShare(50))
 addTxn("p", "F", '2007-01-10', 50, 7.78, TxnFees = pennyPerShare(50))
-# pennyPerShare is an example of how a cost function could be used in place of a flat numeric fee.
+# pennyPerShare is an example of how a cost function could be used in place of 
+# a flat numeric fee.
 
 # ...and some in MMM
-# We didn't include this in the list of symbols for the portfolio, so first we have to download prices and add a slot for MMM to the portfolio
+# We didn't include this in the list of symbols for the portfolio, so first we 
+# have to download prices and add a slot for MMM to the portfolio
 getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct")) # Download price data
 stock("MMM", currency="USD", multiplier=1) # Add the instrument
 
@@ -113,11 +119,13 @@ chart.Posn(Portfolio="p", Symbol="MMM", Dates="2007-01")
 ## Here is the transaction record in the local object
 p$symbols$MMM$txn
 
-## Here is the position and any gains or losses associated in the local currency and the portfolio currency (which are the same in this example)
+## Here is the position and any gains or losses associated in the local currency
+## and the portfolio currency (which are the same in this example)
 p$symbols$MMM$posPL
 p$symbols$MMM$posPL.USD
 
-## Here is the calculated portfolio summary denominated in the portfolio currency
+## Here is the calculated portfolio summary denominated in the portfolio 
+## currency
 p$summary
 
 }
