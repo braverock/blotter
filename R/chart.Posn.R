@@ -1,8 +1,13 @@
-#' chart trades against market data, position through time, and equity curve
+#' Chart trades against market data, position through time, and cumulative P\&L
+#'
+#' Produces a three-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, and a cumulative profit-loss line chart in the third.
+#' @note Expect changes to this function, since the underlying charts are experimental functions in quantmod.
+#'
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart
-#' @param Dates date range, currently not used
-#' @param ... any other passthru parameters (typically parameters to \code{chart_Series})
+#' @param Dates currently not used
+#' @param ... any other passthru parameters to \code{\link[quantmod:chart_Series]chart_Series}}
+#' @seealso
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 { # @author Peter Carl

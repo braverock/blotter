@@ -103,8 +103,8 @@ pennyPerShare <- function(TxnQty) {
 }
 
 #' Add multiple transactions to a portfolio
-#' @param Portfolio  A portfolio name that points to a portfolio object structured with initPortf()
-#' @param Symbol An instrument identifier for a symbol included in the portfolio,e.g., IBM
+#' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{\link{initPortf}}
+#' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param TxnData  An xts object containing all required txn fields
 #' @param \dots Any other passthrough parameters
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
@@ -177,12 +177,12 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 #' 
 #' Adding a cash dividend does not affect position quantity, like a split would.
 #' 
-#' @param Portfolio  A portfolio name that points to a portfolio object structured with initPortf().
+#' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{\link{initPortf}}.
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., IBM.
 #' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'.
 #' @param DivPerShare The amount of the cash dividend paid per share or per unit quantity.
 #' @param \dots Any other passthrough parameters.
-#' @param TxnFees Fees associated with the transaction, e.g. commissions. See Details
+#' @param TxnFees Fees associated with the transaction, e.g. commissions. See Details.
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
 #' @param ConMult Contract or instrument multiplier for the Symbol if it is not dened in an instrument specication.
 #' @export

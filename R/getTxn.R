@@ -1,24 +1,25 @@
-#' Retrieves the transactions and their attributes.
+#' Retrieve transactions and their attributes.
 #'
 #' Find and return the transactions and attribute values for the symbol and date in a specied portfolio.
 #' 
-#' This function provides easy access to the values of transactions contained in a Portfolio object. See initPortf for a detailed description of the structure of a Portfolio object.
+#' This function provides easy access to the values of transactions contained in a Portfolio object. See \code{\link{initPortf}} for a detailed description of the structure of a Portfolio object.
 #'
 #'
 #' @param Portfolio a string identifying a portfolio object containing transactions
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
-#' @param Date timestamp as of which to get transactions
-#' @return xts of transactions made in the Symbol during the time period given
+#' @param Dates specified as an ISO 8601 date or an xts date range, such as "2007-01::2008-04-15"
+#' @return xts time series of transactions made in the Symbol during the time period given
+#' @seealso \code{\link{initPortf}}
 #' @export
-getTxns <- function(Portfolio, Symbol, Date)
+getTxns <- function(Portfolio, Symbol, Dates)
 { # @author Peter Carl
     pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    Portfolio<-get(paste("portfolio",pname,sep='.'), envir=.blotter)
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio first"))
     
     TxnData = Portfolio$symbols[[Symbol]]$txn
-    Txns = TxnData[Date,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Net.Txn.Realized.PL')]
+    Txns = TxnData[Dates,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Net.Txn.Realized.PL')]
     return(Txns)
 }
 

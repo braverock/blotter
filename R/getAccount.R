@@ -1,9 +1,11 @@
-#' get an account object from the environment for examination or manipulation
+#' Get an account object from the .blotter environment
+#' 
+#' Retrieves an account object from the \code{.blotter} environment.  Useful for local examination or charting, or storing interim results for later reference.
+#'
 #' @param Account string identifier for the account
-#' @param Dates 
 #' @return Account object
 #' @export
-getAccount <- function(Account, Dates=NULL) #should symbol subsets be supported too?  probably not.
+getAccount <- function(Account) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     aname<-Account
     if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter))
@@ -12,10 +14,10 @@ getAccount <- function(Account, Dates=NULL) #should symbol subsets be supported 
         stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
     if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")
     
-    if(!is.null(Dates)){
-        message("date subsetting not yet supported")
-        #TODO add date subsetting in getAccount
-    }
+#     if(!is.null(Dates)){
+#         message("date subsetting not yet supported")
+#         #TODO add date subsetting in getAccount
+#     }
     
     return(Account)
 }

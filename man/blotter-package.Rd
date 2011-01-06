@@ -19,11 +19,13 @@ Those transactions are aggregated into 'positions'.  Positions are held in a 'po
 
 Portfolios are associated with an 'account'.  An account is modeled as a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
 
-The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.
+The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.  A small selection of post-trade metrics has been added recently, and is likely to change and expand as we hear more about what people want to calculate.  
 
 Blotter's functions build and manipulate objects that are stored in an environment named ".blotter" rather than the global environment, \code{.GlobalEnv}.  Objects may be listed using \code{ls(envir=.blotter)}. See \code{\link{environment}} for more detail.  
 
 We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the account and portfolio objects directly.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.  Instead, we recommend copying them into the local workspace using \code{getPortfolio} or \code{getAccount} functions, or simply using blotter functions.  
+
+Blotter relies heavily on \code{\link[xts:xts-package]{xts} for the heavy lifting of date and time subsetting.  Many thanks to Jeff Ryan and Josh Ulrich for their diligent help ferretting out all those corner cases.  As a result, any \code{Dates} parameter in the package leverages \code{\link[xts:xts-package]{xts} date scoping.  For example, \code{getTxn(Portfolio="p", Symbol="XYZ", Dates="2007-01")} will retrieve all transactions for "XYZ" from January, 2007.  Similarly, a range of dates may be specified as "2007-01::2008-04-15".  Take a look at the \code{\link[xts:xts-package]{xts} documentation for more detail.  Otherwise, the \code{Date} or \{Dates} parameter accepts an ISO 8601 format such as '2008-09-15' or '2010-01-05 09:54:23.12345'.  In almost all cases, if the \code{Dates} parameter is unspecified, the function will return all results.
 
 The sole example in the documentation of blotter follows, providing a simple but more complete overview of how blotter can be used.  More extensive examples can be seen in the demos.  The \code{longtrend} demo shows a simple trend-following example, and \code{turtles} shows a more complicated trend-following example.  The \code{amzn_test} demo shows blotter's use with tick data.
 
