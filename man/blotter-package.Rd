@@ -15,7 +15,7 @@ Blotter works with a companion package, \code{\link[FinancialInstrument:Financia
 
 Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
 
-Those transactions are aggregated into 'positions'.  Positions are held in a 'portfolio' that contains positions in several instruments.  Positions are valued regularly (usually daily) using the price history associated with each instrument.  That results in a position profit-and-loss (or P&L) statement that can be aggregated across the portfolio.
+Those transactions are aggregated into 'positions'.  Positions are held in a 'portfolio' that contains positions in several instruments.  Positions are valued regularly (usually daily) using the price history associated with each instrument.  That results in a position profit-and-loss (or PnL) statement that can be aggregated across the portfolio.
 
 Portfolios are associated with an 'account'.  An account is modeled as a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
 
@@ -25,7 +25,7 @@ Blotter's functions build and manipulate objects that are stored in an environme
 
 We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the account and portfolio objects directly.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.  Instead, we recommend copying them into the local workspace using \code{getPortfolio} or \code{getAccount} functions, or simply using blotter functions.  
 
-Blotter relies heavily on \code{\link[xts:xts-package]{xts} for the heavy lifting of date and time subsetting.  Many thanks to Jeff Ryan and Josh Ulrich for their diligent help ferretting out all those corner cases.  As a result, any \code{Dates} parameter in the package leverages \code{\link[xts:xts-package]{xts} date scoping.  For example, \code{getTxn(Portfolio="p", Symbol="XYZ", Dates="2007-01")} will retrieve all transactions for "XYZ" from January, 2007.  Similarly, a range of dates may be specified as "2007-01::2008-04-15".  Take a look at the \code{\link[xts:xts-package]{xts} documentation for more detail.  Otherwise, the \code{Date} or \{Dates} parameter accepts an ISO 8601 format such as '2008-09-15' or '2010-01-05 09:54:23.12345'.  In almost all cases, if the \code{Dates} parameter is unspecified, the function will return all results.
+Blotter relies heavily on \code{\link[xts:xts-package]{xts}} for the heavy lifting of date and time subsetting.  Many thanks to Jeff Ryan and Josh Ulrich for their diligent help ferretting out all those corner cases.  As a result, any \code{Dates} parameter in the package leverages \code{\link[xts:xts-package]{xts} date scoping.  For example, \code{getTxn(Portfolio="p", Symbol="XYZ", Dates="2007-01")}} will retrieve all transactions for "XYZ" from January, 2007.  Similarly, a range of dates may be specified as "2007-01::2008-04-15".  Take a look at the \code{\link[xts:xts-package]{xts}} documentation for more detail.  Otherwise, the \code{Date} or \code{Dates} parameter accepts an ISO 8601 format such as '2008-09-15' or '2010-01-05 09:54:23.12345'.  In almost all cases, if the \code{Dates} parameter is unspecified, the function will return all results.
 
 The sole example in the documentation of blotter follows, providing a simple but more complete overview of how blotter can be used.  More extensive examples can be seen in the demos.  The \code{longtrend} demo shows a simple trend-following example, and \code{turtles} shows a more complicated trend-following example.  The \code{amzn_test} demo shows blotter's use with tick data.
 
@@ -116,6 +116,8 @@ p = getPortfolio("p") # make a local copy of the portfolio object
 a = getAccount("a") # make a local copy of the account object
 
 chart.Posn(Portfolio="p", Symbol="MMM", Dates="2007-01")
+
+# add tradeStats
 
 ## Not Run
 ## Here is the transaction record in the local object
