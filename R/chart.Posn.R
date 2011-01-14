@@ -35,8 +35,10 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     tzero = xts(0,order.by=index(Prices[1,]))
 #    Prices=align.time(Prices,n) 
     
-    Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Price*Portfolio$symbols[[Symbol]]$txn$Txn.Qty
-    Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
+	#Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Price*Portfolio$symbols[[Symbol]]$txn$Txn.Qty
+	Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Value
+	
+	Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
 #    Buys = align.time(rbind(Buys,tzero),n)[-1]
     Sells = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
 #    Sells = align.time(rbind(Sells,tzero),n)[-1]
