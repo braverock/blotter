@@ -6,8 +6,7 @@
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart
 #' @param Dates currently not used
-#' @param ... any other passthru parameters to \code{\link[quantmod:chart_Series]chart_Series}}
-#' @seealso
+#' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 { # @author Peter Carl

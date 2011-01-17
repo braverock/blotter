@@ -1,7 +1,12 @@
 #' Chart trades against market data, position through time, and cumulative P\&L
 #'
-#' Produces a three-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, and a cumulative profit-loss line chart in the third.
+#' Produces a four-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, a cumulative profit-loss line chart in the third.  
+#' The theoretical trades, positions, and P&L are plotted first, in the 'light' versions of the colors, and then the actual values are overplotted in the main color.  
+#' If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines. 
+#' The fourth panel is the difference in P&L between the theoretical and actual values, and could be considered 'slippage', which could be positive or negative.  
+#' It is calculated by subtracting the theoretical P&L from the actual P&L.   
 #'
+#' 
 #' @param theoPort string identifying the theoretical portfolio to chart
 #' @param actualPort string identifying the actual portfolio to chart
 #' @param Symbol string identifying the symbol to chart
@@ -91,7 +96,7 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
     if(!is.null(CumPL)) {
         (add_TA(CumPL, col='darkgreen', lwd=2))
         if(!is.null(PLdifference)){
-            (add_TA(PLdifference, col='darkgreen', lwd=2))
+            (add_TA(PLdifference, col='lightred', lwd=2))
         }    
     } 
     plot(current.chob())
