@@ -46,10 +46,10 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
 	ATrades = Actual$symbols[[Symbol]]$txn$Txn.Value
     
 	Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
-    ABuys = Actual$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
+    ABuys = Actual$symbols[[Symbol]]$txn$Txn.Price[which(ATrades>0)]
     
     Sells = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
-    ASells = Actual$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
+    ASells = Actual$symbols[[Symbol]]$txn$Txn.Price[which(ATrades<0)]
     
     Position = Portfolio$symbols[[Symbol]]$txn$Pos.Qty
     Positionfill = na.locf(merge(Position,index(Prices)))
@@ -82,7 +82,7 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
         (add_TA(ABuys,pch=2,type='p',col='green', on=1))    
     }
     if(nrow(Sells)>=1){
-        (add_TA(Sells,pch=6,type='p',col='lightred', on=1))    
+        (add_TA(Sells,pch=6,type='p',col='lightsalmon', on=1))    
         (add_TA(ASells,pch=6,type='p',col='red', on=1))    
     } 
     if(nrow(Position)>=1) {
@@ -94,9 +94,11 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
     
     
     if(!is.null(CumPL)) {
-        (add_TA(CumPL, col='darkgreen', lwd=2))
+		(add_TA(ActCumPL, col='darkgreen', lwd=2))
+        (add_TA(CumPL, col='lightgreen', lwd=2, on=3))
+		(add_TA(ActCumPL, col='darkgreen', lwd=2, on=3))
         if(!is.null(PLdifference)){
-            (add_TA(PLdifference, col='lightred', lwd=2))
+            (add_TA(PLdifference, col='lightsalmon', lwd=2))
         }    
     } 
     plot(current.chob())
