@@ -4,9 +4,11 @@
 #' @param Portfolio string identifying a portfolio object containing transactions
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
 #' @param Date timestamp as of which to have the most recent position
+#' @param Columns which columns to return from the \code{txn} slot in the portfolio
+#' @param n number of periods to return, default 1
 #' @return All data elements related to position in a row of an xts object
 #' @export
-getPos <- function(Portfolio, Symbol, Date)
+getPos <- function(Portfolio, Symbol, Date, Columns=c('Pos.Qty','Pos.Avg.Cost'),n=1)
 { # @author Peter Carl
     Portfolio<-getPortfolio(Portfolio)    
     # FUNCTION
@@ -14,7 +16,8 @@ getPos <- function(Portfolio, Symbol, Date)
     toDate = paste('::', Date, sep="")
     # It may not make sense to return realized P&L with the position information, so only position and 
     # position average cost are returned.
-    Pos = last(PosData[toDate,c('Pos.Qty','Pos.Avg.Cost')])
+    if(nrow(PosData)>1) Pos = last(PosData[toDate][,Columns],n=n)
+    else Pos <- PosData[,Columns]
     return(Pos)
 }
 
