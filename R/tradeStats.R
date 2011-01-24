@@ -286,7 +286,8 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         StdDayPL <- as.numeric(sd(PL.ne0))   
         
         #NumberOfDays <- nrow(txn)
-        
+        WinDays <-length(PL.gt0)
+        LossDays<-length(PL.ne0)
         PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
         PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
         
@@ -315,6 +316,9 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         
         tmpret <- data.frame(
                 Total.Net.Profit=TotalNetProfit,
+                Total.Days=length(x),
+                Winning.Days=WinDays,
+                Losing.Days=LossDays,
                 Avg.Day.PL=AvgDayPL,
                 Med.Day.PL=MedDayPL,
                 Largest.Winner=MaxWin,
