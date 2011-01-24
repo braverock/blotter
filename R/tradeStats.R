@@ -270,6 +270,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
             )
     
     dailyFUN <- function (x){
+        x<-t(t(x))
         PL.gt0 <- x[x  > 0]
         PL.lt0 <- x[x  < 0]
         PL.ne0 <- x[x != 0]
@@ -280,39 +281,39 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         GrossLosses  <- sum(PL.lt0)
         ProfitFactor <- abs(GrossProfits/GrossLosses)
         
-        AvgDayPL <- mean(PL.ne0)
-        MedDayPL <- median(PL.ne0)
+        AvgDayPL <- as.numeric(mean(PL.ne0))
+        MedDayPL <- as.numeric(median(PL.ne0))
         StdDayPL <- as.numeric(sd(PL.ne0))   
         
-        NumberOfDays <- nrow(txn)
+        #NumberOfDays <- nrow(txn)
         
-        PercentPositive <- (nrow(PL.gt0)/nrow(PL.ne0))*100
-        PercentNegative <- (nrow(PL.lt0)/nrow(PL.ne0))*100
+        PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
+        PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
         
         MaxWin <- max(x)
         MaxLoss <- min(x)
         
-        AvgWinDay <- mean(PL.gt0)
-        MedWinDay <- median(PL.gt0)
-        AvgLossDay <- mean(PL.lt0)
-        MedLossDay <- median(PL.lt0)
+        AvgWinDay <- as.numeric(mean(PL.gt0))
+        MedWinDay <- as.numeric(median(PL.gt0))
+        AvgLossDay <- as.numeric(mean(PL.lt0))
+        MedLossDay <- as.numeric(median(PL.lt0))
         
         AvgWinLoss <- AvgWinDay/-AvgLossDay
         MedWinLoss <- MedWinDay/-MedLossDay
         
-        AvgDailyPL <- mean(PL.ne0)
-        MedDailyPL <- median(PL.ne0)
+        AvgDailyPL <- as.numeric(mean(PL.ne0))
+        MedDailyPL <- as.numeric(median(PL.ne0))
         StdDailyPL <- as.numeric(sd(PL.ne0))
         
         Equity <- cumsum(x)
         Equity.max <- cummax(Equity)
         maxEquity <- max(Equity)
         minEquity <- min(Equity)
-        endEquity <- last(Equity)
+        endEquity <- as.numeric(last(Equity))
         MaxDrawdown <- -max(Equity.max - Equity)
         ProfitToMaxDraw <- -TotalNetProfit / MaxDrawdown
         
-        tmpret <- data.frame(Symbol=colnames(x),
+        tmpret <- data.frame(
                 Total.Net.Profit=TotalNetProfit,
                 Avg.Day.PL=AvgDayPL,
                 Med.Day.PL=MedDayPL,
@@ -338,12 +339,19 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
                 Max.Equity=maxEquity,
                 Min.Equity=minEquity,
                 End.Equity=endEquity)
-        rownames(tmpret)<-colnames(x)             
         return(tmpret)
     }
-    
-    ret<-apply(dailyPL,2,FUN=dailyFUN)
+    ret<-NULL
+    tmpret<-apply(dailyPL,2,FUN=dailyFUN)
+    for(row in 1:length(tmpret)){
+        if(is.null(ret)) ret <- tmpret[[row]]
+        else ret<-rbind(ret,tmpret[[row]])
+        rownames(ret)[row]<-names(tmpret)[row]
+    }
+    #rownames(ret)<-colnames(dailyPL)
+    return(ret)
 }
+
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/) 
