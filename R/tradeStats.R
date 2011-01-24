@@ -78,7 +78,7 @@ tradeStats <- function(Portfolios, Symbols)
             PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
             PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
-            
+            if(!nrow(PL.ne0))next()
             TotalNetProfit <- sum(txn$Net.Txn.Realized.PL)
             
             GrossProfits <- sum(PL.gt0)
