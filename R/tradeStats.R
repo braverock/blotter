@@ -287,7 +287,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         
         #NumberOfDays <- nrow(txn)
         WinDays <-length(PL.gt0)
-        LossDays<-length(PL.ne0)
+        LossDays<-length(PL.lt0)
         PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
         PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
         
@@ -353,6 +353,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         rownames(ret)[row]<-names(tmpret)[row]
     }
     #rownames(ret)<-colnames(dailyPL)
+    ret<-round(ret,2)
     return(ret)
 }
 
