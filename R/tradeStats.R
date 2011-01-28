@@ -79,7 +79,6 @@ tradeStats <- function(Portfolios, Symbols)
             PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
             if(!nrow(PL.ne0))next()
-            TotalNetProfit <- sum(txn$Net.Txn.Realized.PL)
             
             GrossProfits <- sum(PL.gt0)
             GrossLosses  <- sum(PL.lt0)
@@ -111,7 +110,8 @@ tradeStats <- function(Portfolios, Symbols)
             StdDailyPL <- as.numeric(sd(DailyPL))
             
             Equity <- cumsum(posPL$Net.Trading.PL)
-	        Equity.max <- cummax(Equity)
+            TotalNetProfit <- last(Equity)
+            Equity.max <- cummax(Equity)
             maxEquity <- max(Equity)
             minEquity <- min(Equity)
             endEquity <- last(Equity)
