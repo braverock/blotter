@@ -189,12 +189,23 @@
 		CcyMult<-1/CcyMult
 	}
 	
-	#multiply the correct columns    
-    columns<-c('Pos.Value', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+	
+	#multiply the correct columns 
+    columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
 	TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
 	TmpPeriods[,'Ccy.Mult']<-CcyMult
+		
+	#add change in Pos.Value in base currency
+	LagValue<-as.numeric(last(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]$Pos.Value))
+	ifelse(length(LagValue)==0, LagValue <- 0, LagValue);
+	CcyMove <- TmpPeriods$Pos.Value - LagValue - TmpPeriods$Txn.Value - TmpPeriods$Period.Unrealized.PL - TmpPeriods$Period.Realized.PL;
+	TmpPeriods$Gross.Trading.PL <- TmpPeriods$Gross.Trading.PL + CcyMove
+	TmpPeriods$Net.Trading.PL <- TmpPeriods$Net.Trading.PL + CcyMove
+	TmpPeriods$Period.Unrealized.PL <- TmpPeriods$Period.Unrealized.PL + CcyMove
+	
     #stick it in posPL.ccy
     Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
+	
     # assign Portfolio to environment
     assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
