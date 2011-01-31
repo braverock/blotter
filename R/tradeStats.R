@@ -195,11 +195,8 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
         ## Trade Statistics
         for (symbol in symbols){
             txn <- Portfolio$symbols[[symbol]]$txn
-            posPL <- Portfolio$symbols[[symbol]]$posPL
-            posPL <- posPL[-1,]
+            txn <- txn[-1,] # remove initialization row
             
-            #PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
-            #PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
             
             DailyPL <- apply.daily(PL.ne0,sum)
@@ -236,13 +233,9 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
         
         ## Trade Statistics
         for (symbol in symbols){
-            txn <- Portfolio$symbols[[symbol]]$txn
             posPL <- Portfolio$symbols[[symbol]]$posPL
-            posPL <- posPL[-1,]
+            posPL <- posPL[-1,] # remove initialization row
             
-            #PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
-            #PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
-            PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
             Equity <- cumsum(posPL$Net.Trading.PL)
             
             #DailyPL <- apply.daily(Equity,last)
