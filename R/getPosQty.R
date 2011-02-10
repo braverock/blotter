@@ -24,7 +24,7 @@ getPosQty <- function(Portfolio, Symbol, Date)
     # 
 
     # FUNCTION
-    PosQty = as.numeric(getPos(pname, Symbol, Date)[,"Pos.Qty"])
+    PosQty = as.numeric(getPos(pname, Symbol, Date, Columns='Pos.Qty'))
     return(PosQty)
 }
 
