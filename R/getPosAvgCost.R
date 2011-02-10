@@ -9,7 +9,7 @@
 { # @author Peter Carl
     pname<-Portfolio
     # FUNCTION
-    PosAvgCost = as.numeric(getPos(pname, Symbol, Date)[,"Pos.Avg.Cost"])
+    PosAvgCost = as.numeric(getPos(pname, Symbol, Date, Columns='Pos.Avg.Cost'))
     return(PosAvgCost)
 }
 
