@@ -27,11 +27,11 @@ updateEndEq <- function(Account, Dates=NULL)
     Additions = Account$summary[Dates]$Additions
     Withdrawals = Account$summary[Dates]$Withdrawals
     NetPerformance = rowSums(Account$summary[Dates,c('Int.Income','Net.Trading.PL', 'Advisory.Fees')])
-	# assign NetPerformance into the account slot
+	# assign NetPerformance into the account slot 
     Account$summary$Net.Performance[Dates] <- NetPerformance
 
     # Create a vector of end equity
-    EndCapital = PrevEndEq + cumsum(Additions + Withdrawals + NetPerformance)
+    EndCapital = PrevEndEq + cumsum(Additions + Withdrawals + NetPerformance) 
     Account$summary$End.Eq[Dates] <- EndCapital
 	
     assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
