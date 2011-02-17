@@ -9,7 +9,7 @@ Description: Transaction infrastructure for defining instruments, transactions, 
     Provides portfolio support for multi-asset class and multi-currency portfolios.  Still in heavy development.
 License: GPL
 LazyLoad: yes
-Depends: R (>= 2.11.1), xts (>= xts_0.7-6.17), quantmod (>= 0.3-14), FinancialInstrument
+Depends: R (>= 2.11.1), xts (>= 0.7-6.17), quantmod (>= 0.3-14), FinancialInstrument
 Suggests: PerformanceAnalytics, Hmisc, RUnit
 Contributors: Lance Levenson, Ben McCann, Joshua Ulrich, Wolfgang Wu,
 URL: https://r-forge.r-project.org/projects/blotter/
