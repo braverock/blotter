@@ -1,8 +1,8 @@
 \name{getAccount}
 \alias{getAccount}
-\title{get an account object from the environment for examination or manipulation...}
-\usage{getAccount(Account, Dates)}
-\description{get an account object from the environment for examination or manipulation}
+\title{Get an account object from the...}
+\usage{getAccount(Account)}
+\description{Get an account object from the .blotter environment}
+\details{Retrieves an account object from the \code{.blotter} environment.  Useful for local examination or charting, or storing interim results for later reference.}
 \value{Account object}
-\arguments{\item{Account}{string identifier for the account}
-\item{Dates}{}}
+\arguments{\item{Account}{string identifier for the account}}

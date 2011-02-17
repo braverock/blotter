@@ -3,25 +3,34 @@
 #' Produces a four-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, a cumulative profit-loss line chart in the third.  
 #' The theoretical trades, positions, and P&L are plotted first, in the 'light' versions of the colors, and then the actual values are overplotted in the main color.  
 #' If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines. 
+#' 
 #' The fourth panel is the difference in P&L between the theoretical and actual values, and could be considered 'slippage', which could be positive or negative.  
-#' It is calculated by subtracting the theoretical P&L from the actual P&L.   
+#' It is calculated by subtracting the theoretical P&L from the actual P&L.  
+#' If parameter \code{PLdiff} is 'cumulative', then this panel will display the cumsum of difference between the theoretical and actual portfolios.
+#' If parameter \code{PLdiff} is 'episodic' it will display the differences in P&L    
 #'
+#' The \code{data} parameter allows the user to either \code{\link{View}} or \code{\link{return}} the data calculated inside the chart.  Default FALSE (only chart)
 #' 
 #' @param theoPort string identifying the theoretical portfolio to chart
 #' @param actualPort string identifying the actual portfolio to chart
 #' @param Symbol string identifying the symbol to chart
-#' @param Dates currently not used
+#' @param Dates xts ISO 8601 style subsetting 
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
+#' @param PLdiff one of 'cumulative' or 'episodic', see Details.
+#' @param data what to do with the calculated data, see Details
 #' @seealso \code{\link{chart.Posn}}
 #' @export
 #' @note Expect changes to this function, since the underlying charts are experimental functions in quantmod.
-chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
+chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLdiff=c('cumulative', 'episodic'),data=c(FALSE,'View','return'))
 { # @author Peter Carl, Brian G. Peterson
-    pname<-theoPort
-    aname<-actualPort
-    Portfolio<-getPortfolio(pname)
-    Actual<-getPortfolio(aname)
+    pname     <- theoPort
+    aname     <- actualPort
+    Portfolio <- getPortfolio(pname)
+    Actual    <- getPortfolio(aname)
     
+    PLdiff <- PLdiff[1]
+    data   <- data[1]
+
     # FUNCTION
 
     require(quantmod)
@@ -40,7 +49,8 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
         n=round((freq$frequency/mult),0)*mult
     } else { n=mult }
     
-    tzero = xts(0,order.by=index(Prices[1,]))
+    tzero = xts(0,order.by=index(Prices[1,])) 
+    #uses the first column of Prices, hopefully unecessary, as getPrice should only have one col
 
     Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Value
 	ATrades = Actual$symbols[[Symbol]]$txn$Txn.Value
@@ -59,12 +69,22 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
     ActPosfill = na.locf(merge(ActPos,index(Prices)))
     ActCumPL = cumsum(Actual$symbols[[Symbol]]$posPL$Net.Trading.PL)
     
+    PLdifference<-NULL
+    PLslippage<-NULL
+    
     if(length(CumPL)>1){
         CumPL = na.locf(merge(CumPL,index(Prices)))
         ActCumPL = na.locf(merge(ActCumPL,index(Prices)))
         PLdifference=ActCumPL-CumPL
-    } else CumPL = NULL
-    
+        if(PLdiff=='episodic' | PLdiff == 'both'){
+            poschange<- ActPosfill-Positionfill
+            tmpidx<-index(poschange[!poschange==0])
+            PLslippage <- PLdifference[index(poschange[poschange!=0])]
+            #like drawdowns here? cumpl - cummax?  detect starting PL?
+        }
+    } else {
+        CumPL = NULL
+    }
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty<0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
     # BuyCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty>0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
@@ -99,9 +119,22 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ...)
 		(add_TA(ActCumPL, col='darkgreen', lwd=2, on=3))
         if(!is.null(PLdifference)){
             (add_TA(PLdifference, col='lightsalmon', lwd=2))
-        }    
+        }  
+        if(!is.null(PLslippage)){
+            #TODO separate these into positive and negative slippage, and have green/red colors for them
+            (add_TA(PLslippage, col='lightsalmon', lwd=2))
+        }
     } 
     plot(current.chob())
+    
+    if(data!=FALSE){
+        output<-cbind(ActCumPL,CumPL,PLdifference,PLslippage,ActPosfill,Positionfill)
+        colnames(output) <- c('cumPL','theoCumPL','PLdiff','PLslippage','position','theo_position')
+        switch(data,
+               View = View(output),
+               return = return(output)
+       )
+    }
 }
 
 ###############################################################################

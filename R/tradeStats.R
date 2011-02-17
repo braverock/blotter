@@ -30,8 +30,10 @@
 #' 
 #' WARNING: we're not sure this function is stable/complete yet.  If you're using it, please give us feedback!
 #' 
+#' @aliases dailyStats
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
+#' @param uses for dailyStats, determines whether numbers are calculated from trades or equity curve
 #' @author Lance Levenson
 #' @export
 #' @note
@@ -250,6 +252,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
     return(ret)
 }
 
+#' @export
 dailyStats <- function(Portfolios,use=c('Equity','Txns'))
 {
     use=use[1] #take the first value if the user didn't specify

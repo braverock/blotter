@@ -45,7 +45,7 @@ For each portfolio, the summary slot contains a table that tracks calculated por
 \item Gross.Value: The sum of the notional long and absolute value of the notional short value of the portfolio.
 \item Txn.Fees: The sum of brokerage commissions, exchange and other brokerage fees paid by the portfolio during the period.
 \item Realized.PL: The sum of net realized prots or losses aggregated from the underlying positions in the portfolio. Gross realized prots can be calculated by adding Txn.Fees, the brokerage commission expenses for the period.
-\item Unrealized.PL: The sum total increase or decrease in unrealized prots or losses on open positions in the portfolio at the end of the period.
+\item Unrealized.PL: The sum total increase or decrease in unrealized profits or losses on open positions in the portfolio at the end of the period.
 \item Net.Trading.PL: Net realized prot or loss plus interest income plus change in unrealized prot or loss across all positions in the portfolio.
 }
 TODO: add $account: name of the (one) affiliated account

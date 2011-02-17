@@ -13,11 +13,18 @@ getPos <- function(Portfolio, Symbol, Date, Columns=c('Pos.Qty','Pos.Avg.Cost'),
     Portfolio<-getPortfolio(Portfolio)    
     # FUNCTION
     PosData = Portfolio$symbols[[Symbol]]$txn
-    toDate = paste('::', Date, sep="")
+    #toDate = paste('::', Date, sep="")
     # It may not make sense to return realized P&L with the position information, so only position and 
     # position average cost are returned.
-    if(nrow(PosData)>1) Pos = last(PosData[toDate][,Columns],n=n)
-    else Pos <- PosData[,Columns]
+    #if(nrow(PosData)>1) Pos = last(PosData[toDate][,Columns],n=n)
+    if(nrow(PosData)>1) {
+        if(is.timeBased(Date)){
+            Pos = last(PosData[index(PosData)<Date][,Columns],n=n)
+        } else {
+            toDate = paste('::', Date, sep="")
+            Pos = last(PosData[toDate][,Columns],n=n)
+        }
+    } else Pos <- PosData[,Columns]
     return(Pos)
 }
 

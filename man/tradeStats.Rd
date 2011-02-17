@@ -1,5 +1,4 @@
 \name{tradeStats}
-\alias{tradeStats}
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios...}
 \usage{tradeStats(Portfolios, Symbols)}
 \description{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
@@ -31,7 +30,22 @@ Special Thanks for contributions to this function from:
 }  
 
 WARNING: we're not sure this function is stable/complete yet.  If you're using it, please give us feedback!}
+\alias{dailyStats}
 \author{Lance Levenson}
-\note{TODO document each statistic included in this function, with equations}
+\note{TODO document each statistic included in this function, with equations 
+
+TODO add more stats, potentially
+PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sharpe/Sortino
+
+mean absolute deviation stats
+
+more Tharpe/Kestner/Tradestation stats, e.g.
+K-factor
+RINA Index
+Percent time in the market
+Buy and hold return
+
+Josh has suggested adding %-return based stats too}
 \arguments{\item{Portfolios}{portfolio string}
-\item{Symbols}{character vector of symbol strings, default NULL}}
+\item{Symbols}{character vector of symbol strings, default NULL}
+\item{uses}{for dailyStats, determines whether numbers are calculated from trades or equity curve}}

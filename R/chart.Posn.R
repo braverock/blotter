@@ -5,7 +5,7 @@
 #'
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart
-#' @param Dates currently not used
+#' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
