@@ -1,6 +1,8 @@
 #' Chart trades against market data, position through time, and cumulative P\&L
 #'
-#' Produces a four-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, a cumulative profit-loss line chart in the third.  
+#' Produces a three or four-panel or chart of time series charts that contains prices and transactions in the top panel, 
+#' the resulting position in the second, a cumulative profit-loss line chart in the third.  
+#' 
 #' The theoretical trades, positions, and P&L are plotted first, in the 'light' versions of the colors, and then the actual values are overplotted in the main color.  
 #' If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines. 
 #' 
@@ -77,10 +79,28 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
         ActCumPL = na.locf(merge(ActCumPL,index(Prices)))
         PLdifference=ActCumPL-CumPL
         if(PLdiff=='episodic' | PLdiff == 'both'){
+            #browser()
             poschange<- ActPosfill-Positionfill
+            diffchange<-diff(poschange[diff(poschange)!=0])
             tmpidx<-index(poschange[!poschange==0])
             PLslippage <- PLdifference[index(poschange[poschange!=0])]
             #like drawdowns here? cumpl - cummax?  detect starting PL?
+            difftable<-NULL
+            if(length(diffchange)){
+                for(i in seq(1,length(diffchange),by=2)){
+                    tmpidx<-data.frame(index(diffchange[i]),index(diffchange[i+1]))
+                    if(is.null(difftable)) difftable<-tmpidx
+                    else difftable <- rbind(difftable,tmpidx)
+                }
+                colnames(difftable)<-c('from','to')
+                difftable$Net.difference <- t(t(PLdifference[difftable$to]) - t(PLdifference[difftable$from]))
+                colnames(difftable)<-c('from','to','Net.difference')
+                difftable$Abs.difference <- abs(difftable$Net.difference)
+                for (i in 1:nrow(difftable)) difftable$Max.Abs.difference[i] <- max(abs(PLdifference[paste(difftable$from[i],difftable$to[i],sep='/')]))
+                colnames(difftable)<-c('from','to','Net.difference','Abs.difference','Max.Abs.difference')
+                attr(difftable$Net.difference,'dimnames')<-NULL
+                attr(difftable$Abs.difference,'dimnames')<-NULL
+            }
         }
     } else {
         CumPL = NULL
@@ -96,7 +116,7 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
     # scope the date, this is heavy-handed, but should work
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chart_Series(Prices, name=Symbol, TA=NULL,...)
+    chart_Series(Prices, name=Symbol, TA=NULL)
     if(nrow(Buys)>=1) {
         (add_TA(Buys,pch=2,type='p',col='lightgreen', on=1))    
         (add_TA(ABuys,pch=2,type='p',col='green', on=1))    
@@ -128,12 +148,13 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
     plot(current.chob())
     
     if(data!=FALSE){
-        output<-cbind(ActCumPL,CumPL,PLdifference,PLslippage,ActPosfill,Positionfill)
-        colnames(output) <- c('cumPL','theoCumPL','PLdiff','PLslippage','position','theo_position')
+        #output<-cbind(ActCumPL,CumPL,PLdifference,PLslippage,ActPosfill,Positionfill)
+        #colnames(output) <- c('cumPL','theoCumPL','PLdiff','PLslippage','position','theo_position')
+        output<-difftable
         switch(data,
                View = View(output),
                return = return(output)
-       )
+        )
     }
 }
 

@@ -60,7 +60,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     # scope the date, this is heavy-handed, but should work
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chart_Series(Prices, name=Symbol, TA=NULL,...)
+    chart_Series(Prices, name=Symbol, TA=NULL)
     if(nrow(Buys)>=1) (add_TA(Buys,pch=2,type='p',col='green', on=1));
     if(nrow(Sells)>=1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
     if(nrow(Position)>=1) {
