@@ -6,12 +6,12 @@
 Portfolio and transaction infrastructure for trading
 }
 \description{
-Transaction-oriented infrastructure for construcing transactions, portfolios and accounts for trading systems and simulation.  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
+Transaction-oriented infrastructure for constructing transactions, portfolios and accounts for trading systems and simulation.  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
 }
 \details{
 The blotter package provides infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
 
-Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradable contracts (referred to as "instruments", e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, instruments are objects that define contract specifications for a tradable contract, such as IBM common stock.  These objects include descriptive information and attributes that help identify and value the contract.
+Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradeable contracts (referred to as "instruments", e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, instruments are objects that define contract specifications for a tradable contract, such as IBM common stock.  These objects include descriptive information and attributes that help identify and value the contract.
 
 Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
 
