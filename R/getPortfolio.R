@@ -19,6 +19,29 @@ getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be suppor
     return(Portfolio)
 }
 
+
+#' generic is.function for portfolio, will take either a string or an object
+#' 
+#' If \code{x} is a string, \code{\link{getPortfolio}} will be called with 
+#' string \code{x} and tested.  Otherwise, the object passed will be tested.
+#' 
+#' @param x an object or string to be tested as a portfolio
+#' @seealso \code{\link{getPortfolio}}
+#' @export
+is.portfolio <- function(x,...) 
+{ # @author Brian Peterson
+    if(inherits(x,'portfolio')) return(TRUE)
+    else if(is.character(x)){
+        res<-try(getPortfolio(x))
+        if(!inherits(res,"portfolio")) {
+            message("Portfolio",x,"needs to be created first.")
+            return(FALSE)
+        } else {
+            return(TRUE)
+        }
+    } else return(FALSE)    
+}
+
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/) 
