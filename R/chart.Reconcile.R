@@ -97,6 +97,7 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
                 colnames(difftable)<-c('from','to','Net.difference')
                 difftable$Abs.difference <- abs(difftable$Net.difference)
                 for (i in 1:nrow(difftable)) difftable$Max.Abs.difference[i] <- max(abs(PLdifference[paste(difftable$from[i],difftable$to[i],sep='/')]))
+                ## TODO calc period difference and accumulate that?
                 colnames(difftable)<-c('from','to','Net.difference','Abs.difference','Max.Abs.difference')
                 attr(difftable$Net.difference,'dimnames')<-NULL
                 attr(difftable$Abs.difference,'dimnames')<-NULL
