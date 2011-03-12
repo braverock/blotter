@@ -45,7 +45,7 @@ RINA Index
 Percent time in the market
 Buy and hold return
 
-Josh has suggested adding %-return based stats too}
+Josh has suggested adding \%-return based stats too}
 \arguments{\item{Portfolios}{portfolio string}
 \item{Symbols}{character vector of symbol strings, default NULL}
 \item{uses}{for dailyStats, determines whether numbers are calculated from trades or equity curve}}

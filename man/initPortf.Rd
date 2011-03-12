@@ -1,7 +1,8 @@
 \name{initPortf}
 \alias{initPortf}
 \title{Initializes a portfolio object.}
-\usage{initPortf(name="default", symbols, initPosQty=0, initDate="1950-01-01", currency="USD", ...)}
+\usage{initPortf(name="default", symbols, initPosQty=0, initDate="1950-01-01",
+    currency="USD", ...)}
 \description{Initializes a portfolio object.}
 \details{Constructs and initializes a portfolio object, which is used to contain transactions, positions, and aggregate level values.
 

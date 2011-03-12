@@ -1,9 +1,13 @@
 \name{chart.Reconcile}
 \alias{chart.Reconcile}
 \title{Chart trades against market data, position through time, and cumulative PPLdiff is 'cumulative', then this panel will display the cumsum of difference between the theoretical and actual portfolios.}
-\usage{chart.Reconcile(theoPort, actualPort, Symbol, Dates, ..., PLdiff=c("cumulative", "episodic"), data=c(FALSE, "View", "return"))}
+\usage{chart.Reconcile(theoPort, actualPort, Symbol, Dates, ...,
+    PLdiff=c("cumulative", "episodic"), data=c(FALSE, "View",
+    "return"))}
 \description{Chart trades against market data, position through time, and cumulative P\&L}
-\details{Produces a four-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, a cumulative profit-loss line chart in the third.  
+\details{Produces a three or four-panel or chart of time series charts that contains prices and transactions in the top panel, 
+the resulting position in the second, a cumulative profit-loss line chart in the third.  
+
 The theoretical trades, positions, and P&L are plotted first, in the 'light' versions of the colors, and then the actual values are overplotted in the main color.  
 If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines. 
 

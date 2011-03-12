@@ -5,16 +5,24 @@ Version: 0.8
 Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>
-Description: Transaction infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation.
-    Provides portfolio support for multi-asset class and multi-currency portfolios.  Still in heavy development.
+Description: Transaction infrastructure for defining instruments,
+    transactions, portfolios and accounts for trading systems and
+    simulation. Provides portfolio support for multi-asset class and
+    multi-currency portfolios.  Still in heavy development.
 License: GPL
 LazyLoad: yes
-Depends: R (>= 2.11.1), xts (>= 0.7-6.17), quantmod (>= 0.3-14), FinancialInstrument
+Depends: R (>= 2.11.1), xts (>= 0.7-6.17), quantmod (>= 0.3-14),
+    FinancialInstrument
 Suggests: PerformanceAnalytics, Hmisc, RUnit
 Contributors: Lance Levenson, Ben McCann, Joshua Ulrich, Wolfgang Wu,
 URL: https://r-forge.r-project.org/projects/blotter/
 Copyright: (c) 2008-2011
-Collate: 'addPortfInstr.R' 'addTxn.R' 'calcPortfWgt.R' 'calcPosAvgCost.R' 'calcTxnAvgCost.R' 'calcTxnValue.R' 'chart.Posn.R'
-    'chart.Reconcile.R' 'chart.Spread.R' 'extractTests.R' 'getAccount.R' 'getByPortf.R' 'getBySymbol.R' 'getEndEq.R' 'getPortfAcct.R'
-    'getPortfolio.R' 'getPosAvgCost.R' 'getPosQty.R' 'getPos.R' 'getTxn.R' 'initAcct.R' 'initPortf.R' 'initPosPL.R' 'initSummary.R' 'initTxn.R'
-    'PortfReturns.R' 'tradeStats.R' 'updateAcct.R' 'updateEndEq.R' 'updatePortf.R' 'updatePosPL.R'
+Collate: 'addPortfInstr.R' 'addTxn.R' 'calcPortfWgt.R'
+    'calcPosAvgCost.R' 'calcTxnAvgCost.R' 'calcTxnValue.R'
+    'chart.Posn.R' 'chart.Reconcile.R' 'chart.Spread.R'
+    'extractTests.R' 'getAccount.R' 'getByPortf.R' 'getBySymbol.R'
+    'getEndEq.R' 'getPortfAcct.R' 'getPortfolio.R' 'getPosAvgCost.R'
+    'getPosQty.R' 'getPos.R' 'getTxn.R' 'initAcct.R' 'initPortf.R'
+    'initPosPL.R' 'initSummary.R' 'initTxn.R' 'PortfReturns.R'
+    'tradeStats.R' 'updateAcct.R' 'updateEndEq.R' 'updatePortf.R'
+    'updatePosPL.R'

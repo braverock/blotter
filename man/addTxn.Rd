@@ -1,7 +1,8 @@
 \name{addTxn}
 \alias{addTxn}
 \title{Add transactions to a portfolio.}
-\usage{addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult, verbose=TRUE)}
+\usage{addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
+    ConMult, verbose=TRUE)}
 \description{Add transactions to a portfolio.}
 \details{When a trade or adjustment is made to the Portfolio, the addTxn function 
 calculates the value and average cost of the transaction,  the change in 
@@ -27,4 +28,4 @@ such as adjustments for corporate actions or expire/assign for options.}
 \item{\dots}{Any other passthrough parameters}
 \item{TxnFees}{Fees associated with the transaction, e.g. commissions., See Details}
 \item{ConMult}{Contract/instrument multiplier for the Symbol if it is not dened in an instrument specication}
-\item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \}}
+\item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}}

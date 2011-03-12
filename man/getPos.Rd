@@ -1,7 +1,8 @@
 \name{getPos}
 \alias{getPos}
 \title{Retrieves all information about the position as of a date...}
-\usage{getPos(Portfolio, Symbol, Date, Columns=c("Pos.Qty", "Pos.Avg.Cost"), n=1)}
+\usage{getPos(Portfolio, Symbol, Date, Columns=c("Pos.Qty", "Pos.Avg.Cost"),
+    n=1)}
 \description{Retrieves all information about the position as of a date}
 \details{NOTE This could get much more complicated from here, particularly when it's conditional on symbol, etc.}
 \value{All data elements related to position in a row of an xts object}

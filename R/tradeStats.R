@@ -50,7 +50,7 @@
 #' Percent time in the market
 #' Buy and hold return
 #' 
-#' Josh has suggested adding %-return based stats too
+#' Josh has suggested adding \%-return based stats too
 tradeStats <- function(Portfolios, Symbols)
 {
     ret<-NULL

@@ -9,5 +9,5 @@
 \item{Symbol}{An instrument identifier for a symbol included in the portfolio, e.g., "IBM"}
 \item{TxnData}{An xts object containing all required txn fields}
 \item{\dots}{Any other passthrough parameters}
-\item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \}
+\item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}
 \item{ConMult}{Contract or instrument multiplier for the Symbol if it is not dened in an instrument specication}}

@@ -21,7 +21,7 @@
 #' @param \dots Any other passthrough parameters
 #' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
 #' @param ConMult Contract/instrument multiplier for the Symbol if it is not dened in an instrument specication
-#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @note 
 #' The addTxn function will eventually also handle other transaction types, 
 #' such as adjustments for corporate actions or expire/assign for options. 
@@ -107,7 +107,7 @@ pennyPerShare <- function(TxnQty) {
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param TxnData  An xts object containing all required txn fields
 #' @param \dots Any other passthrough parameters
-#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param ConMult Contract or instrument multiplier for the Symbol if it is not dened in an instrument specication
 #' @seealso \code{\link{addTxn}}, \code{\link{initPortf}}
 #' @note
@@ -183,7 +183,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 #' @param DivPerShare The amount of the cash dividend paid per share or per unit quantity.
 #' @param \dots Any other passthrough parameters.
 #' @param TxnFees Fees associated with the transaction, e.g. commissions. See Details.
-#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 \@ 77.6". Suppress using FALSE.
+#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param ConMult Contract or instrument multiplier for the Symbol if it is not dened in an instrument specication.
 #' @export
 #' @note
