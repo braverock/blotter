@@ -196,9 +196,11 @@
 	TmpPeriods[,'Ccy.Mult']<-CcyMult
 		
 	#add change in Pos.Value in base currency
-	LagValue<-as.numeric(last(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]$Pos.Value))
-	ifelse(length(LagValue)==0, LagValue <- 0, LagValue);
-	CcyMove <- TmpPeriods$Pos.Value - LagValue - TmpPeriods$Txn.Value - TmpPeriods$Period.Unrealized.PL - TmpPeriods$Period.Realized.PL;
+	LagValue <- as.numeric(last(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]$Pos.Value))
+	if(length(LagValue)==0) LagValue <- 0
+	LagPos.Value <- lag(TmpPeriods$Pos.Value,1)
+	LagPos.Value[1] <- LagValue
+	CcyMove <- TmpPeriods$Pos.Value - LagPos.Value - TmpPeriods$Txn.Value - TmpPeriods$Period.Unrealized.PL - TmpPeriods$Period.Realized.PL
 	TmpPeriods$Gross.Trading.PL <- TmpPeriods$Gross.Trading.PL + CcyMove
 	TmpPeriods$Net.Trading.PL <- TmpPeriods$Net.Trading.PL + CcyMove
 	TmpPeriods$Period.Unrealized.PL <- TmpPeriods$Period.Unrealized.PL + CcyMove
