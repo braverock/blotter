@@ -112,7 +112,15 @@ tradeStats <- function(Portfolios, Symbols)
             StdDailyPL <- as.numeric(sd(DailyPL))
             
             Equity <- cumsum(posPL$Net.Trading.PL)
+            if(!nrow(Equity)){
+                warning('No Equity rows for',symbol)
+                next()
+            }    
             TotalNetProfit <- last(Equity)
+            if(is.na(TotalNetProfit)) {
+                warning('TotalNetProfit NA for',symbol)
+                next()
+            }
             Equity.max <- cummax(Equity)
             maxEquity <- max(Equity)
             minEquity <- min(Equity)
@@ -200,7 +208,10 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
             txn <- txn[-1,] # remove initialization row
             
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
-            
+            if(!nrow(PL.ne0)){
+                warning('No P&L rows for',symbol)
+                next()
+            }             
             DailyPL <- apply.daily(PL.ne0,sum)
             colnames(DailyPL)<-paste(symbol,'DailyTxnPL',sep='.')
             if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
@@ -239,6 +250,10 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
             posPL <- posPL[-1,] # remove initialization row
             
             Equity <- cumsum(posPL$Net.Trading.PL)
+            if(!nrow(Equity)){
+                warning('No P&L rows for',symbol)
+                next()
+            }             
             
             #DailyPL <- apply.daily(Equity,last)
             DailyPL <- apply.daily(posPL$Net.Trading.PL,colSums)
