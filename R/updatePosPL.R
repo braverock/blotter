@@ -121,7 +121,7 @@
 	tmpPL$Gross.Txn.Realized.PL <- ifelse(is.na(tmpPL$Gross.Txn.Realized.PL),0,tmpPL$Gross.Txn.Realized.PL)
 	
 	#tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value - (tmpPL$Pos.Qty*tmpPL$Pos.Avg.Cost) +  tmpPL$Gross.Txn.Realized.PL
-	tmpPL$Period.Realized.PL <- tmpPL$Net.Txn.Realized.PL
+	tmpPL$Period.Realized.PL <- tmpPL$Gross.Txn.Realized.PL
 	tmpPL$Period.Unrealized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Period.Realized.PL,2)
 	
 	# matrix calc Net.Trading.PL as Gross.Trading.PL + Txn.Fees
