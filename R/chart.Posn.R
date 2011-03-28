@@ -33,9 +33,13 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     
     tzero = xts(0,order.by=index(Prices[1,]))
 #    Prices=align.time(Prices,n) 
+    if(is.null(Dates)) Dates<-paste(first(index(Prices)),last(index(Prices)),sep='::')
     
-	#Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Price*Portfolio$symbols[[Symbol]]$txn$Txn.Qty
-	Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Value
+    #scope the data by Dates
+    Portfolio$symbols[[Symbol]]$txn<-Portfolio$symbols[[Symbol]]$txn[Dates]
+    Portfolio$symbols[[Symbol]]$posPL<-Portfolio$symbols[[Symbol]]$posPL[Dates]
+    
+	Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Qty
 	
 	Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
 #    Buys = align.time(rbind(Buys,tzero),n)[-1]
@@ -57,7 +61,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     # addTA(BuyCover,pch=24,type="p",col="green", bg="orange", on=1)
     # addTA(SellCover,pch=25,type="p",col="red", bg="orange", on=1)
 
-    # scope the date, this is heavy-handed, but should work
+    # scope the Price data by Dates
     if(!is.null(Dates)) Prices=Prices[Dates]
     
     chart_Series(Prices, name=Symbol, TA=NULL)
