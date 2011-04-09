@@ -5,8 +5,8 @@
 getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     pname<-Portfolio
-    if(!grepl("portfolio\\.",pname)) Portfolio<-try(get(paste("portfolio",pname,sep='.'),envir=.blotter))
-    else Portfolio<-try(get(pname,envir=.blotter))
+    if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=.blotter),silent=TRUE))
+    else Portfolio<-suppressWarnings(try(get(pname,envir=.blotter),silent=TRUE))
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
     if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")
@@ -32,7 +32,9 @@ is.portfolio <- function(x,...)
 { # @author Brian Peterson
     if(inherits(x,'portfolio')) return(TRUE)
     else if(is.character(x)){
-        res<-try(getPortfolio(x))
+        if(!grepl("portfolio\\.",x)) res <- suppressWarnings(try(get(paste("portfolio",x,sep='.'),envir=.blotter),silent=TRUE))
+        else res <- suppressWarnings(try(get(x,envir=.blotter),silent=TRUE))
+        #res<-suppressWarnings(try(getPortfolio(x))) #causes spurious error if you're checking whether portfolio exists
         if(!inherits(res,"portfolio")) {
             message("Portfolio",x,"needs to be created first.")
             return(FALSE)

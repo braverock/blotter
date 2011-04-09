@@ -1,18 +1,18 @@
-#' Function goes through each symbol and calculates the PL for each period prices are available
+#' update Portfilio P&L over a Dates range
 #' 
-#' Inputs
-#' Portfolio: a portfolio object containing transactions
-#' Symbol: an instrument identifier for a symbol included in the portfolio
-#' Dates: Dates for which to calculate equity account
-#' These dates must appear in the price stream
+#' The \code{updatePortf} function goes through each symbol and calculates the PL for each period prices are available.
+#'
+#' Note that the portfolio will be marked on every time stamp where prices are available.  
+#' As such, your \code{Dates} range must reflect timestamps which appear in the price stream.
+#' Also note that you probably don't want to mark the portfolio on every tick, 
 #' 
-#' Outputs
-#' assigns position information and PL into the environment
 #' 
-#' @param Portfolio 
-#' @param Symbols
-#' @param Dates 
-#' @param Prices
+#' @return assigns position information and PL into the environment
+#' 
+#' @param Portfolio string identifying a portfolio
+#' @param Symbols character vector identifying symbols to update the portfolio for, default NULL 
+#' @param Dates xts-style ISO-8601 time range to run updatePortf over, default NULL (will use times from Prices
+#' @param Prices optional xts object containing prices and timestamps to mark the book on, default NULL
 #' @param dots any other passthrough parameters
 #' @export
 #' @callGraph
@@ -77,9 +77,9 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
     }
 	
 	if(!is.timeBased(Dates)) Dates = time(Portfolio$symbols[[1]][Dates])
-	startDate = first(xts:::.parseISO8601(Dates))$first.time-1 #does this need to be a smaller delta for millisecond data?
+	startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001 
 	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
-	if(attr(Portfolio,'initDate')>=startDate | length(Portfolio$summary)==0){
+	if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
 		Portfolio$summary<-summary #changes to subset might not return a empty dimnames set of columns
 	}else{
 		Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)

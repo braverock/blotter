@@ -16,7 +16,7 @@
 { # @author Peter Carl
 
     # FUNCTION
-    if(is.null(Dates) | is.na(Dates)) # if no date is specified, get all available dates
+    if(all(is.null(Dates)) || all(is.na(Dates))) # if no date is specified, get all available dates
         Dates = time(Portfolio$symbols[[1]]$posPL)
     # else  Dates = time(Portfolio$symbols[[1]]$posPL[Dates])
     if(!is.null(attr(Portfolio,'currency')) & native==FALSE) {
