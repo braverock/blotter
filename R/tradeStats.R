@@ -327,7 +327,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         
         tmpret <- data.frame(
                 Total.Net.Profit=TotalNetProfit,
-                Total.Days=length(x),
+                Total.Days=WinDays+LossDays,
                 Winning.Days=WinDays,
                 Losing.Days=LossDays,
                 Avg.Day.PL=AvgDayPL,
