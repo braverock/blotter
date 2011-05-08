@@ -18,7 +18,7 @@ updateEndEq <- function(Account, Dates=NULL)
         stop(paste("Account",aname," not found, use initAcct() to create a new account"))
     
     if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = time(Account$summary)
+        Dates = time(Account$summary)[-1]
     else
         Dates = time(Account$summary[Dates])
 
