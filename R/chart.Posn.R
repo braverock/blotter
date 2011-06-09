@@ -65,8 +65,8 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     if(!is.null(Dates)) Prices=Prices[Dates]
     
     chart_Series(Prices, name=Symbol, TA=NULL)
-    if(nrow(Buys)>=1) (add_TA(Buys,pch=2,type='p',col='green', on=1));
-    if(nrow(Sells)>=1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
+    if(!is.null(nrow(Buys)) && nrow(Buys) >=1 ) (add_TA(Buys,pch=2,type='p',col='green', on=1));
+    if(!is.null(nrow(Sells)) && nrow(Sells) >= 1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
     if(nrow(Position)>=1) {
         (add_TA(Positionfill,type='l',col='blue', lwd=2))   
         (add_TA(Position,type='p',col='blue', lwd=2, on=2))   

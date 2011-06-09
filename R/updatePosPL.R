@@ -173,7 +173,7 @@
 		message("no currency set on portfolio, using currency multiplier of 1")
 		CcyMult =1
 	}
-	if(is.na(CcyMult) & !is.na(FXrate)) {
+	if(is.na(CcyMult) && !is.na(FXrate)) {
 		if(inherits(FXrate,'xts')){
 			CcyMult <- FXrate[dateRange]
 			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
