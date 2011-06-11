@@ -55,7 +55,7 @@ updateAcct <- function(name='default', Dates=NULL)
 					}
 				}
 			}		
-			if(is.na(CcyMult) & !is.na(FXrate)) {
+			if(is.na(CcyMult) && !is.na(FXrate)) {
 				if(inherits(FXrate,'xts')){
 					CcyMult <- FXrate[Dates]
 					CcyMult <- na.locf(merge(CcyMult,index(psummary)))
