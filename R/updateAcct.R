@@ -42,10 +42,11 @@ updateAcct <- function(name='default', Dates=NULL)
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1
 			} else {
-				FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
+				FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
 				FXrate<-try(get(FXrate.str))
+				#TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
 				if(inherits(FXrate,"try-error")){
-					FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='')
+					FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
 					FXrate<-try(get(FXrate.str))
 					if(inherits(FXrate,"try-error")){ 
 						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
