@@ -153,13 +153,13 @@
 			if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1
-			} else {
-				FXrate.str<-paste(p.ccy.str,tmp_instr$currency,sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
-				FXrate<-try(get(FXrate.str))
+			} else { #convert from instr ccy to portfolio ccy
+				FXrate.str<-paste(tmp_instr$currency, p.ccy.str, sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
+				FXrate<-try(get(FXrate.str), silent=TRUE)
 				#TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
 				if(inherits(FXrate,"try-error")){
-					FXrate.str<-paste(tmp_instr$currency,p.ccy.str,sep='')
-					FXrate<-try(get(FXrate.str))
+					FXrate.str<-paste(p.ccy.str, tmp_instr$currency, sep='')
+					FXrate<-try(get(FXrate.str), silent=TRUE)
 					if(inherits(FXrate,"try-error")){ 
 						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
 						CcyMult<-1
