@@ -238,7 +238,7 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
     if(verbose)
-        print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", TxnValue, sep=" "))
+        print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", -TxnValue, sep=" "))
         #print(Portfolio$symbols[[Symbol]]$txn)
 
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
