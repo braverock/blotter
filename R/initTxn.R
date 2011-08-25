@@ -5,6 +5,7 @@
 #' @param initPosQty initial position, default is zero
 #' @param \dots any other passthrough parameters  
 #' @return Constructs multi-column xts object used to store transactions
+#' @rdname initTxn
 .initTxn <- function(initDate="1950-01-01", initPosQty=0, ...)
 { # @author Peter Carl
     ## TODO: Add 'Txn.Type' column

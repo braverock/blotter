@@ -1,17 +1,31 @@
 \name{.getByPortf}
 \alias{.getByPortf}
-\title{get attributes from each portfolio in an account...}
-\usage{.getByPortf(Account, Attribute, Dates)}
-\description{get attributes from each portfolio in an account}
-\details{Retrieves calculated attributes for each portfolio in the account
-from the portfolio summary table.  Assembles into a portfolio-by-time table,
-normalized to the Account currency 
+\title{get attributes from each portfolio in an account}
+\usage{
+  .getByPortf(Account, Attribute, Dates = NULL)
+}
+\arguments{
+  \item{Account}{an Account object containing Portfolio
+  summaries}
 
+  \item{Attribute}{column name to be assembled for each
+  symbol}
 
-Attribute: typically any of:
-'Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Txn.Fees',
-'Realized.PL', 'Unrealized.PL', or 'Trading.PL'}
-\value{regular xts object of values by portfolio}
-\arguments{\item{Account}{an Account object containing Portfolio summaries}
-\item{Attribute}{column name to be assembled for each symbol}
-\item{Dates}{}}
+  \item{Dates}{dates to return the calculation over
+  formatted as xts range}
+}
+\value{
+  regular xts object of values by portfolio
+}
+\description{
+  Retrieves calculated attributes for each portfolio in the
+  account from the portfolio summary table.  Assembles into
+  a portfolio-by-time table, normalized to the Account
+  currency
+}
+\details{
+  Attribute: typically any of: 'Long.Value', 'Short.Value',
+  'Net.Value', 'Gross.Value', 'Txn.Fees', 'Realized.PL',
+  'Unrealized.PL', or 'Trading.PL'
+}
+

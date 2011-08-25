@@ -8,6 +8,7 @@
 #' @param \dots any other passthru parameters
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl, Brian Peterson
+#' @rdname updatePosPL
 .updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl, Brian Peterson
     rmfirst=FALSE

@@ -6,9 +6,11 @@
 #' @param Portfolio a portfolio object structured with initPortf()
 #' @param Symbols an instrument identifier for a symbol included in the portfolio
 #' @param Dates dates to return the calculation over formatted as xts range
-#' @param denominator 
-#' @param Account 
-calcPortfWgt <- function(Portfolio, Symbols = NULL, Dates = NULL, denominator = c('Gross.Value', 'Net.Value', 'Long.Value', 'Short.Value'), Account = NULL)
+#' @param denominator string describing the deniminator, see usage
+#' @param Account an Account object containing Portfolio summaries
+calcPortfWgt <- function(Portfolio, Symbols = NULL, Dates = NULL, 
+        denominator = c('Gross.Value', 'Net.Value', 'Long.Value', 'Short.Value'), 
+        Account = NULL)
 { # @author Peter Carl
 
     # FUNCTION

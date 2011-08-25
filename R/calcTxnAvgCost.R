@@ -3,6 +3,7 @@
 #' @param TxnQty total units (shares) of the transaction
 #' @param ConMult multiplier from instrument data
 #' @return TxnAvgCost: unit normalized (per share) cost implied by the transaction
+#' @rdname calcTxnAvgCost
 .calcTxnAvgCost <- function(TxnValue, TxnQty, ConMult=1)
 { # @author Peter Carl
     TxnAvgCost = TxnValue/(TxnQty*ConMult)

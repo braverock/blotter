@@ -5,6 +5,7 @@
 #' @param Symbol an instrument identifier for a symbol included in the portfolio
 #' @param Date timestamp as of which to have the most recent position
 #' @return Numeric value of the average cost of the current position
+#' @rdname getPosAvgCost
 .getPosAvgCost <- function(Portfolio, Symbol, Date)
 { # @author Peter Carl
     pname<-Portfolio

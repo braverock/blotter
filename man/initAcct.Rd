@@ -1,45 +1,65 @@
 \name{initAcct}
 \alias{initAcct}
 \title{Constructs the data container used to store calculated account values such as aggregated P&L, equity, etc.}
-\usage{initAcct(name="default", portfolios, initDate="1950-01-01", initEq=0,
-    currency="USD", ...)}
-\description{Constructs the data container used to store calculated account values such as aggregated P&L, equity, etc.}
-\details{Inputs
-portfolios: a list of portfolio object names to attach to the account
-initDate: date prior to the first close price given, used to contain
-initial account equity and initial position 
-initEq: initial equity or starting capitaal, default is 100,000
+\usage{
+  initAcct(name = "default", portfolios, initDate =
+  "1950-01-01", initEq = 0, currency = "USD", ...)
+}
+\arguments{
+  \item{name}{Account name, as string}
 
-Outputs
-Constructs multi-column xts object used to store aggregated portfolio 
-calculations
+  \item{portfolios}{character vector of strigs naming
+  portfolios included in this account}
 
-NOTES
-An Account object is a list of portfolios with portfolio summary information
+  \item{initDate}{A date prior to the first close price
+  given, used to contain initial account equity and initial
+  position}
 
-The Account object is modeled on the CFTC Thirteen-column presentation table.
-Start with the CFTC six column presentation, which includes:
-Beg.Eq, Additions, Withdrawals, Net.Perf, End.Eq, Period.ROR
-No reason to persist Period.ROR, and Beg.Eq = Previous End.Eq,
-So we're left with four columns.  Note that Period.ROR can be calc'd 
-several different ways and is best left as a function.
+  \item{currency}{ISO currency identifier used to locate
+  the portfolio currency}
 
-To get to the CFTC thirteen columns add:
-Gross.Realized, Commission, Net.Realized, Int.Income, Ch.Unrealized,
-Advisory.Fees, Wealth.Index 
-Again, no need to add Wealth.Index. Eventually, these additional 
-columns will be useful.  
-Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees}
-\note{TODO Add calcPeriodROR function
+  \item{initEq}{initial account equity in the currency of
+  the portfolio, as a floating point number.}
 
-TODO Adddd functions addCapital, drawCapital, addFees
+  \item{\dots}{any other passthrough parameters}
+}
+\description{
+  Inputs portfolios: a list of portfolio object names to
+  attach to the account initDate: date prior to the first
+  close price given, used to contain initial account equity
+  and initial position initEq: initial equity or starting
+  capitaal, default is 100,000
+}
+\details{
+  Outputs Constructs multi-column xts object used to store
+  aggregated portfolio calculations
 
-initDate and initEq can be used in addCapital to initalize the account?
-Track cash at this level???
-Calc gross PL and subtract fees? Or calc net PL and add fees.}
-\arguments{\item{name}{Account name, as string}
-\item{portfolios}{character vector of strigs naming portfolios included in this account}
-\item{initDate}{A date prior to the first close price given, used to contain initial account equity and initial position}
-\item{currency}{ISO currency identifier used to locate the portfolio currency}
-\item{initEq}{initial account equity in the currency of the portfolio, as a floating point number.}
-\item{\dots}{any other passthrough parameters}}
+  NOTES An Account object is a list of portfolios with
+  portfolio summary information
+
+  The Account object is modeled on the CFTC Thirteen-column
+  presentation table. Start with the CFTC six column
+  presentation, which includes: Beg.Eq, Additions,
+  Withdrawals, Net.Perf, End.Eq, Period.ROR No reason to
+  persist Period.ROR, and Beg.Eq = Previous End.Eq, So
+  we're left with four columns.  Note that Period.ROR can
+  be calc'd several different ways and is best left as a
+  function.
+
+  To get to the CFTC thirteen columns add: Gross.Realized,
+  Commission, Net.Realized, Int.Income, Ch.Unrealized,
+  Advisory.Fees, Wealth.Index Again, no need to add
+  Wealth.Index. Eventually, these additional columns will
+  be useful. Gross.Realized will be calculated as (Net)
+  Realized.PL + Txn.Fees
+}
+\note{
+  TODO Add calcPeriodROR function
+
+  TODO Adddd functions addCapital, drawCapital, addFees
+
+  initDate and initEq can be used in addCapital to
+  initalize the account? Track cash at this level??? Calc
+  gross PL and subtract fees? Or calc net PL and add fees.
+}
+

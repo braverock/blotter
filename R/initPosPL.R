@@ -9,6 +9,7 @@
 #' @param initPosQty initial position, default is zero
 #' @param initConMult initial contract multiplier, default is one(1)
 #' @param initCcyMult initial currency multiplier, default is one(1)
+#' @rdname initPosPL
 .initPosPL <- function(initDate="1950-01-01", ..., initPosQty=0, initConMult=1, initCcyMult=1) #TODO add other init values to function as well for cost basis
 { # @author Peter Carl
     posPL <- xts( as.matrix(t(c(initPosQty,initConMult,initCcyMult,0,0,0,0,0,0,0,0))), order.by=as.POSIXct(initDate, ...=...), ...=... )

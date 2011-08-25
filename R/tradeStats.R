@@ -33,7 +33,7 @@
 #' @aliases dailyStats
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
-#' @param uses for dailyStats, determines whether numbers are calculated from trades or equity curve
+#' @param use for dailyStats, determines whether numbers are calculated from trades or equity curve
 #' @author Lance Levenson
 #' @export
 #' @note
@@ -181,6 +181,7 @@ tradeStats <- function(Portfolios, Symbols)
 #' @param Symbols character vector of symbol strings
 #' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
 #' @author Brian G. Peterson
+#' @seealso tradeStats
 #' @export
 dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
@@ -223,6 +224,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
     return(ret)
 }
 
+#' @rdname dailyTxnPL
 #' @export
 dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
@@ -267,6 +269,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
     return(ret)
 }
 
+#' @rdname tradeStats
 #' @export
 dailyStats <- function(Portfolios,use=c('Equity','Txns'))
 {

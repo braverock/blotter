@@ -1,17 +1,37 @@
 \name{.getBySymbol}
 \alias{.getBySymbol}
-\title{Retrieves calculated attributes for each position in the portfolio...}
-\usage{.getBySymbol(Portfolio, Attribute, Dates, Symbols, native=FALSE)}
-\description{Retrieves calculated attributes for each position in the portfolio}
-\details{Retrieves calculated attributes for each position in the portfolio
-from the posPL table.  Assembles into a symbol-by-time table useful
-for graphing or calculations
+\title{Retrieves calculated attributes for each position in the portfolio}
+\usage{
+  .getBySymbol(Portfolio, Attribute, Dates = NULL, Symbols
+  = NULL, native = FALSE)
+}
+\arguments{
+  \item{Portfolio}{a portfolio object containing
+  transactions}
 
-items typically include things like
-'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL',or 'Trading.PL'}
-\value{regular xts object of values by symbol}
-\arguments{\item{Portfolio}{a portfolio object containing transactions}
-\item{Attribute}{column name to be assembled for each symbol}
-\item{Dates}{}
-\item{Symbols}{}
-\item{native}{}}
+  \item{Attribute}{column name to be assembled for each
+  symbol}
+
+  \item{Symbols}{an instrument identifier for a symbol
+  included in the portfolio}
+
+  \item{Dates}{dates to return the calculation over
+  formatted as xts range}
+
+  \item{native}{whether to use the currency of the
+  portfolio, or convert, default FALSE}
+}
+\value{
+  regular xts object of values by symbol
+}
+\description{
+  Retrieves calculated attributes for each position in the
+  portfolio from the posPL table.  Assembles into a
+  symbol-by-time table useful for graphing or calculations
+}
+\details{
+  items typically include things like 'Pos.Qty',
+  'Pos.Value', 'Txn.Value', 'Realized.PL',
+  'Unrealized.PL',or 'Trading.PL'
+}
+

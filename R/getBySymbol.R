@@ -8,10 +8,11 @@
 #' 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL',or 'Trading.PL'
 #' @param Portfolio a portfolio object containing transactions
 #' @param Attribute column name to be assembled for each symbol
-#' @param Dates 
-#' @param Symbols 
-#' @param native 
+#' @param Symbols an instrument identifier for a symbol included in the portfolio
+#' @param Dates dates to return the calculation over formatted as xts range
+#' @param native whether to use the currency of the portfolio, or convert, default FALSE
 #' @return regular xts object of values by symbol
+#' @rdname getBySymbol
 .getBySymbol <- function(Portfolio, Attribute, Dates=NULL, Symbols=NULL, native=FALSE)
 { # @author Peter Carl
 

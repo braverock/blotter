@@ -26,6 +26,7 @@ getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be suppor
 #' string \code{x} and tested.  Otherwise, the object passed will be tested.
 #' 
 #' @param x an object or string to be tested as a portfolio
+#' @param \dots any other passthru parameters
 #' @seealso \code{\link{getPortfolio}}
 #' @export
 is.portfolio <- function(x,...) 

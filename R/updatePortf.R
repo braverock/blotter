@@ -13,7 +13,7 @@
 #' @param Symbols character vector identifying symbols to update the portfolio for, default NULL 
 #' @param Dates xts-style ISO-8601 time range to run updatePortf over, default NULL (will use times from Prices
 #' @param Prices optional xts object containing prices and timestamps to mark the book on, default NULL
-#' @param dots any other passthrough parameters
+#' @param \dots any other passthrough parameters
 #' @export
 #' @callGraph
 updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)

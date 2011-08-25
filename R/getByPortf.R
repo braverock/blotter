@@ -10,8 +10,9 @@
 #'  'Realized.PL', 'Unrealized.PL', or 'Trading.PL'
 #' @param Account an Account object containing Portfolio summaries
 #' @param Attribute column name to be assembled for each symbol
-#' @param Dates 
+#' @param Dates dates to return the calculation over formatted as xts range
 #' @return regular xts object of values by portfolio
+#' @rdname getByPortf
 .getByPortf <- function(Account, Attribute, Dates=NULL)
 { # @author Peter Carl
     

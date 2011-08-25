@@ -1,18 +1,38 @@
 \name{updatePortf}
 \alias{updatePortf}
-\title{Function goes through each symbol and calculates the PL for each period prices are available...}
-\usage{updatePortf(Portfolio, Symbols, Dates, Prices, ...)}
-\description{Function goes through each symbol and calculates the PL for each period prices are available}
-\details{Inputs
-Portfolio: a portfolio object containing transactions
-Symbol: an instrument identifier for a symbol included in the portfolio
-Dates: Dates for which to calculate equity account
-These dates must appear in the price stream
+\title{update Portfilio P&L over a Dates range}
+\usage{
+  updatePortf(Portfolio, Symbols = NULL, Dates = NULL,
+  Prices = NULL, ...)
+}
+\arguments{
+  \item{Portfolio}{string identifying a portfolio}
 
-Outputs
-assigns position information and PL into the environment}
-\arguments{\item{Portfolio}{}
-\item{Symbols}{}
-\item{Dates}{}
-\item{Prices}{}
-\item{dots}{any other passthrough parameters}}
+  \item{Symbols}{character vector identifying symbols to
+  update the portfolio for, default NULL}
+
+  \item{Dates}{xts-style ISO-8601 time range to run
+  updatePortf over, default NULL (will use times from
+  Prices}
+
+  \item{Prices}{optional xts object containing prices and
+  timestamps to mark the book on, default NULL}
+
+  \item{\dots}{any other passthrough parameters}
+}
+\value{
+  assigns position information and PL into the environment
+}
+\description{
+  The \code{updatePortf} function goes through each symbol
+  and calculates the PL for each period prices are
+  available.
+}
+\details{
+  Note that the portfolio will be marked on every time
+  stamp where prices are available. As such, your
+  \code{Dates} range must reflect timestamps which appear
+  in the price stream. Also note that you probably don't
+  want to mark the portfolio on every tick,
+}
+

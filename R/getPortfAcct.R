@@ -2,6 +2,7 @@
 #' @param Account account string
 #' @param Portfolio portfolio string
 #' @param Dates date subset as an xts style ISO 8601 string
+#' @rdname getPortfAcct
 .getPortfAcct <- function(Account,Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     acct<-suppressWarnings(try(get(paste("account",Account,sep='.'),envir=.blotter),silent=TRUE))

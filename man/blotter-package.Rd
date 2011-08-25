@@ -6,28 +6,80 @@
 Portfolio and transaction infrastructure for trading
 }
 \description{
-Transaction-oriented infrastructure for constructing transactions, portfolios and accounts for trading systems and simulation.  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research.  Still in heavy development.
+Transaction-oriented infrastructure for constructing transactions, portfolios
+and accounts for trading systems and simulation.  Provides support for
+multi-asset class and multi-currency portfolios for backtesting and other
+financial research.  Still in heavy development.
 }
 \details{
-The blotter package provides infrastructure for developing trading systems and managing portfolios in R.  Although the name might suggest a smaller scope, blotter provides functions for tracking trades and positions in portfolios, calculating profit-and-loss by position and portfolio, and tracking performance in a capital account. 
+The blotter package provides infrastructure for developing trading systems and
+managing portfolios in R.  Although the name might suggest a smaller scope,
+blotter provides functions for tracking trades and positions in portfolios,
+calculating profit-and-loss by position and portfolio, and tracking performance
+in a capital account. 
 
-Blotter works with a companion package, \code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument}}, that defines meta-data for tradeable contracts (referred to as "instruments", e.g., stocks, futures, options, etc.), so that blotter can support multi-asset portfolios, derivatives and multiple currencies.  As used here, instruments are objects that define contract specifications for a tradable contract, such as IBM common stock.  These objects include descriptive information and attributes that help identify and value the contract.
+Blotter works with a companion package,
+\code{\link[FinancialInstrument:FinancialInstrument-package]{FinancialInstrument
+}}, that defines meta-data for tradeable contracts (referred to as
+"instruments", e.g., stocks, futures, options, etc.), so that blotter can
+support multi-asset portfolios, derivatives and multiple currencies.  As used
+here, instruments are objects that define contract specifications for a tradable
+contract, such as IBM common stock.  These objects include descriptive
+information and attributes that help identify and value the contract.
 
-Blotter's scope is focused on the heirarchy of how transactions accumulate into positions, then into portfolios and an account.  'Transactions' are typically trades in an instrument - an amount bought or sold at a price and time.  But other transaction types include splits, dividends, expirations, assignments, etc. (some of which are implemented currently, others are not).  
+Blotter's scope is focused on the heirarchy of how transactions accumulate into
+positions, then into portfolios and an account.  'Transactions' are typically
+trades in an instrument - an amount bought or sold at a price and time.  But
+other transaction types include splits, dividends, expirations, assignments,
+etc. (some of which are implemented currently, others are not).  
 
-Those transactions are aggregated into 'positions'.  Positions are held in a 'portfolio' that contains positions in several instruments.  Positions are valued regularly (usually daily) using the price history associated with each instrument.  That results in a position profit-and-loss (or PnL) statement that can be aggregated across the portfolio.
+Those transactions are aggregated into 'positions'.  Positions are held in a
+'portfolio' that contains positions in several instruments.  Positions are
+valued regularly (usually daily) using the price history associated with each
+instrument.  That results in a position profit-and-loss (or PnL) statement that
+can be aggregated across the portfolio.
 
-Portfolios are associated with an 'account'.  An account is modeled as a cash account where investments, withdrawals, management fees, and other capital account changes are made.  
+Portfolios are associated with an 'account'.  An account is modeled as a cash
+account where investments, withdrawals, management fees, and other capital
+account changes are made.  
 
-The package also contains functions to help users evaluate portfolios, including charts and graphs to help with visualization.  A small selection of post-trade metrics has been added recently, and is likely to change and expand as we hear more about what people want to calculate.  
+The package also contains functions to help users evaluate portfolios, including
+charts and graphs to help with visualization.  A small selection of post-trade
+metrics has been added recently, and is likely to change and expand as we hear
+more about what people want to calculate.  
 
-Blotter's functions build and manipulate objects that are stored in an environment named ".blotter" rather than the global environment, \code{.GlobalEnv}.  Objects may be listed using \code{ls(envir=.blotter)}. See \code{\link{environment}} for more detail.  
+Blotter's functions build and manipulate objects that are stored in an
+environment named ".blotter" rather than the global environment,
+\code{.GlobalEnv}.  Objects may be listed using \code{ls(envir=.blotter)}. See
+\code{\link{environment}} for more detail.  
 
-We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv} means less clutter in the user's workspace and less chance of clobbering something locally.  Second, we don't recommend acting on the account and portfolio objects directly.  Manipulating the objects directly will almost certainly create inconsistencies and problems with the resulting calculations.  Instead, we recommend copying them into the local workspace using \code{getPortfolio} or \code{getAccount} functions, or simply using blotter functions.  
+We do that for two reasons.  First, keeping them out of the \code{.GlobalEnv}
+means less clutter in the user's workspace and less chance of clobbering
+something locally.  Second, we don't recommend acting on the account and
+portfolio objects directly.  Manipulating the objects directly will almost
+certainly create inconsistencies and problems with the resulting calculations. 
+Instead, we recommend copying them into the local workspace using
+\code{getPortfolio} or \code{getAccount} functions, or simply using blotter
+functions.  
 
-Blotter relies heavily on \code{\link[xts:xts-package]{xts}} for the heavy lifting of date and time subsetting.  Many thanks to Jeff Ryan and Josh Ulrich for their diligent help ferretting out all those corner cases.  As a result, any \code{Dates} parameter in the package leverages \code{\link[xts:xts-package]{xts} date scoping.  For example, \code{getTxn(Portfolio="p", Symbol="XYZ", Dates="2007-01")}} will retrieve all transactions for "XYZ" from January, 2007.  Similarly, a range of dates may be specified as "2007-01::2008-04-15".  Take a look at the \code{\link[xts:xts-package]{xts}} documentation for more detail.  Otherwise, the \code{Date} or \code{Dates} parameter accepts an ISO 8601 format such as '2008-09-15' or '2010-01-05 09:54:23.12345'.  In almost all cases, if the \code{Dates} parameter is unspecified, the function will return all results.
+Blotter relies heavily on \code{\link[xts:xts-package]{xts}} for the heavy
+lifting of date and time subsetting.  Many thanks to Jeff Ryan and Josh Ulrich
+for their diligent help ferretting out all those corner cases.  As a result, any
+\code{Dates} parameter in the package leverages
+\code{\link[xts:xts-package]{xts}} date scoping.  For example,
+\code{getTxn(Portfolio="p", Symbol="XYZ", Dates="2007-01")} will retrieve all
+transactions for "XYZ" from January, 2007.  Similarly, a range of dates may be
+specified as "2007-01::2008-04-15".  Take a look at the
+\code{\link[xts:xts-package]{xts}} documentation for more detail.  Otherwise,
+the \code{Date} or \code{Dates} parameter accepts an ISO 8601 format such as
+'2008-09-15' or '2010-01-05 09:54:23.12345'.  In almost all cases, if the
+\code{Dates} parameter is unspecified, the function will return all results.
 
-The sole example in the documentation of blotter follows, providing a simple but more complete overview of how blotter can be used.  More extensive examples can be seen in the demos.  The \code{longtrend} demo shows a simple trend-following example, and \code{turtles} shows a more complicated trend-following example.  The \code{amzn_test} demo shows blotter's use with tick data.
+The sole example in the documentation of blotter follows, providing a simple but
+more complete overview of how blotter can be used.  More extensive examples can
+be seen in the demos.  The \code{longtrend} demo shows a simple trend-following
+example, and \code{turtles} shows a more complicated trend-following example. 
+The \code{amzn_test} demo shows blotter's use with tick data.
 
 }
 \author{
@@ -40,7 +92,8 @@ Maintainer: Brian Peterson <brian@braverock.com>
 \seealso{
 \code{\link[quantmod:quantmod-package]{quantmod}}, 
 \code{\link[xts:xts-package]{xts}}, 
-\code{\link[PerformanceAnalytics:PerformanceAnalytics-package]{PerformanceAnalytics}}
+\code{\link[PerformanceAnalytics:PerformanceAnalytics-package]{
+PerformanceAnalytics}}
 }
 \examples{
 # Construct a portfolio object and add some transactions
@@ -61,7 +114,8 @@ for(symbol in symbols){ # establish tradable instruments
 
 # Download price data
 require(quantmod)
-getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct"))
+getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo',
+index.class=c("POSIXt","POSIXct"))
 
 # Initialize a portfolio object 'p'
 print('Creating portfolio \"p\"...')
@@ -84,7 +138,8 @@ addTxn("p", "F", '2007-01-10', 50, 7.78, TxnFees = pennyPerShare(50))
 # ...and some in MMM
 # We didn't include this in the list of symbols for the portfolio, so first we 
 # have to download prices and add a slot for MMM to the portfolio
-getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo', index.class=c("POSIXt","POSIXct")) # Download price data
+getSymbols("MMM", from='2007-01-01', to='2007-01-31', src='yahoo',
+index.class=c("POSIXt","POSIXct")) # Download price data
 stock("MMM", currency="USD", multiplier=1) # Add the instrument
 
 # Now we can add transactions:
