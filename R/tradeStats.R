@@ -36,6 +36,7 @@
 #' @param use for dailyStats, determines whether numbers are calculated from trades or equity curve
 #' @author Lance Levenson
 #' @export
+#' @importFrom zoo as.Date
 #' @note
 #' TODO document each statistic included in this function, with equations 
 #' 
