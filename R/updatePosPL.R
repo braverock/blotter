@@ -22,9 +22,12 @@
 	    warning(paste("Instrument",Symbol," not found, things may break"))
 		tmp_instr<-list(currency="USD",multiplier=1)
     }
-	
-	if(is.null(Prices)){
-		prices=getPrice(get(Symbol, envir=as.environment(.GlobalEnv)),...=...)
+    dargs <- list(...)
+    if(!is.null(dargs$env)) {env <- dargs$env} else env=.GlobalEnv
+    if(!is.null(dargs$symbol)) {symbol<-dargs$symbol} else symbol=NULL
+    if(!is.null(dargs$prefer)) {prefer<-dargs$prefer} else prefer=NULL
+    if(is.null(Prices)){
+		prices=getPrice(get(Symbol, pos=env), symbol=symbol, prefer=prefer)
 	} else {
         prices=Prices
     }

@@ -4,7 +4,7 @@
 #' @note Expect changes to this function, since the underlying charts are experimental functions in quantmod.
 #'
 #' @param Portfolio string identifying the portfolio to chart
-#' @param Symbol string identifying the symbol to chart
+#' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @export
@@ -12,7 +12,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 { # @author Peter Carl
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
-
+    if (missing(Symbol)) Symbol <- names(Portfolio$symbols)[[1]]
     # FUNCTION
 
     require(quantmod)
