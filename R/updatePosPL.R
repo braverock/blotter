@@ -27,7 +27,7 @@
     if(!is.null(dargs$symbol)) {symbol<-dargs$symbol} else symbol=NULL
     if(!is.null(dargs$prefer)) {prefer<-dargs$prefer} else prefer=NULL
     if(is.null(Prices)){
-		prices=getPrice(get(Symbol, pos=env), symbol=symbol, prefer=prefer)
+		prices=getPrice(get(Symbol, pos=env), symbol=symbol, prefer=prefer)[,1]
 	} else {
         prices=Prices
     }
