@@ -12,6 +12,7 @@
     if(PosQty == 0)
         PosAvgCost = 0
     else {
+        if(PrevePosAvgCost<0) TxnValue= -1*TxnValue #fix bug with negative average cost 
         # PosAvgCost = abs((PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult))
         PosAvgCost = (PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult)
     }
