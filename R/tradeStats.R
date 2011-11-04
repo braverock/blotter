@@ -89,7 +89,7 @@ tradeStats <- function(Portfolios, Symbols)
             
             AvgTradePL <- mean(PL.ne0)
             MedTradePL <- median(PL.ne0)
-            StdTradePL <- as.numeric(sd(PL.ne0))   
+            StdTradePL <- as.numeric(apply(PL.ne0, 2, sd))   
             
             NumberOfTrades <- nrow(txn)-1
             
@@ -110,7 +110,7 @@ tradeStats <- function(Portfolios, Symbols)
             DailyPL <- apply.daily(PL.ne0,sum)
             AvgDailyPL <- mean(DailyPL)
             MedDailyPL <- median(DailyPL)
-            StdDailyPL <- as.numeric(sd(DailyPL))
+            StdDailyPL <- as.numeric(apply(DailyPL, 2, sd))
             
             Equity <- cumsum(posPL$Net.Trading.PL)
             if(!nrow(Equity)){
@@ -298,7 +298,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         
         AvgDayPL <- as.numeric(mean(PL.ne0))
         MedDayPL <- as.numeric(median(PL.ne0))
-        StdDayPL <- as.numeric(sd(PL.ne0))   
+        StdDayPL <- as.numeric(apply(PL.ne0, 2, sd))   
         
         #NumberOfDays <- nrow(txn)
         WinDays <-length(PL.gt0)
@@ -319,7 +319,7 @@ dailyStats <- function(Portfolios,use=c('Equity','Txns'))
         
         AvgDailyPL <- as.numeric(mean(PL.ne0))
         MedDailyPL <- as.numeric(median(PL.ne0))
-        StdDailyPL <- as.numeric(sd(PL.ne0))
+        StdDailyPL <- as.numeric(apply(PL.ne0, 2, sd))
         
         Equity <- cumsum(x)
         Equity.max <- cummax(Equity)
