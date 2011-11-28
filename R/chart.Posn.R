@@ -64,7 +64,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     # scope the Price data by Dates
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chart_Series(Prices, name=Symbol, TA=NULL)
+    chart_Series(Prices, name=Symbol, TA=NULL, ...)
     if(!is.null(nrow(Buys)) && nrow(Buys) >=1 ) (add_TA(Buys,pch=2,type='p',col='green', on=1));
     if(!is.null(nrow(Sells)) && nrow(Sells) >= 1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
     if(nrow(Position)>=1) {
