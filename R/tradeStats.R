@@ -89,7 +89,7 @@ tradeStats <- function(Portfolios, Symbols)
             
             AvgTradePL <- mean(PL.ne0)
             MedTradePL <- median(PL.ne0)
-            StdTradePL <- sd(as.numeric(as.vector((PL.ne0)))   
+            StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))   
             
             NumberOfTrades <- nrow(txn)-1
             
