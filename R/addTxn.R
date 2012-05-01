@@ -13,6 +13,12 @@
 #' The \code{pennyPerShare} function provides a simple example of a transaction cost
 #' function.
 #' 
+#' Transactions which would cross your position through zero will be split 
+#' into two transactions, one to flatten the position, and another to initiate 
+#' a new position on the opposite side of the market.  The new (split) 
+#' transaction will have it's timestamp inclremented by eps to preserve ordering. 
+#' This transaction splitting vastly simplifies realized P&L calculations elsewhere in the code.
+#' 
 #' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{initPortf()}
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
@@ -22,6 +28,7 @@
 #' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
 #' @param ConMult Contract/instrument multiplier for the Symbol if it is not dened in an instrument specication
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
+#' @param eps value to add to force unique indices
 #' @note 
 #' The addTxn function will eventually also handle other transaction types, 
 #' such as adjustments for corporate actions or expire/assign for options. 
@@ -29,10 +36,20 @@
 #' @seealso \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
 #' @author Peter Carl
 #' @export
-addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
+addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE, eps=1e-06)
 { # @author Peter Carl
 
-    pname<-Portfolio
+    pname <- Portfolio
+    PrevPosQty = getPosQty(pname, Symbol, TxnDate)
+    # split transactions that would cross through zero
+    if(PrevPosQty!=0 && sign(PrevPosQty+TxnQty)!=sign(PrevPosQty) && PrevPosQty!=-TxnQty){
+        addTxn(Portfolio=pname, Symbol=Symbol, TxnDate=TxnDate, TxnQty=-PrevPosQty, TxnPrice=TxnPrice, ..., 
+                TxnFees = TxnFees, ConMult = ConMult, verbose = verbose, eps=eps)
+        TxnDate=TxnDate+2*eps
+        TxnQty=TxnQty+PrevPosQty
+        PrevPosQty=0
+    }
+    
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
@@ -63,8 +80,8 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     TxnAvgCost = .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
 
     # Calculate the change in position
-    PrevPosQty = getPosQty(pname, Symbol, TxnDate)
     PosQty = PrevPosQty + TxnQty
+
 
     # Calculate the resulting position's average cost
     PrevPosAvgCost = .getPosAvgCost(pname, Symbol, TxnDate)

@@ -18,8 +18,7 @@ getPos <- function(Portfolio, Symbol, Date, Columns=c('Pos.Qty','Pos.Avg.Cost'),
     # position average cost are returned.
     #if(nrow(PosData)>1) Pos = last(PosData[toDate][,Columns],n=n)
     if(nrow(PosData)>1) {
-        toDate = paste('::', Date, sep="")
-        Pos = last(PosData[toDate][,Columns],n=n)
+        Pos = last(PosData[which(index(PosData)<=Date),][, Columns], n = n)
     } else Pos <- PosData[,Columns]
     return(Pos)
 }
