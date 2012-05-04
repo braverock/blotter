@@ -3,7 +3,7 @@
 \title{Calculate portfolio instrument returns}
 \usage{
   PortfReturns(Account, method = c("contribution"), ...,
-  Dates = NULL, Portfolios = NULL)
+    Dates = NULL, Portfolios = NULL)
 }
 \arguments{
   \item{Account}{string name of the account to generate

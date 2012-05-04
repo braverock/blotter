@@ -2,8 +2,9 @@
 \alias{initAcct}
 \title{Constructs the data container used to store calculated account values such as aggregated P&L, equity, etc.}
 \usage{
-  initAcct(name = "default", portfolios, initDate =
-  "1950-01-01", initEq = 0, currency = "USD", ...)
+  initAcct(name = "default", portfolios,
+    initDate = "1950-01-01", initEq = 0, currency = "USD",
+    ...)
 }
 \arguments{
   \item{name}{Account name, as string}

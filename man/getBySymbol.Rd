@@ -2,8 +2,8 @@
 \alias{.getBySymbol}
 \title{Retrieves calculated attributes for each position in the portfolio}
 \usage{
-  .getBySymbol(Portfolio, Attribute, Dates = NULL, Symbols
-  = NULL, native = FALSE)
+  .getBySymbol(Portfolio, Attribute, Dates = NULL,
+    Symbols = NULL, native = FALSE)
 }
 \arguments{
   \item{Portfolio}{a portfolio object containing

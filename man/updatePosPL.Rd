@@ -2,8 +2,8 @@
 \alias{.updatePosPL}
 \title{Calculates position PL from the position data and corresponding close price data.}
 \usage{
-  .updatePosPL(Portfolio, Symbol, Dates = NULL, Prices =
-  NULL, ConMult = NULL, ...)
+  .updatePosPL(Portfolio, Symbol, Dates = NULL,
+    Prices = NULL, ConMult = NULL, ...)
 }
 \arguments{
   \item{Portfolio}{a portfolio name to a portfolio

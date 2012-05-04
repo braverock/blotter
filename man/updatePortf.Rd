@@ -3,7 +3,7 @@
 \title{update Portfilio P&L over a Dates range}
 \usage{
   updatePortf(Portfolio, Symbols = NULL, Dates = NULL,
-  Prices = NULL, ...)
+    Prices = NULL, ...)
 }
 \arguments{
   \item{Portfolio}{string identifying a portfolio}

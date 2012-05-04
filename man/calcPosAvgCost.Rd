@@ -3,7 +3,7 @@
 \title{Calculates the average cost of a resulting position from a transaction}
 \usage{
   .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, TxnValue,
-  PosQty, ConMult = 1)
+    PosQty, ConMult = 1)
 }
 \arguments{
   \item{PrevPosQty}{quantity of the previous position}

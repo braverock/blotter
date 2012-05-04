@@ -3,7 +3,7 @@
 \title{Add multiple transactions to a portfolio}
 \usage{
   addTxns(Portfolio, Symbol, TxnData, verbose = TRUE, ...,
-  ConMult = NULL)
+    ConMult = NULL)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a

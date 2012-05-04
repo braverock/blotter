@@ -3,7 +3,8 @@
 \title{Add transactions to a portfolio.}
 \usage{
   addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ...,
-  TxnFees = 0, ConMult = NULL, verbose = TRUE)
+    TxnFees = 0, ConMult = NULL, verbose = TRUE,
+    eps = 1e-06)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a
@@ -32,6 +33,8 @@
   \item{verbose}{If TRUE (default) the function prints the
   elements of the transaction in a line to the screen,
   e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}
+
+  \item{eps}{value to add to force unique indices}
 }
 \description{
   When a trade or adjustment is made to the Portfolio, the
@@ -48,6 +51,14 @@
   function is evaluated to determine the fee amount. The
   \code{pennyPerShare} function provides a simple example
   of a transaction cost function.
+
+  Transactions which would cross your position through zero
+  will be split into two transactions, one to flatten the
+  position, and another to initiate a new position on the
+  opposite side of the market.  The new (split) transaction
+  will have it's timestamp inclremented by eps to preserve
+  ordering. This transaction splitting vastly simplifies
+  realized P&L calculations elsewhere in the code.
 }
 \note{
   The addTxn function will eventually also handle other

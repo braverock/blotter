@@ -2,8 +2,8 @@
 \alias{getPos}
 \title{Retrieves all information about the position as of a date}
 \usage{
-  getPos(Portfolio, Symbol, Date, Columns = c("Pos.Qty",
-  "Pos.Avg.Cost"), n = 1)
+  getPos(Portfolio, Symbol, Date,
+    Columns = c("Pos.Qty", "Pos.Avg.Cost"), n = 1)
 }
 \arguments{
   \item{Portfolio}{string identifying a portfolio object

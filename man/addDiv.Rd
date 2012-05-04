@@ -3,7 +3,7 @@
 \title{Add cash dividend transactions to a portfolio.}
 \usage{
   addDiv(Portfolio, Symbol, TxnDate, DivPerShare, ...,
-  TxnFees = 0, ConMult = NULL, verbose = TRUE)
+    TxnFees = 0, ConMult = NULL, verbose = TRUE)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a

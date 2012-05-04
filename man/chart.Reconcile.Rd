@@ -2,9 +2,10 @@
 \alias{chart.Reconcile}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-  chart.Reconcile(theoPort, actualPort, Symbol, Dates =
-  NULL, ..., PLdiff = c("cumulative", "episodic"), data =
-  c(FALSE, "View", "return"))
+  chart.Reconcile(theoPort, actualPort, Symbol,
+    Dates = NULL, ...,
+    PLdiff = c("cumulative", "episodic"),
+    data = c(FALSE, "View", "return"))
 }
 \arguments{
   \item{theoPort}{string identifying the theoretical

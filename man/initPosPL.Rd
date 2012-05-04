@@ -3,7 +3,7 @@
 \title{initializes position P&L for a portfolio instrument}
 \usage{
   .initPosPL(initDate = "1950-01-01", ..., initPosQty = 0,
-  initConMult = 1, initCcyMult = 1)
+    initConMult = 1, initCcyMult = 1)
 }
 \arguments{
   \item{initDate}{date prior to the first close price

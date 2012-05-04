@@ -8,7 +8,9 @@
   \item{Portfolio}{string identifying the portfolio to
   chart}
 
-  \item{Symbol}{string identifying the symbol to chart}
+  \item{Symbol}{string identifying the symbol to chart. If
+  missing, the first symbol found in the \code{Portfolio}
+  portfolio will be used}
 
   \item{Dates}{xts ISO 8601 style subsetting}
 
