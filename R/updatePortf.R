@@ -15,7 +15,6 @@
 #' @param Prices optional xts object containing prices and timestamps to mark the book on, default NULL
 #' @param \dots any other passthrough parameters
 #' @export
-#' @callGraph
 updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 { #' @author Peter Carl, Brian Peterson
     pname<-Portfolio

@@ -96,6 +96,7 @@ Maintainer: Brian Peterson <brian@braverock.com>
 PerformanceAnalytics}}
 }
 \examples{
+\dontrun{
 # Construct a portfolio object and add some transactions
 ## These two lines are here to deal with frame issues in R CMD check
 ## and ARE NOT NECESSARY to run by hand in your own environment.
@@ -186,5 +187,5 @@ p$symbols$MMM$posPL.USD
 ## Here is the calculated portfolio summary denominated in the portfolio 
 ## currency
 p$summary
-
+}
 }
