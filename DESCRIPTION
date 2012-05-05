@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for transaction-oriented trading systems
     development.
-Version: 0.8.7
+Version: 0.8.8
 Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>
@@ -21,7 +21,8 @@ Depends:
 Suggests:
     PerformanceAnalytics,
     Hmisc,
-    RUnit
+    RUnit,
+    quantmod
 Contributors: Lance Levenson, Ben McCann, Joshua Ulrich,
     Wolfgang Wu, Garrett See
 URL: https://r-forge.r-project.org/projects/blotter/
