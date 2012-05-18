@@ -31,7 +31,10 @@
 	} else {
         prices=Prices
     }
-	
+	if(.parseISO8601(Dates)$first.time <first(index(Prices))|| is.na(.parseISO8601(Dates)$first.time)){
+        Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
+    }
+    
     if(is.null(Dates)) {# if no date is specified, get all available dates
             Dates = time(prices)
 	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
