@@ -27,11 +27,11 @@
     if(!is.null(dargs$symbol)) {symbol<-dargs$symbol} else symbol=NULL
     if(!is.null(dargs$prefer)) {prefer<-dargs$prefer} else prefer=NULL
     if(is.null(Prices)){
-		prices=getPrice(get(Symbol, pos=env), symbol=symbol, prefer=prefer)[,1]
-	} else {
+        prices=getPrice(get(Symbol, pos=env), symbol=symbol, prefer=prefer)[,1]
+    } else {
         prices=Prices
     }
-	if(.parseISO8601(Dates)$first.time <first(index(Prices))|| is.na(.parseISO8601(Dates)$first.time)){
+    if(.parseISO8601(Dates)$first.time < first(index(prices)) || is.na(.parseISO8601(Dates)$first.time)){
         Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
     }
     
