@@ -49,7 +49,7 @@ updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopP
 	assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
-getSymbols(symbols, index.class="POSIXct", from=initDate, source="yahoo")
+getSymbols(symbols, index.class="POSIXct", from=initDate, src="yahoo")
 # getSymbols now defaults (as originally) to "Date" indexing.  We can change to use POSIXct here.
 # getSymbols(symbols, index.class=c("POSIXt","POSIXct"), from=initDate, source="yahoo")
 
