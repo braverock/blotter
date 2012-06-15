@@ -42,7 +42,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     pname <- Portfolio
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
     
-    if(!is.timeBased(TxnDate) || is.Date(TxnDate)){
+    if(!is.timeBased(TxnDate) ){
         TxnDate<-as.POSIXct(TxnDate)
     }
     
