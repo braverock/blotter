@@ -41,11 +41,16 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     pname <- Portfolio
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
+    
+    if(!is.timeBased(TxnDate) || is.Date(TxnDate)){
+        TxnDate<-as.POSIXct(TxnDate)
+    }
+    
     # split transactions that would cross through zero
     if(PrevPosQty!=0 && sign(PrevPosQty+TxnQty)!=sign(PrevPosQty) && PrevPosQty!=-TxnQty){
         addTxn(Portfolio=pname, Symbol=Symbol, TxnDate=TxnDate, TxnQty=-PrevPosQty, TxnPrice=TxnPrice, ..., 
                 TxnFees = TxnFees, ConMult = ConMult, verbose = verbose, eps=eps)
-        TxnDate=TxnDate+2*eps
+        TxnDate=TxnDate+2*eps #transactions need unique timestamps, so increment a bit
         TxnQty=TxnQty+PrevPosQty
         PrevPosQty=0
     }
@@ -98,9 +103,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 		GrossTxnRealizedPL = 0
 	
 	NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
-    if(!is.timeBased(TxnDate)){
-        TxnDate<-as.POSIXct(TxnDate)
-    }
+
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, txnfees, NetTxnRealizedPL, ConMult)), order.by=TxnDate)
     #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
