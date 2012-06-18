@@ -91,7 +91,7 @@ tradeStats <- function(Portfolios, Symbols)
             MedTradePL <- median(PL.ne0)
             StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))   
             
-            NumberOfTrades <- nrow(txn)-1
+            NumberOfTxns <- nrow(txn)-1
             
             PercentPositive <- (nrow(PL.gt0)/nrow(PL.ne0))*100
             PercentNegative <- (nrow(PL.lt0)/nrow(PL.ne0))*100
@@ -140,7 +140,7 @@ tradeStats <- function(Portfolios, Symbols)
 
             tmpret <- data.frame(Portfolio=pname, 
                                  Symbol=symbol,
-                                 Num.Trades=NumberOfTrades,
+                                 Num.Txns=NumberOfTxns,
                                  Total.Net.Profit=TotalNetProfit,
                                  Avg.Trade.PL=AvgTradePL,
                                  Med.Trade.PL=MedTradePL,
