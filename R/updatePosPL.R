@@ -31,17 +31,20 @@
     } else {
         prices=Prices
     }
+
+    # if no date is specified, get all available dates
+    if(is.null(Dates)) {
+        Dates = time(prices)
+    } else if(!is.timeBased(Dates)) {
+        Dates = time(prices[Dates])
+    }
+
     if(.parseISO8601(Dates)$first.time < first(index(prices)) || is.na(.parseISO8601(Dates)$first.time)){
         Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
     }
     
-    if(is.null(Dates)) {# if no date is specified, get all available dates
-            Dates = time(prices)
-	} else if(!is.timeBased(Dates)) Dates = time(prices[Dates])
-    
     if(ncol(prices)>1) prices=getPrice(Prices,Symbol)
     
-
 	# line up Prices dates with Dates set/index/span passed in.
 	startDate = first(xts:::.parseISO8601(Dates))$first.time-1 #does this need to be a smaller/larger delta for millisecond data?
 	endDate   = last(xts:::.parseISO8601(Dates))$last.time
