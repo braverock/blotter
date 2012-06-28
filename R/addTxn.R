@@ -110,7 +110,8 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
     if(verbose)
-        print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
+#        print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
+        print(paste(format(TxnDate, "::%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
         #print(Portfolio$symbols[[Symbol]]$txn)
     
     assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
