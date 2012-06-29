@@ -39,7 +39,7 @@
         Dates = time(prices[Dates])
     }
 
-    if(.parseISO8601(Dates)$first.time < first(index(prices)) || is.na(.parseISO8601(Dates)$first.time)){
+    if(.parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices))) || is.na(.parseISO8601(Dates)$first.time)){
         Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
     }
     
