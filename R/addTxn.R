@@ -158,15 +158,18 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         #TODO create vectorized versions of all these functions so we don't have to loop
         TxnQty         <- as.numeric(TxnData[row,'Quantity'])
         TxnPrice       <- as.numeric(TxnData[row,'Price'])
-        TxnFee         <- 0 #TODO FIXME support transaction fees in addTxns
-        #TxnFee         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
-        TxnValue       <- .calcTxnValue(TxnQty, TxnPrice, TxnFee, ConMult)
+        # If TxnFees are to be used, it must be a column in TxnData
+        TxnFees <- if (any(grepl("TxnFees", colnames(TxnData)))) {
+            as.numeric(TxnData[row, "TxnFees"])
+        } else 0
+        #TxnFees         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
+        TxnValue       <- .calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult)
         TxnAvgCost     <- .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
         PosAvgCost     <- .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
 		GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
-		NetTxnRealizedPL = GrossTxnRealizedPL - TxnFee
+		NetTxnRealizedPL = GrossTxnRealizedPL - TxnFees
         PrevPosQty     <- PosQty
         PrevPosAvgCost <- PosAvgCost
         
@@ -177,7 +180,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
                          PosQty, 
                          PosAvgCost, 
                          GrossTxnRealizedPL,
-                         TxnFee,
+                         TxnFees,
                          NetTxnRealizedPL,
                          ConMult)),
                          order.by=index(TxnData[row,]))
