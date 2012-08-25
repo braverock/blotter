@@ -75,7 +75,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 		else {summary=cbind(summary,result)}
     }
 	
-	if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][Dates])
+	if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
 	startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001 
 	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
 	if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
