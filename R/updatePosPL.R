@@ -34,9 +34,9 @@
 
     # if no date is specified, get all available dates
     if(is.null(Dates)) {
-        Dates = time(prices)
+        Dates = xts:::time.xts(prices)
     } else if(!is.timeBased(Dates)) {
-        Dates = time(prices[Dates])
+        Dates = xts:::time.xts(prices[Dates])
     }
 
     if(.parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices))) || is.na(.parseISO8601(Dates)$first.time)){

@@ -18,11 +18,11 @@ updateEndEq <- function(Account, Dates=NULL)
         stop(paste("Account",aname," not found, use initAcct() to create a new account"))
     
     if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = time(Account$summary)[-1]
+        Dates = xts:::time.xts(Account$summary)[-1]
     else
-        Dates = time(Account$summary[Dates])
+        Dates = xts:::time.xts(Account$summary[Dates])
 
-    PrevDate = time(Account$summary[first(Account$summary[Dates,which.i=TRUE])-1,]) # get index of previous end date 
+    PrevDate = xts:::time.xts(Account$summary[first(Account$summary[Dates,which.i=TRUE])-1,]) # get index of previous end date 
     PrevEndEq = getEndEq(aname, PrevDate)
     Additions = Account$summary[Dates]$Additions
     Withdrawals = Account$summary[Dates]$Withdrawals

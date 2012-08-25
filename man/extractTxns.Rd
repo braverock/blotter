@@ -2,11 +2,14 @@
 \alias{extractTxns}
 \title{Extract transactions from a portfolio}
 \usage{
-  extractTxns(Portfolio)
+  extractTxns(Portfolio, Symbol = NULL)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
   extract from}
+
+  \item{Symbol}{an optional instrument identifier for a
+  symbol included in the portfolio}
 }
 \value{
   String vector of \code{\link{addTxn}} calls that would

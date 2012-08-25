@@ -31,7 +31,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 	
     # Calculate and store portfolio summary table
     Portfolio<-getPortfolio(pname) # refresh with an updated object
-	if(is.null(Dates)) Dates <- time(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
+	if(is.null(Dates)) Dates <- xts:::time.xts(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
     #Symbols = names(Portfolio$symbols)
     Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
     summary = NULL
@@ -75,7 +75,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 		else {summary=cbind(summary,result)}
     }
 	
-	if(!is.timeBased(Dates)) Dates = time(Portfolio$symbols[[1]][Dates])
+	if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][Dates])
 	startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001 
 	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
 	if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){

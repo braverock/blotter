@@ -47,18 +47,25 @@
 \details{
   Fees are indicated as negative values and will be
   subtracted from the transaction value. TxnFees can either
-  be a fixed amount, or a function in which case the
-  function is evaluated to determine the fee amount. The
-  \code{pennyPerShare} function provides a simple example
-  of a transaction cost function.
+  be a fixed numeric amount, or a function (or charavcter
+  name of a function) in which case the function is
+  evaluated to determine the fee amount.
 
-  Transactions which would cross your position through zero
+  The \code{pennyPerShare} function provides a simple
+  example of a transaction cost function.
+
+  Transactions which would cross the position through zero
   will be split into two transactions, one to flatten the
   position, and another to initiate a new position on the
   opposite side of the market.  The new (split) transaction
-  will have it's timestamp inclremented by eps to preserve
-  ordering. This transaction splitting vastly simplifies
-  realized P&L calculations elsewhere in the code.
+  will have its timestamp incremented by \code{eps} to
+  preserve ordering.
+
+  This transaction splitting vastly simplifies realized P&L
+  calculations elsewhere in the code. Such splitting also
+  mirrors many execution platforms and brokerage
+  requirements in particular asset classes where the side
+  of a trade needs to be specified with the order.
 }
 \note{
   The addTxn function will eventually also handle other

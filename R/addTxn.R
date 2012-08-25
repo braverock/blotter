@@ -6,18 +6,27 @@
 #' or loss (net of fees) from the transaction. Then it stores the transaction 
 #' and calculations in the Portfolio object.
 #'
-#' Fees are indicated as negative values and will be subtracted from the 
-#' transaction value. TxnFees can either be a fixed amount, or a function 
-#' in which case the function is evaluated to 
-#' determine the fee amount.
-#' The \code{pennyPerShare} function provides a simple example of a transaction cost
-#' function.
-#' 
-#' Transactions which would cross your position through zero will be split 
-#' into two transactions, one to flatten the position, and another to initiate 
-#' a new position on the opposite side of the market.  The new (split) 
-#' transaction will have it's timestamp inclremented by eps to preserve ordering. 
-#' This transaction splitting vastly simplifies realized P&L calculations elsewhere in the code.
+#' Fees are indicated as negative values and will be
+#' subtracted from the transaction value. TxnFees can either
+#' be a fixed numeric amount, or a function (or charavcter
+#' name of a function) in which case the function is
+#' evaluated to determine the fee amount.
+#'
+#' The \code{pennyPerShare} function provides a simple
+#' example of a transaction cost function.
+#'
+#' Transactions which would cross the position through zero
+#' will be split into two transactions, one to flatten the
+#' position, and another to initiate a new position on the
+#' opposite side of the market.  The new (split) transaction
+#' will have its timestamp incremented by \code{eps} to
+#' preserve ordering.
+#'
+#' This transaction splitting vastly simplifies realized P&L
+#' calculations elsewhere in the code. Such splitting also
+#' mirrors many execution platforms and brokerage
+#' requirements in particular asset classes where the side
+#' of a trade needs to be specified with the order.
 #' 
 #' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{initPortf()}
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
@@ -32,7 +41,7 @@
 #' @note 
 #' The addTxn function will eventually also handle other transaction types, 
 #' such as adjustments for corporate actions or expire/assign for options. 
-
+#'
 #' @seealso \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
 #' @author Peter Carl
 #' @export
@@ -75,8 +84,13 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
 
     # FUNCTION
+    # Coerce the transaction fees to a function if a string was supplied
+    if (is.character(TxnFees)) TF <- try(match.fun(TxnFees))
+    if (!inherits(TF,"try-error")) TxnFees<-TF
+
     # Compute transaction fees if a function was supplied
     if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
+
     if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
     if(txnfees>0) warning('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
