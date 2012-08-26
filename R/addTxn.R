@@ -85,9 +85,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     # FUNCTION
     # Coerce the transaction fees to a function if a string was supplied
-    if (is.character(TxnFees)) TF <- try(match.fun(TxnFees))
-    if (!inherits(TF,"try-error")) TxnFees<-TF
-
+    
+    if (is.character(TxnFees)) {
+        TF <- try(match.fun(TxnFees))
+        if (!inherits(TF,"try-error")) TxnFees<-TF
+    }
     # Compute transaction fees if a function was supplied
     if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
 
