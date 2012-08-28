@@ -23,8 +23,8 @@ Suggests:
     Hmisc,
     RUnit,
     quantmod
-Contributors: Dirk Eddelbuettel, Lance Levenson, Ben McCann, 
-    Jeff Ryan, Garrett See, Joshua Ulrich, Wolfgang Wu 
+Contributors: Dirk Eddelbuettel, Lance Levenson, Ben McCann,
+    Jeff Ryan, Garrett See, Joshua Ulrich, Wolfgang Wu
 URL: https://r-forge.r-project.org/projects/blotter/
 Copyright: (c) 2008-2011
 Collate:
@@ -34,6 +34,7 @@ Collate:
     'calcPosAvgCost.R'
     'calcTxnAvgCost.R'
     'calcTxnValue.R'
+    'chart.ME.R'
     'chart.Posn.R'
     'chart.Reconcile.R'
     'chart.Spread.R'
