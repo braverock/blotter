@@ -67,7 +67,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
-        tmp_instr<-try(getInstrument(Symbol))
+        tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
             warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
             ConMult<-1
@@ -86,8 +86,8 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     # FUNCTION
     # Coerce the transaction fees to a function if a string was supplied
     
-    if(is.character(TxnFees) && is.function(TxnFees)) {
-        TF <- try(match.fun(TxnFees))
+    if(is.character(TxnFees)) {
+        TF <- try(match.fun(TxnFees), silent=TRUE)
         if (!inherits(TF,"try-error")) TxnFees<-TF
     }
     # Compute transaction fees if a function was supplied
@@ -157,7 +157,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
-        tmp_instr<-try(getInstrument(Symbol))
+        tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
             warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
             ConMult<-1
@@ -239,7 +239,7 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
-        tmp_instr<-try(getInstrument(Symbol))
+        tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
             warning(paste("Instrument",Symbol," not found, using contract multiplier of 1"))
             ConMult<-1

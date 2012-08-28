@@ -8,8 +8,8 @@
 getAccount <- function(Account) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     aname<-Account
-    if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter))
-    else Account<-try(get(aname,envir=.blotter))
+    if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter), silent=TRUE)
+    else Account<-try(get(aname,envir=.blotter), silent=TRUE)
     if(inherits(Account,"try-error"))
         stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
     if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")
@@ -35,8 +35,8 @@ is.account <- function(x,...)
 { # @author Brian Peterson
     if(inherits(x,'account')) return(TRUE)
     else if(is.character(x)){
-        if(!grepl("account\\.",x)) res <- suppressWarnings(try(get(paste("account",x,sep='.'),envir=.blotter),silent=TRUE))
-        else res <- suppressWarnings(try(get(x,envir=.blotter),silent=TRUE))
+        if(!grepl("account\\.",x)) res <- suppressWarnings(try(get(paste("account",x,sep='.'),envir=.blotter), silent=TRUE))
+        else res <- suppressWarnings(try(get(x,envir=.blotter), silent=TRUE))
         #res<-suppressWarnings(try(getaccount(x))) #causes spurious error if you're checking whether account exists
         if(!inherits(res,"account")) {
             message("account ",x," needs to be created first.")

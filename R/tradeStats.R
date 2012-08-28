@@ -59,8 +59,8 @@ tradeStats <- function(Portfolios, Symbols)
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
         if (!grepl("portfolio\\.", pname)) 
-		Portfolio <- try(get(paste("portfolio", pname, sep = "."), 	envir = .blotter))
-    	else Portfolio <- try(get(pname, envir = .blotter))
+		Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
+    	else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
     	if (inherits(Portfolio, "try-error")) 
     		stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
         if (!inherits(Portfolio, "portfolio")) 
@@ -193,8 +193,8 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
         if (!grepl("portfolio\\.", pname)) 
-            Portfolio <- try(get(paste("portfolio", pname, sep = "."),  envir = .blotter))
-        else Portfolio <- try(get(pname, envir = .blotter))
+            Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
+        else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
         if (inherits(Portfolio, "try-error")) 
             stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
         if (!inherits(Portfolio, "portfolio")) 
@@ -236,8 +236,8 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
         if (!grepl("portfolio\\.", pname)) 
-            Portfolio <- try(get(paste("portfolio", pname, sep = "."),  envir = .blotter))
-        else Portfolio <- try(get(pname, envir = .blotter))
+            Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
+        else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
         if (inherits(Portfolio, "try-error")) 
             stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
         if (!inherits(Portfolio, "portfolio")) 

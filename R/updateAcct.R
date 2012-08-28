@@ -37,7 +37,7 @@ updateAcct <- function(name='default', Dates=NULL)
 		if( a.ccy.str != p.ccy.str ){
             # If not, translate the portfolio summary to the account currency
 			CcyMult <- NA
-			port_currency<-try(getInstrument(p.ccy.str))
+			port_currency<-try(getInstrument(p.ccy.str), silent=TRUE)
 			if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1

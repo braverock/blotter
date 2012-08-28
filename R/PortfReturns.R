@@ -22,8 +22,8 @@
 PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portfolios=NULL) 
 { # @author Brian Peterson
 	aname<-Account
-	if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter))
-	else Account<-try(get(aname,envir=.blotter))
+	if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter), silent=TRUE)
+	else Account<-try(get(aname,envir=.blotter), silent=TRUE)
 	if(inherits(Account,"try-error"))
 		stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
 	if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")

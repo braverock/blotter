@@ -17,7 +17,7 @@
     Portfolio<-getPortfolio(pname) 
 	p.ccy.str<-attr(Portfolio,'currency')
 	if(is.null(p.ccy.str)) p.ccy.str<-'NA'
-    tmp_instr<-try(getInstrument(Symbol))
+    tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
     if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
 	    warning(paste("Instrument",Symbol," not found, things may break"))
 		tmp_instr<-list(currency="USD",multiplier=1)
@@ -159,7 +159,7 @@
 		if (tmp_instr$currency==p.ccy.str) {
 			CcyMult<-1			
 		} else {
-			port_currency<-try(getInstrument(p.ccy.str))
+			port_currency<-try(getInstrument(p.ccy.str), silent=TRUE)
 			if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1

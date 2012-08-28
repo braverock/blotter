@@ -25,7 +25,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
         Symbols = names(Portfolio$symbols)
     } 
     for(symbol in Symbols){
-        tmp_instr<-try(getInstrument(symbol))
+        tmp_instr<-try(getInstrument(symbol), silent=TRUE)
         .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, ...=...)            
     }
 	
