@@ -101,6 +101,8 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
         }
     }
 
+    abline(a=0, b=1, lty='dashed', col='darkgrey')
+
     grid()
 
     legend(
