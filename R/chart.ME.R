@@ -66,8 +66,8 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
                     xlab='Drawdown ($)', ylab='Profit (Loss) in $',
                     main='Maximum Adverse Excursion (MAE) in $')
 
-            points(abs(trades[ profitable, c('Drawdown','Net.Trading.PL')]), pch=2, col='green')
-            points(abs(trades[!profitable, c('Drawdown','Net.Trading.PL')]), pch=25, col='red')
+            points(abs(trades[ profitable, c('Drawdown','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('Drawdown','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
         else    # scale == 'percent'
         {
@@ -75,8 +75,8 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
                     xlab='Drawdown (%)', ylab='Profit (Loss) in %',
                     main='Maximum Adverse Excursion (MAE) in %')
 
-            points(abs(trades[ profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=2, col='green')
-            points(abs(trades[!profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=25, col='red')
+            points(abs(trades[ profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
     }
     else    # type == 'MFE'
@@ -87,8 +87,8 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
                     xlab='RunUp ($)', ylab='Profit (Loss) in $',
                     main='Maximum Favourable Excursion (MFE) in $')
     
-            points(abs(trades[ profitable, c('RunUp','Net.Trading.PL')]), pch=2, col='green')
-            points(abs(trades[!profitable, c('RunUp','Net.Trading.PL')]), pch=25, col='red')
+            points(abs(trades[ profitable, c('RunUp','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('RunUp','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
         else    # scale == 'percent'
         {
@@ -96,8 +96,8 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
                     xlab='RunUp (%)', ylab='Profit (Loss) in %',
                     main='Maximum Favourable Excursion (MFE) in %')
     
-            points(abs(trades[ profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=2, col='green')
-            points(abs(trades[!profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=25, col='red')
+            points(abs(trades[ profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
     }
 
@@ -106,10 +106,11 @@ chart.ME <- function(portfolio, symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
     grid()
 
     legend(
-            x='right', inset=0.1,
+            x='bottomright', inset=0.1,
             legend=c('Profitable Trade','Losing Trade'),
-            pch=c(2,6),
-            col=c('green','red')
+            pch=c(24,25),
+            col=c('green','red'),
+            pt.bg=c('green','red')
     )
 }
 
