@@ -36,11 +36,10 @@
     if(is.null(Dates)) {
         Dates = xts:::time.xts(prices)
     } else if(!is.timeBased(Dates)) {
-        Dates = xts:::time.xts(prices[Dates])
-    }
-
-    if(is.na(.parseISO8601(Dates)$first.time) ||.parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
-        Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
+        Dates<- if(is.na(.parseISO8601(Dates)$first.time) ||
+            .parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
+            index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
+        } else xts:::time.xts(prices[Dates])
     }
     
     if(ncol(prices)>1) prices=getPrice(Prices,Symbol)
