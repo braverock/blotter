@@ -39,7 +39,7 @@
         Dates = xts:::time.xts(prices[Dates])
     }
 
-    if(.parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices))) || is.na(.parseISO8601(Dates)$first.time)){
+    if(is.na(.parseISO8601(Dates)$first.time) ||.parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
         Dates<-index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
     }
     
