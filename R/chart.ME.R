@@ -97,7 +97,7 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param \dots any other passthrough parameters
-#' @author Brian G. Peterson, Jan Hume
+#' @author Brian G. Peterson, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @export
 perTradeStats <- function(Portfolio, Symbol,...) {
