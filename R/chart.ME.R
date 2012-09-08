@@ -1,7 +1,7 @@
 #' Chart Maximum Adverse/Forward Excursion
 #'
 #' Produces a scatterplot with one point per trade, with x-axis: absolute 
-#' value of Drawdown (Adverse), or RunUp (Favourable), 
+#' value of Drawdown (Adverse), or Run Up (Favourable), 
 #' and y-axis: absolute value of Net Profit or Loss
 #'
 #' @param Portfolio string identifying the portfolio to chart
@@ -20,8 +20,8 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
 
     #multiply Pcct numbers for prettier charting
     trades$Pct.Net.Trading.PL <- 100 * trades$Pct.Net.Trading.PL
-    trades$Pct.Drawdown       <- 100 * trades$Pct.Drawdown
-    trades$Pct.RunUp          <- 100 * trades$Pct.RunUp
+    trades$Pct.MAE       <- 100 * trades$Pct.MAE
+    trades$Pct.MFE          <- 100 * trades$Pct.MFE
     
     profitable <- (trades$Net.Trading.PL > 0)
 
@@ -29,42 +29,42 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
     {
         if(scale == 'cash')
         {
-            plot(abs(trades[, c('Drawdown','Net.Trading.PL')]), type='n',
+            plot(abs(trades[, c('MAE','Net.Trading.PL')]), type='n',
                     xlab='Cash Drawdown', ylab='Cash Profit (Loss)',
                     main='Maximum Adverse Excursion (MAE)')
 
-            points(abs(trades[ profitable, c('Drawdown','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('Drawdown','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
+            points(abs(trades[ profitable, c('MAE','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('MAE','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
         else    # scale == 'percent'
         {
-            plot(abs(trades[, c('Pct.Drawdown','Pct.Net.Trading.PL')]), type='n',
+            plot(abs(trades[, c('Pct.MAE','Pct.Net.Trading.PL')]), type='n',
                     xlab='Drawdown (%)', ylab='Profit (Loss) in %',
                     main='Maximum Adverse Excursion (MAE) in %')
 
-            points(abs(trades[ profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('Pct.Drawdown','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
+            points(abs(trades[ profitable, c('Pct.MAE','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('Pct.MAE','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
     }
     else    # type == 'MFE'
     {
         if(scale == 'cash')
         {
-            plot(abs(trades[, c('RunUp','Net.Trading.PL')]), type='n',
-                    xlab='Cash RunUp', ylab='Cash Profit (Loss)',
+            plot(abs(trades[, c('MFE','Net.Trading.PL')]), type='n',
+                    xlab='Cash Run Up', ylab='Cash Profit (Loss)',
                     main='Maximum Favourable Excursion (MFE)')
     
-            points(abs(trades[ profitable, c('RunUp','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('RunUp','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
+            points(abs(trades[ profitable, c('MFE','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('MFE','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
         else    # scale == 'percent'
         {
-            plot(abs(trades[, c('Pct.RunUp','Pct.Net.Trading.PL')]), type='n',
-                    xlab='RunUp (%)', ylab='Profit (Loss) in %',
+            plot(abs(trades[, c('Pct.MFE','Pct.Net.Trading.PL')]), type='n',
+                    xlab='Run Up (%)', ylab='Profit (Loss) in %',
                     main='Maximum Favourable Excursion (MFE) in %')
     
-            points(abs(trades[ profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('Pct.RunUp','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
+            points(abs(trades[ profitable, c('Pct.MFE','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
+            points(abs(trades[!profitable, c('Pct.MFE','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
         }
     }
 
@@ -113,9 +113,7 @@ perTradeStats <- function(Portfolio, Symbol,...) {
     trades$Start <- index(posPL[which(posPL$Pos.Value!=0 & lag(posPL$Pos.Value)==0),])
     trades$End <- index(posPL[which(posPL$Pos.Value==0 & lag(posPL$Pos.Value)!=0),])
     
-    # discard open last trade, if any
-    # trades$Start <- trades$Start[1:length(trades$End)]
-    #TODO FIXME if trade is still open at end of series, set end of open trade to the end of the series instead
+    # if trade is still open at end of series, set end of open trade to the end of the series instead
     if(length(trades$Start)>length(trades$End)){
         trades$End <- c(trades$End,last(index(posPL)))
     }
@@ -126,32 +124,40 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         timespan <- paste(format(trades$Start[[i]], "%Y-%m-%d %H:%M:%OS6"),
                 format(trades$End[[i]], "%Y-%m-%d %H:%M:%OS6"), sep="::")
         
-        trade <- posPL[timespan]
-        
+        trade <- posPL[timespan]        
+
         # close and open may occur in at same index timestamp, must be corrected
         if(first(trade)$Pos.Qty==0) trade <- tail(trade, -1)
         if(last(trade)$Pos.Qty!=0) trade <- head(trade, -1)
-        
-        # investment
-        trades$Txn.Value[i] <- abs(first(trade$Txn.Value))
-        #TODO FIXME this is wrong for trades that level in/out, I think we need na.locf.
-        
-        #position sizes
-        trades$Max.Pos[i] <- trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Qty
-        trades$Init.Pos[i] <- first(trade)$Pos.Qty
+
+        # add cost basis column
+        trade$Pos.Cost.Basis <- cumsum(trade$Txn.Value)
+        #add running posPL column
+        trade$PosPL <- trade$Pos.Value-trade$Pos.Cost.Basis
         
         #count number of transactions
+        trades$Num.Txns[i]<-length(which(trade$Txn.Value!=0))
+        
+        #position sizes
+        trades$Init.Pos[i] <- first(trade$Pos.Qty)
+        trades$Max.Pos[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Qty)
+        # investment
+        trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
+        
+        trade$PctPL <- trade$PosPL/trade$Pos.Value #broken for last trade
+        trade$PctPL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost
+        
         
         # cash-wise
-        trades$Net.Trading.PL[i] <- sum(trade$Net.Trading.PL)
-        trades$Drawdown[i] <- min(0,cumsum(trade$Net.Trading.PL))
-        trades$RunUp[i] <- max(0,cumsum(trade$Net.Trading.PL))
+        trades$Net.Trading.PL[i] <- last(trade$PosPL)
+        trades$MAE[i] <- min(0,trade$PosPL)
+        trades$MFE[i] <- max(0,trade$PosPL)
     }
     
     # percentage-wise
-    trades$Pct.Net.Trading.PL <- trades$Net.Trading.PL / trades$Txn.Value
-    trades$Pct.Drawdown <- trades$Drawdown / trades$Txn.Value
-    trades$Pct.RunUp <- trades$RunUp / trades$Txn.Value
+    trades$Pct.Net.Trading.PL <- last(trade$PctPL)
+    trades$Pct.MAE <- min(0,trade$PctPL)
+    trades$Pct.MFE <- max(0,trade$PctPL)
 
     #TODO add tick stats
 
