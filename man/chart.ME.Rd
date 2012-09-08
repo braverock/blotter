@@ -2,8 +2,8 @@
 \alias{chart.ME}
 \title{Chart Maximum Adverse/Forward Excursion}
 \usage{
-  chart.ME(portfolio, symbol, type = c("MAE", "MFE"),
-    scale = c("cash", "percent"))
+  chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"),
+    scale = c("cash", "percent"), ...)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -18,6 +18,8 @@
 
   \item{scale}{string specifying 'cash', or 'percent' for
   percentage of investment}
+
+  \item{\dots}{any other passthrough parameters}
 }
 \description{
   Produces a scatterplot with one point per trade, with
@@ -25,9 +27,12 @@
   (Favourable), and y-axis: absolute value of Net Profit or
   Loss
 }
-\details{
-  After Jaekle & Tomasini: Trading Systems - A new approach
-  to system development and portfolio optimisation (ISBN
-  978-1-905641-79-6), paragraph 3.5
+\author{
+  Jan Humme
+}
+\references{
+  Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new
+  approach to system development and portfolio
+  optimisation} (ISBN 978-1-905641-79-6), section 3.5
 }
 
