@@ -107,6 +107,9 @@ perTradeStats <- function(Portfolio, Symbol,...) {
     
     posPL <- portf$symbols[[Symbol]]$posPL
     
+    instr <- getInstrument(Symbol)
+    tick_value <- instr$multiplier*instr$tick_size
+    
     trades <- list()
     
     # identify start and end for each trade, where end means flat position
@@ -144,23 +147,31 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         # investment
         trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
         
-        # percentage-wise
-        trade$PctPL <- trade$PosPL/trade$Pos.Value #broken for last trade
-        trade$PctPL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost
+        # percentage P&L
+        trade$Pct.PL <- trade$PosPL/trade$Pos.Value #broken for last timestamp
+        #insert the correct value for the last mark
+        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost
         
-        trades$Pct.Net.Trading.PL[i] <- last(trade$PctPL)
-        trades$Pct.MAE[i] <- min(0,trade$PctPL)
-        trades$Pct.MFE[i] <- max(0,trade$PctPL)
+        trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
+        trades$Pct.MAE[i] <- min(0,trade$Pct.PL)
+        trades$Pct.MFE[i] <- max(0,trade$Pct.PL)
         
-        # cash-wise
+        # cash P&L
         trades$Net.Trading.PL[i] <- last(trade$PosPL)
         trades$MAE[i] <- min(0,trade$PosPL)
         trades$MFE[i] <- max(0,trade$PosPL)
-    }
+        
+        # tick P&L
+        #Net.Trading.PL/position/tick value=ticks
+        trade$tick.PL <- trade$PosPL/trade$Pos.Qty/tick_value #broek nfor last observation
+        trade$tick.PL[length(trade$tick.PL)] <- last(trade$PosPL)/tick_value/trades$Max.Pos[i]
+        
+        trades$tick.Net.Trading.PL[i] <- last(trade$tick.PL)
+        trades$tick.MAE[i] <- min(0,trade$tick.PL)
+        trades$tick.MFE[i] <- max(0,trade$tick.PL)
+        }
 
-    #TODO add tick stats
-
-    trades <- as.data.frame(trades)
+    trades <- suppressWarnings(as.data.frame(trades))
     return(trades)
 }
 
