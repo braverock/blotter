@@ -144,20 +144,19 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         # investment
         trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
         
+        # percentage-wise
         trade$PctPL <- trade$PosPL/trade$Pos.Value #broken for last trade
         trade$PctPL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost
         
+        trades$Pct.Net.Trading.PL[i] <- last(trade$PctPL)
+        trades$Pct.MAE[i] <- min(0,trade$PctPL)
+        trades$Pct.MFE[i] <- max(0,trade$PctPL)
         
         # cash-wise
         trades$Net.Trading.PL[i] <- last(trade$PosPL)
         trades$MAE[i] <- min(0,trade$PosPL)
         trades$MFE[i] <- max(0,trade$PosPL)
     }
-    
-    # percentage-wise
-    trades$Pct.Net.Trading.PL <- last(trade$PctPL)
-    trades$Pct.MAE <- min(0,trade$PctPL)
-    trades$Pct.MFE <- max(0,trade$PctPL)
 
     #TODO add tick stats
 
