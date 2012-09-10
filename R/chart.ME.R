@@ -163,8 +163,8 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         
         # tick P&L
         #Net.Trading.PL/position/tick value=ticks
-        trade$tick.PL <- trade$PosPL/trade$Pos.Qty/tick_value #broek nfor last observation
-        trade$tick.PL[length(trade$tick.PL)] <- last(trade$PosPL)/tick_value/trades$Max.Pos[i]
+        trade$tick.PL <- trade$PosPL/abs(trade$Pos.Qty)/tick_value #broken for last observation
+        trade$tick.PL[length(trade$tick.PL)] <- last(trade$PosPL)/abs(trades$Max.Pos[i])/tick_value
         
         trades$tick.Net.Trading.PL[i] <- last(trade$tick.PL)
         trades$tick.MAE[i] <- min(0,trade$tick.PL)
