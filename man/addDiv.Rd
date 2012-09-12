@@ -30,7 +30,7 @@
 
   \item{ConMult}{Contract or instrument multiplier for the
   Symbol if it is not defined in an instrument
-  specication.}
+  specification.}
 }
 \description{
   Adding a cash dividend does not affect position quantity,

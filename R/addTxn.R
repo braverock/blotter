@@ -35,7 +35,7 @@
 #' @param TxnPrice  Price at which the transaction was done
 #' @param \dots Any other passthrough parameters
 #' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
-#' @param ConMult Contract/instrument multiplier for the Symbol if it is not defined in an instrument specication
+#' @param ConMult Contract/instrument multiplier for the Symbol if it is not defined in an instrument specification
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param eps value to add to force unique indices
 #' @note 
@@ -147,7 +147,7 @@ pennyPerShare <- function(TxnQty) {
 #' @param TxnData  An xts object containing all required txn fields
 #' @param \dots Any other passthrough parameters
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
-#' @param ConMult Contract or instrument multiplier for the Symbol if it is not defined in an instrument specication
+#' @param ConMult Contract or instrument multiplier for the Symbol if it is not defined in an instrument specification
 #' @seealso \code{\link{addTxn}}, \code{\link{initPortf}}
 #' @note
 #' TODO figure out if we can fully vectorize this function to make it faster
@@ -226,7 +226,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
 #' @param \dots Any other passthrough parameters.
 #' @param TxnFees Fees associated with the transaction, e.g. commissions. See Details.
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
-#' @param ConMult Contract or instrument multiplier for the Symbol if it is not defined in an instrument specication.
+#' @param ConMult Contract or instrument multiplier for the Symbol if it is not defined in an instrument specification.
 #' @export
 #' @note
 #' # TODO add TxnTypes to $txn table

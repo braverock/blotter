@@ -22,7 +22,8 @@
   e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}
 
   \item{ConMult}{Contract or instrument multiplier for the
-  Symbol if it is not defined in an instrument specication}
+  Symbol if it is not defined in an instrument
+  specification}
 }
 \description{
   Add multiple transactions to a portfolio
