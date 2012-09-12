@@ -30,7 +30,7 @@
   will likely change.
 }
 \author{
-  Brian G. Peterson, Jan Hume
+  Brian G. Peterson, Jan Humme
 }
 \references{
   Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new

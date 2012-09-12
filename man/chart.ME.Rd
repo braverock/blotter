@@ -23,7 +23,7 @@
 }
 \description{
   Produces a scatterplot with one point per trade, with
-  x-axis: absolute value of Drawdown (Adverse), or RunUp
+  x-axis: absolute value of Drawdown (Adverse), or Run Up
   (Favourable), and y-axis: absolute value of Net Profit or
   Loss
 }

@@ -28,7 +28,7 @@
   commissions., See Details}
 
   \item{ConMult}{Contract/instrument multiplier for the
-  Symbol if it is not dened in an instrument specication}
+  Symbol if it is not defined in an instrument specication}
 
   \item{verbose}{If TRUE (default) the function prints the
   elements of the transaction in a line to the screen,
