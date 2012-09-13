@@ -150,7 +150,7 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         # percentage P&L
         trade$Pct.PL <- trade$PosPL/trade$Pos.Value #broken for last timestamp
         #insert the correct value for the last mark
-        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost
+        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost[i]
         
         trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
         trades$Pct.MAE[i] <- min(0,trade$Pct.PL)
