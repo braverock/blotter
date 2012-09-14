@@ -131,15 +131,9 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
     if(length(trades$Start)>length(trades$End))
     {
         if(includeOpenTrades)
-{
-print('========== including open trade')
             trades$End <- c(trades$End,last(index(posPL)))
-}
         else
-{
-print('========== excluding open trade')
             trades$Start <- head(trades$Start, -1)
-}
     }
     
     # calculate information about each trade
