@@ -7,12 +7,12 @@
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param type string specifying MAE (Adverse) or MFE (Favourable) chart type
-#' @param scale string specifying 'cash', or 'percent' for percentage of investment
+#' @param scale string specifying 'cash', or 'percent' for percentage of investment, or 'tick'
 #' @param \dots any other passthrough parameters
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
 #' @export
-chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'percent'),...)
+chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'percent', 'tick'), ...)
 {   # @author Jan Humme
 
     trades <- perTradeStats(Portfolio,Symbol)
@@ -23,56 +23,64 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
     trades$Pct.MFE <- 100 * trades$Pct.MFE
     
     profitable <- (trades$Net.Trading.PL > 0)
-#    profitable.cash <- (trades$Net.Trading.PL > 0)
-#    profitable.pct <- (trades$Pct.Net.Trading.PL > 0)
-#    profitable.tick <- (trades$tick > 0)
 
-    if(type == 'MAE')
-    {
-        if(scale == 'cash')
-        {
-            plot(abs(trades[, c('MAE','Net.Trading.PL')]), type='n',
-                    xlab='Cash Drawdown', ylab='Cash Profit (Loss)',
-                    main='Maximum Adverse Excursion (MAE)')
+    switch(scale,
 
-            points(abs(trades[ profitable, c('MAE','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('MAE','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
+        cash = {
+            .ylab <- 'Profit/Loss (cash)'
+            if(type == 'MAE')
+            {
+                .cols <- c('MAE','Net.Trading.PL')
+                .xlab <- 'Drawdown (cash)'
+                .main <- 'Maximum Adverse Excursion (MAE)'
+            }
+            else    # type == 'MFE'
+            {
+                .cols <- c('MFE','Net.Trading.PL')
+                .xlab <- 'Run Up (cash)'
+                .main <- 'Maximum Favourable Excursion (MFE)'
+            }
+        },
+        percent = {
+            .ylab <- 'Profit/Loss (%)'
+            if(type == 'MAE')
+            {
+                .cols <- c('Pct.MAE','Pct.Net.Trading.PL')
+                .xlab <- 'Drawdown (%)'
+                .main <- 'Maximum Adverse Excursion (MAE)'
+            }
+            else    # type == 'MFE'
+            {
+                .cols <- c('Pct.MFE','Pct.Net.Trading.PL')
+                .xlab <- 'Run Up (%)'
+                .main <- 'Maximum Favourable Excursion (MFE)'
+            }
+        },
+        tick = {
+            .ylab <- 'Profit/Loss (ticks)'
+            if(type == 'MAE')
+            {
+                .cols <- c('tick.MAE','tick.Net.Trading.PL')
+                .xlab <- 'Drawdown (ticks)'
+                .main <- 'Maximum Adverse Excursion (MAE)'
+            }
+            else    # type == 'MFE'
+            {
+                .cols <- c('tick.MFE','tick.Net.Trading.PL')
+                .xlab <- 'Run Up (ticks)'
+                .main <- 'Maximum Favourable Excursion (MFE)'
+            }
         }
-        else    # scale == 'percent'
-        {
-            plot(abs(trades[, c('Pct.MAE','Pct.Net.Trading.PL')]), type='n',
-                    xlab='Drawdown (%)', ylab='Profit (Loss) in %',
-                    main='Maximum Adverse Excursion (MAE) in %')
+    )
 
-            points(abs(trades[ profitable, c('Pct.MAE','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('Pct.MAE','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
-        }
-    }
-    else    # type == 'MFE'
-    {
-        if(scale == 'cash')
-        {
-            plot(abs(trades[, c('MFE','Net.Trading.PL')]), type='n',
-                    xlab='Cash Run Up', ylab='Cash Profit (Loss)',
-                    main='Maximum Favourable Excursion (MFE)')
-    
-            points(abs(trades[ profitable, c('MFE','Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('MFE','Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
-        }
-        else    # scale == 'percent'
-        {
-            plot(abs(trades[, c('Pct.MFE','Pct.Net.Trading.PL')]), type='n',
-                    xlab='Run Up (%)', ylab='Profit (Loss) in %',
-                    main='Maximum Favourable Excursion (MFE) in %')
-    
-            points(abs(trades[ profitable, c('Pct.MFE','Pct.Net.Trading.PL')]), pch=24, col='green', bg='green', cex=0.6)
-            points(abs(trades[!profitable, c('Pct.MFE','Pct.Net.Trading.PL')]), pch=25, col='red', bg='red', cex=0.6)
-        }
-    }
-
-    abline(a=0, b=1, lty='dashed', col='darkgrey')
+    plot(abs(trades[, .cols]), type='n', xlab=.xlab, ylab=.ylab, main=.main)
 
     grid()
+
+    points(abs(trades[ profitable, .cols]), pch=24, col='green', bg='green', cex=0.6)
+    points(abs(trades[!profitable, .cols]), pch=25, col='red', bg='red', cex=0.6)
+
+    abline(a=0, b=1, lty='dashed', col='darkgrey')
 
     legend(
             x='bottomright', inset=0.1,
@@ -151,7 +159,6 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         
         # percentage P&L
         trade$Pct.PL <- trade$PosPL/abs(trade$Pos.Cost.Basis) #broken for last timestamp
-#        trade$Pct.PL[length(trade$Pct.PL)]<-trade$Pct.PL[length(trade$Pct.PL)-1]
         trade$Pct.PL[length(trade$Pct.PL)]<-last(trade)$PosPL/abs(trades$Max.Notional.Cost[i])
         
         trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
