@@ -17,13 +17,15 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
 
     trades <- perTradeStats(Portfolio,Symbol)
     
-
     #multiply Pcct numbers for prettier charting
     trades$Pct.Net.Trading.PL <- 100 * trades$Pct.Net.Trading.PL
-    trades$Pct.MAE       <- 100 * trades$Pct.MAE
-    trades$Pct.MFE          <- 100 * trades$Pct.MFE
+    trades$Pct.MAE <- 100 * trades$Pct.MAE
+    trades$Pct.MFE <- 100 * trades$Pct.MFE
     
     profitable <- (trades$Net.Trading.PL > 0)
+#    profitable.cash <- (trades$Net.Trading.PL > 0)
+#    profitable.pct <- (trades$Pct.Net.Trading.PL > 0)
+#    profitable.tick <- (trades$tick > 0)
 
     if(type == 'MAE')
     {
@@ -148,16 +150,16 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
         
         # percentage P&L
-        trade$Pct.PL <- trade$PosPL/trade$Pos.Value #broken for last timestamp
-        #insert the correct value for the last mark
-        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade$PosPL)/trades$Max.Notional.Cost[i]
+        trade$Pct.PL <- trade$PosPL/abs(trade$Pos.Cost.Basis) #broken for last timestamp
+#        trade$Pct.PL[length(trade$Pct.PL)]<-trade$Pct.PL[length(trade$Pct.PL)-1]
+        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade)$PosPL/abs(trades$Max.Notional.Cost[i])
         
         trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
         trades$Pct.MAE[i] <- min(0,trade$Pct.PL)
         trades$Pct.MFE[i] <- max(0,trade$Pct.PL)
         
         # cash P&L
-        trades$Net.Trading.PL[i] <- last(trade$PosPL)
+        trades$Net.Trading.PL[i] <- last(trade)$PosPL
         trades$MAE[i] <- min(0,trade$PosPL)
         trades$MFE[i] <- max(0,trade$PosPL)
         
@@ -169,10 +171,9 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         trades$tick.Net.Trading.PL[i] <- last(trade$tick.PL)
         trades$tick.MAE[i] <- min(0,trade$tick.PL)
         trades$tick.MFE[i] <- max(0,trade$tick.PL)
-        }
+    }
 
-    trades <- suppressWarnings(as.data.frame(trades))
-    return(trades)
+    return(as.data.frame(trades))
 }
 
 # to algorithmically set stops, the classic answer is to calculate quantiles.
