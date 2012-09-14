@@ -3,7 +3,7 @@
 \title{Chart Maximum Adverse/Forward Excursion}
 \usage{
   chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"),
-    scale = c("cash", "percent"), ...)
+    scale = c("cash", "percent", "tick"), ...)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -17,9 +17,10 @@
   (Favourable) chart type}
 
   \item{scale}{string specifying 'cash', or 'percent' for
-  percentage of investment}
+  percentage of investment, or 'tick'}
 
-  \item{\dots}{any other passthrough parameters}
+  \item{\dots}{any other passthrough parameters, in
+  particular includeOpenTrades (see perTradeStats())}
 }
 \description{
   Produces a scatterplot with one point per trade, with

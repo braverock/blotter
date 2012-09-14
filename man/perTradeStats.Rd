@@ -2,7 +2,8 @@
 \alias{perTradeStats}
 \title{calculate flat to flat per-trade statistics}
 \usage{
-  perTradeStats(Portfolio, Symbol, ...)
+  perTradeStats(Portfolio, Symbol,
+    includeOpenTrades = FALSE, ...)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -11,6 +12,9 @@
   \item{Symbol}{string identifying the symbol to chart. If
   missing, the first symbol found in the \code{Portfolio}
   portfolio will be used}
+
+  \item{includeOpenTrades:}{whether to process only
+  finished trades, or the last trade if it is still open}
 
   \item{\dots}{any other passthrough parameters}
 }

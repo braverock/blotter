@@ -8,14 +8,14 @@
 #' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param type string specifying MAE (Adverse) or MFE (Favourable) chart type
 #' @param scale string specifying 'cash', or 'percent' for percentage of investment, or 'tick'
-#' @param \dots any other passthrough parameters
+#' @param \dots any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
 #' @export
-chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'percent', 'tick'), ...)
+chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ...)
 {   # @author Jan Humme
 
-    trades <- perTradeStats(Portfolio,Symbol)
+    trades <- perTradeStats(Portfolio, Symbol, ...)
     
     #multiply Pcct numbers for prettier charting
     trades$Pct.Net.Trading.PL <- 100 * trades$Pct.Net.Trading.PL
@@ -106,11 +106,12 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE', 'MFE'), scale=c('cash', 'p
 #'  
 #' @param Portfolio string identifying the portfolio to chart
 #' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
+#' @param includeOpenTrades: whether to process only finished trades, or the last trade if it is still open
 #' @param \dots any other passthrough parameters
 #' @author Brian G. Peterson, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @export
-perTradeStats <- function(Portfolio, Symbol,...) {
+perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
     portf <- getPortfolio(Portfolio)
     
     if(missing(Symbol)) Symbol <- names(portf$symbols)[[1]]
@@ -126,9 +127,19 @@ perTradeStats <- function(Portfolio, Symbol,...) {
     trades$Start <- index(posPL[which(posPL$Pos.Value!=0 & lag(posPL$Pos.Value)==0),])
     trades$End <- index(posPL[which(posPL$Pos.Value==0 & lag(posPL$Pos.Value)!=0),])
     
-    # if trade is still open at end of series, set end of open trade to the end of the series instead
-    if(length(trades$Start)>length(trades$End)){
-        trades$End <- c(trades$End,last(index(posPL)))
+    # if the last trade is still open, adjust depending on whether wants open trades or not
+    if(length(trades$Start)>length(trades$End))
+    {
+        if(includeOpenTrades)
+{
+print('========== including open trade')
+            trades$End <- c(trades$End,last(index(posPL)))
+}
+        else
+{
+print('========== excluding open trade')
+            trades$Start <- head(trades$Start, -1)
+}
     }
     
     # calculate information about each trade
@@ -179,6 +190,7 @@ perTradeStats <- function(Portfolio, Symbol,...) {
         trades$tick.MAE[i] <- min(0,trade$tick.PL)
         trades$tick.MFE[i] <- max(0,trade$tick.PL)
     }
+#print(trades)
 
     return(as.data.frame(trades))
 }
