@@ -11,6 +11,8 @@
 #' @param \dots any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
+#' @seealso \code{\link{perTradeStats}} for the calculations used by this chart, 
+#' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
 chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ...)
 {   # @author Jan Humme
@@ -25,7 +27,6 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
     profitable <- (trades$Net.Trading.PL > 0)
 
     switch(scale,
-
         cash = {
             .ylab <- 'Profit/Loss (cash)'
             if(type == 'MAE')
@@ -103,15 +104,40 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
 #' Note that a trade that is open at the end of the measured period will
 #' be marked to the timestamp of the end of the series.  
 #' If that trade is later closed, the stats for it will likely change. 
+#' This is 'mark to market' for the open position, and corresponds to
+#' most trade accounting systems and risk systems in including the open
+#' position in reporting.
 #'  
-#' @param Portfolio string identifying the portfolio to chart
-#' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
-#' @param includeOpenTrades: whether to process only finished trades, or the last trade if it is still open
+#' @param Portfolio string identifying the portfolio
+#' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
+#' @param includeOpenTrade whether to process only finished trades, or the last trade if it is still open, default TRUE
 #' @param \dots any other passthrough parameters
 #' @author Brian G. Peterson, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
+#' @return 
+#' A \code{data.frame} containing:
+#' 
+#' \describe{
+#'      \item{Start}{the \code{POSIXct} timestamp of the start of the trade}
+#'      \item{End}{the \code{POSIXct} timestamp of the end of the trade, when flat}
+#'      \item{Init.Pos}{the initial position on opening the trade}
+#'      \item{Max.Pos}{the maximum (largest) position held during the open trade}
+#'      \item{Num.Txns}{ the number of transactions included in this trade}
+#'      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
+#'      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
+#'      \item{MAE}{ Maximum Adverse Excursion (MAE), in the currency of \code{Symbol}}
+#'      \item{MFE}{ Maximum Favorable Excursion (MFE), in the currency of \code{Symbol}}
+#'      \item{Pct.Net.Trading.PL}{ net trading P&L in percent of invested \code{Symbol} price gained or lost}
+#'      \item{Pct.MAE}{ Maximum Adverse Excursion (MAE), in percent}
+#'      \item{Pct.MFE}{ Maximum Favorable Excursion (MFE), in percent}
+#'      \item{tick.Net.Trading.PL}{  net trading P&L in ticks}
+#'      \item{tick.MAE}{ Maximum Adverse Excursion (MAE) in ticks}
+#'      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks} 
+#' }
+#' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function, 
+#' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
-perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
+perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     portf <- getPortfolio(Portfolio)
     
     if(missing(Symbol)) Symbol <- names(portf$symbols)[[1]]
@@ -153,14 +179,20 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
         #add running posPL column
         trade$PosPL <- trade$Pos.Value-trade$Pos.Cost.Basis
         
-        #count number of transactions
-        trades$Num.Txns[i]<-length(which(trade$Txn.Value!=0))
-        
         #position sizes
         trades$Init.Pos[i] <- first(trade$Pos.Qty)
         trades$Max.Pos[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Qty)
+
+        #count number of transactions
+        trades$Num.Txns[i]<-length(which(trade$Txn.Value!=0))
+        
         # investment
         trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
+        
+        # cash P&L
+        trades$Net.Trading.PL[i] <- last(trade)$PosPL
+        trades$MAE[i] <- min(0,trade$PosPL)
+        trades$MFE[i] <- max(0,trade$PosPL)
         
         # percentage P&L
         trade$Pct.PL <- trade$PosPL/abs(trade$Pos.Cost.Basis) #broken for last timestamp
@@ -169,11 +201,6 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
         trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
         trades$Pct.MAE[i] <- min(0,trade$Pct.PL)
         trades$Pct.MFE[i] <- max(0,trade$Pct.PL)
-        
-        # cash P&L
-        trades$Net.Trading.PL[i] <- last(trade)$PosPL
-        trades$MAE[i] <- min(0,trade$PosPL)
-        trades$MFE[i] <- max(0,trade$PosPL)
         
         # tick P&L
         #Net.Trading.PL/position/tick value=ticks
@@ -184,7 +211,6 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrades=FALSE, ...) {
         trades$tick.MAE[i] <- min(0,trade$tick.PL)
         trades$tick.MFE[i] <- max(0,trade$tick.PL)
     }
-#print(trades)
 
     return(as.data.frame(trades))
 }

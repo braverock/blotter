@@ -36,4 +36,9 @@
   approach to system development and portfolio
   optimisation} (ISBN 978-1-905641-79-6), section 3.5
 }
+\seealso{
+  \code{\link{perTradeStats}} for the calculations used by
+  this chart, and \code{\link{tradeStats}} for a summary
+  view of the performance
+}
 
