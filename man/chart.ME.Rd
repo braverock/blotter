@@ -1,6 +1,6 @@
 \name{chart.ME}
 \alias{chart.ME}
-\title{Chart Maximum Adverse/Forward Excursion}
+\title{Chart Maximum Adverse/Favorable Excursion}
 \usage{
   chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"),
     scale = c("cash", "percent", "tick"), ...)
