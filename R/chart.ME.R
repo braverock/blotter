@@ -156,7 +156,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     # if the last trade is still open, adjust depending on whether wants open trades or not
     if(length(trades$Start)>length(trades$End))
     {
-        if(includeOpenTrades)
+        if(includeOpenTrade)
             trades$End <- c(trades$End,last(index(posPL)))
         else
             trades$Start <- head(trades$Start, -1)
