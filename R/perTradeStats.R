@@ -119,9 +119,39 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     }
 
     return(as.data.frame(trades))
-}
+} # end fn perTradeStats
+
 
 #' quantiles of per-trade stats
+#' 
+#' The quantiles of your trade statistics get to the heart of quantitatively 
+#' setting rational stops and possibly even profit taking tarkets 
+#' for a trading strategy or system.
+#' When applied to theoretical trades from a backtest, they may help to adjust 
+#' parameters prior to trying the strategy with real money.  
+#' When applied to real historical trades, they should help in examining what 
+#' is workeing and where there is room for improvment in a trading system 
+#' or strategy.  
+#' 
+#' This function will use the \code{\link{quantile}} function to calculate 
+#' quantiles of per-trade net P&L, MAE, and MFE using the output from
+#' \code{\link{perTradeStats}}.  These quantiles are chosen by the \code{probs}
+#' parameter and will be calculated for one or all of 
+#' 'cash','percent',or 'tick', controlled by the \code{scale} argument.  
+#' Quantiles will be calculated separately for trades that end positive (gains) 
+#' and trades that end negative (losses), and will be denoted 
+#' 'pos' and 'neg',respectively. 
+#' 
+#' Additionally, this function will return the MAE with respect to 
+#' the maximum cumulative P&L achieved for each \code{scale} you request.
+#' Tomasini&Jaekle recommend plotting MAE or MFE with respect to cumulative P&L 
+#' and choosing a stop or profit target in the 'stable region'.  The reported 
+#' max should help the user to locate the stable region, perhaps mechnaically.
+#' There is room for improvement here, but this should give the user 
+#' information to work with in addition to the raw quantiles.  
+#' For example, it may make more sense to use the max of a loess or
+#' kernel or other non-linear fit as the target point. 
+#' 
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param \dots any other passthrough parameters
@@ -129,10 +159,22 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
 #' @param probs vector of probabilities for \code{quantile}
 #' @author Brian G. Peterson
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
+#' @seealso \code{\link{tradeStats}}
 #' @export 
 tradeQuantiles <- function(Portfolio, Symbol, ..., scale=c('cash','percent','tick'),probs=c(.5,.75,.9,.95,.99,1)) 
 {
     trades <- perTradeStats(Portfolio, Symbol, ...)
+    
+    #order them by increasing MAE and decreasing P&L (to resolve ties)
+    trades <- trades[with(trades, order(-Pct.MAE, -Pct.Net.Trading.PL)), ]
+    #we could argue that we need three separate sorts, but we'll come back to that if we need to
+    
+    trades$Cum.Pct.PL <- cumsum(trades$Pct.Net.Trading.PL) #NOTE: this is adding simple returns, so not perfect, but gets the job done
+    trades$Cum.PL <- cumsum(trades$Net.Trading.PL)
+    trades$Cum.tick.PL <- cumsum(trades$tick.Net.Trading.PL)
+    # example plot
+    # plot(-trades$Pct.MAE,trades$Cum.Pct.PL,type='l')
+    #TODO: put this into a chart. fn
     
     post <- trades[trades$Net.Trading.PL>0,]
     negt <- trades[trades$Net.Trading.PL<0,]
@@ -157,7 +199,10 @@ tradeQuantiles <- function(Portfolio, Symbol, ..., scale=c('cash','percent','tic
                     negMAEq <--1*quantile(abs(negt$MAE),probs=probs)
                     names(negMAEq) <- paste('negMAE',names(negMAEq))
                     
-                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq)
+                    MAEmax <- trades[which(trades$Cum.PL==max(trades$Cum.PL)),]$MAE
+                    names(MAEmax)<-'MAE~max(cumPL)'
+                    
+                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq,MAEmax)
                 },
                 percent = {
                     posq <- quantile(post$Pct.Net.Trading.PL,probs=probs)
@@ -176,7 +221,11 @@ tradeQuantiles <- function(Portfolio, Symbol, ..., scale=c('cash','percent','tic
                     negMAEq <--1*quantile(abs(negt$Pct.MAE),probs=probs)
                     names(negMAEq) <- paste('negPctMAE',names(negMAEq))
                     
-                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq)                },
+                    MAEmax <- trades[which(trades$Cum.Pct.PL==max(trades$Cum.Pct.PL)),]$Pct.MAE
+                    names(MAEmax)<-'%MAE~max(cum%PL)'
+                    
+                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq,MAEmax)                
+                },
                 tick = {
                     posq <- quantile(post$tick.Net.Trading.PL,probs=probs)
                     names(posq)<-paste('posTickPL',names(posq))
@@ -194,23 +243,21 @@ tradeQuantiles <- function(Portfolio, Symbol, ..., scale=c('cash','percent','tic
                     negMAEq <--1*quantile(abs(negt$tick.MAE),probs=probs)
                     names(negMAEq) <- paste('negTickMAE',names(negMAEq))
                     
-                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq)
+                    MAEmax <- trades[which(trades$Cum.tick.PL==max(trades$Cum.tick.PL)),]$tick.MAE
+                    names(MAEmax)<-'tick.MAE~max(cum.tick.PL)'
+                    
+                    ret<-c(ret,posq,negq,posMFEq,posMAEq,negMFEq,negMAEq,MAEmax)
                 }
         ) #end scale switch   
     } #end for loop
     
     #return a single column for now, could be multiple column if we looped on Symbols
     ret<-t(t(ret))
-    colnames(ret)<-Symbol
+    colnames(ret)<-paste(Portfolio,Symbol,sep='.')
     ret
 }
 
-# to algorithmically set stops, the classic answer is to calculate quantiles.
-# i'm not sure if this belongs in tradeStats, perhaps?  
-# perhaps include MFE and MAE stats in tradeStats, plus some quantile information
-# for MAE of the 90% and 95% quantiles of profitable trades?
-
-################tradeQuantiles('bbands','IBM')###############################################################
+###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/) 
 # Copyright (c) 2008-2011 Peter Carl and Brian G. Peterson
