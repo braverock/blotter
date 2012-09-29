@@ -163,7 +163,7 @@
 				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
 				CcyMult<-1
 			} else { #convert from instr ccy to portfolio ccy
-				FXrate.str<-paste(tmp_instr$currency, p.ccy.str, sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
+				FXrate.str<-paste(tmp_instr$currency, p.ccy.str, sep='') # currency quote convention is EURUSD which reads as "USD per EUR" or "EUR quoted in USD"
 				FXrate<-try(get(FXrate.str), silent=TRUE)
 				#TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
 				if(inherits(FXrate,"try-error")){
@@ -185,7 +185,8 @@
 	}
 	if(is.na(CcyMult) && !is.na(FXrate)) {
 		if(inherits(FXrate,'xts')){
-			CcyMult <- FXrate[dateRange]
+            if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
+			else CcyMult <- FXrate[dateRange]
 			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
 			CcyMult <- drop(CcyMult[index(TmpPeriods)])
 		} else {
