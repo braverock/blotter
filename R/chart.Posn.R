@@ -53,6 +53,14 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
         CumPL = na.locf(merge(CumPL,index(Prices)))
     else 
         CumPL = NULL
+    
+    if(!is.null(CumPL)) {
+        CumMax <- cummax(CumPL)
+        Drawdown <- -(CumMax - CumPL)
+        Drawdown<-rbind(xts(-max(CumPL),order.by=first(index(Drawdown)-1)),Drawdown)
+    } else {
+        Drawdown <- NULL
+    }
     #     # These aren't quite right, as abs(Pos.Qty) should be less than prior abs(Pos.Qty)
     # SellCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty<0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
     # BuyCover = Portfolio$symbols[[Symbol]]$txn$Txn.Price * (Portfolio$symbols[[Symbol]]$txn$Txn.Qty>0) * (Portfolio$symbols[[Symbol]]$txn$Pos.Qty==0)
@@ -72,6 +80,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
         (add_TA(Position,type='p',col='blue', lwd=2, on=2))   
     }
     if(!is.null(CumPL))  (add_TA(CumPL, col='darkgreen', lwd=2))
+    if(!is.null(Drawdown)) (add_TA(Drawdown, col='darkred', lwd=2, yaxis=c(0,-max(CumMax))))
     plot(current.chob())
 }
 
