@@ -17,6 +17,9 @@
 chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ...)
 {   # @author Jan Humme
 
+    type=type[1]
+    scale=scale[1] # can only take the first if the user doesn't specify
+    
     trades <- perTradeStats(Portfolio, Symbol, ...)
     
     #multiply Pcct numbers for prettier charting
@@ -74,6 +77,8 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
         }
     )
 
+    .main<-paste(Symbol,.main)
+    
     plot(abs(trades[, .cols]), type='n', xlab=.xlab, ylab=.ylab, main=.main)
 
     grid()
