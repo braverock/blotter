@@ -9,7 +9,7 @@
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
-{ # @author Peter Carl
+{ # @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
     if (missing(Symbol)) Symbol <- names(Portfolio$symbols)[[1]]
@@ -32,7 +32,6 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     } else { n=mult }
     
     tzero = xts(0,order.by=index(Prices[1,]))
-#    Prices=align.time(Prices,n) 
     if(is.null(Dates)) Dates<-paste(first(index(Prices)),last(index(Prices)),sep='::')
     
     #scope the data by Dates
@@ -42,12 +41,12 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
 	Trades = Portfolio$symbols[[Symbol]]$txn$Txn.Qty
 	
 	Buys = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades>0)]
-#    Buys = align.time(rbind(Buys,tzero),n)[-1]
     Sells = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
-#    Sells = align.time(rbind(Sells,tzero),n)[-1]
-    #Position = Portfolio$symbols[[Symbol]]$posPL$Pos.Qty # use $txn instead, and make it match the prices index
+
     Position = Portfolio$symbols[[Symbol]]$txn$Pos.Qty
+    if(first(index(Prices))<first(index(Position))) Position<-rbind(xts(0,order.by=first(index(Prices)-1)),Position)
     Positionfill = na.locf(merge(Position,index(Prices)))
+    
     CumPL = cumsum(Portfolio$symbols[[Symbol]]$posPL$Net.Trading.PL)
     if(length(CumPL)>1)
         CumPL = na.locf(merge(CumPL,index(Prices)))
