@@ -44,7 +44,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...)
     Sells = Portfolio$symbols[[Symbol]]$txn$Txn.Price[which(Trades<0)]
 
     Position = Portfolio$symbols[[Symbol]]$txn$Pos.Qty
-    if(first(index(Prices))<first(index(Position))) Position<-rbind(xts(0,order.by=first(index(Prices)-1)),Position)
+    if(as.POSIXct(first(index(Prices)))<as.POSIXct(first(index(Position)))) Position<-rbind(xts(0,order.by=first(index(Prices)-1)),Position)
     Positionfill = na.locf(merge(Position,index(Prices)))
     
     CumPL = cumsum(Portfolio$symbols[[Symbol]]$posPL$Net.Trading.PL)
