@@ -4,7 +4,7 @@
 \usage{
   calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL,
     denominator = c("Gross.Value", "Net.Value", "Long.Value", "Short.Value"),
-    Account = NULL)
+    Account)
 }
 \arguments{
   \item{Portfolio}{a portfolio object structured with
@@ -17,7 +17,7 @@
   formatted as xts range}
 
   \item{denominator}{string describing the deniminator, see
-  usage}
+  Description}
 
   \item{Account}{an Account object containing Portfolio
   summaries}
@@ -28,6 +28,10 @@
 }
 \description{
   Portfolio weights may be calculated differently depending
-  on their use.
+  on their use. By default, this function uses denominator
+  of 'Gross.Value', the second most common option will
+  likely be 'Net.Value'. For separating long and short
+  weights, 'Long.Value' and 'Short.Value' may be needed as
+  denominators.
 }
 

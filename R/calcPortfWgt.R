@@ -1,25 +1,43 @@
 #' Calculates the portfolio weights for positions within a given portfolio.
 #' 
 #' Portfolio weights may be calculated differently depending on their use.
+#' By default, this function uses denominator of 'Gross.Value', the second most common 
+#' option will likely be 'Net.Value'. 
+#' For separating long and short weights, 'Long.Value' and 'Short.Value' may be 
+#' needed as denominators.
 #' 
 #' @return xts timeseries object with weights by date in rows and symbolname in columns
 #' @param Portfolio a portfolio object structured with initPortf()
 #' @param Symbols an instrument identifier for a symbol included in the portfolio
 #' @param Dates dates to return the calculation over formatted as xts range
-#' @param denominator string describing the deniminator, see usage
+#' @param denominator string describing the deniminator, see Description
 #' @param Account an Account object containing Portfolio summaries
-calcPortfWgt <- function(Portfolio, Symbols = NULL, Dates = NULL, 
-        denominator = c('Gross.Value', 'Net.Value', 'Long.Value', 'Short.Value'), 
-        Account = NULL)
-{ # @author Peter Carl
+#' @export
+calcPortfWgt <- function(Portfolio, 
+                         Symbols = NULL, 
+                         Dates = NULL, 
+                         denominator = c('Gross.Value', 'Net.Value', 'Long.Value', 'Short.Value'), 
+                         Account)
+{ # @author Peter Carl, Brian Peterson
 
-    # FUNCTION
+    zerofill <- function (x) 
+    { # kind of like PerformanceAnalytics, but not quite
+        for (column in 1:NCOL(x)) {
+            x[,column] <- ifelse(is.na(x[,column]),0, x[,column])
+        }
+        return(x)
+    }
+    
+    pname<-Portfolio
+    Portfolio<-getPortfolio(pname) # TODO add Date handling
+    
+    if(is.null(Symbols)) Symbols<-names(Portfolio$symbols)
+    
+    pos.value = .getBySymbol(Portfolio = Portfolio, Dates = Dates, Attribute = "Pos.Value", Symbols = Symbols)    
+    portf.value = .getByPortf(Account=getAccount(Account),Attribute = denominator[1], Date = Dates)
+    weights = zerofill(as.data.frame(lapply(pos.value, FUN = function(x,y){return(x/y)}, y=portf.value))) 
 
-#    pos.value = .getBySymbol(Portfolio = Portfolio, Dates = Dates, Attribute = "Pos.Value", Symbols = Symbols)    
-#    portf.value = .calcPortfAttr(Portfolio = Portfolio, Date = Dates, Attribute = denominator[1])
-#    weights = apply(pos.value, MARGIN = 2, FUN = function(x,y){return(x/y)}, y=portf.value) 
-
-#    return(weights)
+    return(weights)
 }
 
 ###############################################################################

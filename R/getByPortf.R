@@ -27,7 +27,8 @@
     table = NULL 
     portfolios=names(Account$portfolios)
     for (portfolio in portfolios) {
-        tmp_col= Account$portfolios[[portfolio]][Dates,Attribute,drop=FALSE]
+        if (!is.null(Dates))tmp_col= Account$portfolios[[portfolio]][Dates,Attribute,drop=FALSE]
+        else tmp_col= Account$portfolios[[portfolio]][,Attribute,drop=FALSE]
         colnames(tmp_col)<-portfolio
         if(is.null(table)) table = tmp_col
         else table = cbind(table, tmp_col)

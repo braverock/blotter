@@ -49,7 +49,7 @@
   plotting MAE or MFE with respect to cumulative P&L and
   choosing a stop or profit target in the 'stable region'.
   The reported max should help the user to locate the
-  stable region, perhaps mechnaically. There is room for
+  stable region, perhaps mechanically. There is room for
   improvement here, but this should give the user
   information to work with in addition to the raw
   quantiles. For example, it may make more sense to use the

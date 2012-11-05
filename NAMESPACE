@@ -1,6 +1,7 @@
 export(addDiv)
 export(addPortfInstr)
 export(addTxn)
+export(calcPortfWgt)
 export(chart.ME)
 export(chart.Posn)
 export(chart.Reconcile)
