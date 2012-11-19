@@ -2,7 +2,8 @@
 \alias{chart.Posn}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-  chart.Posn(Portfolio, Symbol, Dates = NULL, ...)
+  chart.Posn(Portfolio, Symbol, Dates = NULL, ...,
+    TA = NULL)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -16,6 +17,10 @@
 
   \item{\dots}{any other passthru parameters to
   \code{\link[quantmod]{chart_Series}}}
+
+  \item{TA}{a string defining a technical indicator
+  function that will be applied to the chart, using
+  \code{\link{eval}}}
 }
 \description{
   Produces a three-panel chart of time series charts that
