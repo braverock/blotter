@@ -35,8 +35,8 @@
 #' and \code{\link{perTradeStats}} for detailed statistics on a per-trade basis
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
-#' @param use for dailyStats, determines whether numbers are calculated from trades or equity curve
-#' @author Lance Levenson
+#' @param use for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)  
+#' @author Lance Levenson, Brian Peterson
 #' @export
 #' @importFrom zoo as.Date
 #' @return
@@ -62,9 +62,9 @@
 #'    \item{Med.Win.Trade}{ median P&L of profitable trades }
 #'    \item{Avg.Losing.Trade}{ mean P&L of losing trades }
 #'    \item{Med.Losing.Trade}{ median P&L of losing trades }
-#'    \item{Avg.Daily.PL}{mean daily P&L  }
+#'    \item{Avg.Daily.PL}{mean daily realized P&L on days there were transactions, see \code{\link{dailyStats}} for all days }
 #'    \item{Med.Daily.PL}{ median daily P&L }
-#'    \item{Std.Dev.Daily.PL}{ standard deviation of daliy P&L }
+#'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
 #'    \item{Med.WinLoss.Ratio}{ ratio of median winning trade over mean losing trade }
@@ -86,9 +86,10 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols)
+tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
 {
     ret<-NULL
+    use<-use[1] #use the first(default) value only if user hasn't specified
     for (Portfolio in Portfolios){
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
@@ -115,7 +116,24 @@ tradeStats <- function(Portfolios, Symbols)
             PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
             PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
-            if(!nrow(PL.ne0))next()
+
+            DailyPL <- apply.daily(PL.ne0,sum)
+            AvgDailyPL <- mean(DailyPL)
+            MedDailyPL <- median(DailyPL)
+            StdDailyPL <- sd(as.numeric(as.vector(DailyPL)))
+            
+            switch(use,
+                   txns = {
+                       #moved above for daily stats for now
+                   },
+                   trades = {
+                       trades<-perTradeStats(pname,symbol)
+                       PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
+                       PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
+                       PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
+                   }
+            )
+            if(!length(PL.ne0)>0)next()
             
             GrossProfits <- sum(PL.gt0)
             GrossLosses  <- sum(PL.lt0)
@@ -126,10 +144,10 @@ tradeStats <- function(Portfolios, Symbols)
             StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))   
             
             NumberOfTxns <- nrow(txn)-1
-            NumberOfTrades <- nrow(PL.ne0)
+            NumberOfTrades <- length(PL.ne0)
             
-            PercentPositive <- (nrow(PL.gt0)/nrow(PL.ne0))*100
-            PercentNegative <- (nrow(PL.lt0)/nrow(PL.ne0))*100
+            PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
+            PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
             
             MaxWin <- max(txn$Net.Txn.Realized.PL)
             MaxLoss <- min(txn$Net.Txn.Realized.PL)
@@ -141,11 +159,6 @@ tradeStats <- function(Portfolios, Symbols)
             
             AvgWinLoss <- AvgWinTrade/-AvgLossTrade
             MedWinLoss <- MedWinTrade/-MedLossTrade
-            
-            DailyPL <- apply.daily(PL.ne0,sum)
-            AvgDailyPL <- mean(DailyPL)
-            MedDailyPL <- median(DailyPL)
-            StdDailyPL <- sd(as.numeric(as.vector(DailyPL)))
             
             Equity <- cumsum(posPL$Net.Trading.PL)
             if(!nrow(Equity)){
@@ -161,6 +174,7 @@ tradeStats <- function(Portfolios, Symbols)
             maxEquity <- max(Equity)
             minEquity <- min(Equity)
             endEquity <- last(Equity)
+            names(endEquity)<-'End.Equity'
             if(endEquity!=TotalNetProfit && last(txn$Pos.Qty)==0) {
                 warning('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', endEquity, 'do not match. This can happen in long/short portfolios.')
                 message('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', endEquity, 'do not match. This can happen in long/short portfolios.')
@@ -170,6 +184,7 @@ tradeStats <- function(Portfolios, Symbols)
 	
             MaxDrawdown <- -max(Equity.max - Equity)
             ProfitToMaxDraw <- -TotalNetProfit / MaxDrawdown
+            names(ProfitToMaxDraw) <- 'Profit.to.Max.Draw'
                 
             #TODO add skewness, kurtosis, and positive/negative semideviation if PerfA is available.
 
@@ -308,7 +323,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
 
 #' @rdname tradeStats
 #' @export
-dailyStats <- function(Portfolios,use=c('Equity','Txns'))
+dailyStats <- function(Portfolios,use=c('equity','txns'))
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
