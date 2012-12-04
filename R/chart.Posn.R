@@ -18,7 +18,10 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
 
     require(quantmod)
     Prices=get(Symbol)
-    if(!is.OHLC(Prices)) Prices=getPrice(Prices, ...=...)
+    if(!is.OHLC(Prices)) {
+        if(hasArg(prefer)) prefer=match.call(expand.dots=TRUE)$prefer else prefer=NULL
+        Prices=getPrice(Prices, prefer=prefer)
+    }
     freq = periodicity(Prices)
     switch(freq$scale,
             seconds = { mult=1 },
@@ -72,7 +75,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     # scope the Price data by Dates
     if(!is.null(Dates)) Prices=Prices[Dates]
     
-    chart_Series(Prices, name=Symbol, TA=TA, ...)
+    chart_Series(Prices, name=Symbol, TA=TA)
     if(!is.null(nrow(Buys)) && nrow(Buys) >=1 ) (add_TA(Buys,pch=2,type='p',col='green', on=1));
     if(!is.null(nrow(Sells)) && nrow(Sells) >= 1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
     if(nrow(Position)>=1) {
