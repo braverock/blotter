@@ -117,6 +117,12 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
             PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
 
+            if(length(PL.ne0) == 0)
+            {
+                # apply.daily will crash
+                next
+            }
+
             DailyPL <- apply.daily(PL.ne0,sum)
             AvgDailyPL <- mean(DailyPL)
             MedDailyPL <- median(DailyPL)
