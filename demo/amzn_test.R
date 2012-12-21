@@ -26,3 +26,4 @@ chart.Posn("amzn_port","amzn",Dates="2010-01-14")
 
 portfolio = getPortfolio("amzn_port")
 account = getAccount("amzn_acct")
+
