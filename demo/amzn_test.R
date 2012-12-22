@@ -1,7 +1,7 @@
 require(blotter)
 
 # Remove portfolio and account data if run previously
-try(rm("portfolio.amzn_port","account.amzn_acct",pos=.blotter))
+try(rm("portfolio.amzn_port","account.amzn_acct",pos=.blotter), silent = TRUE)
 
 # load the example data
 data("amzn")
