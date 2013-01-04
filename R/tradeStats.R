@@ -88,8 +88,8 @@
 #' Josh has suggested adding \%-return based stats too
 tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
 {
-    ret<-NULL
-    use<-use[1] #use the first(default) value only if user hasn't specified
+    ret <- NULL
+    use <- use[1] #use the first(default) value only if user hasn't specified
     for (Portfolio in Portfolios){
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
@@ -109,7 +109,7 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
         
         ## Trade Statistics
         for (symbol in symbols){
-            txn <- Portfolio$symbols[[symbol]]$txn
+            txn   <- Portfolio$symbols[[symbol]]$txn
             posPL <- Portfolio$symbols[[symbol]]$posPL
             posPL <- posPL[-1,]
 
@@ -123,7 +123,7 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
                 next
             }
 
-            DailyPL <- apply.daily(PL.ne0,sum)
+            DailyPL    <- apply.daily(PL.ne0,sum)
             AvgDailyPL <- mean(DailyPL)
             MedDailyPL <- median(DailyPL)
             StdDailyPL <- sd(as.numeric(as.vector(DailyPL)))
@@ -133,7 +133,7 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
                        #moved above for daily stats for now
                    },
                    trades = {
-                       trades<-perTradeStats(pname,symbol)
+                       trades <- perTradeStats(pname,symbol)
                        PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
                        PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
                        PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
@@ -149,17 +149,17 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
             MedTradePL <- median(PL.ne0)
             StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))   
             
-            NumberOfTxns <- nrow(txn)-1
+            NumberOfTxns   <- nrow(txn)-1
             NumberOfTrades <- length(PL.ne0)
             
             PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
             PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
             
-            MaxWin <- max(txn$Net.Txn.Realized.PL)
+            MaxWin  <- max(txn$Net.Txn.Realized.PL)
             MaxLoss <- min(txn$Net.Txn.Realized.PL)
             
-            AvgWinTrade <- mean(PL.gt0)
-            MedWinTrade <- median(PL.gt0)
+            AvgWinTrade  <- mean(PL.gt0)
+            MedWinTrade  <- median(PL.gt0)
             AvgLossTrade <- mean(PL.lt0)
             MedLossTrade <- median(PL.lt0)
             
@@ -176,55 +176,61 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
                 warning('TotalNetProfit NA for',symbol)
                 next()
             }
-            Equity.max <- cummax(Equity)
-            maxEquity <- max(Equity)
-            minEquity <- min(Equity)
-            endEquity <- last(Equity)
-            names(endEquity)<-'End.Equity'
-            if(endEquity!=TotalNetProfit && last(txn$Pos.Qty)==0) {
-                warning('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', endEquity, 'do not match. This can happen in long/short portfolios.')
-                message('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', endEquity, 'do not match. This can happen in long/short portfolios.')
+            Equity.max       <- cummax(Equity)
+            MaxEquity        <- max(Equity)
+            MinEquity        <- min(Equity)
+            EndEquity        <- last(Equity)
+            names(EndEquity) <-'End.Equity'
+            if(EndEquity!=TotalNetProfit && last(txn$Pos.Qty)==0) {
+                warning('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', EndEquity, 'do not match. This can happen in long/short portfolios.')
+                message('Total Net Profit for',symbol,'from transactions',TotalNetProfit,'and cumulative P&L from the Equity Curve', EndEquity, 'do not match. This can happen in long/short portfolios.')
                 
             }# if we're flat, these numbers should agree 
             #TODO we should back out position value if we've got an open position and double check here....
 	
-            MaxDrawdown <- -max(Equity.max - Equity)
-            ProfitToMaxDraw <- -TotalNetProfit / MaxDrawdown
-            names(ProfitToMaxDraw) <- 'Profit.to.Max.Draw'
+            MaxDrawdown            <- -max(Equity.max - Equity)
+            ProfitToMaxDraw        <- -TotalNetProfit / MaxDrawdown
+            names(ProfitToMaxDraw) <- 'Profit.To.Max.Draw'
                 
             #TODO add skewness, kurtosis, and positive/negative semideviation if PerfA is available.
 
             tmpret <- data.frame(Portfolio=pname, 
-                                 Symbol=symbol,
-                                 Num.Txns=NumberOfTxns,
-                                 Num.Trades=NumberOfTrades,
-                                 Total.Net.Profit=TotalNetProfit,
-                                 Avg.Trade.PL=AvgTradePL,
-                                 Med.Trade.PL=MedTradePL,
-                                 Largest.Winner=MaxWin,
-                                 Largest.Loser=MaxLoss,
-                                 Gross.Profits=GrossProfits,
-                                 Gross.Losses=GrossLosses,
-                                 Std.Dev.Trade.PL=StdTradePL,
-                                 Percent.Positive=PercentPositive,
-                                 Percent.Negative=PercentNegative,
-                                 Profit.Factor=ProfitFactor,
-                                 Avg.Win.Trade=AvgWinTrade,
-                                 Med.Win.Trade=MedWinTrade,
-                                 Avg.Losing.Trade=AvgLossTrade,
-                                 Med.Losing.Trade=MedLossTrade,
-                                 Avg.Daily.PL=AvgDailyPL,
-                                 Med.Daily.PL=MedDailyPL,
-                                 Std.Dev.Daily.PL=StdDailyPL,
-                                 Max.Drawdown=MaxDrawdown,
-                                 Profit.to.Max.Draw=ProfitToMaxDraw,
-                                 Avg.WinLoss.Ratio=AvgWinLoss,
-                                 Med.WinLoss.Ratio=MedWinLoss,
-                                 Max.Equity=maxEquity,
-                                 Min.Equity=minEquity,
-                                 End.Equity=endEquity)
-            rownames(tmpret)<-symbol             
-            ret <- rbind(ret,tmpret)
+                                 Symbol             = symbol,
+                                 Num.Txns           = NumberOfTxns,
+                                 Num.Trades         = NumberOfTrades,
+                                 Total.Net.Profit   = TotalNetProfit,
+                                 Avg.Trade.PL       = AvgTradePL,
+                                 Med.Trade.PL       = MedTradePL,
+                                 Largest.Winner     = MaxWin,
+                                 Largest.Loser      = MaxLoss,
+                                 Gross.Profits      = GrossProfits,
+                                 Gross.Losses       = GrossLosses,
+                                 Std.Dev.Trade.PL   = StdTradePL,
+                                 Percent.Positive   = PercentPositive,
+                                 Percent.Negative   = PercentNegative,
+                                 Profit.Factor      = ProfitFactor,
+                                 Avg.Win.Trade      = AvgWinTrade,
+                                 Med.Win.Trade      = MedWinTrade,
+                                 Avg.Losing.Trade   = AvgLossTrade,
+                                 Med.Losing.Trade   = MedLossTrade,
+                                 Avg.Daily.PL       = AvgDailyPL,
+                                 Med.Daily.PL       = MedDailyPL,
+                                 Std.Dev.Daily.PL   = StdDailyPL,
+                                 Max.Drawdown       = MaxDrawdown,
+                                 Profit.To.Max.Draw = ProfitToMaxDraw,
+                                 Avg.WinLoss.Ratio  = AvgWinLoss,
+                                 Med.WinLoss.Ratio  = MedWinLoss,
+                                 Max.Equity         = MaxEquity,
+                                 Min.Equity         = MinEquity,
+#                                 Buy.And.Hold       = BuyAndHold,
+#                                 Time.In.Market     = TimeInMarket
+#                                 RINA.Index         = RINAIndex
+#                                 Sharpe.Ratio       = SharpeRatio,
+#                                 Sortino.Ratio      = SortinoRatio,
+#                                 K.Ratio            = KRatio,
+                                 End.Equity         = EndEquity)
+            rownames(tmpret) <- symbol             
+            ret              <- rbind(ret,tmpret)
         } # end symbol loop
     } # end portfolio loop
     return(ret)
@@ -243,7 +249,7 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
 #' @export
 dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
-    ret<-NULL
+    ret <- NULL
     for (Portfolio in Portfolios){
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
@@ -271,14 +277,14 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
                 warning('No P&L rows for',symbol)
                 next()
             }             
-            DailyPL <- apply.daily(PL.ne0,sum)
-            colnames(DailyPL)<-paste(symbol,'DailyTxnPL',sep='.')
+            DailyPL           <- apply.daily(PL.ne0,sum)
+            colnames(DailyPL) <- paste(symbol,'DailyTxnPL',sep='.')
             if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
             
         } # end symbol loop
     } # end portfolio loop
-    ret<-apply.daily(ret,colSums,na.rm=TRUE)  
-    if(drop.time) index(ret)<-as.Date(index(ret))
+    ret <- apply.daily(ret,colSums,na.rm=TRUE)  
+    if(drop.time) index(ret) <- as.Date(index(ret))
     return(ret)
 }
 
@@ -286,7 +292,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
 #' @export
 dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
-    ret<-NULL
+    ret <- NULL
     for (Portfolio in Portfolios){
         ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
@@ -316,14 +322,14 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
             }             
             
             #DailyPL <- apply.daily(Equity,last)
-            DailyPL <- apply.daily(posPL$Net.Trading.PL,colSums)
-            colnames(DailyPL)<-paste(symbol,'DailyEndEq',sep='.')
+            DailyPL           <- apply.daily(posPL$Net.Trading.PL,colSums)
+            colnames(DailyPL) <- paste(symbol,'DailyEndEq',sep='.')
             if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
             
         } # end symbol loop
     } # end portfolio loop
-    ret<-apply.daily(ret,colSums,na.rm=TRUE)  
-    if(drop.time) index(ret)<-as.Date(index(ret))
+    ret <- apply.daily(ret,colSums,na.rm=TRUE)  
+    if(drop.time) index(ret) <- as.Date(index(ret))
     return(ret)
 }
 
@@ -334,10 +340,10 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
     use=use[1] #take the first value if the user didn't specify
     switch (use,
             Eq = , Equity =, cumPL = {
-                dailyPL<-dailyEqPL(Portfolios)
+                dailyPL <- dailyEqPL(Portfolios)
             },
             Txns =, Trades = {
-                dailyPL<-dailyTxnPL(Portfolios)
+                dailyPL <- dailyTxnPL(Portfolios)
             }
             )
     
@@ -358,16 +364,16 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
         StdDayPL <- as.numeric(sd(PL.ne0))   
         
         #NumberOfDays <- nrow(txn)
-        WinDays <-length(PL.gt0)
-        LossDays<-length(PL.lt0)
+        WinDays         <- length(PL.gt0)
+        LossDays        <- length(PL.lt0)
         PercentPositive <- (length(PL.gt0)/length(PL.ne0))*100
         PercentNegative <- (length(PL.lt0)/length(PL.ne0))*100
         
-        MaxWin <- max(x)
+        MaxWin  <- max(x)
         MaxLoss <- min(x)
         
-        AvgWinDay <- as.numeric(mean(PL.gt0))
-        MedWinDay <- as.numeric(median(PL.gt0))
+        AvgWinDay  <- as.numeric(mean(PL.gt0))
+        MedWinDay  <- as.numeric(median(PL.gt0))
         AvgLossDay <- as.numeric(mean(PL.lt0))
         MedLossDay <- as.numeric(median(PL.lt0))
         
@@ -378,54 +384,60 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
         MedDailyPL <- as.numeric(median(PL.ne0))
         StdDailyPL <- as.numeric(sd(PL.ne0))
         
-        Equity <- cumsum(x)
-        Equity.max <- cummax(Equity)
-        maxEquity <- max(Equity)
-        minEquity <- min(Equity)
-        endEquity <- as.numeric(last(Equity))
-        MaxDrawdown <- -max(Equity.max - Equity)
+        Equity          <- cumsum(x)
+        Equity.max      <- cummax(Equity)
+        MaxEquity       <- max(Equity)
+        MinEquity       <- min(Equity)
+        EndEquity       <- as.numeric(last(Equity))
+        MaxDrawdown     <- -max(Equity.max - Equity)
         ProfitToMaxDraw <- -TotalNetProfit / MaxDrawdown
         
         tmpret <- data.frame(
-                Total.Net.Profit=TotalNetProfit,
-                Total.Days=WinDays+LossDays,
-                Winning.Days=WinDays,
-                Losing.Days=LossDays,
-                Avg.Day.PL=AvgDayPL,
-                Med.Day.PL=MedDayPL,
-                Largest.Winner=MaxWin,
-                Largest.Loser=MaxLoss,
-                Gross.Profits=GrossProfits,
-                Gross.Losses=GrossLosses,
-                Std.Dev.Daily.PL=StdDayPL,
-                Percent.Positive=PercentPositive,
-                Percent.Negative=PercentNegative,
-                Profit.Factor=ProfitFactor,
-                Avg.Win.Day=AvgWinDay,
-                Med.Win.Day=MedWinDay,
-                Avg.Losing.Day=AvgLossDay,
-                Med.Losing.Day=MedLossDay,
-                Avg.Daily.PL=AvgDailyPL,
-                Med.Daily.PL=MedDailyPL,
-                Std.Dev.Daily.PL=StdDailyPL,
-                Max.Drawdown=MaxDrawdown,
-                Profit.to.Max.Draw=ProfitToMaxDraw,
-                Avg.WinLoss.Ratio=AvgWinLoss,
-                Med.WinLoss.Ratio=MedWinLoss,
-                Max.Equity=maxEquity,
-                Min.Equity=minEquity,
-                End.Equity=endEquity)
+                Total.Net.Profit   = TotalNetProfit,
+                Total.Days         = WinDays+LossDays,
+                Winning.Days       = WinDays,
+                Losing.Days        = LossDays,
+                Avg.Day.PL         = AvgDayPL,
+                Med.Day.PL         = MedDayPL,
+                Largest.Winner     = MaxWin,
+                Largest.Loser      = MaxLoss,
+                Gross.Profits      = GrossProfits,
+                Gross.Losses       = GrossLosses,
+                Std.Dev.Daily.PL   = StdDayPL,
+                Percent.Positive   = PercentPositive,
+                Percent.Negative   = PercentNegative,
+                Profit.Factor      = ProfitFactor,
+                Avg.Win.Day        = AvgWinDay,
+                Med.Win.Day        = MedWinDay,
+                Avg.Losing.Day     = AvgLossDay,
+                Med.Losing.Day     = MedLossDay,
+                Avg.Daily.PL       = AvgDailyPL,
+                Med.Daily.PL       = MedDailyPL,
+                Std.Dev.Daily.PL   = StdDailyPL,
+                Max.Drawdown       = MaxDrawdown,
+                Profit.To.Max.Draw = ProfitToMaxDraw,
+                Avg.WinLoss.Ratio  = AvgWinLoss,
+                Med.WinLoss.Ratio  = MedWinLoss,
+                Max.Equity         = MaxEquity,
+                Min.Equity         = MinEquity,
+#                Buy.And.Hold       = Buy.And.Hold,
+#                Time.In.Market     = TimeInMarket
+#                RINA.Index         = RINAIndex
+#                Sharpe.Ratio       = Sharpe.Ratio,
+#                Sortino.Ratio      = Sortino.Ratio,
+#                K.Ratio            = K.Ratio,
+                End.Equity         = EndEquity)
         return(tmpret)
     }
-    ret<-NULL
-    tmpret<-apply(dailyPL,2,FUN=dailyFUN)
+    ret <- NULL
+    tmpret <- apply(dailyPL,2,FUN=dailyFUN)
     for(row in 1:length(tmpret)){
         if(is.null(ret)) ret <- tmpret[[row]]
-        else ret<-rbind(ret,tmpret[[row]])
+        else ret <- rbind(ret,tmpret[[row]])
         rownames(ret)[row]<-names(tmpret)[row]
     }
     #rownames(ret)<-colnames(dailyPL)
-    ret<-round(ret,2)
+    ret <- round(ret,2)
     return(ret)
 }
 
