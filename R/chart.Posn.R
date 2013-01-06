@@ -53,7 +53,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     
     CumPL = cumsum(Portfolio$symbols[[Symbol]]$posPL$Net.Trading.PL)
     if(length(CumPL)>1)
-        CumPL = na.locf(merge(CumPL,index(Prices)))
+        CumPL = na.omit(na.locf(merge(CumPL,index(Prices))))
     else 
         CumPL = NULL
     
@@ -79,8 +79,8 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     if(!is.null(nrow(Buys)) && nrow(Buys) >=1 ) (add_TA(Buys,pch=2,type='p',col='green', on=1));
     if(!is.null(nrow(Sells)) && nrow(Sells) >= 1) (add_TA(Sells,pch=6,type='p',col='red', on=1));
     if(nrow(Position)>=1) {
-        (add_TA(Positionfill,type='l',col='blue', lwd=2))   
-        (add_TA(Position,type='p',col='blue', lwd=2, on=2))   
+        (add_TA(Positionfill,type='h',col='blue', lwd=2))   
+        (add_TA(Position,type='p',col='orange', lwd=2, on=2))   
     }
     if(!is.null(CumPL))  (add_TA(CumPL, col='darkgreen', lwd=2))
     if(!is.null(Drawdown)) (add_TA(Drawdown, col='darkred', lwd=2, yaxis=c(0,-max(CumMax))))
