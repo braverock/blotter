@@ -63,3 +63,4 @@ Collate:
     'updateEndEq.R'
     'updatePortf.R'
     'updatePosPL.R'
+    'put.account.R'
