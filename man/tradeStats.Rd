@@ -3,9 +3,10 @@
 \alias{tradeStats}
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
-  tradeStats(Portfolios, Symbols)
+  tradeStats(Portfolios, Symbols,
+    use = c("txns", "trades"))
 
-  dailyStats(Portfolios, use = c("Equity", "Txns"))
+  dailyStats(Portfolios, use = c("equity", "txns"))
 }
 \arguments{
   \item{Portfolios}{portfolio string}
@@ -13,8 +14,9 @@
   \item{Symbols}{character vector of symbol strings,
   default NULL}
 
-  \item{use}{for dailyStats, determines whether numbers are
-  calculated from trades or equity curve}
+  \item{use}{for determines whether numbers are calculated
+  from transactions or round-trip trades (for tradeStats)
+  or equity curve (for dailyStats)}
 }
 \value{
   a \code{data.frame} containing:
@@ -38,15 +40,16 @@
   \item{Med.Win.Trade}{ median P&L of profitable trades }
   \item{Avg.Losing.Trade}{ mean P&L of losing trades }
   \item{Med.Losing.Trade}{ median P&L of losing trades }
-  \item{Avg.Daily.PL}{mean daily P&L } \item{Med.Daily.PL}{
-  median daily P&L } \item{Std.Dev.Daily.PL}{ standard
-  deviation of daliy P&L } \item{Max.Drawdown}{ max
-  drawdown } \item{Avg.WinLoss.Ratio}{ ratio of mean
-  winning over mean losing trade }
-  \item{Med.WinLoss.Ratio}{ ratio of median winning trade
-  over mean losing trade } \item{Max.Equity}{ maximum
-  account equity } \item{Min.Equity}{ minimum account
-  equity } }
+  \item{Avg.Daily.PL}{mean daily realized P&L on days there
+  were transactions, see \code{\link{dailyStats}} for all
+  days } \item{Med.Daily.PL}{ median daily P&L }
+  \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L
+  } \item{Max.Drawdown}{ max drawdown }
+  \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean
+  losing trade } \item{Med.WinLoss.Ratio}{ ratio of median
+  winning trade over mean losing trade } \item{Max.Equity}{
+  maximum account equity } \item{Min.Equity}{ minimum
+  account equity } }
 }
 \description{
   This function calculates trade-level statistics on a
@@ -104,7 +107,7 @@
   Josh has suggested adding \%-return based stats too
 }
 \author{
-  Lance Levenson
+  Lance Levenson, Brian Peterson
 }
 \seealso{
   \code{\link{chart.ME}} for a chart of MAE and MFE derived

@@ -4,7 +4,7 @@
 \usage{
   addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ...,
     TxnFees = 0, ConMult = NULL, verbose = TRUE,
-    eps = 1e-06)
+    eps = 0.000001)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a
