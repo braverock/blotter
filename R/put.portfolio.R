@@ -1,12 +1,14 @@
 #' put a portfolio object in .blotter env
 #' @param portfolio.st string identifying portfolio
 #' @param portfolio portfolio object
+#' @param envir the environment to save the portfolio object in, defaults to .blotter
 #' @export
 
-put.portfolio <- function(portfolio.st, portfolio)
+put.portfolio <- function(portfolio.st, portfolio, envir=.blotter)
 {
     blotter.portfolio.st <- paste('portfolio', portfolio.st, sep='.')
-    assign(blotter.portfolio.st, portfolio, envir=.blotter)
+
+    assign(blotter.portfolio.st, portfolio, envir=envir)
 }
 
 ###############################################################################

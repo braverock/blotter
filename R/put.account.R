@@ -1,12 +1,14 @@
 #' put a account object in .blotter env
 #' @param account.st string identifying account
 #' @param account account object
+#' @param envir the environment to save the account object in, defaults to .blotter
 #' @export
 
-put.account <- function(account.st, account)
+put.account <- function(account.st, account, envir=.blotter)
 {
     blotter.account.st <- paste('account', account.st, sep='.')
-    assign(blotter.account.st, account, envir=.blotter)
+
+    assign(blotter.account.st, account, envir=envir)
 }
 
 ###############################################################################
