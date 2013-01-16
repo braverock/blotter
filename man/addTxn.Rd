@@ -3,7 +3,7 @@
 \title{Add transactions to a portfolio.}
 \usage{
   addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ...,
-    TxnFees = 0, ConMult = NULL, verbose = TRUE,
+    TxnFees = 0, ConMult = NULL, verbose = FALSE,
     eps = 0.000001)
 }
 \arguments{

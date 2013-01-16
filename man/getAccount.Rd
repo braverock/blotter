@@ -2,10 +2,13 @@
 \alias{getAccount}
 \title{Get an account object from the .blotter environment}
 \usage{
-  getAccount(Account)
+  getAccount(Account, envir = .blotter)
 }
 \arguments{
   \item{Account}{string identifier for the account}
+
+  \item{envir}{the environment to retrieve the account
+  from, defaults to .blotter}
 }
 \value{
   Account object

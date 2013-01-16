@@ -3,13 +3,14 @@
 #' Retrieves an account object from the \code{.blotter} environment.  Useful for local examination or charting, or storing interim results for later reference.
 #'
 #' @param Account string identifier for the account
+#' @param envir the environment to retrieve the account from, defaults to .blotter
 #' @return Account object
 #' @export
-getAccount <- function(Account) #should symbol subsets be supported too?  probably not.
+getAccount <- function(Account, envir=.blotter) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     aname<-Account
-    if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter), silent=TRUE)
-    else Account<-try(get(aname,envir=.blotter), silent=TRUE)
+    if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=envir), silent=TRUE)
+    else Account<-try(get(aname,envir=envir), silent=TRUE)
     if(inherits(Account,"try-error"))
         stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
     if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")

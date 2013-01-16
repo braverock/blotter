@@ -1,12 +1,13 @@
 #' get a portfolio object
 #' @param Portfolio string identifying portfolio
 #' @param Dates dates subset, not yet supported
+#' @param envir the environment to retrieve the portfolio from, defaults to .blotter
 #' @export
-getPortfolio <- function(Portfolio, Dates=NULL) #should symbol subsets be supported too?  probably not.
+getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter) #should symbol subsets be supported too?  probably not.
 { # @author Brian Peterson
     pname<-Portfolio
-    if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=.blotter),silent=TRUE))
-    else Portfolio<-suppressWarnings(try(get(pname,envir=.blotter),silent=TRUE))
+    if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=envir),silent=TRUE))
+    else Portfolio<-suppressWarnings(try(get(pname,envir=envir),silent=TRUE))
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
     if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")
