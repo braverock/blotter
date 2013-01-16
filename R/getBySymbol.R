@@ -41,7 +41,7 @@
         if(is.null(table)) table = tmp_col
         else table = merge(table, tmp_col)
     }
-    colnames(table) = symbols
+    if(length(table) > 0) colnames(table) = symbols
     class(table)<-class(xts())
     return(table)
 ### TODO: NA fill like getByPortfolio
