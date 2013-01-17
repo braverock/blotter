@@ -222,12 +222,6 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
                                  Med.WinLoss.Ratio  = MedWinLoss,
                                  Max.Equity         = MaxEquity,
                                  Min.Equity         = MinEquity,
-#                                 Buy.And.Hold       = BuyAndHold,
-#                                 Time.In.Market     = TimeInMarket
-#                                 RINA.Index         = RINAIndex
-#                                 Sharpe.Ratio       = SharpeRatio,
-#                                 Sortino.Ratio      = SortinoRatio,
-#                                 K.Ratio            = KRatio,
                                  End.Equity         = EndEquity)
             rownames(tmpret) <- symbol             
             ret              <- rbind(ret,tmpret)
@@ -420,12 +414,6 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
                 Med.WinLoss.Ratio  = MedWinLoss,
                 Max.Equity         = MaxEquity,
                 Min.Equity         = MinEquity,
-#                Buy.And.Hold       = Buy.And.Hold,
-#                Time.In.Market     = TimeInMarket
-#                RINA.Index         = RINAIndex
-#                Sharpe.Ratio       = Sharpe.Ratio,
-#                Sortino.Ratio      = Sortino.Ratio,
-#                K.Ratio            = K.Ratio,
                 End.Equity         = EndEquity)
         return(tmpret)
     }
