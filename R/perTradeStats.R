@@ -71,8 +71,9 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     # calculate information about each trade
     for(i in 1:length(trades$End))
     {
-        timespan <- paste(format(trades$Start[[i]], "%Y-%m-%d %H:%M:%OS6"),
-                format(trades$End[[i]], "%Y-%m-%d %H:%M:%OS6"), sep="::")
+        #timespan <- paste(format(trades$Start[[i]], "%Y-%m-%d %H:%M:%OS6"),
+                #format(trades$End[[i]], "%Y-%m-%d %H:%M:%OS6"), sep="::")
+        timespan <- paste(trades$Start[[i]], trades$End[[i]], sep="/")
         
         trade <- posPL[timespan]        
 
