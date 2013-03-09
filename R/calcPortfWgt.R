@@ -34,7 +34,7 @@ calcPortfWgt <- function(Portfolio,
     if(is.null(Symbols)) Symbols<-names(Portfolio$symbols)
     
     pos.value = .getBySymbol(Portfolio = Portfolio, Dates = Dates, Attribute = "Pos.Value", Symbols = Symbols)    
-    portf.value = .getByPortf(Account=getAccount(Account),Attribute = denominator[1], Date = Dates)
+    portf.value = .getByPortf(Account=getAccount(Account),Attribute = denominator[1], Dates = Dates)
     weights = zerofill(as.data.frame(lapply(pos.value, FUN = function(x,y){return(x/y)}, y=portf.value))) 
 
     return(weights)
