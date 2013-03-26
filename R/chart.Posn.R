@@ -19,7 +19,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     require(quantmod)
     Prices=get(Symbol)
     if(!is.OHLC(Prices)) {
-        if(hasArg(prefer)) prefer=match.call(expand.dots=TRUE)$prefer else prefer=NULL
+        if(hasArg(prefer)) prefer=eval(match.call(expand.dots=TRUE)$prefer) else prefer=NULL
         Prices=getPrice(Prices, prefer=prefer)
     }
     freq = periodicity(Prices)
