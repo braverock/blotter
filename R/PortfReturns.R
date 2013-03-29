@@ -11,6 +11,7 @@
 #' @param \dots any other passthru parameters (like \code{native} for \code{.getBySymbol}
 #' @param Dates xts style ISO 8601 date subset to retrieve, default NULL (all dates)
 #' @param Portfolios concatenated string vector for portfolio names to retrieve returns on, default NULL (all portfolios)
+#' @param period one of daily
 #' @note
 #' TODO handle portfolio and account in different currencies (not hard, just not done)
 #' 
@@ -19,11 +20,14 @@
 #' TODO provide additional  methods of calculating returns
 #' 
 #' TODO support additions and withdrawals to available capital 
-PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portfolios=NULL) 
+PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portfolios=NULL,period=c('daily','none')) 
 { # @author Brian Peterson
-	aname<-Account
+	period <- period[1] #use first
+	aname  <- Account
+	
 	if(!grepl("account\\.",aname)) Account<-try(get(paste("account",aname,sep='.'),envir=.blotter), silent=TRUE)
 	else Account<-try(get(aname,envir=.blotter), silent=TRUE)
+	
 	if(inherits(Account,"try-error"))
 		stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
 	if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")
@@ -31,23 +35,35 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 	if(is.null(Portfolios)) Portfolios = names(Account$portfolios)
 	
 	table=NULL
-	for(pname in Portfolios){
-		Portfolio <- getPortfolio(pname)
-		if(is.null(Dates)) Dates <- paste("::",last(index(Portfolio$summary)),sep='')
-		ptable = .getBySymbol(Portfolio = Portfolio, Attribute = "Net.Trading.PL", Dates = Dates,...)
-		
-		#TODO check portfolio and account currencies and convert if necessary
-		
-		#TODO handle additions and withdrawals in equity
-		
-		if(!is.null(attr(Account,'initEq'))){
-			initEq<-as.numeric(attr(Account,'initEq'))
-			if(initEq==0) stop("Initial equity of zero would produce div by zero NaN,Inf,-Inf returns, please fix in initAcct().")
-			ptable = ptable/initEq
+	
+	
+	if(period=='daily'){
+		table = dailyEqPL(Portfolios = Portfolios)	
+	} else {
+		for(pname in Portfolios){
+			Portfolio <- getPortfolio(pname)
+			
+			if(is.null(Dates)) Dates <- paste("::",last(index(Portfolio$summary)),sep='')
+
+			#extract
+			ptable = .getBySymbol(Portfolio = Portfolio, Attribute = "Net.Trading.PL", Dates = Dates,...)
+			ptable = PerformanceAnalytics:::zerofill(ptable)
+			#combine
+			if(is.null(table)) table=ptable
+			else table=cbind(table,ptable)
 		}
-		if(is.null(table)) table=ptable
-		else table=cbind(table,ptable)
 	}
+
+	#TODO check portfolio and account currencies and convert if necessary
+	
+	#TODO handle additions and withdrawals in equity
+		
+	if(!is.null(attr(Account,'initEq'))){
+		initEq<-as.numeric(attr(Account,'initEq'))
+		if(initEq==0) stop("Initial equity of zero would produce div by zero NaN,Inf,-Inf returns, please fix in initAcct().")
+		table = table/initEq
+	}
+	
 	return(table)
 }
 
