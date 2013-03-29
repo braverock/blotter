@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for transaction-oriented trading systems
     development.
-Version: 0.8.13
+Version: 0.8.14
 Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>
@@ -10,19 +10,19 @@ Description: Transaction infrastructure for defining
     instruments, transactions, portfolios and accounts for
     trading systems and simulation. Provides portfolio
     support for multi-asset class and multi-currency
-    portfolios.  Still in heavy development.
+    portfolios.  Still in development.
 License: GPL
 LazyLoad: yes
 Depends:
     R (>= 2.15),
     xts (>= 0.7-6.17),
     zoo,
-    FinancialInstrument(>= 0.6.3)
-Suggests:
+    FinancialInstrument(>= 0.6.3),
     PerformanceAnalytics,
+    quantmod
+Suggests:
     Hmisc,
     RUnit,
-    quantmod
 Contributors: Dirk Eddelbuettel, Jan Humme, Lance Levenson,
     Ben McCann, Jeff Ryan, Garrett See, Joshua Ulrich, Wolfgang Wu
 URL: https://r-forge.r-project.org/projects/blotter/
