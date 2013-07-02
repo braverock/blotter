@@ -87,7 +87,7 @@ updateAcct <- function(name='default', Dates=NULL)
     obsDates = index(table)
 
     # Now aggregate the portfolio information into the $summary slot
-    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Interest', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
 
     for(Attribute in Attributes) {
         switch(Attribute,
@@ -99,9 +99,15 @@ updateAcct <- function(name='default', Dates=NULL)
                 table = .getByPortf(Account, Attribute, Dates)
                 result = xts(rowSums(table,na.rm=TRUE),order.by=index(table))
             },
-            Additions = , 
-            Withdrawals = , 
-            Int.Income = ,
+            Additions = {
+                result = period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=periodicity(table)$units), sum) # aggregates multiple account txns 
+            }, 
+            Withdrawals = {
+                result = period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
+            }, 
+            Interest = {
+              result = period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
+            },
             Advisory.Fees = ,
             Net.Performance = ,
             End.Eq = { 
@@ -113,6 +119,7 @@ updateAcct <- function(name='default', Dates=NULL)
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
     }
+    summary[is.na(summary)] <- 0 # replace any NA's with zero
     Account$summary <- rbind(Account$summary, summary)
     # This function does not calculate End.Eq 
 

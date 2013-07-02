@@ -27,7 +27,7 @@
 #' several different ways and is best left as a function.
 #' 
 #' To get to the CFTC thirteen columns add:
-#' Gross.Realized, Commission, Net.Realized, Int.Income, Ch.Unrealized,
+#' Gross.Realized, Commission, Net.Realized, Interest, Ch.Unrealized,
 #' Advisory.Fees, Wealth.Index 
 #' Again, no need to add Wealth.Index. Eventually, these additional 
 #' columns will be useful.  
@@ -59,7 +59,16 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
     account$portfolios=vector("list",length=length(portfolios))
     names(account$portfolios)=portfolios
     account$summary = xts( as.matrix(t(c(0,0,0,0,0,0,0,0,0,0,initEq))), order.by=as.POSIXct(initDate,...=...), ...=... )
-    colnames(account$summary) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    colnames(account$summary) = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Interest', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    
+    # track capital additions, withdrawals, and interest
+    account$Additions = xts( as.matrix(t(c(0))), order.by=as.POSIXct(initDate,...=...), ...=... )
+    colnames(account$Additions) = c('Additions')
+    account$Withdrawals = xts( as.matrix(t(c(0))), order.by=as.POSIXct(initDate,...=...), ...=... )
+    colnames(account$Withdrawals) = c('Withdrawals')
+    account$Interest = xts( as.matrix(t(c(0))), order.by=as.POSIXct(initDate,...=...), ...=... )
+    colnames(account$Interest) = c('Interest')
+    
     for(portfolio in portfolios){
         account$portfolios[[portfolio]] = .initSummary(initDate=initDate)
     }
