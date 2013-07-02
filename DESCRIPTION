@@ -32,6 +32,7 @@ Collate:
     'PortfReturns.R'
     'addPortfInstr.R'
     'addTxn.R'
+    'addAcctTxn.R'
     'calcPortfWgt.R'
     'calcPosAvgCost.R'
     'calcTxnAvgCost.R'
