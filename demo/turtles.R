@@ -6,6 +6,8 @@ require(quantmod)
 require(TTR)
 require(blotter)
 
+Sys.setenv(TZ="UTC")
+
 # Try to clean up in case the demo was run previously
 try(rm("account.turtles","portfolio.turtles",pos=.blotter),silent=TRUE)
 try(rm("portfolio","account","N","symbol","symbols","ClosePrice","CurrentDate","equity","Units","maxUnits","size","Stop","equity","TxnPrice","initDate","initEq","Posn","verbose"),silent=TRUE)
