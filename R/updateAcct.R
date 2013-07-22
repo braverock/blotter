@@ -85,6 +85,10 @@ updateAcct <- function(name='default', Dates=NULL)
     table = .getByPortf(Account, 'Net.Trading.PL', Dates)
     obsLength = length(index(table))
     obsDates = index(table)
+    if(obsLength > 1) # can't estimate periodicity of one observation
+      on=periodicity(table)$units
+    else
+      on="none"
 
     # Now aggregate the portfolio information into the $summary slot
     Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Interest', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
@@ -100,13 +104,22 @@ updateAcct <- function(name='default', Dates=NULL)
                 result = xts(rowSums(table,na.rm=TRUE),order.by=index(table))
             },
             Additions = {
-                result = period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=periodicity(table)$units), sum) # aggregates multiple account txns 
+                result = if(on=="none")
+                  as.xts(sum(Account$Additions[paste("::",obsDates, sep="")]), order.by=index(table))
+                else
+                  period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
             }, 
             Withdrawals = {
-                result = period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
+              result = if(on=="none")
+                as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
+              else
+                period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
             }, 
             Interest = {
-              result = period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
+              result = if(on=="none")
+                as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
+              else
+                period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
             },
             Advisory.Fees = ,
             Net.Performance = ,
