@@ -14,6 +14,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
     if (missing(Symbol)) Symbol <- names(Portfolio$symbols)[[1]]
+    else Symbol <- Symbol[1]
     # FUNCTION
 
     require(quantmod)
