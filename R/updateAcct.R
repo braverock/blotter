@@ -14,7 +14,7 @@ updateAcct <- function(name='default', Dates=NULL)
 
 	Portfolios = names(Account$portfolios)
 	
-	if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)
+	if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)[-1] 
 	
 	#trim to only time prior to Dates
 	if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
@@ -106,20 +106,32 @@ updateAcct <- function(name='default', Dates=NULL)
             Additions = {
                 result = if(on=="none")
                   as.xts(sum(Account$Additions[paste("::",obsDates, sep="")]), order.by=index(table))
-                else
-                  period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
+                else{
+                  if(length(Account$Additions[obsDates])>0) # catch empty sets
+                    period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
+                  else
+                    xts(rep(0,obsLength),order.by=obsDates)
+                }
             }, 
             Withdrawals = {
               result = if(on=="none")
                 as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
-              else
-                period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
+              else{
+                if(length(Account$Additions[obsDates])>0) # catch empty sets
+                  period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
+                else
+                  xts(rep(0,obsLength),order.by=obsDates)
+              }
             }, 
             Interest = {
               result = if(on=="none")
                 as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
-              else
-                period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
+              else{
+                if(length(Account$Additions[obsDates])>0) # catch empty sets
+                  period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
+                else
+                  xts(rep(0,obsLength),order.by=obsDates)
+              }
             },
             Advisory.Fees = ,
             Net.Performance = ,
