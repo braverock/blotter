@@ -133,7 +133,6 @@ updateAcct <- function(name='default', Dates=NULL)
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
     }
-    browser()
     summary[is.na(summary)] <- 0 # replace any NA's with zero
     Account$summary <- rbind(Account$summary, summary)
     # This function does not calculate End.Eq 
