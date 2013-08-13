@@ -75,6 +75,7 @@ updateAcct <- function(name='default', Dates=NULL)
 			#multiply by the currency multiplier    
 			psummary<-psummary*CcyMult
         }
+						
 		# now bind it
 		Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]],psummary)
     }
@@ -85,13 +86,9 @@ updateAcct <- function(name='default', Dates=NULL)
     table = .getByPortf(Account, 'Net.Trading.PL', Dates)
     obsLength = length(index(table))
     obsDates = index(table)
-    if(obsLength > 1) # can't estimate periodicity of one observation
-      on=periodicity(table)$units
-    else
-      on="none"
 
     # Now aggregate the portfolio information into the $summary slot
-    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Interest', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
 
     for(Attribute in Attributes) {
         switch(Attribute,
@@ -103,24 +100,9 @@ updateAcct <- function(name='default', Dates=NULL)
                 table = .getByPortf(Account, Attribute, Dates)
                 result = xts(rowSums(table,na.rm=TRUE),order.by=index(table))
             },
-            Additions = {
-                result = if(on=="none")
-                  as.xts(sum(Account$Additions[paste("::",obsDates, sep="")]), order.by=index(table))
-                else
-                  period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
-            }, 
-            Withdrawals = {
-              result = if(on=="none")
-                as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
-              else
-                period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
-            }, 
-            Interest = {
-              result = if(on=="none")
-                as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
-              else
-                period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
-            },
+            Additions = , 
+            Withdrawals = , 
+            Int.Income = ,
             Advisory.Fees = ,
             Net.Performance = ,
             End.Eq = { 
@@ -128,13 +110,31 @@ updateAcct <- function(name='default', Dates=NULL)
                 result = xts(rep(0,obsLength),order.by=obsDates)
             }
         )
+		
         colnames(result) = Attribute
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
     }
-    summary[is.na(summary)] <- 0 # replace any NA's with zero
-    Account$summary <- rbind(Account$summary, summary)
-    # This function does not calculate End.Eq 
+
+	Account$summary <- rbind(Account$summary, summary)
+
+	# get rid of duplicated indices in the summary data, 
+	# thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
+	d <- duplicated(.index(Account$summary)) | duplicated(.index(Account$summary), fromLast=TRUE)
+	if(any(d)){
+		dedups <- function(x) {
+			suppressWarnings(
+					xts(t(colSums(x)),order.by=last(index(x)))
+			)
+		}
+		
+		alist <- do.call(rbind, lapply(split(Account$summary[d,], .index(Account$summary[d,])), dedups) )
+		
+		Account$summary <- rbind(Account$summary[!d,], alist) #put it all back together
+		
+	}
+	
+	# This function does not calculate End.Eq 
 
     assign(paste("account",name,sep='.'),Account, envir=.blotter) 
     return(name) #not sure this is a good idea
