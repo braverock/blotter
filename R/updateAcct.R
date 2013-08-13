@@ -75,7 +75,6 @@ updateAcct <- function(name='default', Dates=NULL)
 			#multiply by the currency multiplier    
 			psummary<-psummary*CcyMult
         }
-						
 		# now bind it
 		Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]],psummary)
     }
@@ -86,9 +85,13 @@ updateAcct <- function(name='default', Dates=NULL)
     table = .getByPortf(Account, 'Net.Trading.PL', Dates)
     obsLength = length(index(table))
     obsDates = index(table)
+    if(obsLength > 1) # can't estimate periodicity of one observation
+      on=periodicity(table)$units
+    else
+      on="none"
 
     # Now aggregate the portfolio information into the $summary slot
-    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Int.Income', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
+    Attributes = c('Additions', 'Withdrawals', 'Realized.PL', 'Unrealized.PL', 'Interest', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL', 'Advisory.Fees', 'Net.Performance', 'End.Eq')
 
     for(Attribute in Attributes) {
         switch(Attribute,
@@ -100,9 +103,24 @@ updateAcct <- function(name='default', Dates=NULL)
                 table = .getByPortf(Account, Attribute, Dates)
                 result = xts(rowSums(table,na.rm=TRUE),order.by=index(table))
             },
-            Additions = , 
-            Withdrawals = , 
-            Int.Income = ,
+            Additions = {
+                result = if(on=="none")
+                  as.xts(sum(Account$Additions[paste("::",obsDates, sep="")]), order.by=index(table))
+                else
+                  period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
+            }, 
+            Withdrawals = {
+              result = if(on=="none")
+                as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
+              else
+                period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
+            }, 
+            Interest = {
+              result = if(on=="none")
+                as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
+              else
+                period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
+            },
             Advisory.Fees = ,
             Net.Performance = ,
             End.Eq = { 
@@ -115,6 +133,9 @@ updateAcct <- function(name='default', Dates=NULL)
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
     }
+    summary[is.na(summary)] <- 0 # replace any NA's with zero
+    Account$summary <- rbind(Account$summary, summary)
+    # This function does not calculate End.Eq 
 
 	Account$summary <- rbind(Account$summary, summary)
 
