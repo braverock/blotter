@@ -133,29 +133,10 @@ updateAcct <- function(name='default', Dates=NULL)
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
     }
+    browser()
     summary[is.na(summary)] <- 0 # replace any NA's with zero
     Account$summary <- rbind(Account$summary, summary)
     # This function does not calculate End.Eq 
-
-	Account$summary <- rbind(Account$summary, summary)
-
-	# get rid of duplicated indices in the summary data, 
-	# thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
-	d <- duplicated(.index(Account$summary)) | duplicated(.index(Account$summary), fromLast=TRUE)
-	if(any(d)){
-		dedups <- function(x) {
-			suppressWarnings(
-					xts(t(colSums(x)),order.by=last(index(x)))
-			)
-		}
-		
-		alist <- do.call(rbind, lapply(split(Account$summary[d,], .index(Account$summary[d,])), dedups) )
-		
-		Account$summary <- rbind(Account$summary[!d,], alist) #put it all back together
-		
-	}
-	
-	# This function does not calculate End.Eq 
 
     assign(paste("account",name,sep='.'),Account, envir=.blotter) 
     return(name) #not sure this is a good idea
