@@ -85,7 +85,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
             setNames( merge(last(x[,cLast]), xts(t(colSums(x[,cSums],na.rm=TRUE)),last(index(x)))), colnames(x) )
         }
         summary.dups <- summary[d,]
-        ds <- duplicated(.index(summary.dups))
+        ds <- duplicated(.index(summary.dups)) & !duplicated(.index(summary.dups), fromLast=TRUE)
         slist <- period.apply(summary.dups, c(0, which(ds)), f)
         summary <- rbind(summary[!d,], slist) # put it all back together
     }
