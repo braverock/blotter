@@ -12,17 +12,17 @@ updateAcct <- function(name='default', Dates=NULL)
         a.ccy.str<-attr(Account,'currency')
     } 
 
-	Portfolios = names(Account$portfolios)
-	
-	if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)[-1] 
-	
-	#trim to only time prior to Dates
-	if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
-		whichi<-first(Account$summary[paste(.parseISO8601(Dates)$first.time,'::',sep=''), which.i = TRUE])
-		if(!is.null(whichi)) whichi=whichi-1
-		if(whichi<1) whichi=1 
-		Account$summary = Account$summary[1:whichi,]
-	}
+    Portfolios = names(Account$portfolios)
+    
+    if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)[-1] 
+    
+    #trim to only time prior to Dates
+    if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
+        whichi<-first(Account$summary[paste(.parseISO8601(Dates)$first.time,'::',sep=''), which.i = TRUE])
+        if(!is.null(whichi)) whichi=whichi-1
+        if(whichi<1) whichi=1 
+        Account$summary = Account$summary[1:whichi,]
+    }
 
 
     # Append the portfolio summary data to the portfolio slot
@@ -31,52 +31,52 @@ updateAcct <- function(name='default', Dates=NULL)
         if(!is.null(attr(Portfolio,'currency'))) {
             p.ccy.str<-attr(Portfolio,'currency')
         } 
-		
+        
         # Test whether portfolio and account are of the same ccy        
-		psummary = Portfolio$summary[Dates]
-		if( a.ccy.str != p.ccy.str ){
+        psummary = Portfolio$summary[Dates]
+        if( a.ccy.str != p.ccy.str ){
             # If not, translate the portfolio summary to the account currency
-			CcyMult <- NA
-			port_currency<-try(getInstrument(p.ccy.str), silent=TRUE)
-			if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
-				warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
-				CcyMult<-1
-			} else {
-				FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
-				FXrate<-try(get(FXrate.str), silent=TRUE)
-				#TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
-				if(inherits(FXrate,"try-error")){
-					FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
-					FXrate<-try(get(FXrate.str), silent=TRUE)
-					if(inherits(FXrate,"try-error")){ 
-						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
-						CcyMult<-1
-					} else {
-						invert=TRUE
-					}
-				}
-			}		
-			if(is.na(CcyMult) && !is.na(FXrate)) {
-				if(inherits(FXrate,'xts')){
-					CcyMult <- FXrate[Dates]
-					CcyMult <- na.locf(merge(CcyMult,index(psummary)))
-					CcyMult <- drop(CcyMult[index(psummary)])
-				} else {
-					CcyMult<-as.numeric(FXrate)
-				}
-			} else {
-				CcyMult<-1
-			}
-			if(isTRUE(invert)){
-				# portfolio and instrument have different currencies, and FXrate was in the wrong direction
-				CcyMult<-1/CcyMult
-			}
-			
-			#multiply by the currency multiplier    
-			psummary<-psummary*CcyMult
+            CcyMult <- NA
+            port_currency<-try(getInstrument(p.ccy.str), silent=TRUE)
+            if(inherits(port_currency,"try-error") | !is.instrument(port_currency)){
+                warning("Currency",p.ccy.str," not found, using currency multiplier of 1")
+                CcyMult<-1
+            } else {
+                FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
+                FXrate<-try(get(FXrate.str), silent=TRUE)
+                #TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
+                if(inherits(FXrate,"try-error")){
+                    FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
+                    FXrate<-try(get(FXrate.str), silent=TRUE)
+                    if(inherits(FXrate,"try-error")){ 
+                        warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
+                        CcyMult<-1
+                    } else {
+                        invert=TRUE
+                    }
+                }
+            }        
+            if(is.na(CcyMult) && !is.na(FXrate)) {
+                if(inherits(FXrate,'xts')){
+                    CcyMult <- FXrate[Dates]
+                    CcyMult <- na.locf(merge(CcyMult,index(psummary)))
+                    CcyMult <- drop(CcyMult[index(psummary)])
+                } else {
+                    CcyMult<-as.numeric(FXrate)
+                }
+            } else {
+                CcyMult<-1
+            }
+            if(isTRUE(invert)){
+                # portfolio and instrument have different currencies, and FXrate was in the wrong direction
+                CcyMult<-1/CcyMult
+            }
+            
+            #multiply by the currency multiplier    
+            psummary<-psummary*CcyMult
         }
-		# now bind it
-		Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]],psummary)
+        # now bind it
+        Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]],psummary)
     }
 
     summary = NULL
@@ -136,11 +136,11 @@ updateAcct <- function(name='default', Dates=NULL)
             Advisory.Fees = ,
             Net.Performance = ,
             End.Eq = { 
-				## TODO no cash handling for now, add this in later, but for now, zeroes 
+                ## TODO no cash handling for now, add this in later, but for now, zeroes 
                 result = xts(rep(0,obsLength),order.by=obsDates)
             }
         )
-		
+        
         colnames(result) = Attribute
         if(is.null(summary)) {summary=result}
         else {summary=cbind(summary,result)}
