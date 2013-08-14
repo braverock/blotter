@@ -74,26 +74,22 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 		if(is.null(summary)) {summary=result}
 		else {summary=cbind(summary,result)}
     }
-	
-	# get rid of duplicated indices in the summary data, 
-	# thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
-	d <- duplicated(.index(summary)) | duplicated(.index(summary), fromLast=TRUE)
-	if(any(d)){
-		f <- function(x) {
-			cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
-			cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-			setNames(suppressWarnings(
-							merge(last(x[,cLast]), 
-							xts(t(colSums(x[,cSums],na.rm=TRUE)),order.by=last(index(x))))
-						)
-				  ,nm=colnames(x))
-		}
-		
-		slist <- do.call(rbind, lapply(split(summary[d,], .index(summary[d,])), f))
-		summary <- merge(summary[!d,], slist) #put it all back together
-	}
-	
-	
+
+    # get rid of duplicated indices in the summary data, 
+    # thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
+    d <- duplicated(.index(summary)) | duplicated(.index(summary), fromLast=TRUE)
+    if(any(d)){
+        f <- function(x) {
+            cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
+            cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+            setNames( merge(last(x[,cLast]), xts(t(colSums(x[,cSums],na.rm=TRUE)),last(index(x)))), colnames(x) )
+        }
+        summary.dups <- summary[d,]
+        ds <- duplicated(.index(summary.dups))
+        slist <- period.apply(summary.dups, c(0, which(ds)), f)
+        summary <- rbind(summary[!d,], slist) # put it all back together
+    }
+    
 	if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
 	startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001 
 	# trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary 
