@@ -46,7 +46,7 @@
 perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     portf <- getPortfolio(Portfolio)
     
-    if(missing(Symbol)) Symbol <- names(portf$symbols)[[1]]
+    if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
     
     posPL <- portf$symbols[[Symbol]]$posPL
     

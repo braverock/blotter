@@ -32,7 +32,7 @@
     table = NULL 
       ## Need a reference time index
     if(is.null(Symbols))
-        symbols=names(Portfolio$symbols)
+        symbols=ls(Portfolio$symbols)
     else
         symbols = Symbols
     

@@ -104,7 +104,7 @@ tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
         
         
         ## FIXME: need a way to define symbols for each portfolio    
-        if(missing(Symbols)) symbols <- names(Portfolio$symbols)
+        if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
         else symbols <- Symbols
         
         ## Trade Statistics
@@ -258,7 +258,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
         
         
         ## FIXME: need a way to define symbols for each portfolio    
-        if(missing(Symbols)) symbols <- names(Portfolio$symbols)
+        if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
         else symbols <- Symbols
         
         ## Trade Statistics
@@ -301,7 +301,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
         
         
         ## FIXME: need a way to define symbols for each portfolio    
-        if(missing(Symbols)) symbols <- names(Portfolio$symbols)
+        if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
         else symbols <- Symbols
         
         ## Trade Statistics

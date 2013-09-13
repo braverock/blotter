@@ -31,7 +31,7 @@ calcPortfWgt <- function(Portfolio,
     pname<-Portfolio
     Portfolio<-getPortfolio(pname) # TODO add Date handling
     
-    if(is.null(Symbols)) Symbols<-names(Portfolio$symbols)
+    if(is.null(Symbols)) Symbols<-ls(Portfolio$symbols)
     
     pos.value = .getBySymbol(Portfolio = Portfolio, Dates = Dates, Attribute = "Pos.Value", Symbols = Symbols)    
     portf.value = .getByPortf(Account=getAccount(Account),Attribute = denominator[1], Dates = Dates)

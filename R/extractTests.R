@@ -25,7 +25,7 @@ extractTxns <- function(Portfolio)
 	if(inherits(Portfolio,"try-error"))
 		stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio first"))
 	out<-NULL
-	symbolnames<-names(Portfolio[['symbols']])
+	symbolnames<-ls(Portfolio[['symbols']])
 	for (Symbol in symbolnames) {
 		tmpTxns<-Portfolio$symbols[[Symbol]]$txn[-1,]
 		if (nrow(tmpTxns)>=1){

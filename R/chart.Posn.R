@@ -13,7 +13,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
 { # @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
-    if (missing(Symbol)) Symbol <- names(Portfolio$symbols)[[1]]
+    if (missing(Symbol)) Symbol <- ls(Portfolio$symbols)[[1]]
     else Symbol <- Symbol[1]
     # FUNCTION
 

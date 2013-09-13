@@ -17,91 +17,95 @@
 #' @export
 updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 { #' @author Peter Carl, Brian Peterson
-    pname<-Portfolio
-    Portfolio<-getPortfolio(pname) # TODO add Date handling
-
-    # FUNCTION
-    if(is.null(Symbols)){
-        Symbols = names(Portfolio$symbols)
-    }
-    for(symbol in Symbols){
-        tmp_instr<-try(getInstrument(symbol), silent=TRUE)
-        .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, ...=...)
-    }
-
-    # Calculate and store portfolio summary table
-    Portfolio<-getPortfolio(pname) # refresh with an updated object
-  if(is.null(Dates)) Dates <- xts:::time.xts(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
-    #Symbols = names(Portfolio$symbols)
-    Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-    summary = NULL
-  tmp.attr=NULL
-    for(attribute in Attributes) {
-    result=NULL
-        switch(attribute,
-      Net.Value =,
-            Gross.Value =,
-      Long.Value =,
-      Short.Value =,{
-        # all these use Pos.Value
-        if(is.null(tmp.attr)){
-          table = .getBySymbol(Portfolio = Portfolio, Attribute = "Pos.Value", Dates = Dates, Symbols = Symbols)
-          tmp.attr="Pos.Value"
-        }
-        switch(attribute,
-            Gross.Value = {	result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))},
-            Long.Value  = { tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
-                    result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
-            },
-            Short.Value = { tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
-                    result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
-            },
-            Net.Value   = {	result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))	}
-        )
-            },
-      Period.Realized.PL =,
-      Period.Unrealized.PL =,
-      Gross.Trading.PL =,
-      Txn.Fees =,
-      Net.Trading.PL = {
-        table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
-        tmp.attr = NULL
-        result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
-            }
-        )
-
-        colnames(result) = attribute
-    if(is.null(summary)) {summary=result}
-    else {summary=cbind(summary,result)}
-    }
-
-    # get rid of duplicated indices in the summary data,
-    # thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
-    d <- duplicated(.index(summary)) | duplicated(.index(summary), fromLast=TRUE)
-    if(any(d)){
-        f <- function(x) {
-            cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
-            cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-            setNames( merge(last(x[,cLast]), xts(t(colSums(x[,cSums],na.rm=TRUE)),last(index(x)))), colnames(x) )
-        }
-        summary.dups <- summary[d,]
-        ds <- duplicated(.index(summary.dups)) & !duplicated(.index(summary.dups), fromLast=TRUE)
-        slist <- period.apply(summary.dups, c(0, which(ds)), f)
-        summary <- rbind(summary[!d,], slist) # put it all back together
-    }
-
-  if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
-  startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001
-  # trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary
-  if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
-    Portfolio$summary<-summary #changes to subset might not return a empty dimnames set of columns
-  }else{
-    Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
-  }
-  # assign Portfolio to environment
-  assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
-
-    return(pname) #not sure this is a good idea
+     pname<-Portfolio
+     Portfolio<-getPortfolio(pname) # TODO add Date handling
+     
+     # FUNCTION
+     if(is.null(Symbols)){
+       Symbols = ls(Portfolio$symbols)
+     }
+     for(symbol in Symbols){
+       tmp_instr<-try(getInstrument(symbol), silent=TRUE)
+       .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, ...=...)
+     }
+     
+     # Calculate and store portfolio summary table
+     Portfolio<-getPortfolio(pname) # refresh with an updated object
+     #if(is.null(Dates)) Dates <- xts:::time.xts(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
+     if(is.null(Dates)) Dates <- xts(,do.call(unlist,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ))))
+     
+     #Symbols = ls(Portfolio$symbols)
+     Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+     summary = NULL
+     tmp.attr=NULL
+     for(attribute in Attributes) {
+       result=NULL
+       switch(attribute,
+              Net.Value =,
+              Gross.Value =,
+              Long.Value =,
+              Short.Value =,{
+                # all these use Pos.Value
+                if(is.null(tmp.attr)){
+                  table = .getBySymbol(Portfolio = Portfolio, Attribute = "Pos.Value", Dates = Dates, Symbols = Symbols)
+                  tmp.attr="Pos.Value"
+                }
+                switch(attribute,
+                       Gross.Value = {  result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))},
+                       Long.Value  = { tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
+                                       result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+                       },
+                       Short.Value = { tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
+                                       result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
+                       },
+                       Net.Value   = {	result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))	}
+                )
+              },
+              Period.Realized.PL =,
+              Period.Unrealized.PL =,
+              Gross.Trading.PL =,
+              Txn.Fees =,
+              Net.Trading.PL = {
+                table = .getBySymbol(Portfolio = Portfolio, Attribute = attribute, Dates = Dates, Symbols = Symbols)
+                tmp.attr = NULL
+                result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))
+              }
+       )
+       
+       colnames(result) = attribute
+       if(is.null(summary)) {summary=result}
+       else {summary=cbind(summary,result)}
+     }
+     
+     # get rid of duplicated indices in the summary data,
+     # thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
+     d <- duplicated(.index(summary)) | duplicated(.index(summary), fromLast=TRUE)
+     if(any(d)){
+       f <- function(x) {
+         cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
+         cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+         setNames( merge(last(x[,cLast]), xts(t(colSums(x[,cSums],na.rm=TRUE)),last(index(x)))), colnames(x) )
+       }
+       summary.dups <- summary[d,]
+       ds <- duplicated(.index(summary.dups)) & !duplicated(.index(summary.dups), fromLast=TRUE)
+       slist <- period.apply(summary.dups, c(0, which(ds)), f)
+       summary <- rbind(summary[!d,], slist) # put it all back together
+     }
+     
+     # if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
+     #xts(,do.call(unlist,c(lapply(symbols,index),use.names=FALSE)))
+     if(!is.timeBased(Dates)) Dates <- xts(,do.call(unlist,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ))))
+     startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001
+     # trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary
+     if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
+       Portfolio$summary<-summary #changes to subset might not return a empty dimnames set of columns
+     }else{
+       Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
+     }
+     # assign Portfolio to environment
+     assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+     
+     return(pname) #not sure this is a good idea
 }
 
 ###############################################################################

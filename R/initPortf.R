@@ -3,7 +3,7 @@
 #' Constructs and initializes a portfolio object, which is used to contain transactions, positions, and aggregate level values.
 #'
 #' Initializes a portfolio object, which is constructed from the following:
-#' $symbols: the identifier used for each instrument contained in the portfolio. Use \code{names(Portfolio$symbols)} to get a list of symbols.
+#' $symbols: the identifier used for each instrument contained in the portfolio. Use \code{ls(Portfolio$symbols)} to get a list of symbols.
 #' $symbols$[symbol]$txn: irregular xts object of transactions data 
 #' $symbols$[symbol]$posPL: regular xts object of positions P&L calculated from transactions
 #' $symbols$[symbol]$posPL.ccy: regular xts object of positions P&L converted to portfolio currency
@@ -70,13 +70,17 @@ initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-
   # Thanks to Jeff Ryan and Josh Ulrich for pointers
   portfolio = new.env(hash=TRUE)
 
-  portfolio$symbols=vector("list",length=length(symbols))
-  names(portfolio$symbols)=symbols
+  #portfolio$symbols=vector("list",length=length(symbols))
+  #names(portfolio$symbols)=symbols
+  portfolio[['symbols']] = new.env(hash=TRUE)
+
   if(length(initPosQty)==1)
     initPosQty=rep(initPosQty, length(symbols))
   if(length(initPosQty)!=length(symbols))
     stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
   for(instrument in symbols){
+    portfolio$symbols[[instrument]] = new.env(hash=TRUE)
+    #portfolio$symbols[[instrument]] = list()
     i = match(instrument, symbols)
     portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i],...=...)
     portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i],...=...)
