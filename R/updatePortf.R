@@ -32,7 +32,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      # Calculate and store portfolio summary table
      Portfolio<-getPortfolio(pname) # refresh with an updated object
      #if(is.null(Dates)) Dates <- xts:::time.xts(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
-     if(is.null(Dates)) Dates <- xts(,do.call(unlist,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ))))
+     if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ), use.names=FALSE, recursive=FALSE)))
      
      #Symbols = ls(Portfolio$symbols)
      Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
@@ -94,7 +94,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      
      # if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
      #xts(,do.call(unlist,c(lapply(symbols,index),use.names=FALSE)))
-     if(!is.timeBased(Dates)) Dates <- xts(,do.call(unlist,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ))))
+     if(!is.timeBased(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ), use.names=FALSE, recursive=FALSE)))
      startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001
      # trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary
      if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
