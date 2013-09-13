@@ -60,30 +60,35 @@
 #' @export
 initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01', currency='USD', ...)
 { # @author Peter Carl
-    if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
-        stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
-    
-    # FUNCTION
-    portfolio=list()
-	portfolio$symbols=vector("list",length=length(symbols))
-    names(portfolio$symbols)=symbols
-    if(length(initPosQty)==1)
-	initPosQty=rep(initPosQty, length(symbols))
-    if(length(initPosQty)!=length(symbols))
-	stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
-    for(instrument in symbols){
-    	i = match(instrument, symbols)
-        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i],...=...)
-        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i],...=...)
-        portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL
-    }
-	portfolio$summary<-.initSummary(initDate=initDate)
-    class(portfolio)<-c("blotter_portfolio", "portfolio")
-    attr(portfolio,'currency')<-currency
-	attr(portfolio,'initDate')<-initDate
-    #return(portfolio)
-    assign(paste("portfolio",as.character(name),sep='.'),portfolio,envir=.blotter)
-    return(name) # not sure this is a good idea
+  if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
+    stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
+  
+  # FUNCTION
+  
+  # portfolio=list()
+  # Initialize a hashed environment for this portfolio
+  # Thanks to Jeff Ryan and Josh Ulrich for pointers
+  portfolio = new.env(hash=TRUE)
+
+  portfolio$symbols=vector("list",length=length(symbols))
+  names(portfolio$symbols)=symbols
+  if(length(initPosQty)==1)
+    initPosQty=rep(initPosQty, length(symbols))
+  if(length(initPosQty)!=length(symbols))
+    stop("The length of initPosQty is unequal to the number of symbols in the portfolio.")
+  for(instrument in symbols){
+    i = match(instrument, symbols)
+    portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = initPosQty[i],...=...)
+    portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = initPosQty[i],...=...)
+    portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL
+  }
+  portfolio$summary<-.initSummary(initDate=initDate)
+  class(portfolio)<-c("blotter_portfolio", "portfolio")
+  attr(portfolio,'currency')<-currency
+  attr(portfolio,'initDate')<-initDate
+  #return(portfolio)
+  assign(paste("portfolio",as.character(name),sep='.'),portfolio,envir=.blotter)
+  return(name) # not sure this is a good idea
 }
 
 ###############################################################################
