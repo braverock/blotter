@@ -74,6 +74,12 @@
   mirrors many execution platforms and brokerage
   requirements in particular asset classes where the side
   of a trade needs to be specified with the order.
+
+  The \code{addTxns} function allows you to add multiple
+  transactions to the portfolio, which is much faster than
+  adding them one at a time. The \code{TxnData} object must
+  have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
+  column is optional.
 }
 \note{
   The addTxn function will eventually also handle other

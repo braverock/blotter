@@ -27,6 +27,12 @@
 #' mirrors many execution platforms and brokerage
 #' requirements in particular asset classes where the side
 #' of a trade needs to be specified with the order.
+#'
+#' The \code{addTxns} function allows you to add multiple
+#' transactions to the portfolio, which is much faster than
+#' adding them one at a time. The \code{TxnData} object must
+#' have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
+#' column is optional.
 #' 
 #' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{initPortf()}
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
@@ -168,8 +174,8 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
             PrevPosAvgCost <- .getPosAvgCost(pname, Symbol, index(TxnData[row,]))
         }
         #TODO create vectorized versions of all these functions so we don't have to loop
-        TxnQty         <- as.numeric(TxnData[row,'Quantity'])
-        TxnPrice       <- as.numeric(TxnData[row,'Price'])
+        TxnQty         <- as.numeric(TxnData[row,'TxnQty'])
+        TxnPrice       <- as.numeric(TxnData[row,'TxnPrice'])
         # If TxnFees are to be used, it must be a column in TxnData
         TxnFees <- if (any(grepl("TxnFees", colnames(TxnData)))) {
           as.numeric(TxnData[row, "TxnFees"])
