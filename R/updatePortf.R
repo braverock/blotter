@@ -31,8 +31,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      
      # Calculate and store portfolio summary table
      Portfolio<-getPortfolio(pname) # refresh with an updated object
-     #if(is.null(Dates)) Dates <- xts:::time.xts(Portfolio$symbols[[1]]$posPL)  #not quite right, only using first symbol...
-     if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ), use.names=FALSE, recursive=FALSE)))
+     if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]])), use.names=FALSE, recursive=FALSE)))
      
      #Symbols = ls(Portfolio$symbols)
      Attributes = c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value', 'Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')

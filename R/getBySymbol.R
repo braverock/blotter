@@ -18,7 +18,8 @@
 
     # FUNCTION
     if(all(is.null(Dates)) || all(is.na(Dates))) # if no date is specified, get all available dates
-        Dates = xts:::time.xts(Portfolio$symbols[[1]]$posPL)
+        Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]])), use.names=FALSE, recursive=FALSE)))
+
     # else  Dates = xts:::time.xts(Portfolio$symbols[[1]]$posPL[Dates])
     if(!is.null(attr(Portfolio,'currency')) & native==FALSE) {
         p.ccy.str<-attr(Portfolio,'currency')
