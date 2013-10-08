@@ -51,10 +51,12 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
                 }
                 switch(attribute,
                        Gross.Value = {  result = xts(rowSums(abs(table), na.rm=TRUE), order.by=index(table))},
-                       Long.Value  = { tmat = apply(table,MARGIN=c(1,2),FUN=max,0)# comes out a matrix
+                       Long.Value  = { tmat = table
+                                       tmat[tmat < 0] <- 0
                                        result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
                        },
-                       Short.Value = { tmat = apply(table,MARGIN=c(1,2),FUN=min,0) # comes out a matrix
+                       Short.Value = { tmat = table
+                                       tmat[tmat > 0] <- 0
                                        result = xts(rowSums(tmat, na.rm=TRUE), order.by=index(table))
                        },
                        Net.Value   = {	result = xts(rowSums(table, na.rm=TRUE), order.by=index(table))	}
@@ -94,7 +96,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      # if(!is.timeBased(Dates)) Dates = xts:::time.xts(Portfolio$symbols[[1]][["posPL"]][Dates])
      #xts(,do.call(unlist,c(lapply(symbols,index),use.names=FALSE)))
      if(!is.timeBased(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]][Dates]) ), use.names=FALSE, recursive=FALSE)))
-     startDate = first(xts:::.parseISO8601(Dates))$first.time-.00001
+     startDate = first(Dates)-.00001
      # trim summary slot to not double count, related to bug 831 on R-Forge, and rbind new summary
      if( as.POSIXct(attr(Portfolio,'initDate'))>=startDate || length(Portfolio$summary)==0 ){
        Portfolio$summary<-summary #changes to subset might not return a empty dimnames set of columns
