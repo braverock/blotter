@@ -1,0 +1,18 @@
+\name{put.portfolio}
+\alias{put.portfolio}
+\title{put a portfolio object in .blotter env}
+\usage{
+  put.portfolio(portfolio.st, portfolio, envir = .blotter)
+}
+\arguments{
+  \item{portfolio.st}{string identifying portfolio}
+
+  \item{portfolio}{portfolio object}
+
+  \item{envir}{the environment to save the portfolio object
+  in, defaults to .blotter}
+}
+\description{
+  put a portfolio object in .blotter env
+}
+

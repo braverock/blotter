@@ -32,7 +32,7 @@
   Initializes a portfolio object, which is constructed from
   the following: $symbols: the identifier used for each
   instrument contained in the portfolio. Use
-  \code{names(Portfolio$symbols)} to get a list of symbols.
+  \code{ls(Portfolio$symbols)} to get a list of symbols.
   $symbols$[symbol]$txn: irregular xts object of
   transactions data $symbols$[symbol]$posPL: regular xts
   object of positions P&L calculated from transactions

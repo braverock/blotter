@@ -148,8 +148,9 @@ updateAcct <- function(name='default', Dates=NULL)
     summary[is.na(summary)] <- 0 # replace any NA's with zero
     Account$summary <- rbind(Account$summary, summary)
     # This function does not calculate End.Eq 
-
-    assign(paste("account",name,sep='.'),Account, envir=.blotter) 
+    
+    #account is already an environment, it's been updated in place
+    #assign(paste("account",name,sep='.'),Account, envir=.blotter) 
     return(name) #not sure this is a good idea
 }
 

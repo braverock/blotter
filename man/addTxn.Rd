@@ -1,10 +1,14 @@
 \name{addTxn}
 \alias{addTxn}
+\alias{addTxns}
 \title{Add transactions to a portfolio.}
 \usage{
   addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ...,
     TxnFees = 0, ConMult = NULL, verbose = TRUE,
-    eps = 0.000001)
+    eps = 1e-06)
+
+  addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ...,
+    ConMult = NULL)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a
@@ -36,6 +40,9 @@
   e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}
 
   \item{eps}{value to add to force unique indices}
+
+  \item{TxnData}{An xts object containing all required txn
+  fields (for addTxns)}
 }
 \description{
   When a trade or adjustment is made to the Portfolio, the
@@ -52,8 +59,8 @@
   name of a function) in which case the function is
   evaluated to determine the fee amount.
 
-  The \code{pennyPerShare} function provides a simple
-  example of a transaction cost function.
+  The \code{\link{pennyPerShare}} function provides a
+  simple example of a transaction cost function.
 
   Transactions which would cross the position through zero
   will be split into two transactions, one to flatten the
@@ -71,10 +78,14 @@
 \note{
   The addTxn function will eventually also handle other
   transaction types, such as adjustments for corporate
-  actions or expire/assign for options.
+  actions or expire/assign for options. See
+  \code{\link{addDiv}}
+
+  TODO figure out if we can fully vectorize the addTxns
+  function to make it faster
 }
 \author{
-  Peter Carl
+  Peter Carl, Brian G. Peterson
 }
 \seealso{
   \code{\link{addTxns}}, \code{\link{pennyPerShare}},

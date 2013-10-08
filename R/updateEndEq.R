@@ -34,7 +34,8 @@ updateEndEq <- function(Account, Dates=NULL)
     EndCapital = PrevEndEq + cumsum(Additions + Withdrawals + NetPerformance) 
     Account$summary$End.Eq[Dates] <- EndCapital
 	
-    assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
+	  #account is already an environment, it's been updated in place
+	  #assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
     return(aname) #not sure this is a good idea
 }
 

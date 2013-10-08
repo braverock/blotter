@@ -48,7 +48,7 @@
   function.
 
   To get to the CFTC thirteen columns add: Gross.Realized,
-  Commission, Net.Realized, Int.Income, Ch.Unrealized,
+  Commission, Net.Realized, Interest, Ch.Unrealized,
   Advisory.Fees, Wealth.Index Again, no need to add
   Wealth.Index. Eventually, these additional columns will
   be useful. Gross.Realized will be calculated as (Net)

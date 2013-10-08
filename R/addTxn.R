@@ -12,7 +12,7 @@
 #' name of a function) in which case the function is
 #' evaluated to determine the fee amount.
 #'
-#' The \code{pennyPerShare} function provides a simple
+#' The \code{\link{pennyPerShare}} function provides a simple
 #' example of a transaction cost function.
 #'
 #' Transactions which would cross the position through zero
@@ -38,15 +38,18 @@
 #' @param ConMult Contract/instrument multiplier for the Symbol if it is not defined in an instrument specification
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param eps value to add to force unique indices
+#' @param TxnData  An xts object containing all required txn fields (for addTxns)
 #' @note 
 #' The addTxn function will eventually also handle other transaction types, 
 #' such as adjustments for corporate actions or expire/assign for options. 
+#' See \code{\link{addDiv}} 
 #'
+#' TODO figure out if we can fully vectorize the addTxns function to make it faster
 #' @seealso \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
-#' @author Peter Carl
+#' @author Peter Carl, Brian G. Peterson
 #' @export
 addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE, eps=1e-06)
-{ # @author Peter Carl
+{ 
 
     pname <- Portfolio
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
@@ -76,11 +79,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         }
     }
 
-	#If there is no table for the symbol then create a new one
-	if (is.null(Portfolio$symbols[[Symbol]])){ 
-		addPortfInstr(Portfolio=pname, symbols=Symbol)
-		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-	}
+  	#If there is no table for the symbol then create a new one
+  	if (is.null(Portfolio$symbols[[Symbol]])){ 
+  		addPortfInstr(Portfolio=pname, symbols=Symbol)
+  		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+  	}
 
 
     # FUNCTION
@@ -112,13 +115,13 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     # Calculate any realized profit or loss (net of fees) from the transaction
     GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
 
-	# if the previous position is zero, RealizedPL = 0
-	# if previous position is positive and position is larger, RealizedPL =0
-	# if previous position is negative and position is smaller, RealizedPL =0
-	if(abs(PrevPosQty) < abs(PosQty) | (PrevPosQty = 0))
-		GrossTxnRealizedPL = 0
+  	# if the previous position is zero, RealizedPL = 0
+  	# if previous position is positive and position is larger, RealizedPL =0
+  	# if previous position is negative and position is smaller, RealizedPL =0
+  	if(abs(PrevPosQty) < abs(PosQty) | (PrevPosQty = 0))
+  		GrossTxnRealizedPL = 0
 	
-	NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
+	  NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
 
     # Store the transaction and calculations
     NewTxn = xts(t(c(TxnQty, TxnPrice, TxnValue, TxnAvgCost, PosQty, PosAvgCost, GrossTxnRealizedPL, txnfees, NetTxnRealizedPL, ConMult)), order.by=TxnDate)
@@ -126,11 +129,12 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
     if(verbose)
-#        print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
-        print(paste(format(TxnDate, "%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
-        #print(Portfolio$symbols[[Symbol]]$txn)
+      # print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
+      print(paste(format(TxnDate, "%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
+      #print(Portfolio$symbols[[Symbol]]$txn)
     
-    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
+    #portfolio is already an environment, it's been updated in place
+    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
 #' Example TxnFee cost function
@@ -141,17 +145,9 @@ pennyPerShare <- function(TxnQty) {
     return(abs(TxnQty) * -0.01)
 }
 
-#' Add multiple transactions to a portfolio
-#' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{\link{initPortf}}
-#' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
-#' @param TxnData  An xts object containing all required txn fields
-#' @param \dots Any other passthrough parameters
-#' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
-#' @param ConMult Contract or instrument multiplier for the Symbol if it is not defined in an instrument specification
-#' @seealso \code{\link{addTxn}}, \code{\link{initPortf}}
-#' @note
-#' TODO figure out if we can fully vectorize this function to make it faster
-addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
+#' @rdname addTxn
+#' @export
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL)
 {
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
@@ -176,7 +172,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         TxnPrice       <- as.numeric(TxnData[row,'Price'])
         # If TxnFees are to be used, it must be a column in TxnData
         TxnFees <- if (any(grepl("TxnFees", colnames(TxnData)))) {
-            as.numeric(TxnData[row, "TxnFees"])
+          as.numeric(TxnData[row, "TxnFees"])
         } else 0
         #TxnFees         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
         TxnValue       <- .calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult)
@@ -184,8 +180,8 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
         #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
         PosQty         <- PrevPosQty+TxnQty
         PosAvgCost     <- .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
-		GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
-		NetTxnRealizedPL = GrossTxnRealizedPL - TxnFees
+        GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
+        NetTxnRealizedPL = GrossTxnRealizedPL - TxnFees
         PrevPosQty     <- PosQty
         PrevPosAvgCost <- PosAvgCost
         
@@ -211,8 +207,9 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=TRUE, ..., ConMult=NULL)
     Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn,NewTxns) 
 
     if(verbose) print(NewTxns)
-    
-    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
+
+    #portfolio is already an environment, it's been updated in place
+    # assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
 #' Add cash dividend transactions to a portfolio.
@@ -281,7 +278,8 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
         print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", -TxnValue, sep=" "))
         #print(Portfolio$symbols[[Symbol]]$txn)
 
-    assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
+    #portfolio is already an environment, it's been updated in place
+    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development

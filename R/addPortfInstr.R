@@ -19,8 +19,8 @@ addPortfInstr <- function(Portfolio,symbols,...)
         portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = 0)
 		portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL		
     }
-
-    assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    
+    #portfolio is already an environment, it's been updated in place
+    #assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    
 }
 
 ###############################################################################

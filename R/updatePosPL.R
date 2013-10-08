@@ -219,8 +219,8 @@
     #stick it in posPL.ccy
     Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
 	
-    # assign Portfolio to environment
-    assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+    #portfolio is already an environment, it's been updated in place
+    #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
 ###############################################################################

@@ -3,7 +3,8 @@
 \title{Calculate portfolio instrument returns}
 \usage{
   PortfReturns(Account, method = c("contribution"), ...,
-    Dates = NULL, Portfolios = NULL)
+    Dates = NULL, Portfolios = NULL,
+    period = c("daily", "none"))
 }
 \arguments{
   \item{Account}{string name of the account to generate
@@ -20,6 +21,8 @@
   \item{Portfolios}{concatenated string vector for
   portfolio names to retrieve returns on, default NULL (all
   portfolios)}
+
+  \item{period}{one of daily}
 }
 \description{
   This function (for now) calculates return on initial

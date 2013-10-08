@@ -101,8 +101,9 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      }else{
        Portfolio$summary<-rbind(Portfolio$summary[paste('::',startDate,sep='')],summary)
      }
-     # assign Portfolio to environment
-     assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+
+     #portfolio is already an environment, it's been updated in place
+     #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
      
      return(pname) #not sure this is a good idea
 }
