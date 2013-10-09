@@ -168,49 +168,35 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
         }  
     }
 
-    for (row in 1:nrow(TxnData)) {
-        if(row==1) {
-            PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
-            PrevPosAvgCost <- .getPosAvgCost(pname, Symbol, index(TxnData[row,]))
-        }
-        #TODO create vectorized versions of all these functions so we don't have to loop
-        TxnQty         <- as.numeric(TxnData[row,'TxnQty'])
-        TxnPrice       <- as.numeric(TxnData[row,'TxnPrice'])
-        # If TxnFees are to be used, it must be a column in TxnData
-        TxnFees <- if (any(grepl("TxnFees", colnames(TxnData)))) {
-          as.numeric(TxnData[row, "TxnFees"])
-        } else 0
-        #TxnFees         <- ifelse( is.function(TxnFees), TxnFees(TxnQty, TxnPrice), TxnFees)
-        TxnValue       <- .calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult)
-        TxnAvgCost     <- .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
-        #PrevPosQty     <- getPosQty(pname, Symbol, index(TxnData[row,]))
-        PosQty         <- PrevPosQty+TxnQty
-        PosAvgCost     <- .calcPosAvgCost(PrevPosQty, PrevPosAvgCost, 0, PosQty, ConMult) # lag this over the data?
-        GrossTxnRealizedPL = TxnQty * ConMult * (PrevPosAvgCost - TxnAvgCost)
-        NetTxnRealizedPL = GrossTxnRealizedPL - TxnFees
-        PrevPosQty     <- PosQty
-        PrevPosAvgCost <- PosAvgCost
-        
-        NewTxn = xts(t(c(TxnQty, 
-                         TxnPrice, 
-                         TxnValue, 
-                         TxnAvgCost, 
-                         PosQty, 
-                         PosAvgCost, 
-                         GrossTxnRealizedPL,
-                         TxnFees,
-                         NetTxnRealizedPL,
-                         ConMult)),
-                         order.by=index(TxnData[row,]))
+    # initialize new transaction object
+    NewTxns <- xts(matrix(NA_real_, nrow(TxnData), 10L), index(TxnData))
+    colnames(NewTxns) <- c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
 
-        if(row==1){
-            NewTxns <- NewTxn
-            colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
-        } else {
-            NewTxns<-rbind(NewTxns, NewTxn)
-        }
+    NewTxns$Txn.Qty <- as.numeric(TxnData$TxnQty)
+    NewTxns$Txn.Price <- as.numeric(TxnData$TxnPrice)
+    if("TxnFees" %in% colnames(TxnData)) {
+      NewTxns$Txn.Fees <- as.numeric(TxnData$TxnFees)
+    } else {
+      NewTxns$Txn.Fees <- 0
     }
-    Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn,NewTxns) 
+    NewTxns$Txn.Value <- .calcTxnValue(NewTxns$Txn.Qty, NewTxns$Txn.Price, NewTxns$Txn.Fees, ConMult)
+    NewTxns$Txn.Avg.Cost <- .calcTxnAvgCost(NewTxns$Txn.Value, NewTxns$Txn.Qty, ConMult)
+    # intermediate objects to aid in vectorization; only first element is non-zero
+    initPosQty <- initPosAvgCost <- numeric(nrow(TxnData))
+    initPosQty[1] <- getPosQty(pname, Symbol, start(TxnData))
+    initPosAvgCost[1] <- .getPosAvgCost(pname, Symbol, start(TxnData))
+    # cumulative sum of transaction qty + initial position qty
+    NewTxns$Pos.Qty <- cumsum(initPosQty + NewTxns$Txn.Qty)
+    # only pass non-zero initial position qty and average cost
+    NewTxns$Pos.Avg.Cost <- .calcPosAvgCost_C(initPosQty[1], initPosAvgCost[1], NewTxns$Txn.Value, NewTxns$Pos.Qty, ConMult)
+    # need lagged position average cost
+    lagPosAvgCost <- c(initPosAvgCost[1], NewTxns$Pos.Avg.Cost[-nrow(NewTxns)])
+    NewTxns$Gross.Txn.Realized.PL <- NewTxns$Txn.Qty * ConMult * (lagPosAvgCost - NewTxns$Txn.Avg.Cost)
+    NewTxns$Net.Txn.Realized.PL <- NewTxns$Gross.Txn.Realized.PL - NewTxns$Txn.Fees
+    NewTxns$Con.Mult <- ConMult
+
+    # update portfolio with new transactions
+    Portfolio$symbols[[Symbol]]$txn <- rbind(Portfolio$symbols[[Symbol]]$txn, NewTxns) 
 
     if(verbose) print(NewTxns)
 

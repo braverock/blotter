@@ -22,6 +22,9 @@
     return(PosAvgCost)
 }
 
+.calcPosAvgCost_C <- function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
+    .Call("calcPosAvgCost", PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult, PACKAGE="blotter")
+
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/) 
