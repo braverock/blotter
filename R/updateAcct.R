@@ -150,7 +150,7 @@ updateAcct <- function(name='default', Dates=NULL)
     # This function does not calculate End.Eq 
     
     #account is already an environment, it's been updated in place
-    #assign(paste("account",name,sep='.'),Account, envir=.blotter) 
+    assign(paste("account",name,sep='.'),Account, envir=.blotter) 
     return(name) #not sure this is a good idea
 }
 

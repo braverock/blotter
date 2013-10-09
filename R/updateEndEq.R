@@ -35,7 +35,7 @@ updateEndEq <- function(Account, Dates=NULL)
     Account$summary$End.Eq[Dates] <- EndCapital
 	
 	  #account is already an environment, it's been updated in place
-	  #assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
+	  assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
     return(aname) #not sure this is a good idea
 }
 
