@@ -10,7 +10,7 @@
 #' @export
 getPos <- function(Portfolio, Symbol, Date, Columns=c('Pos.Qty','Pos.Avg.Cost'),n=1)
 { # @author Peter Carl
-    Portfolio<-getPortfolio(Portfolio)    
+    Portfolio<-.getPortfolio(Portfolio)    
     # FUNCTION
     PosData = Portfolio$symbols[[Symbol]]$txn
     #toDate = paste('::', Date, sep="")

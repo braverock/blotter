@@ -1,8 +1,11 @@
 \name{getPortfolio}
+\alias{.getPortfolio}
 \alias{getPortfolio}
 \title{get a portfolio object}
 \usage{
   getPortfolio(Portfolio, Dates = NULL, envir = .blotter)
+
+  .getPortfolio(Portfolio, envir = .blotter)
 }
 \arguments{
   \item{Portfolio}{string identifying portfolio}
@@ -13,6 +16,25 @@
   from, defaults to .blotter}
 }
 \description{
-  get a portfolio object
+  Get a portfolio object conssting of either a nested list
+  (\code{getPortfolio}) or a pointer to the portfolio in
+  the \code{.blotter} environment (\code{.getPortfolio})
+}
+\details{
+  Portfolios in blotter are stored as a set of nested,
+  hashed, environments.
+
+  The \code{getPortfolio} function returns a nested list.
+  If you are unsure, use this function.
+
+  The \code{.getPortfolio} function returns a pointer to
+  the actual environment. Environments in R are passed by
+  reference, and are not copied by the \code{<-} assignment
+  operator.  Any changes made to the environment returned
+  by \code{.getPortfolio} are global.  You have been
+  warned.
+}
+\seealso{
+  \code{\link{initPortf}}, \code{\link{updatePortf}}
 }
 

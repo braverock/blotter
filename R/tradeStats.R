@@ -86,24 +86,14 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols,use=c('txns','trades'))
+tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
 {
     ret <- NULL
     use <- use[1] #use the first(default) value only if user hasn't specified
     for (Portfolio in Portfolios){
-        ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
-        if (!grepl("portfolio\\.", pname)) 
-		Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
-    	else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
-    	if (inherits(Portfolio, "try-error")) 
-    		stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
-        if (!inherits(Portfolio, "portfolio")) 
-                stop("Portfolio", pname, "passed is not the name of a portfolio object.")
+        Portfolio<-.getPortfolio(pname)
         
-        
-        
-        ## FIXME: need a way to define symbols for each portfolio    
         if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
         else symbols <- Symbols
         

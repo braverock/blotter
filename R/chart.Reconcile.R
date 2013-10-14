@@ -167,6 +167,6 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id: chart.Posn.R 531 2011-01-14 16:42:23Z llevenson $
+# $Id$
 #
 ###############################################################################

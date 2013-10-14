@@ -19,6 +19,6 @@ put.portfolio <- function(portfolio.st, portfolio, envir=.blotter)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id: getPortfolio.R 742 2011-08-25 21:12:43Z braverock $
+# $Id$
 #
 ###############################################################################

@@ -8,19 +8,17 @@
 #' @export
 addPortfInstr <- function(Portfolio,symbols,...) 
 {
-    pname<-Portfolio
-    portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)	
-    if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-	initDate <- attr(portfolio, "initDate")    
-	currency <- attr(portfolio, "currency")
-    for(instrument in symbols){
-        portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = 0)
-        portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = 0)
-		portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL		
-    }
-    #portfolio is already an environment, it's been updated in place
-    #assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    
+  pname<-Portfolio
+  portfolio<-getPortfolio(pname)
+  initDate <- attr(portfolio, "initDate")    
+  currency <- attr(portfolio, "currency")
+  for(instrument in symbols){
+    portfolio$symbols[[instrument]]$txn = .initTxn(initDate = initDate, initPosQty = 0)
+    portfolio$symbols[[instrument]]$posPL = .initPosPL(initDate = initDate, initPosQty = 0)
+    portfolio$symbols[[instrument]][[paste('posPL',currency,sep='.')]] = portfolio$symbols[[instrument]]$posPL		
+  }
+  #portfolio is already an environment, it's been updated in place
+  #assign(paste("portfolio",as.character(pname),sep='.'),portfolio,envir=.blotter)    
 }
 
 ###############################################################################

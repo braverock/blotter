@@ -18,7 +18,7 @@
 updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
 { #' @author Peter Carl, Brian Peterson
      pname<-Portfolio
-     Portfolio<-getPortfolio(pname) # TODO add Date handling
+     Portfolio<-.getPortfolio(pname) # TODO add Date handling
      
      # FUNCTION
      if(is.null(Symbols)){
@@ -30,7 +30,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      }
      
      # Calculate and store portfolio summary table
-     Portfolio<-getPortfolio(pname) # refresh with an updated object
+     Portfolio<-.getPortfolio(pname) # refresh with an updated object
      if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(Portfolio$symbols, function(x) index(x[["posPL"]])), use.names=FALSE, recursive=FALSE)))
      
      #Symbols = ls(Portfolio$symbols)

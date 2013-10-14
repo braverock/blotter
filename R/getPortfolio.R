@@ -1,22 +1,49 @@
 #' get a portfolio object
+#' 
+#' Get a portfolio object conssting of either a nested list (\code{getPortfolio}) 
+#' or a pointer to the portfolio in the \code{.blotter} environment (\code{.getPortfolio})
+#' 
+#' Portfolios in blotter are stored as a set of nested, hashed, environments.
+#' 
+#' The \code{getPortfolio} function returns a nested list.  If you are unsure, use this function.
+#' 
+#' The \code{.getPortfolio} function returns a pointer to the actual environment.  
+#' Environments in R are passed by reference, and are not copied by the \code{<-} 
+#' assignment operator.  Any changes made to the environment returned by 
+#' \code{.getPortfolio} are global.  You have been warned.
+#'  
 #' @param Portfolio string identifying portfolio
 #' @param Dates dates subset, not yet supported
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
-#' @export
-getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter) #should symbol subsets be supported too?  probably not.
+#' 
+#' @seealso \code{\link{initPortf}}, \code{\link{updatePortf}}
+#' @export getPortfolio
+#' @export .getPortfolio
+getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter) 
+{ 
+  pname<-Portfolio
+  oport<- .getPortfolio(Portfolio, envir=envir)
+  port <- as.list.environment(oport)
+  port$symbols<-list()
+  port$symbols <- lapply(oport$symbols, as.list.environment)
+  
+  if(!is.null(Dates)){
+    message("date subsetting not yet supported")
+    #TODO add date subsetting in getPortfolio
+  }
+  
+  return(port)
+}  
+
+#' @rdname getPortfolio
+.getPortfolio <- function(Portfolio, envir=.blotter) 
 { # @author Brian Peterson
     pname<-Portfolio
     if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=envir),silent=TRUE))
     else Portfolio<-suppressWarnings(try(get(pname,envir=envir),silent=TRUE))
     if(inherits(Portfolio,"try-error"))
         stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-    if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")
-    
-    if(!is.null(Dates)){
-        message("date subsetting not yet supported")
-        #TODO add date subsetting in getPortfolio
-    }
-    
+    if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")  
     return(Portfolio)
 }
 

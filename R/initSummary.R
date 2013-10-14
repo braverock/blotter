@@ -18,6 +18,6 @@
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id: initTxn.R 306 2010-03-26 21:19:51Z peter_carl $
+# $Id$
 #
 ###############################################################################

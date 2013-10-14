@@ -11,10 +11,10 @@
 #' @rdname updatePosPL
 .updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
 { # @author Peter Carl, Brian Peterson
-    rmfirst=FALSE
-    prices=NULL
-    pname<-Portfolio
-    Portfolio<-getPortfolio(pname) 
+  rmfirst=FALSE
+  prices=NULL
+  pname<-Portfolio
+  Portfolio<-.getPortfolio(pname) 
 	p.ccy.str<-attr(Portfolio,'currency')
 	if(is.null(p.ccy.str)) p.ccy.str<-'NA'
     tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
@@ -105,7 +105,7 @@
 	tmpPL$Con.Mult.1 <- na.locf(tmpPL$Con.Mult.1)
 	tmpPL$Con.Mult.1 <- ifelse(is.na(tmpPL$Con.Mult) & !is.na(tmpPL$Con.Mult.1) , tmpPL$Con.Mult.1, tmpPL$Con.Mult)
 	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
-    tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult, fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
+  tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult, fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
 	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
 	
 	tmpPL$Pos.Avg.Cost.1 <- na.locf(tmpPL$Pos.Avg.Cost.1)
@@ -148,9 +148,9 @@
 		
 
     
-    # now do the currency conversions for the whole date range
-    TmpPeriods<-Portfolio$symbols[[Symbol]]$posPL[dateRange]
-
+  # now do the currency conversions for the whole date range
+  TmpPeriods<-Portfolio$symbols[[Symbol]]$posPL[dateRange]
+  
 	CcyMult = NA 
 	FXrate = NA
 	invert=FALSE
@@ -202,7 +202,7 @@
 	
 	
 	#multiply the correct columns 
-    columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+  columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
 	TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
 	TmpPeriods[,'Ccy.Mult']<-CcyMult
 		
@@ -216,11 +216,11 @@
 	TmpPeriods$Net.Trading.PL <- TmpPeriods$Net.Trading.PL + CcyMove
 	TmpPeriods$Period.Unrealized.PL <- TmpPeriods$Period.Unrealized.PL + CcyMove
 	
-    #stick it in posPL.ccy
-    Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
-	
-    #portfolio is already an environment, it's been updated in place
-    #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+  #stick it in posPL.ccy
+  Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
+  
+  #portfolio is already an environment, it's been updated in place
+  #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
 }
 
 ###############################################################################
