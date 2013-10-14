@@ -14,7 +14,8 @@ updateAcct <- function(name='default', Dates=NULL)
 
     Portfolios = names(Account$portfolios)
     
-    if(is.null(Dates)) Dates<-index(getPortfolio(Portfolios[1])$summary)[-1] 
+    port<-.getPortfolio(Portfolios[1])
+    if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(port$symbols, function(x) index(x[["posPL"]])), use.names=FALSE, recursive=FALSE)))
     
     #trim to only time prior to Dates
     if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
@@ -27,7 +28,7 @@ updateAcct <- function(name='default', Dates=NULL)
 
     # Append the portfolio summary data to the portfolio slot
     for(pname in Portfolios){
-        Portfolio = getPortfolio(pname)
+        Portfolio = .getPortfolio(pname)
         if(!is.null(attr(Portfolio,'currency'))) {
             p.ccy.str<-attr(Portfolio,'currency')
         } 
