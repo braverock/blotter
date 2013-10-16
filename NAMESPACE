@@ -1,3 +1,4 @@
+useDynLib(blotter)
 export(.getPortfolio)
 export(AcctReturns)
 export(PortfReturns)
