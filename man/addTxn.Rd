@@ -86,9 +86,6 @@
   transaction types, such as adjustments for corporate
   actions or expire/assign for options. See
   \code{\link{addDiv}}
-
-  TODO figure out if we can fully vectorize the addTxns
-  function to make it faster
 }
 \author{
   Peter Carl, Brian G. Peterson

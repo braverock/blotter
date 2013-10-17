@@ -50,7 +50,6 @@
 #' such as adjustments for corporate actions or expire/assign for options. 
 #' See \code{\link{addDiv}} 
 #'
-#' TODO figure out if we can fully vectorize the addTxns function to make it faster
 #' @seealso \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
 #' @author Peter Carl, Brian G. Peterson
 #' @export addTxn
