@@ -56,8 +56,8 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
     trades <- list()
     
     # identify start and end for each trade, where end means flat position
-    trades$Start <- index(posPL[which(posPL$Pos.Value!=0 & lag(posPL$Pos.Value)==0),])
-    trades$End <- index(posPL[which(posPL$Pos.Value==0 & lag(posPL$Pos.Value)!=0),])
+    trades$Start <- index(posPL[which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0),])
+    trades$End <- index(posPL[which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0),])
     
     # if the last trade is still open, adjust depending on whether wants open trades or not
     if(length(trades$Start)>length(trades$End))
