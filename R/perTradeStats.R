@@ -44,7 +44,7 @@
 #' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
 perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
-    portf <- getPortfolio(Portfolio)
+    portf <- .getPortfolio(Portfolio)
     
     if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
     
