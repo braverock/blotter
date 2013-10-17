@@ -36,8 +36,8 @@ SEXP calcPosAvgCost (SEXP PrevPosQty, SEXP PrevPosAvgCost, SEXP TxnValue, SEXP P
                 d_TxnValue[i]= -1.0 * d_TxnValue[i]; /* fix bug with negative average cost */
             d_PosAvgCost[i] = (d_PrevPosQty * d_PrevPosAvgCost * d_ConMult + d_TxnValue[i])/(d_PosQty[i]*d_ConMult);
         }
-        d_PrevPosQty <- d_PosQty[i];
-        d_PrevPosAvgCost <- d_PosAvgCost[i];
+        d_PrevPosQty = d_PosQty[i];
+        d_PrevPosAvgCost = d_PosAvgCost[i];
     }
     UNPROTECT(P);
     return(PosAvgCost);
