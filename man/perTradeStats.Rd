@@ -3,7 +3,7 @@
 \title{calculate flat to flat per-trade statistics}
 \usage{
   perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
-    ...)
+    tradeDef = "flat.to.flat", ...)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio}
@@ -15,6 +15,10 @@
   \item{includeOpenTrade}{whether to process only finished
   trades, or the last trade if it is still open, default
   TRUE}
+
+  \item{tradeDef}{string to determine which definition of
+  'trade' to use. Currently "flat.to.flat" (the default)
+  and "flat.to.reduced" are implemented.}
 
   \item{\dots}{any other passthrough parameters}
 }

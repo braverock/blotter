@@ -17,6 +17,7 @@
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param includeOpenTrade whether to process only finished trades, or the last trade if it is still open, default TRUE
+#' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
 #' @param \dots any other passthrough parameters
 #' @author Brian G. Peterson, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
@@ -43,22 +44,43 @@
 #' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function, 
 #' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
-perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, ...) {
+perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="flat.to.flat", ...) {
+
     portf <- .getPortfolio(Portfolio)
-    
     if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
     
     posPL <- portf$symbols[[Symbol]]$posPL
     
     instr <- getInstrument(Symbol)
     tick_value <- instr$multiplier*instr$tick_size
+
+    tradeDefn <- match.arg(tradeDefn, c("flat.to.flat","flat.to.reduced"))
     
     trades <- list()
-    
-    # identify start and end for each trade, where end means flat position
-    trades$Start <- index(posPL[which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0),])
-    trades$End <- index(posPL[which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0),])
-    
+    switch(tradeDefn,
+        flat.to.flat = {
+            # identify start and end for each trade, where end means flat position
+            trades$Start <- index(posPL[which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0),])
+            trades$End <- index(posPL[which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0),])
+        },
+        flat.to.reduced = {
+            # find all transactions that bring position closer to zero ('trade ends')
+            decrPos <- diff(abs(posPL$Pos.Qty)) < 0
+            # find all transactions that open a position ('trade starts')
+            initPos <- posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0
+            # all 'trades' start when we open a position, so determine which starts correspond to each end
+            StartEnd <- cumsum(!(decrPos[initPos | decrPos]))
+            starts <- sapply(split.default(StartEnd, StartEnd), function(i) rep(start(i), nrow(i)-1))
+            starts <- unlist(starts, recursive=FALSE, use.names=FALSE)
+            attributes(starts) <- attributes(index(StartEnd))
+            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
+            if(last(posPL)[,"Pos.Qty"] != 0)
+                starts <- c(starts, last(starts))
+            trades$Start <- starts
+            trades$End <- index(decrPos[decrPos])
+        }
+    )
+
     # if the last trade is still open, adjust depending on whether wants open trades or not
     if(length(trades$Start)>length(trades$End))
     {
