@@ -54,10 +54,10 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     instr <- getInstrument(Symbol)
     tick_value <- instr$multiplier*instr$tick_size
 
-    tradeDefn <- match.arg(tradeDefn, c("flat.to.flat","flat.to.reduced"))
+    tradeDef <- match.arg(tradeDef, c("flat.to.flat","flat.to.reduced"))
     
     trades <- list()
-    switch(tradeDefn,
+    switch(tradeDef,
         flat.to.flat = {
             # identify start and end for each trade, where end means flat position
             trades$Start <- index(posPL[which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0),])
