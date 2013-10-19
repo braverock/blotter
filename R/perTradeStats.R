@@ -60,24 +60,27 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     switch(tradeDef,
         flat.to.flat = {
             # identify start and end for each trade, where end means flat position
-            trades$Start <- index(posPL[which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0),])
-            trades$End <- index(posPL[which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0),])
+            trades$Start <- which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0)
+            trades$End <- which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0)
         },
         flat.to.reduced = {
             # find all transactions that bring position closer to zero ('trade ends')
             decrPos <- diff(abs(posPL$Pos.Qty)) < 0
             # find all transactions that open a position ('trade starts')
             initPos <- posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0
-            # all 'trades' start when we open a position, so determine which starts correspond to each end
-            StartEnd <- cumsum(!(decrPos[initPos | decrPos]))
-            starts <- sapply(split.default(StartEnd, StartEnd), function(i) rep(start(i), nrow(i)-1))
-            starts <- unlist(starts, recursive=FALSE, use.names=FALSE)
-            attributes(starts) <- attributes(index(StartEnd))
+            # 'trades' start when we open a position, so determine which starts correspond to each end
+            # add small amount to Start index, so starts will always occur before ends in StartEnd
+            Start <- xts(initPos[initPos,which.i=TRUE],index(initPos[initPos])+1e-5)
+            End   <- xts(decrPos[decrPos,which.i=TRUE],index(decrPos[decrPos]))
+            StartEnd <- merge(Start,End)
+            StartEnd$Start <- na.locf(StartEnd$Start)
+            StartEnd <- StartEnd[!is.na(StartEnd$End),]
+            # populate trades list
+            trades$Start <- drop(coredata(StartEnd$Start))
+            trades$End <- drop(coredata(StartEnd$End))
             # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
             if(last(posPL)[,"Pos.Qty"] != 0)
-                starts <- c(starts, last(starts))
-            trades$Start <- starts
-            trades$End <- index(decrPos[decrPos])
+                trades$Start <- c(trades$Start, last(trades$Start))
         }
     )
 
@@ -85,7 +88,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     if(length(trades$Start)>length(trades$End))
     {
         if(includeOpenTrade)
-            trades$End <- c(trades$End,last(index(posPL)))
+            trades$End <- c(trades$End,nrow(posPL))
         else
             trades$Start <- head(trades$Start, -1)
     }
@@ -93,15 +96,8 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     # calculate information about each trade
     for(i in 1:length(trades$End))
     {
-        #timespan <- paste(format(trades$Start[[i]], "%Y-%m-%d %H:%M:%OS6"),
-                #format(trades$End[[i]], "%Y-%m-%d %H:%M:%OS6"), sep="::")
-        timespan <- paste(trades$Start[[i]], trades$End[[i]], sep="/")
-        
-        trade <- posPL[timespan]        
-
-        # close and open may occur in at same index timestamp, must be corrected
-        if(first(trade)$Pos.Qty==0) trade <- tail(trade, -1)
-        if(last(trade)$Pos.Qty!=0) trade <- head(trade, -1)
+        timespan <- seq.int(trades$Start[i], trades$End[i])
+        trade <- posPL[timespan]
 
         # add cost basis column
         trade$Pos.Cost.Basis <- cumsum(trade$Txn.Value)
@@ -140,6 +136,8 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
         trades$tick.MAE[i] <- min(0,trade$tick.PL)
         trades$tick.MFE[i] <- max(0,trade$tick.PL)
     }
+    trades$Start <- index(posPL)[trades$Start]
+    trades$End <- index(posPL)[trades$End]
 
     return(as.data.frame(trades))
 } # end fn perTradeStats
