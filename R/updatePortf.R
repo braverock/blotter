@@ -82,14 +82,22 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      # thanks to Guy Yollin for the bug report and Josh Ulrich for the elegant approach to fixing it
      d <- duplicated(.index(summary)) | duplicated(.index(summary), fromLast=TRUE)
      if(any(d)){
-       f <- function(x) {
-         cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
-         cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-         setNames( merge(last(x[,cLast]), xts(t(colSums(x[,cSums],na.rm=TRUE)),last(index(x)))), colnames(x) )
-       }
+       # extract duplicated rows; get last row for each duplicate
        summary.dups <- summary[d,]
        ds <- duplicated(.index(summary.dups)) & !duplicated(.index(summary.dups), fromLast=TRUE)
-       slist <- period.apply(summary.dups, c(0, which(ds)), f)
+       # get the last value
+       cLast <- c('Long.Value', 'Short.Value', 'Net.Value', 'Gross.Value')
+       lastCols <- summary.dups[which(ds),cLast]
+       # sum values
+       cSums <- c('Period.Realized.PL', 'Period.Unrealized.PL', 'Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+       # take cumulative sum; keep last value for each duplicate
+       sumCols <- cumsum(summary.dups[,cSums])[which(ds),cSums]
+       # subtract previous value from current value, since we used cumsum
+       sumColsLag <- lag(sumCols)
+       sumColsLag[1,] <- 0
+       sumCols <- sumCols - sumColsLag
+       slist <- merge(sumCols,lastCols)      # combine aggregated objects
+       slist <- slist[,colnames(summary)]    # order columns
        summary <- rbind(summary[!d,], slist) # put it all back together
      }
      
