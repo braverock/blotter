@@ -23,9 +23,15 @@ getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter)
 { 
   pname<-Portfolio
   oport<- .getPortfolio(Portfolio, envir=envir)
-  port <- as.list.environment(oport)
-  port$symbols<-list()
-  port$symbols <- lapply(oport$symbols, as.list.environment)
+  if(is.environment(oport))
+      port <- as.list.environment(oport)
+  else
+      port <- oport
+  port$symbols <- lapply(oport$symbols, function(s) if(is.environment(s)) as.list.environment(s) else s)
+
+  class(port) <- class(oport)
+  attr(port, "currency") <- attr(oport, "currency")
+  attr(port, "initDate") <- attr(oport, "initDate")
   
   if(!is.null(Dates)){
     message("date subsetting not yet supported")
