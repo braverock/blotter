@@ -15,9 +15,21 @@
   \item{drop.time}{remove time component of POSIX datestamp
   (if any), default TRUE}
 }
+\value{
+  a multi-column \code{xts} time series, one column per
+  symbol, one row per day
+}
 \description{
   designed to collate information for high frequency
   portfolios
+}
+\details{
+  If you do not pass \code{Symbols}, then all symbols in
+  the provided \code{Portfolios} will be used.
+
+  The daily P&L is calculated from
+  \code{Net.Txn.Realized.PL} if by \code{dailyTxnPL} and
+  from \code{Net.Trading.PL} by \code{dailyEqPL}
 }
 \author{
   Brian G. Peterson

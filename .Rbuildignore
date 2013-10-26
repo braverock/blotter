@@ -1,1 +1,3 @@
 R/.vimrc
+^.*\.Rproj$
+^\.Rproj\.user$

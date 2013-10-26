@@ -224,11 +224,19 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
 #' 
 #' designed to collate information for high frequency portfolios
 #' 
+#' If you do not pass \code{Symbols}, then all symbols in the provided 
+#' \code{Portfolios} will be used.
+#' 
+#' The daily P&L is calculated from \code{Net.Txn.Realized.PL} if by 
+#' \code{dailyTxnPL} 
+#' and from \code{Net.Trading.PL} by \code{dailyEqPL}
+#' 
 #' @aliases dailyEqPL
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings
 #' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
 #' @author Brian G. Peterson
+#' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
 dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
