@@ -243,16 +243,8 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
-        ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
-        if (!grepl("portfolio\\.", pname)) 
-            Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
-        else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
-        if (inherits(Portfolio, "try-error")) 
-            stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
-        if (!inherits(Portfolio, "portfolio")) 
-            stop("Portfolio", pname, "passed is not the name of a portfolio object.")
-        
+        Portfolio <- getPortfolio(pname)        
         
         
         ## FIXME: need a way to define symbols for each portfolio    
@@ -286,17 +278,8 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
-        ## Error Handling Borrowed from getPortfolio
         pname <- Portfolio
-        if (!grepl("portfolio\\.", pname)) 
-            Portfolio <- try(get(paste("portfolio", pname, sep = "."), envir = .blotter), silent=TRUE)
-        else Portfolio <- try(get(pname, envir = .blotter), silent=TRUE)
-        if (inherits(Portfolio, "try-error")) 
-            stop(paste("Portfolio", pname, " not found, use initPortf() to create a new portfolio"))
-        if (!inherits(Portfolio, "portfolio")) 
-            stop("Portfolio", pname, "passed is not the name of a portfolio object.")
-        
-        
+        Portfolio <- getPortfolio(pname)        
         
         ## FIXME: need a way to define symbols for each portfolio    
         if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
