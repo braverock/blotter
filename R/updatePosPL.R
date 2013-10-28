@@ -53,10 +53,10 @@
 	#subset Prices by dateRange too...
 	Prices<-prices[dateRange]
     
-    if(nrow(Prices)<1) {
-        Prices=xts(cbind(Prices=as.numeric(last(prices[paste('::',endDate,sep='')]))),as.Date(endDate))
-        warning('no Prices available for ',Symbol,' in ',dateRange,' : using last available price and marking to ', endDate)
-    }
+  if(nrow(Prices)<1) {
+      Prices=xts(cbind(Prices=as.numeric(last(prices[paste('::',endDate,sep='')]))),as.Date(endDate))
+      warning('no Prices available for ',Symbol,' in ',dateRange,' : using last available price and marking to ', endDate)
+  }
 	
 	# Prices <- Prices[dateRange][,1] # only take the first column, if there is more than one
 	
@@ -84,67 +84,65 @@
 	
 	#browser()
 	
-	if(is.na(tmpPL$Prices[1])){
+	if(is.na(tmpPL[,'Prices'][1])){
 		#first price is NA, it would be nice to fill it in with a previous last valid price
 		fprice <- last(prices[paste('::',startDate,sep='')])
-		if (length(fprice)==1) tmpPL$Prices[1] <- fprice 
+		if (length(fprice)==1) tmpPL[,'Prices'][1] <- fprice 
 	}
 	
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
-	tmpPL$Prices <- na.locf(tmpPL$Prices)
+	tmpPL[,'Prices'] <- na.locf(	tmpPL[,'Prices'])
 
-	# na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows	
-	#tmpPL$Pos.Qty.1 <- na.locf(tmpPL$Pos.Qty.1)
-	#lagPosQty<-Lag(tmpPL$Pos.Qty.1)
-	tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(tmpPL$Pos.Qty.1), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
-	#tmpPL$Pos.Qty <- ifelse(is.na(tmpPL$Pos.Qty) & !is.na(lagPosQty), tmpPL$Pos.Qty.1, tmpPL$Pos.Qty)
-	tmpPL$Pos.Qty <- na.locf(tmpPL$Pos.Qty)
+  #select among our merged columns 
+	tmpPL[,'Pos.Qty'] <- ifelse(is.na(	tmpPL[,'Pos.Qty']) & !is.na(	tmpPL[,'Pos.Qty.1']), 	tmpPL[,'Pos.Qty.1'], 	tmpPL[,'Pos.Qty'])
+  tmpPL[,'Con.Mult.1'] <- ifelse(is.na(	tmpPL[,'Con.Mult']) & !is.na(	tmpPL[,'Con.Mult.1']) , 	tmpPL[,'Con.Mult.1'], 	tmpPL[,'Con.Mult'])
+  tmpPL[,'Pos.Avg.Cost'] <- ifelse(is.na(	tmpPL[,'Pos.Avg.Cost']) & !is.na(	tmpPL[,'Pos.Avg.Cost.1']) ,	tmpPL[,'Pos.Avg.Cost.1'], 	tmpPL[,'Pos.Avg.Cost'])
+  
+  # na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows	
+  columns<-c('Pos.Qty','Con.Mult','Con.Mult.1','Pos.Avg.Cost','Pos.Avg.Cost.1')
+  tmpPL[,columns] <- na.locf(tmpPL[,columns])
     
-    
-    #TODO check for instrument multiplier rather than doing all this messing around, if possible.
-	tmpPL$Con.Mult.1 <- na.locf(tmpPL$Con.Mult.1)
-	tmpPL$Con.Mult.1 <- ifelse(is.na(tmpPL$Con.Mult) & !is.na(tmpPL$Con.Mult.1) , tmpPL$Con.Mult.1, tmpPL$Con.Mult)
-	tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult)
-  tmpPL$Con.Mult <- na.locf(tmpPL$Con.Mult, fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
-	tmpPL$Con.Mult <- ifelse(is.na(tmpPL$Con.Mult) ,1, tmpPL$Con.Mult)
-	
-	tmpPL$Pos.Avg.Cost.1 <- na.locf(tmpPL$Pos.Avg.Cost.1)
-	tmpPL$Pos.Avg.Cost <- ifelse(is.na(tmpPL$Pos.Avg.Cost) & !is.na(tmpPL$Pos.Avg.Cost.1) ,tmpPL$Pos.Avg.Cost.1, tmpPL$Pos.Avg.Cost)
-	tmpPL$Pos.Avg.Cost <- na.locf(tmpPL$Pos.Avg.Cost)
+  #TODO check for instrument multiplier rather than doing all this messing around, if possible.
+	#tmpPL[,'Con.Mult.1'] <- na.locf(	tmpPL[,'Con.Mult.1'])
+	#tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Con.Mult'])
+  #tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Con.Mult'], fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
+	tmpPL[,'Con.Mult'] <- ifelse(is.na(	tmpPL[,'Con.Mult']) ,1, 	tmpPL[,'Con.Mult'])
+	#tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Pos.Avg.Cost.1'])
+	#tmpPL[,'Pos.Avg.Cost'] <- na.locf(	tmpPL[,'Pos.Avg.Cost'])
 	
 	# zerofill Txn.Value, Txn.Fees
-	tmpPL$Txn.Value <- ifelse(is.na(tmpPL$Txn.Value),0, tmpPL$Txn.Value)
+	tmpPL[,'Txn.Value'] <- ifelse(is.na(	tmpPL[,'Txn.Value']),0, 	tmpPL[,'Txn.Value'])
 	
-	tmpPL$Txn.Fees  <- ifelse(is.na(tmpPL$Txn.Fees) ,0, tmpPL$Txn.Fees)
+	tmpPL[,'Txn.Fees']  <- ifelse(is.na(tmpPL[,'Txn.Fees']) ,0, tmpPL[,'Txn.Fees'])
 	
 	# matrix calc Pos.Qty * Price * Con.Mult to get Pos.Value
-	tmpPL$Pos.Value <- tmpPL$Pos.Qty * tmpPL$Con.Mult * tmpPL$Prices
+	tmpPL[,'Pos.Value'] <- tmpPL[,'Pos.Qty'] * 	tmpPL[,'Con.Mult'] * tmpPL[,'Prices']
 	
-	LagValue<-Lag(tmpPL$Pos.Value)
+	LagValue<-Lag(tmpPL[,'Pos.Value'])
 	LagValue<-ifelse(is.na(LagValue),0,LagValue) # needed to avoid a possible NA on the first value that would mess up the Gross.Trading.PL calc
-	tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value- LagValue - tmpPL$Txn.Value
+	tmpPL[,'Gross.Trading.PL'] <- tmpPL[,'Pos.Value']- LagValue - 	tmpPL[,'Txn.Value']
 	
 	
 	# alternate matrix calc for Realized&Unrealized PL that is only dependent on Txn PL and Gross.Trading.PL
-	tmpPL$Net.Txn.Realized.PL <- ifelse(is.na(tmpPL$Net.Txn.Realized.PL),0,tmpPL$Net.Txn.Realized.PL)
-	tmpPL$Gross.Txn.Realized.PL <- ifelse(is.na(tmpPL$Gross.Txn.Realized.PL),0,tmpPL$Gross.Txn.Realized.PL)
+	tmpPL[,'Net.Txn.Realized.PL'] <- ifelse(is.na(tmpPL[,'Net.Txn.Realized.PL']),0,tmpPL[,'Net.Txn.Realized.PL'])
+	tmpPL[,'Gross.Txn.Realized.PL'] <- ifelse(is.na(tmpPL[,'Gross.Txn.Realized.PL']),0,tmpPL[,'Gross.Txn.Realized.PL'])
 	
-	#tmpPL$Gross.Trading.PL <- tmpPL$Pos.Value - (tmpPL$Pos.Qty*tmpPL$Pos.Avg.Cost) +  tmpPL$Gross.Txn.Realized.PL
-	tmpPL$Period.Realized.PL <- tmpPL$Gross.Txn.Realized.PL
-	tmpPL$Period.Unrealized.PL <- round(tmpPL$Gross.Trading.PL - tmpPL$Period.Realized.PL,2)
+	#tmpPL[,'Gross.Trading.PL'] <- tmpPL[,'Pos.Value'] - (tmpPL[,'Pos.Qty']*	tmpPL[,'Pos.Avg.Cost']) +  tmpPL[,'Gross.Txn.Realized.PL']
+	tmpPL$Period.Realized.PL <- tmpPL[,'Gross.Txn.Realized.PL']
+	tmpPL$Period.Unrealized.PL <- round(tmpPL[,'Gross.Trading.PL'] - tmpPL$Period.Realized.PL,2)
 	
 	# matrix calc Net.Trading.PL as Gross.Trading.PL + Txn.Fees
-	tmpPL$Net.Trading.PL <- tmpPL$Gross.Trading.PL + tmpPL$Txn.Fees
+	tmpPL[,'Net.Trading.PL'] <- tmpPL[,'Gross.Trading.PL'] + tmpPL[,'Txn.Fees']
 
 	# Ccy.Mult for this step is always 1
-	tmpPL$Ccy.Mult<-rep(1,nrow(tmpPL))
+	tmpPL[,'Ccy.Mult']<-rep(1,nrow(tmpPL))
 	
 	# reorder,discard  columns for insert into portfolio object
 	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
 
 	# rbind to $posPL slot
 	tmpPL <- tmpPL[dateRange] #subset to get rid of any prior period Txn or PosPL rows we inserted
-	Portfolio$symbols[[Symbol]]$posPL<-rbind(Portfolio$symbols[[Symbol]]$posPL,tmpPL)
+	Portfolio[['symbols']][[Symbol]][['posPL']]<-rbind(Portfolio[['symbols']][[Symbol]][['posPL']],tmpPL)
 		
 
     
@@ -200,24 +198,26 @@
 		CcyMult<-1/CcyMult
 	}
 	
-	
-	#multiply the correct columns 
-  columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-	TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
-	TmpPeriods[,'Ccy.Mult']<-CcyMult
-		
-	#add change in Pos.Value in base currency
-	LagValue <- as.numeric(last(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]$Pos.Value))
-	if(length(LagValue)==0) LagValue <- 0
-	LagPos.Value <- lag(TmpPeriods$Pos.Value,1)
-	LagPos.Value[1] <- LagValue
-	CcyMove <- TmpPeriods$Pos.Value - LagPos.Value - TmpPeriods$Txn.Value - TmpPeriods$Period.Unrealized.PL - TmpPeriods$Period.Realized.PL
-	TmpPeriods$Gross.Trading.PL <- TmpPeriods$Gross.Trading.PL + CcyMove
-	TmpPeriods$Net.Trading.PL <- TmpPeriods$Net.Trading.PL + CcyMove
-	TmpPeriods$Period.Unrealized.PL <- TmpPeriods$Period.Unrealized.PL + CcyMove
-	
-  #stick it in posPL.ccy
-  Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio$symbols[[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
+	if (length(CcyMult)==1 && CcyMult==1){
+	  Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]] <- Portfolio[['symbols']][[Symbol]][['posPL']]
+	} else {
+	  #multiply the correct columns 
+	  columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
+	  TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
+	  TmpPeriods[,'Ccy.Mult']<-CcyMult
+	  
+	  #add change in Pos.Value in base currency
+	  LagValue <- as.numeric(last(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][,'Pos.Value']))
+	  if(length(LagValue)==0) LagValue <- 0
+	  LagPos.Value <- lag(TmpPeriods[,'Pos.Value'],1)
+	  LagPos.Value[1] <- LagValue
+	  CcyMove <- TmpPeriods[,'Pos.Value'] - LagPos.Value - TmpPeriods[,'Txn.Value'] - TmpPeriods[,'Period.Unrealized.PL'] - TmpPeriods[,'Period.Realized.PL']
+    columns<-c('Gross.Trading.PL','Net.Trading.PL','Period.Unrealized')
+    TmpPeriods[,columns] <- TmpPeriods[,columns] + CcyMove
+	  
+	  #stick it in posPL.ccy
+	  Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
+	}
   
   #portfolio is already an environment, it's been updated in place
   #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
