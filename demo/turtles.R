@@ -1,5 +1,12 @@
 
 # - Turtle System #1
+# Author: Josh Ulrich
+
+## NOTE:  if you are trying to crete trading systems, 
+## the 'quantstrat' package is more likely to meet your needs. 
+##
+## This demo is designed to show how all the parts of blotter fit together,
+## it is not optimized for efficiency.
 
 # required libraries
 require(quantmod)
@@ -168,9 +175,9 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
     # Maintain Position
   } # End symbol loop
   # Now that we've updated all of our trades, its time to mark the book
-  updatePortf(Portfolio = portfolio, Dates = CurrentDate)
-  updateAcct(account, Dates = CurrentDate)
-  updateEndEq(account, Dates = CurrentDate)
+  updatePortf(Portfolio = portfolio)
+  updateAcct(account)
+  updateEndEq(account)
 } # End dates loop
 
 # Final values
