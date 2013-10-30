@@ -79,63 +79,60 @@
 		Txns <- last(Portfolio$symbols[[Symbol]]$txn[paste('::',startDate,sep='')])
 	} 
 	
-	#	 line up transaction with Dates list
-	tmpPL <- merge(Txns, priorPL, Prices) # most Txn columns will get discarded later, as will the rows from 'before' the startDate
+	# Get values frop priorPL into Txns; only keep columns we need from Txns
+	# NOTE: There will usually be fewer transactions than price observations,
+	# so do as much as possible before merging with potentially large price data
+	TxnsCols <- c('Txn.Value','Txn.Fees','Gross.Txn.Realized.PL','Net.Txn.Realized.PL','Pos.Qty','Pos.Avg.Cost','Con.Mult')
+	tmpPL <- merge(Txns[,TxnsCols], xts(,index(priorPL)))
+	if(is.na(tmpPL[1,'Pos.Qty']))
+		tmpPL[1,'Pos.Qty'] <- priorPL[1,'Pos.Qty']
+	if(is.na(tmpPL[1,'Con.Mult']))
+		tmpPL[1,'Con.Mult'] <- priorPL[1,'Con.Mult']
+	if(is.na(tmpPL[1,'Pos.Avg.Cost']))
+		tmpPL[1,'Pos.Avg.Cost'] <- priorPL[1,'Pos.Avg.Cost']
 	
-	#browser()
+	# Now merge with prices
+	tmpPL <- merge(tmpPL, Prices)
 	
-	if(is.na(tmpPL[,'Prices'][1])){
+	if(is.na(tmpPL[1,'Prices'])){
 		#first price is NA, it would be nice to fill it in with a previous last valid price
 		fprice <- last(prices[paste('::',startDate,sep='')])
-		if (length(fprice)==1) tmpPL[,'Prices'][1] <- fprice 
+		if (length(fprice)==1) tmpPL[1,'Prices'] <- fprice 
 	}
-	
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
-	tmpPL[,'Prices'] <- na.locf(	tmpPL[,'Prices'])
-
-  #select among our merged columns 
-	tmpPL[,'Pos.Qty'] <- ifelse(is.na(	tmpPL[,'Pos.Qty']) & !is.na(	tmpPL[,'Pos.Qty.1']), 	tmpPL[,'Pos.Qty.1'], 	tmpPL[,'Pos.Qty'])
-  tmpPL[,'Con.Mult.1'] <- ifelse(is.na(	tmpPL[,'Con.Mult']) & !is.na(	tmpPL[,'Con.Mult.1']) , 	tmpPL[,'Con.Mult.1'], 	tmpPL[,'Con.Mult'])
-  tmpPL[,'Pos.Avg.Cost'] <- ifelse(is.na(	tmpPL[,'Pos.Avg.Cost']) & !is.na(	tmpPL[,'Pos.Avg.Cost.1']) ,	tmpPL[,'Pos.Avg.Cost.1'], 	tmpPL[,'Pos.Avg.Cost'])
-  
-  # na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows	
-  columns<-c('Pos.Qty','Con.Mult','Con.Mult.1','Pos.Avg.Cost','Pos.Avg.Cost.1')
-  tmpPL[,columns] <- na.locf(tmpPL[,columns])
-    
-  #TODO check for instrument multiplier rather than doing all this messing around, if possible.
-	#tmpPL[,'Con.Mult.1'] <- na.locf(	tmpPL[,'Con.Mult.1'])
-	#tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Con.Mult'])
-  #tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Con.Mult'], fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
-	tmpPL[,'Con.Mult'] <- ifelse(is.na(	tmpPL[,'Con.Mult']) ,1, 	tmpPL[,'Con.Mult'])
-	#tmpPL[,'Con.Mult'] <- na.locf(	tmpPL[,'Pos.Avg.Cost.1'])
-	#tmpPL[,'Pos.Avg.Cost'] <- na.locf(	tmpPL[,'Pos.Avg.Cost'])
+	# and na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows
+	columns <- c('Prices','Pos.Qty','Con.Mult','Pos.Avg.Cost')
+	tmpPL[,columns] <- na.locf(tmpPL[,columns])
+	    
+	#TODO check for instrument multiplier rather than doing all this messing around, if possible.
+	tmpPL[,'Con.Mult'] <- na.locf(tmpPL[,'Con.Mult'], fromLast=TRUE) # carry NA's backwards too, might cause problems with options contracts that change multiplier
+	if(any(naConMult <- is.na(tmpPL[,'Con.Mult'])))  # belt + suspenders?
+		tmpPL[naConMult,'Con.Mult'] <- 1
 	
 	# zerofill Txn.Value, Txn.Fees
-	tmpPL[,'Txn.Value'] <- ifelse(is.na(	tmpPL[,'Txn.Value']),0, 	tmpPL[,'Txn.Value'])
-	
-	tmpPL[,'Txn.Fees']  <- ifelse(is.na(tmpPL[,'Txn.Fees']) ,0, tmpPL[,'Txn.Fees'])
+	tmpPL[is.na(tmpPL[,'Txn.Value']),'Txn.Value'] <- 0
+	tmpPL[is.na(tmpPL[,'Txn.Fees']),'Txn.Fees']  <- 0
 	
 	# matrix calc Pos.Qty * Price * Con.Mult to get Pos.Value
-	tmpPL[,'Pos.Value'] <- tmpPL[,'Pos.Qty'] * 	tmpPL[,'Con.Mult'] * tmpPL[,'Prices']
+	tmpPL <- merge(tmpPL, Pos.Value=drop(tmpPL[,'Pos.Qty'] * tmpPL[,'Con.Mult'] * tmpPL[,'Prices']))
 	
-	LagValue<-Lag(tmpPL[,'Pos.Value'])
-	LagValue<-ifelse(is.na(LagValue),0,LagValue) # needed to avoid a possible NA on the first value that would mess up the Gross.Trading.PL calc
-	tmpPL[,'Gross.Trading.PL'] <- tmpPL[,'Pos.Value']- LagValue - 	tmpPL[,'Txn.Value']
-	
+	LagValue <- lag(tmpPL[,'Pos.Value'])
+	LagValue[is.na(LagValue)] <- 0  # needed to avoid a possible NA on the first value that would mess up the Gross.Trading.PL calc
+	tmpPL <- merge(tmpPL, Gross.Trading.PL=drop(tmpPL[,'Pos.Value']- LagValue - tmpPL[,'Txn.Value']))
 	
 	# alternate matrix calc for Realized&Unrealized PL that is only dependent on Txn PL and Gross.Trading.PL
-	tmpPL[,'Net.Txn.Realized.PL'] <- ifelse(is.na(tmpPL[,'Net.Txn.Realized.PL']),0,tmpPL[,'Net.Txn.Realized.PL'])
-	tmpPL[,'Gross.Txn.Realized.PL'] <- ifelse(is.na(tmpPL[,'Gross.Txn.Realized.PL']),0,tmpPL[,'Gross.Txn.Realized.PL'])
+	tmpPL[is.na(tmpPL[,'Net.Txn.Realized.PL']),'Net.Txn.Realized.PL'] <- 0
+	tmpPL[is.na(tmpPL[,'Gross.Txn.Realized.PL']),'Gross.Txn.Realized.PL'] <- 0
 	
-	#tmpPL[,'Gross.Trading.PL'] <- tmpPL[,'Pos.Value'] - (tmpPL[,'Pos.Qty']*	tmpPL[,'Pos.Avg.Cost']) +  tmpPL[,'Gross.Txn.Realized.PL']
-	tmpPL$Period.Realized.PL <- tmpPL[,'Gross.Txn.Realized.PL']
-	tmpPL$Period.Unrealized.PL <- round(tmpPL[,'Gross.Trading.PL'] - tmpPL$Period.Realized.PL,2)
+	# matrix calc Period.*.PL, Net.Trading.PL as Gross.Trading.PL + Txn.Fees
+	tmpPL <- merge(tmpPL,
+		Period.Realized.PL = drop(tmpPL[,'Gross.Txn.Realized.PL']),  # believe it or not, merging is faster than renaming
+		Period.Unrealized.PL = drop(round(tmpPL[,'Gross.Trading.PL'] - tmpPL[,'Gross.Txn.Realized.PL'], 2)),
+		Net.Trading.PL = drop(tmpPL[,'Gross.Trading.PL'] + tmpPL[,'Txn.Fees']),
+		Ccy.Mult = 1)  # Ccy.Mult for this step is always 1
 	
-	# matrix calc Net.Trading.PL as Gross.Trading.PL + Txn.Fees
-	tmpPL[,'Net.Trading.PL'] <- tmpPL[,'Gross.Trading.PL'] + tmpPL[,'Txn.Fees']
-
 	# Ccy.Mult for this step is always 1
-	tmpPL[,'Ccy.Mult']<-rep(1,nrow(tmpPL))
+	tmpPL[,'Ccy.Mult'] <- 1
 	
 	# reorder,discard  columns for insert into portfolio object
 	tmpPL <- tmpPL[,c('Pos.Qty', 'Con.Mult', 'Ccy.Mult', 'Pos.Value', 'Pos.Avg.Cost', 'Txn.Value',  'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')]
