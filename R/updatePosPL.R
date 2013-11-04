@@ -183,7 +183,7 @@
             if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
 			else CcyMult <- FXrate[dateRange]
 			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
-			CcyMult <- drop(CcyMult[index(TmpPeriods)])
+			CcyMult <- CcyMult[index(TmpPeriods)]
 		} else {
 			CcyMult<-as.numeric(FXrate)
 		}
@@ -200,8 +200,8 @@
 	} else {
 	  #multiply the correct columns 
 	  columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-	  TmpPeriods[,columns]<-TmpPeriods[,columns]*CcyMult
-	  TmpPeriods[,'Ccy.Mult']<-CcyMult
+	  TmpPeriods[,columns] <- TmpPeriods[,columns] * drop(CcyMult)  # drop dims so recycling will occur
+	  TmpPeriods[,'Ccy.Mult'] <- CcyMult
 	  
 	  #add change in Pos.Value in base currency
 	  LagValue <- as.numeric(last(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][,'Pos.Value']))
@@ -209,8 +209,8 @@
 	  LagPos.Value <- lag(TmpPeriods[,'Pos.Value'],1)
 	  LagPos.Value[1] <- LagValue
 	  CcyMove <- TmpPeriods[,'Pos.Value'] - LagPos.Value - TmpPeriods[,'Txn.Value'] - TmpPeriods[,'Period.Unrealized.PL'] - TmpPeriods[,'Period.Realized.PL']
-    columns<-c('Gross.Trading.PL','Net.Trading.PL','Period.Unrealized')
-    TmpPeriods[,columns] <- TmpPeriods[,columns] + CcyMove
+	  columns<-c('Gross.Trading.PL','Net.Trading.PL','Period.Unrealized.PL')
+	  TmpPeriods[,columns] <- TmpPeriods[,columns] + drop(CcyMove)  # drop dims so recycling will occur
 	  
 	  #stick it in posPL.ccy
 	  Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
