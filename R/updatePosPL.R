@@ -9,7 +9,7 @@
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl, Brian Peterson
 #' @rdname updatePosPL
-.updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, ...)
+.updatePosPL <- function(Portfolio, Symbol, Dates=NULL, Prices=NULL, ConMult=NULL, Interval=NULL, ...)
 { # @author Peter Carl, Brian Peterson
   rmfirst=FALSE
   prices=NULL
@@ -40,6 +40,10 @@
             .parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
             index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
         } else xts:::time.xts(prices[Dates])
+    }
+    if(!is.null(Interval)) {
+        ep_args <- .parse_interval(Interval)
+        prices <- prices[endpoints(prices, on=ep_args$on, k=ep_args$k)]
     }
     
     if(ncol(prices)>1) prices=getPrice(Prices,Symbol)
@@ -218,6 +222,27 @@
   
   #portfolio is already an environment, it's been updated in place
   #assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+}
+
+.parse_interval <- function(interval) {
+
+    # taken/modified from xts:::last.xts
+    ip <- gsub("^([[:digit:]]*)([[:alpha:]]+)", "\\1 \\2", interval)
+    ip <- strsplit(ip, " ", fixed = TRUE)[[1]]
+    if (length(ip) > 2 || length(ip) < 1) 
+        stop(paste("incorrectly specified", sQuote("interval")))
+
+    rpu <- ip[length(ip)]
+    rpf <- ifelse(length(ip) > 1, as.numeric(ip[1]), 1)
+    
+    dt.list <- c("milliseconds", "ms", "microseconds", "us", "secs",
+      "mins", "hours", "days", "weeks", "months", "quarters", "years")
+    dt.ind <- pmatch(rpu, dt.list)
+    if(is.na(dt.ind))
+        stop("could not uniquely match '", rpu, "' in '", paste0(dt.list,collapse=",'", "'"))
+    dt <- dt.list[dt.ind]
+
+    list(on=dt, k=rpf)
 }
 
 ###############################################################################

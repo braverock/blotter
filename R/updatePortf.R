@@ -11,11 +11,14 @@
 #'
 #' @param Portfolio string identifying a portfolio
 #' @param Symbols character vector identifying symbols to update the portfolio for, default NULL
-#' @param Dates xts-style ISO-8601 time range to run updatePortf over, default NULL (will use times from Prices
+#' @param Dates optional xts-style ISO-8601 time range to run updatePortf over, default NULL (will use times from Prices)
 #' @param Prices optional xts object containing prices and timestamps to mark the book on, default NULL
+#' @param Interval optional character string, containing one of "millisecond" (or "ms"), "microsecond" (or "us"),
+#' "second", "minute", "hour", "day", "week", "month", "quarter", or "year".  This can optionally be preceded by
+#' a positive integer, or followed by "s".
 #' @param \dots any other passthrough parameters
 #' @export
-updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
+updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, Interval=Interval, ...)
 { #' @author Peter Carl, Brian Peterson
      pname<-Portfolio
      Portfolio<-.getPortfolio(pname) # TODO add Date handling
@@ -26,7 +29,7 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, ...)
      }
      for(symbol in Symbols){
        tmp_instr<-try(getInstrument(symbol), silent=TRUE)
-       .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, ...=...)
+       .updatePosPL(Portfolio=pname, Symbol=as.character(symbol), Dates=Dates, Prices=Prices, Interval=Interval, ...=...)
      }
      
      # Calculate and store portfolio summary table
