@@ -5,6 +5,9 @@
 #' @param Dates xts subset of dates, e.g., "2007-01::2008-04-15". These dates must appear in the price stream
 #' @param Prices periodic prices in an xts object with a columnname compatible with \code{getPrice}
 #' @param ConMult if necessary, numeric contract multiplier, not needed if instrument is defined. 
+#' @param Interval optional character string, containing one of "millisecond" (or "ms"), "microsecond" (or "us"),
+#' "second", "minute", "hour", "day", "week", "month", "quarter", or "year".  This can optionally be preceded by
+#' a positive integer, or followed by "s".
 #' @param \dots any other passthru parameters
 #' @return Regular time series of position information and PL 
 #' @author Peter Carl, Brian Peterson

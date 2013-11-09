@@ -3,7 +3,7 @@
 \title{update Portfilio P&L over a Dates range}
 \usage{
   updatePortf(Portfolio, Symbols = NULL, Dates = NULL,
-    Prices = NULL, ...)
+    Prices = NULL, Interval = Interval, ...)
 }
 \arguments{
   \item{Portfolio}{string identifying a portfolio}
@@ -11,12 +11,18 @@
   \item{Symbols}{character vector identifying symbols to
   update the portfolio for, default NULL}
 
-  \item{Dates}{xts-style ISO-8601 time range to run
-  updatePortf over, default NULL (will use times from
-  Prices}
+  \item{Dates}{optional xts-style ISO-8601 time range to
+  run updatePortf over, default NULL (will use times from
+  Prices)}
 
   \item{Prices}{optional xts object containing prices and
   timestamps to mark the book on, default NULL}
+
+  \item{Interval}{optional character string, containing one
+  of "millisecond" (or "ms"), "microsecond" (or "us"),
+  "second", "minute", "hour", "day", "week", "month",
+  "quarter", or "year".  This can optionally be preceded by
+  a positive integer, or followed by "s".}
 
   \item{\dots}{any other passthrough parameters}
 }
