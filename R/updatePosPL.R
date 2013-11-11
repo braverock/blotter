@@ -44,7 +44,7 @@
             index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
         } else xts:::time.xts(prices[Dates])
     }
-    if(!is.null(Interval)) {
+    if(!missing(Interval) && !is.null(Interval)) {
         ep_args <- .parse_interval(Interval)
         prices <- prices[endpoints(prices, on=ep_args$on, k=ep_args$k)]
     }
