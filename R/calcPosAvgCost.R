@@ -16,8 +16,6 @@
         # position is decreasing, pos avg cost for the open position remains the same
         PosAvgCost = PrevPosAvgCost   
     } else {
-        if(PrevPosAvgCost<0) TxnValue= -1*TxnValue #fix bug with negative average cost 
-        # PosAvgCost = abs((PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult))
         PosAvgCost = (PrevPosQty * PrevPosAvgCost * ConMult + TxnValue)/(PosQty*ConMult)
     }
     return(PosAvgCost)
