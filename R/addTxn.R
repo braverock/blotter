@@ -66,11 +66,13 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     
     # split transactions that would cross through zero
     if(PrevPosQty!=0 && sign(PrevPosQty+TxnQty)!=sign(PrevPosQty) && PrevPosQty!=-TxnQty){
+        txnFeeQty=TxnFees/abs(TxnQty) # calculate fees pro-rata by quantity
         addTxn(Portfolio=pname, Symbol=Symbol, TxnDate=TxnDate, TxnQty=-PrevPosQty, TxnPrice=TxnPrice, ..., 
-                TxnFees = TxnFees, ConMult = ConMult, verbose = verbose, eps=eps)
+                TxnFees = txnFeeQty*abs(PrevPosQty), ConMult = ConMult, verbose = verbose, eps=eps)
         TxnDate=TxnDate+2*eps #transactions need unique timestamps, so increment a bit
         TxnQty=TxnQty+PrevPosQty
         PrevPosQty=0
+        TxnFees=txnFeeQty*abs(TxnQty+PrevPosQty)
     }
     
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
@@ -153,7 +155,7 @@ pennyPerShare <- function(TxnQty) {
 
 #' @rdname addTxn
 #' @export
-addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL)
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, eps=1e-06)
 {
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
@@ -179,12 +181,37 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     } else {
       NewTxns$Txn.Fees <- 0
     }
+    # split transactions that would cross through zero
+    Pos <- drop(cumsum(NewTxns$Txn.Qty))
+    Pos <- merge(Qty=Pos, PrevQty=lag(Pos))
+    PosCrossZero <- Pos$PrevQty!= 0 & sign(Pos$PrevQty+NewTxns$Txn.Qty) != sign(Pos$PrevQty) & Pos$PrevQty!= -NewTxns$Txn.Qty
+    PosCrossZero[1] <- FALSE
+    if(any(PosCrossZero)) {
+        # subset position object
+        Pos <- Pos[PosCrossZero,]
+        # subset transactions we need to split, and initialize objects we can alter
+        flatTxns <- initTxns <- NewTxns[PosCrossZero,]
+        # set quantity for flat and initiating transactions
+        flatTxns$Txn.Qty <- -Pos$PrevQty
+        initTxns$Txn.Qty <- initTxns$Txn.Qty + Pos$PrevQty
+        # calculate fees pro-rata by quantity
+        txnFeeQty <- NewTxns$Txn.Fees/abs(NewTxns$Txn.Qty)
+        flatTxns$Txn.Fees <- txnFeeQty * abs(flatTxns$Txn.Qty)
+        initTxns$Txn.Fees <- txnFeeQty * abs(initTxns$Txn.Qty)
+        # transactions need unique timestamps, so increment initiating transaction index
+        .index(initTxns) <- .index(initTxns) + 2*eps
+        # remove split transactions from NewTxns, add flat and initiating transactions
+        NewTxns <- rbind(NewTxns[!PosCrossZero,], flatTxns, initTxns)
+        rm(flatTxns, initTxns, txnFeeQty)  # clean up
+    }
+    rm(Pos, PosCrossZero)  # clean up
+    # calculate transaction values
     NewTxns$Txn.Value <- .calcTxnValue(NewTxns$Txn.Qty, NewTxns$Txn.Price, NewTxns$Txn.Fees, ConMult)
     NewTxns$Txn.Avg.Cost <- .calcTxnAvgCost(NewTxns$Txn.Value, NewTxns$Txn.Qty, ConMult)
     # intermediate objects to aid in vectorization; only first element is non-zero
-    initPosQty <- initPosAvgCost <- numeric(nrow(TxnData))
-    initPosQty[1] <- getPosQty(pname, Symbol, start(TxnData))
-    initPosAvgCost[1] <- .getPosAvgCost(pname, Symbol, start(TxnData))
+    initPosQty <- initPosAvgCost <- numeric(nrow(NewTxns))
+    initPosQty[1] <- getPosQty(pname, Symbol, start(NewTxns))
+    initPosAvgCost[1] <- .getPosAvgCost(pname, Symbol, start(NewTxns))
     # cumulative sum of transaction qty + initial position qty
     NewTxns$Pos.Qty <- cumsum(initPosQty + NewTxns$Txn.Qty)
     # only pass non-zero initial position qty and average cost
