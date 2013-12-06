@@ -18,11 +18,15 @@ updateEndEq <- function(Account, Dates=NULL)
         stop(paste("Account",aname," not found, use initAcct() to create a new account"))
     
     if(is.null(Dates)) # if no date is specified, get all available dates
-        Dates = xts:::time.xts(Account$summary)[-1]
+        Dates = index(Account$summary)[-1]
     else
-        Dates = xts:::time.xts(Account$summary[Dates])
+        Dates = index(Account$summary[Dates])
+    # if the account summary table only has one observation
+    # then we haven't made any transactions, so there's nothing to update
+    if(!length(Dates))
+        return(aname)
 
-    PrevDate = xts:::time.xts(Account$summary[first(Account$summary[Dates,which.i=TRUE])-1,]) # get index of previous end date 
+    PrevDate = index(Account$summary[first(Account$summary[Dates,which.i=TRUE])-1,]) # get index of previous end date 
     PrevEndEq = getEndEq(aname, PrevDate)
     Additions = Account$summary[Dates]$Additions
     Withdrawals = Account$summary[Dates]$Withdrawals
@@ -34,7 +38,6 @@ updateEndEq <- function(Account, Dates=NULL)
     EndCapital = PrevEndEq + cumsum(Additions + Withdrawals + NetPerformance) 
     Account$summary$End.Eq[Dates] <- EndCapital
 	
-	  #account is already an environment, it's been updated in place
 	  assign(paste("account",aname,sep='.'),Account, envir=.blotter) 
     return(aname) #not sure this is a good idea
 }

@@ -14,8 +14,12 @@ updateAcct <- function(name='default', Dates=NULL)
 
     Portfolios = names(Account$portfolios)
     
-    port<-.getPortfolio(Portfolios[1])
-    if(is.null(Dates)) Dates <- unique(do.call(c,c(lapply(port$symbols, function(x) index(x[["posPL"]])), use.names=FALSE, recursive=FALSE)))
+    if(is.null(Dates))
+        Dates <- unique(do.call(c,c(lapply(Portfolios, function(x) index(.getPortfolio(x)$summary)), use.names=FALSE, recursive=FALSE)))[-1]
+    # if all the portfolio summary tables only have one observation
+    # then we haven't made any transactions, so there's nothing to update
+    if(!length(Dates))
+        return(name)
     
     #trim to only time prior to Dates
     if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
@@ -150,7 +154,6 @@ updateAcct <- function(name='default', Dates=NULL)
     Account$summary <- rbind(Account$summary, summary)
     # This function does not calculate End.Eq 
     
-    #account is already an environment, it's been updated in place
     assign(paste("account",name,sep='.'),Account, envir=.blotter) 
     return(name) #not sure this is a good idea
 }

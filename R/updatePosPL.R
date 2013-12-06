@@ -37,12 +37,12 @@
 
     # if no date is specified, get all available dates
     if(is.null(Dates)) {
-        Dates = xts:::time.xts(prices)
+        Dates = index(prices)
     } else if(!is.timeBased(Dates)) {
         Dates<- if(is.na(.parseISO8601(Dates)$first.time) ||
             .parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
             index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
-        } else xts:::time.xts(prices[Dates])
+        } else index(prices[Dates])
     }
     if(!missing(Interval) && !is.null(Interval)) {
         ep_args <- .parse_interval(Interval)
