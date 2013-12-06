@@ -49,13 +49,17 @@ updateStrat <- function(Portfolio, Symbol, TxnDate, PosUnitsQty, UnitSize, StopP
 	# No output.  Modifies STRATEGY in local namespace.
 	
 	# FUNCTION
-	# Store the transaction and calculations, returns the portfolio
-	pname=Portfolio
-	NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
-	colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
-	Portfolio<-getPortfolio(Portfolio)
-	Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
-	assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+	# Store the transaction and calculations
+	# Called for its side-effects of updating the 'strat' table in the portfolio
+	NewTxn <- xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate),
+		dimnames=list(NULL, c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')))
+	# .getPortfolio returns the portfolio environment, which allows you to write to it, since
+	# environments are pass-by-reference.
+	# NOTE: To be safe, use getPortfolio for a read-only copy of the portfolio. getPortfolio copies
+	# the portfolio environment to a list.
+	Portfolio <- .getPortfolio(Portfolio)
+	# This table stores transaction-related information relative to the strategy
+	Portfolio$symbols[[Symbol]]$strat <- rbind(Portfolio$symbols[[Symbol]]$strat, NewTxn)
 }
 
 getSymbols(symbols, index.class="POSIXct", from=initDate, src="yahoo")
@@ -67,17 +71,6 @@ portfolio = "turtles"
 initPortf(name=portfolio,symbols, initDate=initDate)
 account = "turtles"
 initAcct(name=account,portfolios="turtles", initDate=initDate, initEq=initEq)
-
-# This table stores transaction-related information relative to the strategy
-# Placing it into the portfolio object, sure why not?
-Portfolio<-getPortfolio(portfolio)
-for(symbol in symbols){
-  Portfolio[[symbol]]$strat <- xts( as.matrix(t(c(0,0,0,0,0))), order.by=as.POSIXct(initDate) )
-  colnames(Portfolio[[symbol]]$strat) <- c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
-}
-# now put it back where it belongs
-assign( "portfolio.turtles", Portfolio , envir=.blotter )
-rm("Portfolio")
 
 # @todo: decrease the size of the notional account by 20% each time lose 10% of original account (10% drawdown).  E.g., if trading a $1M account and down 100K, trade as if $800K account until out of drawdown.  If lose another 10% from 800K, or 80K loss, then reduce account size another 20% for notional size of 640K.
 
@@ -117,7 +110,6 @@ maxUnits = 4
 Units=0
 verbose=TRUE
 
-
 # Create trades
 for( i in 57:NROW(x) ) { # Assumes all dates are the same
   CurrentDate=time(x)[i]
@@ -129,7 +121,7 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
     ClosePrice = as.numeric(Cl(x[i,]))
 
     Posn = getPosQty(Portfolio=portfolio, Symbol=symbol, Date=CurrentDate)
-    s = tail(getPortfolio(portfolio)[[symbol]]$strat,1)
+    s = tail(getPortfolio(portfolio)$symbols[[symbol]]$strat,1)
 
 	Units = as.numeric(s[,'Pos.Units'])
     TxnPrice = as.numeric(s[,'Txn.Price'])
@@ -176,8 +168,8 @@ for( i in 57:NROW(x) ) { # Assumes all dates are the same
   } # End symbol loop
   # Now that we've updated all of our trades, its time to mark the book
   updatePortf(Portfolio = portfolio)
-  updateAcct(account)
-  updateEndEq(account)
+  updateAcct(account, Dates=CurrentDate)
+  updateEndEq(account, Dates=CurrentDate)
 } # End dates loop
 
 # Final values
