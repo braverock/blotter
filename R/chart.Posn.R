@@ -50,7 +50,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
 
     Position = Portfolio$symbols[[Symbol]]$txn$Pos.Qty
 
-    if(!nrow(Position)>1) stop ('no transactions/positions to chart')
+    if(nrow(Position)<1) stop ('no transactions/positions to chart')
 
     if(as.POSIXct(first(index(Prices)))<as.POSIXct(first(index(Position)))) Position<-rbind(xts(0,order.by=first(index(Prices)-1)),Position)
     Positionfill = na.locf(merge(Position,index(Prices)))
