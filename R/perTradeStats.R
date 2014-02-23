@@ -146,12 +146,12 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
 #' quantiles of per-trade stats
 #' 
 #' The quantiles of your trade statistics get to the heart of quantitatively 
-#' setting rational stops and possibly even profit taking tarkets 
+#' setting rational stops and possibly even profit taking targets 
 #' for a trading strategy or system.
 #' When applied to theoretical trades from a backtest, they may help to adjust 
 #' parameters prior to trying the strategy with real money.  
 #' When applied to real historical trades, they should help in examining what 
-#' is workeing and where there is room for improvment in a trading system 
+#' is working and where there is room for improvement in a trading system 
 #' or strategy.  
 #' 
 #' This function will use the \code{\link{quantile}} function to calculate 
