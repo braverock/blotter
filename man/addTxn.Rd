@@ -3,12 +3,11 @@
 \alias{addTxns}
 \title{Add transactions to a portfolio.}
 \usage{
-  addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ...,
-    TxnFees = 0, ConMult = NULL, verbose = TRUE,
-    eps = 1e-06)
+addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees = 0,
+  ConMult = NULL, verbose = TRUE, eps = 0.000001)
 
-  addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ...,
-    ConMult = NULL)
+addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ..., ConMult = NULL,
+  eps = 0.000001)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a
@@ -45,53 +44,53 @@
   fields (for addTxns)}
 }
 \description{
-  When a trade or adjustment is made to the Portfolio, the
-  addTxn function calculates the value and average cost of
-  the transaction, the change in position, the resulting
-  positions average cost, and any realized profit or loss
-  (net of fees) from the transaction. Then it stores the
-  transaction and calculations in the Portfolio object.
+When a trade or adjustment is made to the Portfolio, the
+addTxn function calculates the value and average cost of
+the transaction, the change in position, the resulting
+positions average cost, and any realized profit or loss
+(net of fees) from the transaction. Then it stores the
+transaction and calculations in the Portfolio object.
 }
 \details{
-  Fees are indicated as negative values and will be
-  subtracted from the transaction value. TxnFees can either
-  be a fixed numeric amount, or a function (or charavcter
-  name of a function) in which case the function is
-  evaluated to determine the fee amount.
+Fees are indicated as negative values and will be
+subtracted from the transaction value. TxnFees can either
+be a fixed numeric amount, or a function (or charavcter
+name of a function) in which case the function is evaluated
+to determine the fee amount.
 
-  The \code{\link{pennyPerShare}} function provides a
-  simple example of a transaction cost function.
+The \code{\link{pennyPerShare}} function provides a simple
+example of a transaction cost function.
 
-  Transactions which would cross the position through zero
-  will be split into two transactions, one to flatten the
-  position, and another to initiate a new position on the
-  opposite side of the market.  The new (split) transaction
-  will have its timestamp incremented by \code{eps} to
-  preserve ordering.
+Transactions which would cross the position through zero
+will be split into two transactions, one to flatten the
+position, and another to initiate a new position on the
+opposite side of the market.  The new (split) transaction
+will have its timestamp incremented by \code{eps} to
+preserve ordering.
 
-  This transaction splitting vastly simplifies realized P&L
-  calculations elsewhere in the code. Such splitting also
-  mirrors many execution platforms and brokerage
-  requirements in particular asset classes where the side
-  of a trade needs to be specified with the order.
+This transaction splitting vastly simplifies realized P&L
+calculations elsewhere in the code. Such splitting also
+mirrors many execution platforms and brokerage requirements
+in particular asset classes where the side of a trade needs
+to be specified with the order.
 
-  The \code{addTxns} function allows you to add multiple
-  transactions to the portfolio, which is much faster than
-  adding them one at a time. The \code{TxnData} object must
-  have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
-  column is optional.
+The \code{addTxns} function allows you to add multiple
+transactions to the portfolio, which is much faster than
+adding them one at a time. The \code{TxnData} object must
+have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
+column is optional.
 }
 \note{
-  The addTxn function will eventually also handle other
-  transaction types, such as adjustments for corporate
-  actions or expire/assign for options. See
-  \code{\link{addDiv}}
+The addTxn function will eventually also handle other
+transaction types, such as adjustments for corporate
+actions or expire/assign for options. See
+\code{\link{addDiv}}
 }
 \author{
-  Peter Carl, Brian G. Peterson
+Peter Carl, Brian G. Peterson
 }
 \seealso{
-  \code{\link{addTxns}}, \code{\link{pennyPerShare}},
-  \code{\link{initPortf}}
+\code{\link{addTxns}}, \code{\link{pennyPerShare}},
+\code{\link{initPortf}}
 }
 

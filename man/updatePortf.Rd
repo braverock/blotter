@@ -2,8 +2,8 @@
 \alias{updatePortf}
 \title{update Portfilio P&L over a Dates range}
 \usage{
-  updatePortf(Portfolio, Symbols = NULL, Dates = NULL,
-    Prices = NULL, Interval = Interval, ...)
+updatePortf(Portfolio, Symbols = NULL, Dates = NULL, Prices = NULL,
+  Interval = Interval, ...)
 }
 \arguments{
   \item{Portfolio}{string identifying a portfolio}
@@ -27,18 +27,17 @@
   \item{\dots}{any other passthrough parameters}
 }
 \value{
-  assigns position information and PL into the environment
+assigns position information and PL into the environment
 }
 \description{
-  The \code{updatePortf} function goes through each symbol
-  and calculates the PL for each period prices are
-  available.
+The \code{updatePortf} function goes through each symbol
+and calculates the PL for each period prices are available.
 }
 \details{
-  Note that the portfolio will be marked on every time
-  stamp where prices are available. As such, your
-  \code{Dates} range must reflect timestamps which appear
-  in the price stream. Also note that you probably don't
-  want to mark the portfolio on every tick,
+Note that the portfolio will be marked on every time stamp
+where prices are available. As such, your \code{Dates}
+range must reflect timestamps which appear in the price
+stream. Also note that you probably don't want to mark the
+portfolio on every tick,
 }
 

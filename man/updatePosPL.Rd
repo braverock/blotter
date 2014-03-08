@@ -2,8 +2,8 @@
 \alias{.updatePosPL}
 \title{Calculates position PL from the position data and corresponding close price data.}
 \usage{
-  .updatePosPL(Portfolio, Symbol, Dates = NULL,
-    Prices = NULL, ConMult = NULL, Interval = NULL, ...)
+.updatePosPL(Portfolio, Symbol, Dates = NULL, Prices = NULL,
+  ConMult = NULL, Interval = NULL, ...)
 }
 \arguments{
   \item{Portfolio}{a portfolio name to a portfolio
@@ -31,13 +31,13 @@
   \item{\dots}{any other passthru parameters}
 }
 \value{
-  Regular time series of position information and PL
+Regular time series of position information and PL
 }
 \description{
-  Calculates position PL from the position data and
-  corresponding close price data.
+Calculates position PL from the position data and
+corresponding close price data.
 }
 \author{
-  Peter Carl, Brian Peterson
+Peter Carl, Brian Peterson
 }
 

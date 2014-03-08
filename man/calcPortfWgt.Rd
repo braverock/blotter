@@ -2,9 +2,9 @@
 \alias{calcPortfWgt}
 \title{Calculates the portfolio weights for positions within a given portfolio.}
 \usage{
-  calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL,
-    denominator = c("Gross.Value", "Net.Value", "Long.Value", "Short.Value"),
-    Account)
+calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL,
+  denominator = c("Gross.Value", "Net.Value", "Long.Value", "Short.Value"),
+  Account)
 }
 \arguments{
   \item{Portfolio}{a portfolio object structured with
@@ -23,15 +23,15 @@
   summaries}
 }
 \value{
-  xts timeseries object with weights by date in rows and
-  symbolname in columns
+xts timeseries object with weights by date in rows and
+symbolname in columns
 }
 \description{
-  Portfolio weights may be calculated differently depending
-  on their use. By default, this function uses denominator
-  of 'Gross.Value', the second most common option will
-  likely be 'Net.Value'. For separating long and short
-  weights, 'Long.Value' and 'Short.Value' may be needed as
-  denominators.
+Portfolio weights may be calculated differently depending
+on their use. By default, this function uses denominator of
+'Gross.Value', the second most common option will likely be
+'Net.Value'. For separating long and short weights,
+'Long.Value' and 'Short.Value' may be needed as
+denominators.
 }
 

@@ -2,8 +2,8 @@
 \alias{getPos}
 \title{Retrieves all information about the position as of a date}
 \usage{
-  getPos(Portfolio, Symbol, Date,
-    Columns = c("Pos.Qty", "Pos.Avg.Cost"), n = 1)
+getPos(Portfolio, Symbol, Date, Columns = c("Pos.Qty", "Pos.Avg.Cost"),
+  n = 1)
 }
 \arguments{
   \item{Portfolio}{string identifying a portfolio object
@@ -21,11 +21,11 @@
   \item{n}{number of periods to return, default 1}
 }
 \value{
-  All data elements related to position in a row of an xts
-  object
+All data elements related to position in a row of an xts
+object
 }
 \description{
-  NOTE This could get much more complicated from here,
-  particularly when it's conditional on symbol, etc.
+NOTE This could get much more complicated from here,
+particularly when it's conditional on symbol, etc.
 }
 

@@ -2,7 +2,7 @@
 \alias{getPosQty}
 \title{gets position at Date}
 \usage{
-  getPosQty(Portfolio, Symbol, Date)
+getPosQty(Portfolio, Symbol, Date)
 }
 \arguments{
   \item{Portfolio}{a string identifying a portfolio object
@@ -15,9 +15,9 @@
   position}
 }
 \value{
-  Numeric value of the most recent position.
+Numeric value of the most recent position.
 }
 \description{
-  gets position at Date
+gets position at Date
 }
 

@@ -2,7 +2,7 @@
 \alias{.initTxn}
 \title{Constructs the data container used to store transactions and resulting positions.}
 \usage{
-  .initTxn(initDate = "1950-01-01", initPosQty = 0, ...)
+.initTxn(initDate = "1950-01-01", initPosQty = 0, ...)
 }
 \arguments{
   \item{initDate}{date prior to the first close price
@@ -14,11 +14,11 @@
   \item{\dots}{any other passthrough parameters}
 }
 \value{
-  Constructs multi-column xts object used to store
-  transactions
+Constructs multi-column xts object used to store
+transactions
 }
 \description{
-  The data series stored here will be an irregular time
-  series.
+The data series stored here will be an irregular time
+series.
 }
 

@@ -2,9 +2,8 @@
 \alias{tradeQuantiles}
 \title{quantiles of per-trade stats}
 \usage{
-  tradeQuantiles(Portfolio, Symbol, ...,
-    scale = c("cash", "percent", "tick"),
-    probs = c(0.5, 0.75, 0.9, 0.95, 0.99, 1))
+tradeQuantiles(Portfolio, Symbol, ..., scale = c("cash", "percent", "tick"),
+  probs = c(0.5, 0.75, 0.9, 0.95, 0.99, 1))
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio}
@@ -21,50 +20,48 @@
   \item{probs}{vector of probabilities for \code{quantile}}
 }
 \description{
-  The quantiles of your trade statistics get to the heart
-  of quantitatively setting rational stops and possibly
-  even profit taking tarkets for a trading strategy or
-  system. When applied to theoretical trades from a
-  backtest, they may help to adjust parameters prior to
-  trying the strategy with real money. When applied to real
-  historical trades, they should help in examining what is
-  workeing and where there is room for improvment in a
-  trading system or strategy.
+The quantiles of your trade statistics get to the heart of
+quantitatively setting rational stops and possibly even
+profit taking targets for a trading strategy or system.
+When applied to theoretical trades from a backtest, they
+may help to adjust parameters prior to trying the strategy
+with real money. When applied to real historical trades,
+they should help in examining what is working and where
+there is room for improvement in a trading system or
+strategy.
 }
 \details{
-  This function will use the \code{\link{quantile}}
-  function to calculate quantiles of per-trade net P&L,
-  MAE, and MFE using the output from
-  \code{\link{perTradeStats}}.  These quantiles are chosen
-  by the \code{probs} parameter and will be calculated for
-  one or all of 'cash','percent',or 'tick', controlled by
-  the \code{scale} argument. Quantiles will be calculated
-  separately for trades that end positive (gains) and
-  trades that end negative (losses), and will be denoted
-  'pos' and 'neg',respectively.
+This function will use the \code{\link{quantile}} function
+to calculate quantiles of per-trade net P&L, MAE, and MFE
+using the output from \code{\link{perTradeStats}}.  These
+quantiles are chosen by the \code{probs} parameter and will
+be calculated for one or all of 'cash','percent',or 'tick',
+controlled by the \code{scale} argument. Quantiles will be
+calculated separately for trades that end positive (gains)
+and trades that end negative (losses), and will be denoted
+'pos' and 'neg',respectively.
 
-  Additionally, this function will return the MAE with
-  respect to the maximum cumulative P&L achieved for each
-  \code{scale} you request. Tomasini&Jaekle recommend
-  plotting MAE or MFE with respect to cumulative P&L and
-  choosing a stop or profit target in the 'stable region'.
-  The reported max should help the user to locate the
-  stable region, perhaps mechanically. There is room for
-  improvement here, but this should give the user
-  information to work with in addition to the raw
-  quantiles. For example, it may make more sense to use the
-  max of a loess or kernel or other non-linear fit as the
-  target point.
+Additionally, this function will return the MAE with
+respect to the maximum cumulative P&L achieved for each
+\code{scale} you request. Tomasini&Jaekle recommend
+plotting MAE or MFE with respect to cumulative P&L and
+choosing a stop or profit target in the 'stable region'.
+The reported max should help the user to locate the stable
+region, perhaps mechanically. There is room for improvement
+here, but this should give the user information to work
+with in addition to the raw quantiles. For example, it may
+make more sense to use the max of a loess or kernel or
+other non-linear fit as the target point.
 }
 \author{
-  Brian G. Peterson
+Brian G. Peterson
 }
 \references{
-  Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new
-  approach to system development and portfolio
-  optimisation} (ISBN 978-1-905641-79-6)
+Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new
+approach to system development and portfolio optimisation}
+(ISBN 978-1-905641-79-6)
 }
 \seealso{
-  \code{\link{tradeStats}}
+\code{\link{tradeStats}}
 }
 

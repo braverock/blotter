@@ -2,8 +2,7 @@
 \alias{chart.Posn}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-  chart.Posn(Portfolio, Symbol, Dates = NULL, ...,
-    TA = NULL)
+chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -23,13 +22,13 @@
   \code{\link{eval}}}
 }
 \description{
-  Produces a three-panel chart of time series charts that
-  contains prices and transactions in the top panel, the
-  resulting position in the second, and a cumulative
-  profit-loss line chart in the third.
+Produces a three-panel chart of time series charts that
+contains prices and transactions in the top panel, the
+resulting position in the second, and a cumulative
+profit-loss line chart in the third.
 }
 \note{
-  Expect changes to this function, since the underlying
-  charts are experimental functions in quantmod.
+Expect changes to this function, since the underlying
+charts are experimental functions in quantmod.
 }
 

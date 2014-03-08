@@ -57,7 +57,7 @@
 #'    \item{Std.Dev.Trade.PL}{ standard deviation of trade P&L }
 #'    \item{Percent.Positive}{ percent of trades that end positive }
 #'    \item{Percent.Negative}{ percent of trades that end negative }
-#'    \item{Profit.Factor}{ absolute value ration of gross profits over gross losses }
+#'    \item{Profit.Factor}{ absolute value ratio of gross profits over gross losses }
 #'    \item{Avg.Win.Trade}{ mean P&L of profitabloe trades }
 #'    \item{Med.Win.Trade}{ median P&L of profitable trades }
 #'    \item{Avg.Losing.Trade}{ mean P&L of losing trades }
@@ -67,7 +67,7 @@
 #'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
-#'    \item{Med.WinLoss.Ratio}{ ratio of median winning trade over mean losing trade }
+#'    \item{Med.WinLoss.Ratio}{ ratio of median winning trade over median losing trade }
 #'    \item{Max.Equity}{ maximum account equity }
 #'    \item{Min.Equity}{ minimum account equity }
 #' }

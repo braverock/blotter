@@ -2,9 +2,8 @@
 \alias{PortfReturns}
 \title{Calculate portfolio instrument returns}
 \usage{
-  PortfReturns(Account, method = c("contribution"), ...,
-    Dates = NULL, Portfolios = NULL,
-    period = c("daily", "none"))
+PortfReturns(Account, method = c("contribution"), ..., Dates = NULL,
+  Portfolios = NULL, period = c("daily", "none"))
 }
 \arguments{
   \item{Account}{string name of the account to generate
@@ -25,25 +24,24 @@
   \item{period}{one of daily}
 }
 \description{
-  This function (for now) calculates return on initial
-  equity for each instrument in the portfolio or portfolios
-  that make up an account.  These columns will be additive
-  to return on capital of each portfolio, or of the entire
-  account.
+This function (for now) calculates return on initial equity
+for each instrument in the portfolio or portfolios that
+make up an account.  These columns will be additive to
+return on capital of each portfolio, or of the entire
+account.
 }
 \details{
-  This function exists because of R/Finance community
-  requests by Mark Breman and Thomas Bolton
+This function exists because of R/Finance community
+requests by Mark Breman and Thomas Bolton
 }
 \note{
-  TODO handle portfolio and account in different currencies
-  (not hard, just not done)
+TODO handle portfolio and account in different currencies
+(not hard, just not done)
 
-  TODO explicitly handle portfolio weights
+TODO explicitly handle portfolio weights
 
-  TODO provide additional methods of calculating returns
+TODO provide additional methods of calculating returns
 
-  TODO support additions and withdrawals to available
-  capital
+TODO support additions and withdrawals to available capital
 }
 

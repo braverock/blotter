@@ -2,8 +2,8 @@
 \alias{addDiv}
 \title{Add cash dividend transactions to a portfolio.}
 \usage{
-  addDiv(Portfolio, Symbol, TxnDate, DivPerShare, ...,
-    TxnFees = 0, ConMult = NULL, verbose = TRUE)
+addDiv(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees = 0,
+  ConMult = NULL, verbose = TRUE)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a
@@ -33,12 +33,12 @@
   specification.}
 }
 \description{
-  Adding a cash dividend does not affect position quantity,
-  like a split would.
+Adding a cash dividend does not affect position quantity,
+like a split would.
 }
 \note{
-  # TODO add TxnTypes to $txn table
+# TODO add TxnTypes to $txn table
 
-  # TODO add AsOfDate
+# TODO add AsOfDate
 }
 

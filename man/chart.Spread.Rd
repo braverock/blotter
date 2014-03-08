@@ -2,8 +2,8 @@
 \alias{chart.Spread}
 \title{Charts the transaction series, positions, and P&L of a spread against prices}
 \usage{
-  chart.Spread(Account, Portfolio, Spread = NULL,
-    Symbols = NULL, Dates = NULL, ...)
+chart.Spread(Account, Portfolio, Spread = NULL, Symbols = NULL,
+  Dates = NULL, ...)
 }
 \arguments{
   \item{Account}{string identifying the account}
@@ -22,7 +22,7 @@
   parameters to \code{chart_Series})}
 }
 \description{
-  Charts the transaction series, positions, and P&L of a
-  spread against prices
+Charts the transaction series, positions, and P&L of a
+spread against prices
 }
 

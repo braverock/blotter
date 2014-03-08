@@ -2,7 +2,7 @@
 \alias{put.account}
 \title{put a account object in .blotter env}
 \usage{
-  put.account(account.st, account, envir = .blotter)
+put.account(account.st, account, envir = .blotter)
 }
 \arguments{
   \item{account.st}{string identifying account}
@@ -13,6 +13,6 @@
   in, defaults to .blotter}
 }
 \description{
-  put a account object in .blotter env
+put a account object in .blotter env
 }
 

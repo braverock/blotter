@@ -2,8 +2,8 @@
 \alias{chart.ME}
 \title{Chart Maximum Adverse/Favorable Excursion}
 \usage{
-  chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"),
-    scale = c("cash", "percent", "tick"), ...)
+chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"), scale = c("cash",
+  "percent", "tick"), ...)
 }
 \arguments{
   \item{Portfolio}{string identifying the portfolio to
@@ -23,22 +23,22 @@
   particular includeOpenTrades (see perTradeStats())}
 }
 \description{
-  Produces a scatterplot with one point per trade, with
-  x-axis: absolute value of Drawdown (Adverse), or Run Up
-  (Favourable), and y-axis: absolute value of Net Profit or
-  Loss
+Produces a scatterplot with one point per trade, with
+x-axis: absolute value of Drawdown (Adverse), or Run Up
+(Favourable), and y-axis: absolute value of Net Profit or
+Loss
 }
 \author{
-  Jan Humme
+Jan Humme
 }
 \references{
-  Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new
-  approach to system development and portfolio
-  optimisation} (ISBN 978-1-905641-79-6), section 3.5
+Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new
+approach to system development and portfolio optimisation}
+(ISBN 978-1-905641-79-6), section 3.5
 }
 \seealso{
-  \code{\link{perTradeStats}} for the calculations used by
-  this chart, and \code{\link{tradeStats}} for a summary
-  view of the performance
+\code{\link{perTradeStats}} for the calculations used by
+this chart, and \code{\link{tradeStats}} for a summary view
+of the performance
 }
 

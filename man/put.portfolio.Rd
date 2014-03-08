@@ -2,7 +2,7 @@
 \alias{put.portfolio}
 \title{put a portfolio object in .blotter env}
 \usage{
-  put.portfolio(portfolio.st, portfolio, envir = .blotter)
+put.portfolio(portfolio.st, portfolio, envir = .blotter)
 }
 \arguments{
   \item{portfolio.st}{string identifying portfolio}
@@ -13,6 +13,6 @@
   in, defaults to .blotter}
 }
 \description{
-  put a portfolio object in .blotter env
+put a portfolio object in .blotter env
 }
 

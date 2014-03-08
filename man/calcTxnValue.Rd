@@ -2,7 +2,7 @@
 \alias{.calcTxnValue}
 \title{Calculates the total value of a transaction or trade}
 \usage{
-  .calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult = 1)
+.calcTxnValue(TxnQty, TxnPrice, TxnFees, ConMult = 1)
 }
 \arguments{
   \item{TxnQty}{total units (shares) of the transaction}
@@ -15,10 +15,10 @@
   \item{ConMult}{multiplier from instrument data}
 }
 \value{
-  TxnValue: total dollar value of the transaction,
-  including fees
+TxnValue: total dollar value of the transaction, including
+fees
 }
 \description{
-  Calculates the total value of a transaction or trade
+Calculates the total value of a transaction or trade
 }
 

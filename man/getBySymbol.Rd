@@ -2,8 +2,8 @@
 \alias{.getBySymbol}
 \title{Retrieves calculated attributes for each position in the portfolio}
 \usage{
-  .getBySymbol(Portfolio, Attribute, Dates = NULL,
-    Symbols = NULL, native = FALSE)
+.getBySymbol(Portfolio, Attribute, Dates = NULL, Symbols = NULL,
+  native = FALSE)
 }
 \arguments{
   \item{Portfolio}{a portfolio object containing
@@ -22,16 +22,15 @@
   portfolio, or convert, default FALSE}
 }
 \value{
-  regular xts object of values by symbol
+regular xts object of values by symbol
 }
 \description{
-  Retrieves calculated attributes for each position in the
-  portfolio from the posPL table.  Assembles into a
-  symbol-by-time table useful for graphing or calculations
+Retrieves calculated attributes for each position in the
+portfolio from the posPL table.  Assembles into a
+symbol-by-time table useful for graphing or calculations
 }
 \details{
-  items typically include things like 'Pos.Qty',
-  'Pos.Value', 'Txn.Value', 'Realized.PL',
-  'Unrealized.PL',or 'Trading.PL'
+items typically include things like 'Pos.Qty', 'Pos.Value',
+'Txn.Value', 'Realized.PL', 'Unrealized.PL',or 'Trading.PL'
 }
 

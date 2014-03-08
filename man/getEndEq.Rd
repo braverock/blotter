@@ -2,7 +2,7 @@
 \alias{getEndEq}
 \title{Retrieves the most recent value of the capital account}
 \usage{
-  getEndEq(Account, Date)
+getEndEq(Account, Date)
 }
 \arguments{
   \item{Account}{string identifier of account}
@@ -11,9 +11,9 @@
   as string}
 }
 \value{
-  Numeric value of the equity account
+Numeric value of the equity account
 }
 \description{
-  Retrieves the most recent value of the capital account
+Retrieves the most recent value of the capital account
 }
 

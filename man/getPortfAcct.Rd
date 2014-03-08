@@ -2,7 +2,7 @@
 \alias{.getPortfAcct}
 \title{get a protfolio in an account}
 \usage{
-  .getPortfAcct(Account, Portfolio, Dates = NULL)
+.getPortfAcct(Account, Portfolio, Dates = NULL)
 }
 \arguments{
   \item{Account}{account string}
@@ -12,6 +12,6 @@
   \item{Dates}{date subset as an xts style ISO 8601 string}
 }
 \description{
-  get a protfolio in an account
+get a protfolio in an account
 }
 

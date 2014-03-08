@@ -2,7 +2,7 @@
 \alias{getAccount}
 \title{Get an account object from the .blotter environment}
 \usage{
-  getAccount(Account, envir = .blotter)
+getAccount(Account, envir = .blotter)
 }
 \arguments{
   \item{Account}{string identifier for the account}
@@ -11,11 +11,11 @@
   from, defaults to .blotter}
 }
 \value{
-  Account object
+Account object
 }
 \description{
-  Retrieves an account object from the \code{.blotter}
-  environment.  Useful for local examination or charting,
-  or storing interim results for later reference.
+Retrieves an account object from the \code{.blotter}
+environment.  Useful for local examination or charting, or
+storing interim results for later reference.
 }
 

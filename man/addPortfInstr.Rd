@@ -2,7 +2,7 @@
 \alias{addPortfInstr}
 \title{add an instrument to a portfolio}
 \usage{
-  addPortfInstr(Portfolio, symbols, ...)
+addPortfInstr(Portfolio, symbols, ...)
 }
 \arguments{
   \item{Portfolio}{portfolio identifier string}
@@ -13,7 +13,6 @@
   \item{\dots}{any other passthru parameters}
 }
 \description{
-  thanks to WolfGang Wu for making this function more
-  usable
+thanks to WolfGang Wu for making this function more usable
 }
 

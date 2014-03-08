@@ -2,7 +2,7 @@
 \alias{updateEndEq}
 \title{update ending equity for an account}
 \usage{
-  updateEndEq(Account, Dates = NULL)
+updateEndEq(Account, Dates = NULL)
 }
 \arguments{
   \item{Account}{string identifying account}
@@ -11,15 +11,14 @@
   account}
 }
 \description{
-  Calculates End.Eq and Net.Performance
+Calculates End.Eq and Net.Performance
 }
 \details{
-  Requires that updateAcct has been run and any additional
-  functions have alread appended information into that
-  table (e.g., additions or withdrawals, fees, interest,
-  etc.)
+Requires that updateAcct has been run and any additional
+functions have alread appended information into that table
+(e.g., additions or withdrawals, fees, interest, etc.)
 }
 \author{
-  Peter Carl, Brian G. Peterson
+Peter Carl, Brian G. Peterson
 }
 

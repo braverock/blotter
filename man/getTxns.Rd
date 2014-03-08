@@ -2,7 +2,7 @@
 \alias{getTxns}
 \title{Retrieve transactions and their attributes.}
 \usage{
-  getTxns(Portfolio, Symbol, Dates)
+getTxns(Portfolio, Symbol, Dates)
 }
 \arguments{
   \item{Portfolio}{a string identifying a portfolio object
@@ -15,20 +15,20 @@
   range, such as "2007-01::2008-04-15"}
 }
 \value{
-  xts time series of transactions made in the Symbol during
-  the time period given
+xts time series of transactions made in the Symbol during
+the time period given
 }
 \description{
-  Find and return the transactions and attribute values for
-  the symbol and date in a specied portfolio.
+Find and return the transactions and attribute values for
+the symbol and date in a specied portfolio.
 }
 \details{
-  This function provides easy access to the values of
-  transactions contained in a Portfolio object. See
-  \code{\link{initPortf}} for a detailed description of the
-  structure of a Portfolio object.
+This function provides easy access to the values of
+transactions contained in a Portfolio object. See
+\code{\link{initPortf}} for a detailed description of the
+structure of a Portfolio object.
 }
 \seealso{
-  \code{\link{initPortf}}
+\code{\link{initPortf}}
 }
 

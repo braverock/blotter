@@ -2,7 +2,7 @@
 \alias{pennyPerShare}
 \title{Example TxnFee cost function}
 \usage{
-  pennyPerShare(TxnQty)
+pennyPerShare(TxnQty)
 }
 \arguments{
   \item{TxnQty}{total units (such as shares or contracts)
@@ -12,6 +12,6 @@
   a flat numeric fee.}
 }
 \description{
-  Example TxnFee cost function
+Example TxnFee cost function
 }
 

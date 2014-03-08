@@ -3,7 +3,7 @@
 \title{Constructs the equity account calculations from the portfolio data and
 corresponding close prices.}
 \usage{
-  updateAcct(name = "default", Dates = NULL)
+updateAcct(name = "default", Dates = NULL)
 }
 \arguments{
   \item{name}{string identifying account}
@@ -12,7 +12,7 @@ corresponding close prices.}
   account}
 }
 \description{
-  Constructs the equity account calculations from the
-  portfolio data and corresponding close prices.
+Constructs the equity account calculations from the
+portfolio data and corresponding close prices.
 }
 

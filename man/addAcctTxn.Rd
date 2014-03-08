@@ -2,9 +2,8 @@
 \alias{addAcctTxn}
 \title{Add capital account transactions, such as capital additions and withdrawals or interest income (expense)}
 \usage{
-  addAcctTxn(Account, TxnDate,
-    TxnType = c("Additions", "Withdrawals", "Interest"),
-    Amount, ..., verbose = TRUE)
+addAcctTxn(Account, TxnDate, TxnType = c("Additions", "Withdrawals",
+  "Interest"), Amount, ..., verbose = TRUE)
 }
 \arguments{
   \item{name}{Account name, as string}
@@ -28,34 +27,34 @@
   FALSE.}
 }
 \description{
-  For the specified Account, take in the date, amount, and
-  type of transaction and append it to the correct list in
-  the account object
+For the specified Account, take in the date, amount, and
+type of transaction and append it to the correct list in
+the account object
 }
 \details{
-  Adds capital transactions to a rudimentary transactions
-  table in the Account object.  This may be useful when
-  tracking the denominator of returns when there are
-  changes to the account's capital or significant interest
-  income. In the Account$summary table, there are several
-  placeholder columns that mimic the CFTC's 13-column
-  report.  Columns of interest here are "Additions",
-  "Withdrawals", and "Interest". Transactions added with
-  this function will be added into the appropriate one of
-  three slots in the Account object (Account$additions,
-  Account$withdrawals, or Account$Interest), which contains
-  an xts object of individual transactions with a date and
-  amount.  The \code{\link{updateAcct}} function will read
-  the transactions from each list in turn, aggregate them
-  by the specified date scope, and slot them into the
-  \code{Account$summary} table as it's built.
-  \code{\link{UpdateEndEq}} should then just work.
+Adds capital transactions to a rudimentary transactions
+table in the Account object.  This may be useful when
+tracking the denominator of returns when there are changes
+to the account's capital or significant interest income. In
+the Account$summary table, there are several placeholder
+columns that mimic the CFTC's 13-column report.  Columns of
+interest here are "Additions", "Withdrawals", and
+"Interest". Transactions added with this function will be
+added into the appropriate one of three slots in the
+Account object (Account$additions, Account$withdrawals, or
+Account$Interest), which contains an xts object of
+individual transactions with a date and amount.  The
+\code{\link{updateAcct}} function will read the
+transactions from each list in turn, aggregate them by the
+specified date scope, and slot them into the
+\code{Account$summary} table as it's built.
+\code{\link{UpdateEndEq}} should then just work.
 }
 \author{
-  Peter Carl
+Peter Carl
 }
 \seealso{
-  \code{\link{initAcct}}, \code{\link{updateAcct}},
-  \code{\link{updateEndEq}}
+\code{\link{initAcct}}, \code{\link{updateAcct}},
+\code{\link{updateEndEq}}
 }
 

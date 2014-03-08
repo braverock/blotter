@@ -2,7 +2,7 @@
 \alias{.getByPortf}
 \title{get attributes from each portfolio in an account}
 \usage{
-  .getByPortf(Account, Attribute, Dates = NULL)
+.getByPortf(Account, Attribute, Dates = NULL)
 }
 \arguments{
   \item{Account}{an Account object containing Portfolio
@@ -15,17 +15,16 @@
   formatted as xts range}
 }
 \value{
-  regular xts object of values by portfolio
+regular xts object of values by portfolio
 }
 \description{
-  Retrieves calculated attributes for each portfolio in the
-  account from the portfolio summary table.  Assembles into
-  a portfolio-by-time table, normalized to the Account
-  currency
+Retrieves calculated attributes for each portfolio in the
+account from the portfolio summary table.  Assembles into a
+portfolio-by-time table, normalized to the Account currency
 }
 \details{
-  Attribute: typically any of: 'Long.Value', 'Short.Value',
-  'Net.Value', 'Gross.Value', 'Txn.Fees', 'Realized.PL',
-  'Unrealized.PL', or 'Trading.PL'
+Attribute: typically any of: 'Long.Value', 'Short.Value',
+'Net.Value', 'Gross.Value', 'Txn.Fees', 'Realized.PL',
+'Unrealized.PL', or 'Trading.PL'
 }
 

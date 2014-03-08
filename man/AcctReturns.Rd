@@ -2,8 +2,8 @@
 \alias{AcctReturns}
 \title{Calculate account returns}
 \usage{
-  AcctReturns(Account, Dates = NULL, Portfolios = NULL,
-    method = c("timeweighted", "dietz"), ...)
+AcctReturns(Account, Dates = NULL, Portfolios = NULL,
+  method = c("timeweighted", "dietz"), ...)
 }
 \arguments{
   \item{Account}{string name of the account to generate
@@ -25,63 +25,62 @@
   time-weighted is selected}
 }
 \value{
-  returns xts with account returns
+returns xts with account returns
 }
 \description{
-  Similar to the \code{PortfReturns} function, but gives
-  returns for the entire account and takes into account
-  external cashflows. External cashflows are defined as
-  contributions to or withdrawals from the account. Allows
-  selecting between time-weighted returns and linked
-  modified Dietz approach. If time-weighted method is
-  selected, returns at time \eqn{t} are computed using:
-  \deqn{r_{t}=\frac{V_{t}}{V_{t-1}+C_{t}}-1} where
-  \eqn{V_{t}} - account value at time \eqn{t}, \eqn{C_{t}}
-  - cashflow at time \eqn{t}. The implicit assumption made
-  here is that the cash flow is available for the portfolio
-  manager to invest from the beginning of the day. These
-  returns then can be chain linked with geometric
-  compounding (for instance using \code{Return.cumulative}
-  function from the \code{PerformanceAnalytics} package) to
-  yield cumulative multi-period returns:
-  \deqn{1+r=\prod_{t=1}^{T}(1+r_{t})=\prod_{t=1}^{T}\frac{V_{t}}{V_{t-1}+C_{t}}}
-  In the case if there were no cashflows, the result
-  reduces to simple one-period returns. Time-weighted
-  returns has also an interpretation in terms of unit value
-  pricing. If Modified Dietz method is selected, monthly
-  returns are computed taking into account cashflows within
-  each month: \deqn{r =
-  \frac{V_{t}-V_{t-1}-C}{V_{t-1}+\sum_{t}C_{t}\times
-  W_{t}}} where \eqn{C} - total external cash flows within
-  a month, \eqn{C_{t}} - external cashflow at time \eqn{t},
-  \deqn{W_{t}=\frac{TD-D_{t}}{TD}} - weighting ratio to be
-  applied to external cashflow on day \eqn{t}, \eqn{TD} -
-  total number of days within the month, \eqn{D_{t}} -
-  number of days since the beginning of the month including
-  weekends and public holidays. Finally monthly Modified
-  Dietz returns can also be linked geometrically.
+Similar to the \code{PortfReturns} function, but gives
+returns for the entire account and takes into account
+external cashflows. External cashflows are defined as
+contributions to or withdrawals from the account. Allows
+selecting between time-weighted returns and linked modified
+Dietz approach. If time-weighted method is selected,
+returns at time \eqn{t} are computed using:
+\deqn{r_{t}=\frac{V_{t}}{V_{t-1}+C_{t}}-1} where
+\eqn{V_{t}} - account value at time \eqn{t}, \eqn{C_{t}} -
+cashflow at time \eqn{t}. The implicit assumption made here
+is that the cash flow is available for the portfolio
+manager to invest from the beginning of the day. These
+returns then can be chain linked with geometric compounding
+(for instance using \code{Return.cumulative} function from
+the \code{PerformanceAnalytics} package) to yield
+cumulative multi-period returns:
+\deqn{1+r=\prod_{t=1}^{T}(1+r_{t})=\prod_{t=1}^{T}\frac{V_{t}}{V_{t-1}+C_{t}}}
+In the case if there were no cashflows, the result reduces
+to simple one-period returns. Time-weighted returns has
+also an interpretation in terms of unit value pricing. If
+Modified Dietz method is selected, monthly returns are
+computed taking into account cashflows within each month:
+\deqn{r =
+\frac{V_{t}-V_{t-1}-C}{V_{t-1}+\sum_{t}C_{t}\times W_{t}}}
+where \eqn{C} - total external cash flows within a month,
+\eqn{C_{t}} - external cashflow at time \eqn{t},
+\deqn{W_{t}=\frac{TD-D_{t}}{TD}} - weighting ratio to be
+applied to external cashflow on day \eqn{t}, \eqn{TD} -
+total number of days within the month, \eqn{D_{t}} - number
+of days since the beginning of the month including weekends
+and public holidays. Finally monthly Modified Dietz returns
+can also be linked geometrically.
 }
 \note{
-  TODO handle portfolio and account in different currencies
-  (not hard, just not done)
+TODO handle portfolio and account in different currencies
+(not hard, just not done)
 
-  TODO explicitly handle portfolio weights
+TODO explicitly handle portfolio weights
 
-  TODO support additions and withdrawals to available
-  capital
+TODO support additions and withdrawals to available capital
 }
 \author{
-  Brian Peterson, Andrii Babii
+Brian Peterson, Andrii Babii
 }
 \references{
-  Christopherson, Jon A., Carino, David R., Ferson, Wayne
-  E. \emph{Portfolio Performance Measurement and
-  Benchmarking}. McGraw-Hill. 2009. Chapter 5 \cr Bacon, C.
-  \emph{Practical Portfolio Performance Measurement and
-  Attribution}. Wiley. 2004. Chapter 2 \cr
+Christopherson, Jon A., Carino, David R., Ferson, Wayne E.
+\emph{Portfolio Performance Measurement and Benchmarking}.
+McGraw-Hill. 2009. Chapter 5 \cr Bacon, C. \emph{Practical
+Portfolio Performance Measurement and Attribution}. Wiley.
+2004. Chapter 2 \cr
 }
 \seealso{
-  PortfReturns
+PortfReturns
 }
 \keyword{portfolio}
 \keyword{returns}

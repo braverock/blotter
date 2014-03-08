@@ -2,7 +2,7 @@
 \alias{is.portfolio}
 \title{generic is.function for portfolio, will take either a string or an object}
 \usage{
-  is.portfolio(x, ...)
+is.portfolio(x, ...)
 }
 \arguments{
   \item{x}{an object or string to be tested as a portfolio}
@@ -10,11 +10,11 @@
   \item{\dots}{any other passthru parameters}
 }
 \description{
-  If \code{x} is a string, \code{\link{getPortfolio}} will
-  be called with string \code{x} and tested.  Otherwise,
-  the object passed will be tested.
+If \code{x} is a string, \code{\link{getPortfolio}} will be
+called with string \code{x} and tested.  Otherwise, the
+object passed will be tested.
 }
 \seealso{
-  \code{\link{getPortfolio}}
+\code{\link{getPortfolio}}
 }
 
