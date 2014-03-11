@@ -30,7 +30,7 @@ updateEndEq <- function(Account, Dates=NULL)
     PrevEndEq = getEndEq(aname, PrevDate)
     Additions = Account$summary[Dates]$Additions
     Withdrawals = Account$summary[Dates]$Withdrawals
-    NetPerformance = rowSums(Account$summary[Dates,c('Int.Income','Net.Trading.PL', 'Advisory.Fees')])
+    NetPerformance = rowSums(Account$summary[Dates,c('Interest','Net.Trading.PL', 'Advisory.Fees')])
 	# assign NetPerformance into the account slot 
     Account$summary$Net.Performance[Dates] <- NetPerformance
 
