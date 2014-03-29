@@ -36,6 +36,7 @@
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
 #' @param use for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)  
+#' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
 #' @author Lance Levenson, Brian Peterson
 #' @export
 #' @importFrom zoo as.Date
@@ -65,6 +66,7 @@
 #'    \item{Avg.Daily.PL}{mean daily realized P&L on days there were transactions, see \code{\link{dailyStats}} for all days }
 #'    \item{Med.Daily.PL}{ median daily P&L }
 #'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
+#'    \item(Ann.Sharpe){annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
 #'    \item{Med.WinLoss.Ratio}{ ratio of median winning trade over median losing trade }
@@ -75,7 +77,7 @@
 #' TODO document each statistic included in this function, with equations 
 #' 
 #' TODO add more stats, potentially
-#' PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sharpe/Sortino
+#' PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sortino
 #' 
 #' mean absolute deviation stats
 #' 
@@ -86,10 +88,11 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
+tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat')
 {
     ret <- NULL
     use <- use[1] #use the first(default) value only if user hasn't specified
+    tradeDef <- tradeDef[1]
     for (Portfolio in Portfolios){
         pname <- Portfolio
         Portfolio<-.getPortfolio(pname)
@@ -123,7 +126,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
                        #moved above for daily stats for now
                    },
                    trades = {
-                       trades <- perTradeStats(pname,symbol)
+                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef)
                        PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
                        PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
                        PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
@@ -137,7 +140,8 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
             
             AvgTradePL <- mean(PL.ne0)
             MedTradePL <- median(PL.ne0)
-            StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))   
+            StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))  
+            AnnSharpe  <- AvgDailyPL/StdDailyPL * sqrt(252)
             
             NumberOfTxns   <- nrow(txn)-1
             NumberOfTrades <- length(PL.ne0)
@@ -206,6 +210,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'))
                                  Avg.Daily.PL       = AvgDailyPL,
                                  Med.Daily.PL       = MedDailyPL,
                                  Std.Dev.Daily.PL   = StdDailyPL,
+                                 Ann.Sharpe         = AnnSharpe,
                                  Max.Drawdown       = MaxDrawdown,
                                  Profit.To.Max.Draw = ProfitToMaxDraw,
                                  Avg.WinLoss.Ratio  = AvgWinLoss,
@@ -358,6 +363,7 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
         AvgDailyPL <- as.numeric(mean(PL.ne0))
         MedDailyPL <- as.numeric(median(PL.ne0))
         StdDailyPL <- as.numeric(sd(PL.ne0))
+        AnnSharpe  <- AvgDailyPL/StdDailyPL * sqrt(252)
         
         Equity          <- cumsum(x)
         Equity.max      <- cummax(Equity)
@@ -389,6 +395,7 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
                 Avg.Daily.PL       = AvgDailyPL,
                 Med.Daily.PL       = MedDailyPL,
                 Std.Dev.Daily.PL   = StdDailyPL,
+                Ann.Sharpe         = AnnSharpe,
                 Max.Drawdown       = MaxDrawdown,
                 Profit.To.Max.Draw = ProfitToMaxDraw,
                 Avg.WinLoss.Ratio  = AvgWinLoss,

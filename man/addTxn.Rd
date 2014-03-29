@@ -4,10 +4,10 @@
 \title{Add transactions to a portfolio.}
 \usage{
 addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees = 0,
-  ConMult = NULL, verbose = TRUE, eps = 0.000001)
+  ConMult = NULL, verbose = TRUE, eps = 1e-06)
 
 addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ..., ConMult = NULL,
-  eps = 0.000001)
+  eps = 1e-06)
 }
 \arguments{
   \item{Portfolio}{A portfolio name that points to a

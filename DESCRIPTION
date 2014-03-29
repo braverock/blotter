@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for transaction-oriented trading systems
     development.
-Version: 0.8.17
+Version: 0.8.18
 Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>

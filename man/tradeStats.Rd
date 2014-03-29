@@ -3,7 +3,8 @@
 \alias{tradeStats}
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
-tradeStats(Portfolios, Symbols, use = c("txns", "trades"))
+tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
+  tradeDef = "flat.to.flat")
 
 dailyStats(Portfolios, use = c("equity", "txns"))
 }
@@ -16,6 +17,10 @@ dailyStats(Portfolios, use = c("equity", "txns"))
   \item{use}{for determines whether numbers are calculated
   from transactions or round-trip trades (for tradeStats)
   or equity curve (for dailyStats)}
+
+  \item{tradeDef}{string to determine which definition of
+  'trade' to use. Currently "flat.to.flat" (the default)
+  and "flat.to.reduced" are implemented.}
 }
 \value{
 a \code{data.frame} containing:
@@ -43,6 +48,8 @@ realized P&L on days there were transactions, see
 \code{\link{dailyStats}} for all days }
 \item{Med.Daily.PL}{ median daily P&L }
 \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
+\item(Ann.Sharpe){annualized Sharpe-like ratio, assuming no
+outside capital additions and 252 day count convention}
 \item{Max.Drawdown}{ max drawdown }
 \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean
 losing trade } \item{Med.WinLoss.Ratio}{ ratio of median
@@ -95,8 +102,7 @@ TODO document each statistic included in this function,
 with equations
 
 TODO add more stats, potentially PerformanceAnalytics:
-skewness, kurtosis, upside/downside semidieviation,
-Sharpe/Sortino
+skewness, kurtosis, upside/downside semidieviation, Sortino
 
 mean absolute deviation stats
 
