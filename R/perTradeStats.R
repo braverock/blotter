@@ -92,49 +92,68 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
         else
             trades$Start <- head(trades$Start, -1)
     }
+
+    # pre-allocate trades list
+    N <- length(trades$End)
+    trades <- c(trades, list(
+        Init.Pos = numeric(N),
+        Max.Pos = numeric(N),
+        Num.Txns = integer(N),
+        Max.Notional.Cost = numeric(N),
+        Net.Trading.PL = numeric(N),
+        MAE = numeric(N),
+        MFE = numeric(N),
+        Pct.Net.Trading.PL = numeric(N),
+        Pct.MAE = numeric(N),
+        Pct.MFE = numeric(N),
+        tick.Net.Trading.PL = numeric(N),
+        tick.MAE = numeric(N),
+        tick.MFE = numeric(N)))
     
     # calculate information about each trade
-    for(i in 1:length(trades$End))
+    for(i in 1:N)
     {
         timespan <- seq.int(trades$Start[i], trades$End[i])
         trade <- posPL[timespan]
+        n <- nrow(trade)
 
-        # add cost basis column
-        trade$Pos.Cost.Basis <- cumsum(trade$Txn.Value)
-        #add running posPL column
-        trade$PosPL <- trade$Pos.Value-trade$Pos.Cost.Basis
-        
-        #position sizes
-        trades$Init.Pos[i] <- first(trade$Pos.Qty)
-        trades$Max.Pos[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Qty)
+        # calculate cost basis, PosPL, Pct.PL, tick.PL columns
+        Pos.Qty <- trade[,"Pos.Qty"]                   # avoid repeated subsetting
+        Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
+        Pos.PL <- trade[,"Pos.Value"]-Pos.Cost.Basis
+        Pct.PL <- Pos.PL/abs(Pos.Cost.Basis)           # broken for last timestamp (fixed below)
+        Tick.PL <- Pos.PL/abs(Pos.Qty)/tick_value      # broken for last timestamp (fixed below)
+        Max.Pos.Qty.loc <- which.max(Pos.Qty)          # find max position quantity location
 
-        #count number of transactions
-        trades$Num.Txns[i]<-length(which(trade$Txn.Value!=0))
+        # position sizes
+        trades$Init.Pos[i] <- Pos.Qty[1]
+        trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
+
+        # count number of transactions
+        trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
         
         # investment
-        trades$Max.Notional.Cost[i] <- first(trade[which(abs(trade$Pos.Qty)==max(abs(trade$Pos.Qty))),]$Pos.Cost.Basis)
+        trades$Max.Notional.Cost[i] <- Pos.Cost.Basis[Max.Pos.Qty.loc]
         
         # cash P&L
-        trades$Net.Trading.PL[i] <- last(trade)$PosPL
-        trades$MAE[i] <- min(0,trade$PosPL)
-        trades$MFE[i] <- max(0,trade$PosPL)
+        trades$Net.Trading.PL[i] <- Pos.PL[n]
+        trades$MAE[i] <- min(0,Pos.PL)
+        trades$MFE[i] <- max(0,Pos.PL)
         
         # percentage P&L
-        trade$Pct.PL <- trade$PosPL/abs(trade$Pos.Cost.Basis) #broken for last timestamp
-        trade$Pct.PL[length(trade$Pct.PL)]<-last(trade)$PosPL/abs(trades$Max.Notional.Cost[i])
+        Pct.PL[n] <- Pos.PL[n]/abs(trades$Max.Notional.Cost[i])
         
-        trades$Pct.Net.Trading.PL[i] <- last(trade$Pct.PL)
-        trades$Pct.MAE[i] <- min(0,trade$Pct.PL)
-        trades$Pct.MFE[i] <- max(0,trade$Pct.PL)
+        trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
+        trades$Pct.MAE[i] <- min(0,Pct.PL)
+        trades$Pct.MFE[i] <- max(0,Pct.PL)
         
         # tick P&L
-        #Net.Trading.PL/position/tick value=ticks
-        trade$tick.PL <- trade$PosPL/abs(trade$Pos.Qty)/tick_value #broken for last observation
-        trade$tick.PL[length(trade$tick.PL)] <- last(trade$PosPL)/abs(trades$Max.Pos[i])/tick_value
+        # Net.Trading.PL/position/tick value = ticks
+        Tick.PL[n] <- Pos.PL[n]/abs(trades$Max.Pos[i])/tick_value
         
-        trades$tick.Net.Trading.PL[i] <- last(trade$tick.PL)
-        trades$tick.MAE[i] <- min(0,trade$tick.PL)
-        trades$tick.MFE[i] <- max(0,trade$tick.PL)
+        trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
+        trades$tick.MAE[i] <- min(0,Tick.PL)
+        trades$tick.MFE[i] <- max(0,Tick.PL)
     }
     trades$Start <- index(posPL)[trades$Start]
     trades$End <- index(posPL)[trades$End]
