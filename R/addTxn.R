@@ -173,9 +173,19 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     # initialize new transaction object
     NewTxns <- xts(matrix(NA_real_, nrow(TxnData), 10L), index(TxnData))
     colnames(NewTxns) <- c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
-
-    NewTxns$Txn.Qty <- as.numeric(TxnData$TxnQty)
-    NewTxns$Txn.Price <- as.numeric(TxnData$TxnPrice)
+1
+    if(!("TxnQty" %in% colnames(TxnData))) {
+	warning(paste("No TxnQty column found, what did you call it?"))
+    } else {
+      NewTxns$Txn.Qty <- as.numeric(TxnData$TxnQty)
+	}
+    if(!("TxnPrice" %in% colnames(TxnData))) {
+	warning(paste("No TxnPrice column found, what did you call it?"))
+    } else {
+      NewTxns$Txn.Qty <- as.numeric(TxnData$TxnPrice)
+	}
+    #NewTxns$Txn.Qty <- as.numeric(TxnData$TxnQty)
+    #NewTxns$Txn.Price <- as.numeric(TxnData$TxnPrice)
     if("TxnFees" %in% colnames(TxnData)) {
       NewTxns$Txn.Fees <- as.numeric(TxnData$TxnFees)
     } else {
@@ -303,7 +313,7 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/)
-# Copyright (c) 2008-2014 Peter Carl and Brian G. Peterson
+# Copyright (c) 2008-2011 Peter Carl and Brian G. Peterson
 #
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
