@@ -4,7 +4,7 @@
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
-  tradeDef = "flat.to.flat")
+  tradeDef = "flat.to.flat", inclZeroDays = FALSE)
 
 dailyStats(Portfolios, use = c("equity", "txns"))
 }
@@ -21,6 +21,10 @@ dailyStats(Portfolios, use = c("equity", "txns"))
   \item{tradeDef}{string to determine which definition of
   'trade' to use. Currently "flat.to.flat" (the default)
   and "flat.to.reduced" are implemented.}
+
+  \item{inclZeroDays}{TRUE/FALSE, whether to include zero
+  P&L days in daily calcs, default FALSE for backwards
+  compatibility.}
 }
 \value{
 a \code{data.frame} containing:
@@ -48,7 +52,7 @@ realized P&L on days there were transactions, see
 \code{\link{dailyStats}} for all days }
 \item{Med.Daily.PL}{ median daily P&L }
 \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
-\item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no
+\item(Ann.Sharpe){annualized Sharpe-like ratio, assuming no
 outside capital additions and 252 day count convention}
 \item{Max.Drawdown}{ max drawdown }
 \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean
@@ -79,6 +83,15 @@ Building summary reports from this data.frame may be easily
 accomplished using something like \code{textplot} or
 \code{\link{data.frame}}, with rounding, fancy formatting,
 etc. as your needs dictate.
+
+Option \code{inclZeroDays}, if \code{TRUE}, will include
+all transaction P&L, including for days in which the
+strategy was not in the market, for daily statistics. This
+can prevent irrationally good looking daily statistics for
+strategies which spend a fair amount of time out of the
+market.  For strategies which are always in the market, the
+statistics should be (nearly) the same. Default is
+\code{FALSE} for backwards compatibility.
 
 If you have additional trade statistics you want added
 here, please share. We find it unlikely that any

@@ -17,6 +17,14 @@
 #' something like \code{textplot} or \code{\link{data.frame}}, with rounding, 
 #' fancy formatting, etc. as your needs dictate.
 #' 
+#' Option \code{inclZeroDays}, if \code{TRUE}, will include all transaction P&L, 
+#' including for days in which the strategy was not in the market, 
+#' for daily statistics.  
+#' This can prevent irrationally good looking daily statistics for strategies
+#' which spend a fair amount of time out of the market.  For strategies which 
+#' are always in the market, the statistics should be (nearly) the same.  
+#' Default is \code{FALSE} for backwards compatibility.
+#' 
 #' If you have additional trade statistics you want added here, please share.  
 #' We find it unlikely that any transaction-level statistics that can be  
 #' calculated independently of strategy rules could be considered proprietary.
@@ -37,6 +45,7 @@
 #' @param Symbols character vector of symbol strings, default NULL
 #' @param use for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)  
 #' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
+#' @param inclZeroDays TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.
 #' @author Lance Levenson, Brian Peterson
 #' @export
 #' @importFrom zoo as.Date
@@ -88,7 +97,7 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat')
+tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat',inclZeroDays=FALSE)
 {
     ret <- NULL
     use <- use[1] #use the first(default) value only if user hasn't specified
@@ -116,7 +125,9 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                 next
             }
 
-            DailyPL    <- apply.daily(PL.ne0,sum)
+            if(!isTRUE(inclZeroDays)) DailyPL <- apply.daily(PL.ne0,sum)
+            else DailyPL <- apply.daily(txn$Net.Txn.Realized.PL,sum)
+            
             AvgDailyPL <- mean(DailyPL)
             MedDailyPL <- median(DailyPL)
             StdDailyPL <- sd(as.numeric(as.vector(DailyPL)))
