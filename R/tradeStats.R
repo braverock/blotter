@@ -75,7 +75,7 @@
 #'    \item{Avg.Daily.PL}{mean daily realized P&L on days there were transactions, see \code{\link{dailyStats}} for all days }
 #'    \item{Med.Daily.PL}{ median daily P&L }
 #'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
-#'    \item(Ann.Sharpe){annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
+#'    \item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
 #'    \item{Med.WinLoss.Ratio}{ ratio of median winning trade over median losing trade }
