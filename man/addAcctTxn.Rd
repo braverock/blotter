@@ -6,7 +6,7 @@ addAcctTxn(Account, TxnDate, TxnType = c("Additions", "Withdrawals",
   "Interest"), Amount, ..., verbose = TRUE)
 }
 \arguments{
-  \item{name}{Account name, as string}
+  \item{Account}{Account name, as string}
 
   \item{TxnDate}{transaction date as ISO 8601, e.g.,
   '2008-09-01' or '2010-01-05 09:54:23.12345'}
@@ -15,7 +15,7 @@ addAcctTxn(Account, TxnDate, TxnType = c("Additions", "Withdrawals",
   transaction, only "Addition", "Withdrawal", or "Interest"
   are currently supported}
 
-  \item{amount}{As of now, the currency of the transaction
+  \item{Amount}{As of now, the currency of the transaction
   MUST MATCH the currency of the Account.  Patches
   welcome.}
 
@@ -48,7 +48,7 @@ individual transactions with a date and amount.  The
 transactions from each list in turn, aggregate them by the
 specified date scope, and slot them into the
 \code{Account$summary} table as it's built.
-\code{\link{UpdateEndEq}} should then just work.
+\code{\link{updateEndEq}} should then just work.
 }
 \author{
 Peter Carl
