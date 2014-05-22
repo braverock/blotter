@@ -330,10 +330,10 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
-            Eq = , Equity =, cumPL = {
+            Eq =, eq =, Equity =, equity =, cumPL = {
                 dailyPL <- dailyEqPL(Portfolios)
             },
-            Txns =, Trades = {
+            Txns =, txns =, Trades =, trades = {
                 dailyPL <- dailyTxnPL(Portfolios)
             }
             )
