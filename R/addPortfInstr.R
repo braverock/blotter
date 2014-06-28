@@ -9,7 +9,7 @@
 addPortfInstr <- function(Portfolio,symbols,...) 
 {
   pname<-Portfolio
-  portfolio<-getPortfolio(pname)
+  portfolio<-.getPortfolio(pname)
   initDate <- attr(portfolio, "initDate")    
   currency <- attr(portfolio, "currency")
   for(instrument in symbols){

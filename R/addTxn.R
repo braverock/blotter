@@ -56,8 +56,12 @@
 #' @export addTxns
 addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE, eps=1e-06)
 { 
-
     pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
+
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
     
     if(!is.timeBased(TxnDate) ){
@@ -75,8 +79,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         TxnFees=txnFeeQty*abs(TxnQty+PrevPosQty)
     }
     
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
@@ -86,13 +88,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
             ConMult<-tmp_instr$multiplier
         }
     }
-
-  	#If there is no table for the symbol then create a new one
-  	if (is.null(Portfolio$symbols[[Symbol]])){ 
-  		addPortfInstr(Portfolio=pname, symbols=Symbol)
-  		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-  	}
-
 
     # FUNCTION
     # Coerce the transaction fees to a function if a string was supplied
@@ -140,9 +135,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
       # print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
       print(paste(format(TxnDate, "%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
       #print(Portfolio$symbols[[Symbol]]$txn)
-    
-    #portfolio is already an environment, it's been updated in place
-    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
 #' Example TxnFee cost function
@@ -157,8 +149,11 @@ pennyPerShare <- function(TxnQty) {
 #' @export
 addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, eps=1e-06)
 {
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
@@ -234,9 +229,6 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     Portfolio$symbols[[Symbol]]$txn <- rbind(Portfolio$symbols[[Symbol]]$txn, NewTxns) 
 
     if(verbose) print(NewTxns)
-
-    #portfolio is already an environment, it's been updated in place
-    # assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
 #' Add cash dividend transactions to a portfolio.
@@ -259,8 +251,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
 #' 
 addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
@@ -304,9 +299,6 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     if(verbose)
         print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", -TxnValue, sep=" "))
         #print(Portfolio$symbols[[Symbol]]$txn)
-
-    #portfolio is already an environment, it's been updated in place
-    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
