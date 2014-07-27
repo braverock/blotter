@@ -123,7 +123,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
         Pos.PL <- trade[,"Pos.Value"]-Pos.Cost.Basis
         Pct.PL <- Pos.PL/abs(Pos.Cost.Basis)           # broken for last timestamp (fixed below)
         Tick.PL <- Pos.PL/abs(Pos.Qty)/tick_value      # broken for last timestamp (fixed below)
-        Max.Pos.Qty.loc <- which.max(Pos.Qty)          # find max position quantity location
+        Max.Pos.Qty.loc <- which.max(abs(Pos.Qty))     # find max position quantity location
 
         # position sizes
         trades$Init.Pos[i] <- Pos.Qty[1]
