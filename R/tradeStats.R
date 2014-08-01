@@ -68,7 +68,7 @@
 #'    \item{Percent.Positive}{ percent of trades that end positive }
 #'    \item{Percent.Negative}{ percent of trades that end negative }
 #'    \item{Profit.Factor}{ absolute value ratio of gross profits over gross losses }
-#'    \item{Avg.Win.Trade}{ mean P&L of profitabloe trades }
+#'    \item{Avg.Win.Trade}{ mean P&L of profitable trades }
 #'    \item{Med.Win.Trade}{ median P&L of profitable trades }
 #'    \item{Avg.Losing.Trade}{ mean P&L of losing trades }
 #'    \item{Med.Losing.Trade}{ median P&L of losing trades }
