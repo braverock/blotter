@@ -10,7 +10,7 @@
 #' portfolios: a list of portfolio object names to attach to the account
 #' initDate: date prior to the first close price given, used to contain
 #'           initial account equity and initial position 
-#' initEq: initial equity or starting capitaal, default is 100,000
+#' initEq: initial equity or starting capital, default is 100,000
 #' 
 #' Outputs
 #' Constructs multi-column xts object used to store aggregated portfolio 
