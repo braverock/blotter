@@ -152,7 +152,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             AvgTradePL <- mean(PL.ne0)
             MedTradePL <- median(PL.ne0)
             StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))  
-            AnnSharpe  <- AvgDailyPL/StdDailyPL * sqrt(252)
+            AnnSharpe  <- ifelse(StdDailyPL == 0, NA, AvgDailyPL/StdDailyPL * sqrt(252))
             
             NumberOfTxns   <- nrow(txn)-1
             NumberOfTrades <- length(PL.ne0)
@@ -168,8 +168,8 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             AvgLossTrade <- mean(PL.lt0)
             MedLossTrade <- median(PL.lt0)
             
-            AvgWinLoss <- AvgWinTrade/-AvgLossTrade
-            MedWinLoss <- MedWinTrade/-MedLossTrade
+            AvgWinLoss <- ifelse(AvgLossTrade == 0, NA, AvgWinTrade/-AvgLossTrade)
+            MedWinLoss <- ifelse(MedLossTrade == 0, NA, MedWinTrade/-MedLossTrade)
             
             Equity <- cumsum(posPL$Net.Trading.PL)
             if(!nrow(Equity)){
@@ -194,7 +194,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             #TODO we should back out position value if we've got an open position and double check here....
 	
             MaxDrawdown            <- -max(Equity.max - Equity)
-            ProfitToMaxDraw        <- -TotalNetProfit / MaxDrawdown
+            ProfitToMaxDraw  <- ifelse(MaxDrawdown == 0, NA, -TotalNetProfit / MaxDrawdown)
             names(ProfitToMaxDraw) <- 'Profit.To.Max.Draw'
                 
             #TODO add skewness, kurtosis, and positive/negative semideviation if PerfA is available.
