@@ -147,7 +147,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             
             GrossProfits <- sum(PL.gt0)
             GrossLosses  <- sum(PL.lt0)
-            ProfitFactor <- abs(GrossProfits/GrossLosses)
+            ProfitFactor <- ifelse(GrossLosses == 0, NA, abs(GrossProfits/GrossLosses))
             
             AvgTradePL <- mean(PL.ne0)
             MedTradePL <- median(PL.ne0)
