@@ -65,8 +65,7 @@ function(Account, Dates = NULL, Portfolios = NULL, method = c("timeweighted", "d
     Account <- try(get(aname, envir = .blotter))
 	}
 	if(inherits(Account, "try-error")){
-	  stop(paste("Account ", aname, " not found, use initAcct() to create a new 
-               account"))
+	  stop("Account ", aname, " not found, use initAcct() to create a new account")
 	}
 	if(!inherits(Account, "account")){
     stop("Account ", aname, " passed is not the name of an account object.")

@@ -7,11 +7,11 @@
 { # @author Brian Peterson
     acct<-suppressWarnings(try(get(paste("account",Account,sep='.'),envir=.blotter),silent=TRUE))
     if(inherits(acct,"try-error"))
-        stop(paste("Account",Account,"not found, use initAcct() to create a new account."))
+        stop("Account ", Account, " not found, use initAcct() to create a new account.")
     pname=Portfolio
     Portfolio<-suppressWarnings(try(acct[[paste("portfolio",pname,sep='.')]],silent=TRUE))
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname,"not found, use initPortf() to create a new portfolio or initAcct() to place it in",Account))
+        stop("Portfolio ", pname, " not found, use initPortf() to create a new portfolio or initAcct() to place it in ",Account)
     
     if(!is.null(Dates)){
         Portfolio<-Portfolio[Dates]

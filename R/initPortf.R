@@ -61,7 +61,7 @@
 initPortf <- function(name="default", symbols, initPosQty = 0, initDate = '1950-01-01', currency='USD', ...)
 { # @author Peter Carl
   if(exists(paste("portfolio",name,sep='.'), envir=.blotter,inherits=TRUE))
-    stop(paste("Portfolio",name,"already exists, use updatePortf() or addPortfInstr() to update it."))
+    stop("Portfolio ", name, " already exists, use updatePortf() or addPortfInstr() to update it.")
   
   # FUNCTION
   

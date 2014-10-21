@@ -48,8 +48,9 @@ getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter)
     if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=envir),silent=TRUE))
     else Portfolio<-suppressWarnings(try(get(pname,envir=envir),silent=TRUE))
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-    if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")  
+        stop("Portfolio ", pname, " not found, use initPortf() to create a new portfolio")
+    if(!inherits(Portfolio,"portfolio"))
+        stop("Portfolio ", pname, " passed is not the name of a portfolio object.")  
     return(Portfolio)
 }
 

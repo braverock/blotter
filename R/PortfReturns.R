@@ -29,8 +29,9 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 	else Account<-try(get(aname,envir=.blotter), silent=TRUE)
 	
 	if(inherits(Account,"try-error"))
-		stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
-	if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")
+		stop("Account ", aname, " not found, use initAcct() to create a new account")
+	if(!inherits(Account,"account"))
+		stop("Account ", aname, " passed is not the name of an account object.")
 	
 	if(is.null(Portfolios)) Portfolios = names(Account$portfolios)
 	

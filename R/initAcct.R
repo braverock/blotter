@@ -52,7 +52,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
 { # @author Peter Carl
 
     if(exists(paste("account",name,sep='.'), envir=.blotter,inherits=TRUE)) 
-        stop(paste("Account",name,"already exists, use updateAcct() or create a new account."))
+        stop("Account ", name, " already exists, use updateAcct() or create a new account.")
     
     # FUNCTION
     account=list()
