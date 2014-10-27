@@ -41,6 +41,7 @@
 #' @param TxnPrice  Price at which the transaction was done
 #' @param \dots Any other passthrough parameters
 #' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
+#' @param allowRebates whether to allow positive (rebate) TxnFees, default FALSE
 #' @param ConMult Contract/instrument multiplier for the Symbol if it is not defined in an instrument specification
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param eps value to add to force unique indices
@@ -54,7 +55,7 @@
 #' @author Peter Carl, Brian G. Peterson
 #' @export addTxn
 #' @export addTxns
-addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE, eps=1e-06)
+addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, allowRebates=FALSE, ConMult=NULL, verbose=TRUE, eps=1e-06)
 { 
     pname <- Portfolio
     #If there is no table for the symbol then create a new one
@@ -100,7 +101,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
 
     if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
-    if(txnfees>0) warning('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
+    if(txnfees>0 && !isTRUE(allowRebates)) stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
     # Calculate the value and average cost of the transaction
     TxnValue = .calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
@@ -147,7 +148,7 @@ pennyPerShare <- function(TxnQty) {
 
 #' @rdname addTxn
 #' @export
-addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, eps=1e-06)
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, allowRebates=FALSE, eps=1e-06)
 {
     pname <- Portfolio
     #If there is no table for the symbol then create a new one
@@ -184,6 +185,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     } else {
       NewTxns$Txn.Fees <- 0
     }
+  
+    if(any(NewTxns$Txn.Fees > 0) && !isTRUE(allowRebates)){
+      stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates. See Documentation.')
+    }
+  
     # split transactions that would cross through zero
     Pos <- drop(cumsum(NewTxns$Txn.Qty))
     Pos <- merge(Qty=Pos, PrevQty=lag(Pos))
