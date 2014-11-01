@@ -34,6 +34,12 @@
 #' have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
 #' column is optional.
 #' 
+#' If \code{TxnFees} is the name of a function, the function 
+#' will be called with \code{TxnFees(TxnQty, TxnPrice, Symbol)}
+#' so a user supplied fee function must at the very least take 
+#' dots to avoid an error. We have chosen not to use named arguments 
+#' to reduce issues from user-supplied fee functions. 
+#' 
 #' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{initPortf()}
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
@@ -98,8 +104,12 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         if (!inherits(TF,"try-error")) TxnFees<-TF
     }
     # Compute transaction fees if a function was supplied
-    if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
-
+    if (is.function(TxnFees)) {
+      txnfees <- TxnFees(TxnQty, TxnPrice, Symbol) 
+    } else {
+      txnfees<- as.numeric(TxnFees)
+    }
+      
     if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
     if(txnfees>0 && !isTRUE(allowRebates)) stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
@@ -141,8 +151,9 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 #' Example TxnFee cost function
 #' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
 #' This is an example intended to demonstrate how a cost function could be used in place of a flat numeric fee.
+#' @param \dots any other passthrough parameters
 #' @export
-pennyPerShare <- function(TxnQty) {
+pennyPerShare <- function(TxnQty, ...) {
     return(abs(TxnQty) * -0.01)
 }
 

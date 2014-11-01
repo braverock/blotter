@@ -70,6 +70,12 @@ transactions to the portfolio, which is much faster than
 adding them one at a time. The \code{TxnData} object must
 have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
 column is optional.
+
+If \code{TxnFees} is the name of a function, the function
+will be called with \code{TxnFees(TxnQty, TxnPrice, Symbol)}
+so a user supplied fee function must at the very least take
+dots to avoid an error. We have chosen not to use named arguments
+to reduce issues from user-supplied fee functions.
 }
 \note{
 The addTxn function will eventually also handle other transaction types,
