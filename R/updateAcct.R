@@ -122,7 +122,7 @@ updateAcct <- function(name='default', Dates=NULL)
               result = if(on=="none")
                 as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
               else{
-                if(length(Account$Additions[obsDates])>0) # catch empty sets
+                if(length(Account$Withdrawals[obsDates])>0) # catch empty sets
                   period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
                 else
                   xts(rep(0,obsLength),order.by=obsDates)
@@ -132,7 +132,7 @@ updateAcct <- function(name='default', Dates=NULL)
               result = if(on=="none")
                 as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
               else{
-                if(length(Account$Additions[obsDates])>0) # catch empty sets
+                if(length(Account$Interest[obsDates])>0) # catch empty sets
                   period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
                 else
                   xts(rep(0,obsLength),order.by=obsDates)
