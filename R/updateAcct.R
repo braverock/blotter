@@ -22,6 +22,7 @@ updateAcct <- function(name='default', Dates=NULL)
         return(name)
     
     #trim to only time prior to Dates
+    whichi = NROW(Account$summary)
     if(last(index(Account$summary))>.parseISO8601(Dates)$first.time){
         whichi<-first(Account$summary[paste(.parseISO8601(Dates)$first.time,'::',sep=''), which.i = TRUE])
         if(!is.null(whichi)) whichi=whichi-1
@@ -81,7 +82,7 @@ updateAcct <- function(name='default', Dates=NULL)
             psummary<-psummary*CcyMult
         }
         # now bind it
-        Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]],psummary)
+        Account$portfolios[[pname]] = rbind(Account$portfolios[[pname]][1:whichi,],psummary)
     }
 
     summary = NULL
