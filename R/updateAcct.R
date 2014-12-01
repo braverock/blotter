@@ -111,7 +111,7 @@ updateAcct <- function(name='default', Dates=NULL)
             },
             Additions = {
                 result = if(on=="none")
-                  as.xts(sum(Account$Additions[paste("::",obsDates, sep="")]), order.by=index(table))
+                  as.xts(sum(Account$Additions[obsDates]), order.by=index(table))
                 else{
                   if(length(Account$Additions[obsDates])>0) # catch empty sets
                     period.apply(Account$Additions[obsDates], endpoints(Account$Additions[obsDates], on=on), sum) # aggregates multiple account txns 
@@ -121,7 +121,7 @@ updateAcct <- function(name='default', Dates=NULL)
             }, 
             Withdrawals = {
               result = if(on=="none")
-                as.xts(sum(Account$Withdrawals[paste("::",obsDates, sep="")]), order.by=index(table))
+                as.xts(sum(Account$Withdrawals[obsDates]), order.by=index(table))
               else{
                 if(length(Account$Withdrawals[obsDates])>0) # catch empty sets
                   period.apply(Account$Withdrawals[obsDates], endpoints(Account$Withdrawals[obsDates], on=periodicity(table)$units), sum)
@@ -131,7 +131,7 @@ updateAcct <- function(name='default', Dates=NULL)
             }, 
             Interest = {
               result = if(on=="none")
-                as.xts(sum(Account$Interest[paste("::",obsDates, sep="")]),, order.by=index(table))
+                as.xts(sum(Account$Interest[obsDates]), order.by=index(table))
               else{
                 if(length(Account$Interest[obsDates])>0) # catch empty sets
                   period.apply(Account$Interest[obsDates], endpoints(Account$Interest[obsDates], on=periodicity(table)$units), sum)
