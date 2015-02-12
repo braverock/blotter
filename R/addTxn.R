@@ -74,10 +74,27 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     if(!is.timeBased(TxnDate) ){
         TxnDate<-as.POSIXct(TxnDate)
     }
+
+    # Coerce the transaction fees to a function if a string was supplied
+    if(is.character(TxnFees)) {
+        TF <- try(match.fun(TxnFees), silent=TRUE)
+        if (!inherits(TF,"try-error")) TxnFees<-TF
+    }
+    # Compute transaction fees if a function was supplied
+    if (is.function(TxnFees)) {
+      txnfees <- TxnFees(TxnQty, TxnPrice, Symbol) 
+    } else {
+      txnfees<- as.numeric(TxnFees)
+    }
+    
+    if(is.null(txnfees) || is.na(txnfees))
+        txnfees <- 0
+    if(txnfees>0 && !isTRUE(allowRebates))
+        stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
     # split transactions that would cross through zero
     if(PrevPosQty!=0 && sign(PrevPosQty+TxnQty)!=sign(PrevPosQty) && PrevPosQty!=-TxnQty){
-        txnFeeQty=TxnFees/abs(TxnQty) # calculate fees pro-rata by quantity
+        txnFeeQty=txnfees/abs(TxnQty) # calculate fees pro-rata by quantity
         addTxn(Portfolio=pname, Symbol=Symbol, TxnDate=TxnDate, TxnQty=-PrevPosQty, TxnPrice=TxnPrice, ..., 
                 TxnFees = txnFeeQty*abs(PrevPosQty), ConMult = ConMult, verbose = verbose, eps=eps)
         TxnDate=TxnDate+2*eps #transactions need unique timestamps, so increment a bit
@@ -96,23 +113,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         }
     }
 
-    # FUNCTION
-    # Coerce the transaction fees to a function if a string was supplied
-    
-    if(is.character(TxnFees)) {
-        TF <- try(match.fun(TxnFees), silent=TRUE)
-        if (!inherits(TF,"try-error")) TxnFees<-TF
-    }
-    # Compute transaction fees if a function was supplied
-    if (is.function(TxnFees)) {
-      txnfees <- TxnFees(TxnQty, TxnPrice, Symbol) 
-    } else {
-      txnfees<- as.numeric(TxnFees)
-    }
-      
-    if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
-    if(txnfees>0 && !isTRUE(allowRebates)) stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
-    
     # Calculate the value and average cost of the transaction
     TxnValue = .calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
     TxnAvgCost = .calcTxnAvgCost(TxnValue, TxnQty, ConMult)
