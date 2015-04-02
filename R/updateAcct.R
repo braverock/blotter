@@ -51,6 +51,7 @@ updateAcct <- function(name='default', Dates=NULL)
                 FXrate.str<-paste(p.ccy.str,a.ccy.str,sep='') # currency quote convention is EURUSD which reads as "USD per EUR"
                 FXrate<-try(get(FXrate.str), silent=TRUE)
                 #TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
+                invert=FALSE
                 if(inherits(FXrate,"try-error")){
                     FXrate.str<-paste(a.ccy.str,p.ccy.str,sep='')
                     FXrate<-try(get(FXrate.str), silent=TRUE)
