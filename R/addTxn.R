@@ -142,6 +142,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     #colnames(NewTxns) = c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
     Portfolio$symbols[[Symbol]]$txn<-rbind(Portfolio$symbols[[Symbol]]$txn, NewTxn)
 
+    # Warn if the transaction timestamp is not after initDate
+    if(.index(NewTxn) <= .index(Portfolio$symbols[[Symbol]]$txn[1L,1L]))
+      warning("Transaction timestamp (", index(NewTxn[1L,]), ") ",
+              "is not after initDate (", index(Portfolio$symbols[[Symbol]]$txn[1L,1L]), ").")
+
     if(verbose)
       # print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
       print(paste(format(TxnDate, "%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
@@ -180,6 +185,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     # initialize new transaction object
     NewTxns <- xts(matrix(NA_real_, nrow(TxnData), 10L), index(TxnData))
     colnames(NewTxns) <- c('Txn.Qty', 'Txn.Price', 'Txn.Value', 'Txn.Avg.Cost', 'Pos.Qty', 'Pos.Avg.Cost', 'Gross.Txn.Realized.PL', 'Txn.Fees', 'Net.Txn.Realized.PL', 'Con.Mult')
+
+    # Warn if the transaction timestamp is not after initDate
+    if(.index(NewTxns[1L,1L]) <= .index(Portfolio$symbols[[Symbol]]$txn[1L,1L]))
+      warning("First transaction timestamp (", index(NewTxns[1L,1L]), ") ",
+              "is not after initDate (", index(Portfolio$symbols[[Symbol]]$txn[1L,1L]), ").")
 
     if(!("TxnQty" %in% colnames(TxnData))) {
 	warning(paste("No TxnQty column found, what did you call it?"))
