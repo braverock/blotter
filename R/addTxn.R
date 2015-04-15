@@ -100,7 +100,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         TxnDate=TxnDate+2*eps #transactions need unique timestamps, so increment a bit
         TxnQty=TxnQty+PrevPosQty
         PrevPosQty=0
-        TxnFees=txnFeeQty*abs(TxnQty+PrevPosQty)
+        txnfees=txnFeeQty*abs(TxnQty+PrevPosQty)
     }
     
     if(is.null(ConMult) | !hasArg(ConMult)){
