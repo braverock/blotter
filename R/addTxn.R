@@ -246,9 +246,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     NewTxns$Pos.Qty <- cumsum(initPosQty + NewTxns$Txn.Qty)
     # only pass non-zero initial position qty and average cost
     NewTxns$Pos.Avg.Cost <- .calcPosAvgCost_C(initPosQty[1], initPosAvgCost[1], NewTxns$Txn.Value, NewTxns$Pos.Qty, ConMult)
-    # need lagged position average cost
+    # need lagged position average cost and quantity
     lagPosAvgCost <- c(initPosAvgCost[1], NewTxns$Pos.Avg.Cost[-nrow(NewTxns)])
+    lagPosQty <- c(initPosQty[1], NewTxns$Pos.Qty[-nrow(NewTxns)])
     NewTxns$Gross.Txn.Realized.PL <- NewTxns$Txn.Qty * ConMult * (lagPosAvgCost - NewTxns$Txn.Avg.Cost)
+    NewTxns$Gross.Txn.Realized.PL[abs(lagPosQty) < abs(NewTxns$Pos.Qty) | lagPosQty == 0] <- 0
     NewTxns$Net.Txn.Realized.PL <- NewTxns$Gross.Txn.Realized.PL - NewTxns$Txn.Fees
     NewTxns$Con.Mult <- ConMult
 
