@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for transaction-oriented trading systems
     development.
-Version: 0.9.1666
+Version: 0.9.1695
 Date: $Date$
 Author: Peter Carl, Brian G. Peterson
 Maintainer: Brian G. Peterson <brian@braverock.com>
@@ -16,10 +16,15 @@ LazyLoad: yes
 Depends:
     R (>= 2.15),
     xts (>= 0.7-6.17),
-    zoo,
     FinancialInstrument(>= 0.6.3),
     PerformanceAnalytics,
     quantmod
+Imports:
+    zoo,
+    graphics,
+    methods,
+    stats,
+    utils
 Suggests:
     Hmisc,
     RUnit,

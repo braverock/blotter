@@ -48,7 +48,6 @@
 #' @param inclZeroDays TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.
 #' @author Lance Levenson, Brian Peterson
 #' @export
-#' @importFrom zoo as.Date
 #' @return
 #' a \code{data.frame} containing:
 #'  
