@@ -18,7 +18,6 @@ chart.Spread <- function(Account, Portfolio, Spread=NULL, Symbols = NULL, Dates 
     if(!inherits(tmp_instr,"spread")) stop (paste("Instrument",Spread," is not a spread, please use the primary_id of a spread."))
     
 
-    require(quantmod)
     Prices=get(Spread)
     #buys and sells will be done on the first positive ratio instrument in a spread
     Symbol<-as.character(tmp_instr$memberlist$members[which(tmp_instr$memberlist$memberratio>0)][1])

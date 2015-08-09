@@ -48,7 +48,7 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 
 			#extract
 			ptable = .getBySymbol(Portfolio = Portfolio, Attribute = "Net.Trading.PL", Dates = Dates,...)
-			ptable = PerformanceAnalytics:::zerofill(ptable)
+			ptable = PerformanceAnalytics::zerofill(ptable)
 			#combine
 			if(is.null(table)) table=ptable
 			else table=cbind(table,ptable)

@@ -35,7 +35,6 @@ chart.Reconcile <- function(theoPort, actualPort, Symbol, Dates = NULL, ..., PLd
 
     # FUNCTION
 
-    require(quantmod)
     Prices=get(Symbol)
     if(!is.OHLC(Prices)) Prices=getPrice(Prices, ...=...)
     freq = periodicity(Prices)

@@ -17,7 +17,6 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     else Symbol <- Symbol[1]
     # FUNCTION
 
-    require(quantmod)
     Prices=get(Symbol)
     if(!is.OHLC(Prices)) {
         if(hasArg(prefer)) prefer=eval(match.call(expand.dots=TRUE)$prefer) else prefer=NULL
