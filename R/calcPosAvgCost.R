@@ -6,7 +6,6 @@
 #' @param TxnValue total value of the transaction, including fees
 #' @param PosQty total units (shares) of the resulting position
 #' @param ConMult multiplier from instrument data
-#' @useDynLib blotter
 #' @rdname calcPosAvgCost
 .calcPosAvgCost <- function(PrevPosQty, PrevPosAvgCost, TxnValue, PosQty, ConMult=1)
 { # @author Peter Carl
