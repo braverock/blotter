@@ -132,7 +132,7 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
   	# if the previous position is zero, RealizedPL = 0
   	# if previous position is positive and position is larger, RealizedPL =0
   	# if previous position is negative and position is smaller, RealizedPL =0
-  	if(abs(PrevPosQty) < abs(PosQty) | (PrevPosQty = 0))
+  	if(abs(PrevPosQty) < abs(PosQty) | (PrevPosQty == 0))
   		GrossTxnRealizedPL = 0
 	
 	  NetTxnRealizedPL = GrossTxnRealizedPL + txnfees
