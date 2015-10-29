@@ -38,6 +38,11 @@
     # if no date is specified, get all available dates
     if(is.null(Dates)) {
         Dates = index(prices)
+        # Covert to POSIXct w/same TZ as portfolio object
+        if(indexClass(prices) %in% c("Date","yearmon","yearqtr")) {
+            portfTZ <- indexTZ(Portfolio$symbols[[Symbol]]$txn)
+            Dates <- as.POSIXct(as.character(as.Date(Dates)), tz=portfTZ)
+        }
     } else if(!is.timeBased(Dates)) {
         Dates<- if(is.na(.parseISO8601(Dates)$first.time) ||
             .parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
