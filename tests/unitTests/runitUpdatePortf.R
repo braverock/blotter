@@ -5,8 +5,7 @@ test.txnFees <- function() {
     # remove objects created by unit tests
     try(rm_currencies("USD"))
     try(rm_stocks(symbols))
-    try(rm(list=c(p1,a1), pos=.blotter))
-    try(rm(IBM))
+    try(rm(list=c(paste0("portfolio.",p1),paste0("account.",a1)), pos=.blotter))
   })
 
   currency("USD")
@@ -18,7 +17,7 @@ test.txnFees <- function() {
 
   ## simple portfolio with one transaction
   p1 <- initPortf(name="p1runitUpdatePortf", symbols=symbols)
-  p1 <- addTxn(Portfolio="p1runitUpdatePortf", Symbol="IBM", TxnDate='2007-01-04', TxnQty=100, TxnPrice=96.5, TxnFees=-0.05*100)
+  p1 <- addTxn(Portfolio="p1runitUpdatePortf", Symbol="IBM", TxnDate='2007-01-04', TxnQty=100, TxnPrice=96.5, TxnFees=-0.05*100, verbose=FALSE)
   p1 <- updatePortf(Portfolio="p1runitUpdatePortf", Dates='2007-01-03::2007-01-10')
   a1 <- initAcct(name="a1runitUpdatePortf", portfolios="p1runitUpdatePortf")
   a1 <- updateAcct(a1,'2007-01')
@@ -27,7 +26,7 @@ test.txnFees <- function() {
   ## (really) simple transaction cost function
   fiveCents <- function(qty, prc, ...) return(-0.05*qty)
   p2 <- initPortf(name="p2runitUpdatePortf", symbols=symbols)
-  p2 <- addTxn(Portfolio="p2runitUpdatePortf", Symbol="IBM", TxnDate='2007-01-04', TxnQty=100, TxnPrice=96.5, TxnFees=fiveCents)
+  p2 <- addTxn(Portfolio="p2runitUpdatePortf", Symbol="IBM", TxnDate='2007-01-04', TxnQty=100, TxnPrice=96.5, TxnFees=fiveCents, verbose=FALSE)
   p2 <- updatePortf(Portfolio="p2runitUpdatePortf", Dates='2007-01-03::2007-01-10')
   a2 <- initAcct(name="a2runitUpdatePortf", portfolios="p2runitUpdatePortf")
   a2 <- updateAcct(a2,'2007-01')

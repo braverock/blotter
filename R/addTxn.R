@@ -236,7 +236,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     }
     rm(Pos, PosCrossZero)  # clean up
     # calculate transaction values
-    NewTxns$Txn.Value <- .calcTxnValue(NewTxns$Txn.Qty, NewTxns$Txn.Price, NewTxns$Txn.Fees, ConMult)
+    NewTxns$Txn.Value <- .calcTxnValue(NewTxns$Txn.Qty, NewTxns$Txn.Price, 0, ConMult)  # Gross of fees
     NewTxns$Txn.Avg.Cost <- .calcTxnAvgCost(NewTxns$Txn.Value, NewTxns$Txn.Qty, ConMult)
     # intermediate objects to aid in vectorization; only first element is non-zero
     initPosQty <- initPosAvgCost <- numeric(nrow(NewTxns))
@@ -251,7 +251,7 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     lagPosQty <- c(initPosQty[1], NewTxns$Pos.Qty[-nrow(NewTxns)])
     NewTxns$Gross.Txn.Realized.PL <- NewTxns$Txn.Qty * ConMult * (lagPosAvgCost - NewTxns$Txn.Avg.Cost)
     NewTxns$Gross.Txn.Realized.PL[abs(lagPosQty) < abs(NewTxns$Pos.Qty) | lagPosQty == 0] <- 0
-    NewTxns$Net.Txn.Realized.PL <- NewTxns$Gross.Txn.Realized.PL - NewTxns$Txn.Fees
+    NewTxns$Net.Txn.Realized.PL <- NewTxns$Gross.Txn.Realized.PL + NewTxns$Txn.Fees
     NewTxns$Con.Mult <- ConMult
 
     # update portfolio with new transactions
