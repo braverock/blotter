@@ -2,7 +2,7 @@ Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems
     Development
-Version: 0.9.1695
+Version: 0.9.1741
 Date: $Date$
 Author: Peter Carl [aut],
   Brian G. Peterson [aut, cre],
@@ -39,5 +39,5 @@ Suggests:
     Hmisc,
     RUnit,
 URL: https://r-forge.r-project.org/projects/blotter/
-Copyright: (c) 2008-2015
+Copyright: (c) 2008-2016
 ByteCompile: TRUE

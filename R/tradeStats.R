@@ -114,9 +114,13 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             posPL <- Portfolio$symbols[[symbol]]$posPL
             posPL <- posPL[-1,]
 
-            PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  > 0]
-            PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL  < 0]
-            PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
+            # Use gross transaction P&L to identify transactions that realized
+            # (non-fee) P&L, but use net transaction P&L to calculate statistics.
+            PL.gt0 <- txn$Net.Txn.Realized.PL[txn$Gross.Txn.Realized.PL  > 0]
+            PL.lt0 <- txn$Net.Txn.Realized.PL[txn$Gross.Txn.Realized.PL  < 0]
+            PL.scratch <- txn$Pos.Qty == 0 & lag(txn$Pos.Qty) != 0
+            PL.scratch[1] <- FALSE  # Set first NA to FALSE
+            PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Gross.Txn.Realized.PL != 0 | PL.scratch]
 
             if(length(PL.ne0) == 0)
             {
