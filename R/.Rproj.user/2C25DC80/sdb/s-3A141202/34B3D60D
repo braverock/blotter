@@ -1,0 +1,17 @@
+{
+    "contents" : "#Version 4\n#playing with graphs and shading and legend\n\nt1 <- Sys.time()\n\n# Attach packages. You can install packages via:\n# install.packages(c(\"quantmod\",\"TTR\",\"PerformanceAnalytics\"))\nlibrary(quantmod)\nlibrary(TTR)\nlibrary(PerformanceAnalytics)\nlibrary(ggplot2)\nlibrary(timeSeries)\n\n#Read price data and build xts object\ndata <- read.csv(\"C:/Users/jasen/Work/R/simSample.csv\", header = TRUE, stringsAsFactors=F)\ns1.dates <- as.Date(data[,2], format=\"%d-%m-%Y\")\ns1 <- xts(data[,3], s1.dates)\n\n#Calculate ROC\nret <- ROC(s1[,1])\n#Chart cum returns\nchart.CumReturns(ret)\n\n#Set up for Sample() and Replicate()\nn <- 10000 #number of replications\n\nb <- TRUE #Sample with/without Replacement (Boolean)\nret_sample <- replicate(n,sample(as.vector(ret[-1,]), replace=b)) #use ret[-1] so we exclude 1st NA value from ROC calc\nret_cum_sample <- apply(ret_sample, 2, function(x) cumsum(x))\nret_cum_samplexts <- xts(ret_cum_sample, s1.dates[-1]) #use s1.dates[-1] so that length of dates is identical to length of ret_sample\n\n  #Build the 5% and 95% quantile datasets\n  ret_5 <- apply(ret_cum_samplexts, 1, function(x) quantile(x, .05))\n  ret_5 <- as.xts(ret_5)\n\n  ret_95 <- apply(ret_cum_samplexts, 1, function(x) quantile(x, .95))\n  ret_95 <- as.xts(ret_95)\n\n  ret_25 <- apply(ret_cum_samplexts, 1, function(x) quantile(x, .25))\n  ret_25 <- as.xts(ret_25)\n\n  ret_75 <- apply(ret_cum_samplexts, 1, function(x) quantile(x, .75))\n  ret_75 <- as.xts(ret_75)\n\n  charts <- merge(ret_5, ret_95, ret_25, ret_75)\n\n#lets try some shading\n  h <- ggplot(charts, aes(x = index(charts))) +\n    geom_ribbon(aes(ymin = ret_25, ymax = ret_75, colour = \"50%\"), alpha = 0.3, fill = \"red3\") +\n    geom_ribbon(aes(ymin = ret_5, ymax = ret_95, colour = \"90%\"), alpha = 0.3, fill = \"cornflowerblue\") +\n    theme(axis.text.x = element_text(angle=0, hjust = 0),\n          axis.title = element_text(face = 'bold', size = 14),\n          title = element_text(face = 'bold', size = 16),\n          legend.position = 'bottom',\n          legend.title = element_blank(),\n          legend.text = element_text(size = 12),\n          legend.key.width = unit(2, 'cm'))\n    h <- h + geom_line(aes(y = cumsum(ret[-1,])), colour = \"black\", linetype = 1) +\n    ylab(label=\"Cumulative Returns\") +\n    xlab(label=\"Time\") +\n    ggtitle(\"Returns Distribution\")\n  h\n\n\nt2 <- Sys.time()\ndifftime(t2,t1)\n",
+    "created" : 1459622105585.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1440611868",
+    "id" : "34B3D60D",
+    "lastKnownWriteTime" : 1459622140,
+    "path" : "C:/Users/jasen/Work/R/R scripts/MonteCarlo(ReplicateSample)_graph.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

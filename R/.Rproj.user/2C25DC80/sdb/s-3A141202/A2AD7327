@@ -1,0 +1,17 @@
+{
+    "contents" : "#' Retrieves all information about the position as of a date\n#' \n#' NOTE This could get much more complicated from here, particularly when it's conditional on symbol, etc.\n#' @param Portfolio string identifying a portfolio object containing transactions\n#' @param Symbol an instrument identifier for a symbol included in the portfolio\n#' @param Date timestamp as of which to have the most recent position\n#' @param Columns which columns to return from the \\code{txn} slot in the portfolio\n#' @param n number of periods to return, default 1\n#' @return All data elements related to position in a row of an xts object\n#' @export\ngetPos <- function(Portfolio, Symbol, Date, Columns=c('Pos.Qty','Pos.Avg.Cost'),n=1)\n{ # @author Peter Carl\n    Portfolio<-.getPortfolio(Portfolio)    \n    # FUNCTION\n    PosData = Portfolio$symbols[[Symbol]]$txn\n    #toDate = paste('::', Date, sep=\"\")\n    # It may not make sense to return realized P&L with the position information, so only position and \n    # position average cost are returned.\n    #if(nrow(PosData)>1) Pos = last(PosData[toDate][,Columns],n=n)\n    if(nrow(PosData)>1) {\n        if(!inherits(Date,\"POSIXct\")) Date<-as.POSIXct(Date) \n        Pos = last(PosData[which(index(PosData)<=Date),][, Columns], n = n)\n    } else Pos <- PosData[,Columns]\n    return(Pos)\n}\n\n###############################################################################\n# Blotter: Tools for transaction-oriented trading systems development\n# for R (see http://r-project.org/) \n# Copyright (c) 2008-2015 Peter Carl and Brian G. Peterson\n#\n# This library is distributed under the terms of the GNU Public License (GPL)\n# for full details see the file COPYING\n#\n# $Id: getPos.R 1666 2015-01-07 13:26:09Z braverock $\n#\n###############################################################################\n",
+    "created" : 1459626985434.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1323116495",
+    "id" : "A2AD7327",
+    "lastKnownWriteTime" : 1459442402,
+    "path" : "C:/Users/jasen/Personal/blotter/pkg/blotter/R/getPos.R",
+    "project_path" : "getPos.R",
+    "properties" : {
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

@@ -1,0 +1,17 @@
+{
+    "contents" : "Package: blotter\nType: Package\nTitle: Tools for Transaction-Oriented Trading Systems\n    Development\nVersion: 0.9.1741\nDate: $Date: 2016-03-30 23:37:25 +0200 (Wed, 30 Mar 2016) $\nAuthor: Peter Carl [aut],\n    Brian G. Peterson [aut, cre],\n    Daniel Cegielka [ctb],\n    Dirk Eddelbuettel [ctb],\n    Jan Humme [ctb],\n    Lance Levenson [ctb],\n    Ben McCann [ctb],\n    Jeff Ryan [ctb],\n    Garrett See [ctb],\n    Joshua Ulrich [ctb],\n    Wolfgang Wu [ctb]\nMaintainer: Brian G. Peterson <brian@braverock.com>\nDescription: Transaction infrastructure for defining\n    instruments, transactions, portfolios and accounts for\n    trading systems and simulation. Provides portfolio\n    support for multi-asset class and multi-currency\n    portfolios.  Actively maintained and developed.\nLicense: GPL\nLazyLoad: yes\nDepends:\n    R (>= 2.15),\n    xts (>= 0.7-6.17),\n    FinancialInstrument(>= 0.6.3),\n    PerformanceAnalytics,\n    quantmod\nImports:\n    zoo,\n    graphics,\n    methods,\n    stats,\n    utils\nSuggests:\n    Hmisc,\n    RUnit,\nURL: https://r-forge.r-project.org/projects/blotter/\nCopyright: (c) 2008-2016\nByteCompile: TRUE\nRoxygenNote: 5.0.1\n",
+    "created" : 1459625670430.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "148574359",
+    "id" : "32FAAB64",
+    "lastKnownWriteTime" : 1459626523,
+    "path" : "C:/Users/jasen/Personal/blotter/pkg/blotter/DESCRIPTION",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "type" : "dcf"
+}
