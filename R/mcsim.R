@@ -1,7 +1,9 @@
-#' Retrieves the most recent value of the capital account
+#' Monte Carlo simulate strategy results
+#'
+#' Return bands of returns based on Monte Carlo simulations of back-test results
 #' @param Account string identifier of account
 #' @param n number of monte carlo simulations
-#' @param Replace boolean for sampling with or without replacement DEFAULT = TRUE
+#' @param Replace boolean for sampling with or without replacement, default = TRUE
 #' @return a ggplot object of simulation bands
 #' @note 
 #' Requires ggplot2 package
@@ -9,7 +11,7 @@
 #' @author Jasen Mackie, Brian G. Peterson
 #' @seealso \code{\link{ggplot}}
 
-mcsim <- function(Account, n = 100, Replace = TRUE){
+mcsim <- function(Account, n, Replace = TRUE){
   
     a <- getAccount(Account)
     EndEq <- a$summary$End.Eq
