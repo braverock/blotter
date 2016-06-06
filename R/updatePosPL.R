@@ -38,7 +38,7 @@
     # if no date is specified, get all available dates
     if(is.null(Dates)) {
         Dates = index(prices)
-        # Covert to POSIXct w/same TZ as portfolio object
+        # Convert to POSIXct w/same TZ as portfolio object
         if(any(indexClass(prices) %in% c("Date","yearmon","yearqtr"))) {
             portfTZ <- indexTZ(Portfolio$symbols[[Symbol]]$txn)
             Dates <- as.POSIXct(as.character(as.Date(Dates)), tz=portfTZ)
@@ -215,17 +215,48 @@
 	} else {
 	  #multiply the correct columns 
 	  columns<-c('Pos.Value', 'Txn.Value', 'Pos.Avg.Cost', 'Period.Realized.PL', 'Period.Unrealized.PL','Gross.Trading.PL', 'Txn.Fees', 'Net.Trading.PL')
-	  TmpPeriods[,columns] <- TmpPeriods[,columns] * drop(CcyMult)  # drop dims so recycling will occur
-	  TmpPeriods[,'Ccy.Mult'] <- CcyMult
-	  
-	  #add change in Pos.Value in base currency
-	  LagValue <- as.numeric(last(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]][,'Pos.Value']))
-	  if(length(LagValue)==0) LagValue <- 0
-	  LagPos.Value <- lag(TmpPeriods[,'Pos.Value'],1)
-	  LagPos.Value[1] <- LagValue
-	  CcyMove <- TmpPeriods[,'Pos.Value'] - LagPos.Value - TmpPeriods[,'Txn.Value'] - TmpPeriods[,'Period.Unrealized.PL'] - TmpPeriods[,'Period.Realized.PL']
-	  columns<-c('Gross.Trading.PL','Net.Trading.PL','Period.Unrealized.PL')
-	  TmpPeriods[,columns] <- TmpPeriods[,columns] + drop(CcyMove)  # drop dims so recycling will occur
+
+      # Find all the closed trades, and the price at close for converting:
+      conv0 <- Txns[Txns[,"Gross.Txn.Realized.PL"] != 0, "Txn.Avg.Cost"]
+
+      # This next merge calculates the dates at which to hit CLOSED open trades
+      # with a multiplier (CcyMult) ...  But there is a potential problem: Should
+      # it be Txn.Avg.Cost later (?).  We need to recheck this code when multiple
+      # positions are added.
+      conv0 <- merge(conv0, converter = drop(CcyMult), join = "inner")
+
+      # For all trades opened and closed up to the current date, find the PnL in
+      # USD at the CLOSE xxxUSD conversion of the bar on which the position was closed.
+      if (Txns[1,1] != 0) { # We need at least one transaction, otherwise there will be an error
+        if (NROW(conv0) > 0) {
+          TmpPeriods <- merge(TmpPeriods, conv0[, "converter"])
+        } else {
+          TmpPeriods <- merge(TmpPeriods, converter = rep(NA, NROW(TmpPeriods)))
+        }
+        # This matters for daily bar simulations where Open for entry and Close
+        # for exit are used. Check for duplicate dates for trades; these occur
+        # for trades opened and closed on the same bar.
+        onebartrade_indexes <- which(duplicated(index(TmpPeriods))) # for each i in duplicated, append the previous value.
+        if (length(onebartrade_indexes) > 0) {
+          for (i in onebartrade_indexes) {
+            TmpPeriods[onebartrade_indexes, "converter"] <- TmpPeriods[onebartrade_indexes - 1, "converter"]
+          }
+        }
+
+        # Insert ability to roll from the end for an open trade.
+        openpos <- TmpPeriods[, "Pos.Value"] != 0
+        openpos_indexes <- which(openpos == TRUE)
+        last_trade_index <- openpos_indexes[length(openpos_indexes)]
+        N <- NROW(TmpPeriods)
+        if (last_trade_index == N) {
+          # A trade is still open, so we must calculate the PnL, then convert at close of final bar...
+          TmpPeriods[N, "converter"] <- drop(last(CcyMult))
+        }
+
+        TmpPeriods[, "converter"] <- na.locf(TmpPeriods[, "converter"], fromLast = TRUE)
+        TmpPeriods[, "Net.Trading.PL"] <- TmpPeriods[, "Net.Trading.PL"] * TmpPeriods[, "converter"]
+        TmpPeriods$converter <- NULL
+      }
 	  
 	  #stick it in posPL.ccy
 	  Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]]<-rbind(Portfolio[['symbols']][[Symbol]][[paste('posPL',p.ccy.str,sep='.')]],TmpPeriods)
