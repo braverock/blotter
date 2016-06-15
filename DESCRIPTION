@@ -2,19 +2,19 @@ Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems
     Development
-Version: 0.9.1741
-Date: $Date$
+Version: 0.10.0
+Date: 2016-06-15 $Date$
 Author: Peter Carl [aut],
-  Brian G. Peterson [aut, cre],
-  Daniel Cegielka [ctb],
-  Dirk Eddelbuettel [ctb],
-  Jan Humme [ctb],
-  Lance Levenson [ctb],
-  Ben McCann [ctb],
-  Jeff Ryan [ctb],
-  Garrett See [ctb],
-  Joshua Ulrich [ctb],
-  Wolfgang Wu [ctb]
+    Brian G. Peterson [aut, cre],
+    Daniel Cegielka [ctb],
+    Dirk Eddelbuettel [ctb],
+    Jan Humme [ctb],
+    Lance Levenson [ctb],
+    Ben McCann [ctb],
+    Jeff Ryan [ctb],
+    Garrett See [ctb],
+    Joshua Ulrich [ctb],
+    Wolfgang Wu [ctb]
 Maintainer: Brian G. Peterson <brian@braverock.com>
 Description: Transaction infrastructure for defining
     instruments, transactions, portfolios and accounts for
@@ -41,3 +41,4 @@ Suggests:
 URL: https://r-forge.r-project.org/projects/blotter/
 Copyright: (c) 2008-2016
 ByteCompile: TRUE
+RoxygenNote: 5.0.1
