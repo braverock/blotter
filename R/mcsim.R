@@ -4,6 +4,7 @@
 #' @param Portfolio string identifier of portfolio name
 #' @param Account string identifier of account name
 #' @param n number of simulations, default = 1000
+#' @param \dots any other passthrough parameters
 #' @param l block length, default = 20
 #' @param use determines whether to use 'daily' or 'txn' PL, default = "equity" ie. daily
 #' @param pstart numeric identifier for which period in the backtest is day 1, useful for longet term MA strategies
@@ -12,13 +13,18 @@
 #' @note 
 #' Requires boot package
 #' @importFrom boot tsboot
-#' @export
+#' @importFrom boot boot.array
 #' @author Jasen Mackie, Brian G. Peterson
 #' @seealso \code{\link{boot}}
-
-####################################### mcsim function
-mcsim <- function(Portfolio, Account, n = 1000, l = 20, use=c('equity','txns'), pstart = 1,
-                  ...){
+#' @export
+mcsim <- function(  Portfolio
+                  , Account
+                  , n = 1000
+                  , ...
+                  , l = 20
+                  , use=c('equity','txns')
+                  , pstart = 1
+                  ){
   
   use=use[1] #take the first value if the user didn't specify
   switch (use,
@@ -61,7 +67,7 @@ mcsim <- function(Portfolio, Account, n = 1000, l = 20, use=c('equity','txns'), 
        col = "lightgray", border = "white")
   box(col = "darkgray")
   
-  b = maxDrawdown(ROC(initEq + cumsum(dailyPL)), invert = FALSE)
+  b = PerformancAnalytics::maxDrawdown(TTR::ROC(initEq + cumsum(dailyPL)), invert = FALSE)
   abline(v = b, col = "darkgray", lty = 2)
   b.label = ("Backtest Max Drawdown")
   h = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], length(b))
@@ -74,3 +80,15 @@ mcsim <- function(Portfolio, Account, n = 1000, l = 20, use=c('equity','txns'), 
   t2 <- Sys.time()
   difftime(t2,t1)
 }
+
+###############################################################################
+# Blotter: Tools for transaction-oriented trading systems development
+# for R (see http://r-project.org/) 
+# Copyright (c) 2008-2016 Peter Carl and Brian G. Peterson
+#
+# This library is distributed under the terms of the GNU Public License (GPL)
+# for full details see the file COPYING
+#
+# $Id$
+#
+###############################################################################

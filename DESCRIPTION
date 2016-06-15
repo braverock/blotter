@@ -10,6 +10,7 @@ Author: Peter Carl [aut],
     Dirk Eddelbuettel [ctb],
     Jan Humme [ctb],
     Lance Levenson [ctb],
+    Jasen Mackie [ctb],
     Ben McCann [ctb],
     Jeff Ryan [ctb],
     Garrett See [ctb],
@@ -25,7 +26,7 @@ License: GPL
 LazyLoad: yes
 Depends:
     R (>= 2.15),
-    xts (>= 0.7-6.17),
+    xts (>= 0.10-0),
     FinancialInstrument(>= 0.6.3),
     PerformanceAnalytics,
     quantmod
@@ -34,7 +35,8 @@ Imports:
     graphics,
     methods,
     stats,
-    utils
+    utils,
+    boot
 Suggests:
     Hmisc,
     RUnit,
