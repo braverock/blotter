@@ -254,11 +254,12 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings
 #' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
+#' @param incl.total if TRUE, add a column with the daily portfolio total P&L, default FALSE
 #' @author Brian G. Peterson
 #' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
-dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
@@ -287,13 +288,14 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE)
         } # end symbol loop
     } # end portfolio loop
     ret <- apply.daily(ret,colSums,na.rm=TRUE)  
+    if(isTRUE(incl.total)) ret$portfolio.PL <- rowSums(ret)  
     if(drop.time) index(ret) <- as.Date(index(ret))
     return(ret)
 }
 
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
@@ -323,6 +325,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE)
         } # end symbol loop
     } # end portfolio loop
     ret <- apply.daily(ret,colSums,na.rm=TRUE)  
+    if(isTRUE(incl.total)) ret$portfolio.PL <- rowSums(ret)  
     if(drop.time) index(ret) <- as.Date(index(ret))
     return(ret)
 }
