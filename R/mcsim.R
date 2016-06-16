@@ -29,12 +29,12 @@ mcsim <- function(  Portfolio
   use=use[1] #take the first value if the user didn't specify
   switch (use,
           Eq =, eq =, Equity =, equity =, cumPL = {
-            dailyPL <- dailyEqPL(Portfolio)
-            dailyPL <- dailyPL[pstart:nrow(dailyPL)]
+            dailyPL <- dailyEqPL(Portfolio, incl.total = TRUE)
+            dailyPL <- dailyPL[pstart:nrow(dailyPL), ncol(dailyPL)]
           },
           Txns =, txns =, Trades =, trades = {
-            dailyPL <- dailyTxnPL(Portfolio)
-            dailyPL <- dailyPL[pstart:nrow(dailyPL)]
+            dailyPL <- dailyTxnPL(Portfolio,  incl.total = TRUE)
+            dailyPL <- dailyPL[pstart:nrow(dailyPL), ncol(dailyPL)]
           }
   )
   
