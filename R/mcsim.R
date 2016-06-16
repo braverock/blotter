@@ -67,7 +67,7 @@ mcsim <- function(  Portfolio
        col = "lightgray", border = "white")
   box(col = "darkgray")
   
-  b = PerformancAnalytics::maxDrawdown(TTR::ROC(initEq + cumsum(dailyPL)), invert = FALSE)
+  b = maxDrawdown(ROC(initEq + cumsum(dailyPL)), invert = FALSE)
   abline(v = b, col = "darkgray", lty = 2)
   b.label = ("Backtest Max Drawdown")
   h = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], length(b))
