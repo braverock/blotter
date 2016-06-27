@@ -20,8 +20,9 @@
 mcsim <- function(  Portfolio
                   , Account
                   , n = 1000
+                  , REPLACE = TRUE
                   , ...
-                  , l = 20
+                  , l = 1
                   , use=c('equity','txns')
                   , pstart = 1
                   ){
@@ -43,6 +44,8 @@ mcsim <- function(  Portfolio
   initEq <- attributes(a)$initEq
   t1 <- Sys.time()
   use=c('equity','txns')
+  
+  if (REPLACE == TRUE) {
   tsb <- tsboot(ROC(initEq + cumsum(dailyPL)), maxDrawdown, invert=FALSE, n, l, sim = "fixed")
   inds <- t(boot.array(tsb))
   k <- NULL
@@ -57,12 +60,19 @@ mcsim <- function(  Portfolio
   tsbootARR <- apply(tmp, 2, function(x) cumsum(x))
   which(is.na(tsbootARR))
   tsbootxts <- xts(tsbootARR, index(dailyPL))
+  dd = tsb$t
+  } else if (REPLACE == FALSE) {
+    repsam <- replicate(n,sample(as.vector(dailyPL), replace = REPLACE))
+    tsbootARR <- apply(repsam, 2, function(x) cumsum(x))
+    tsbootxts <- xts(tsbootARR, index(dailyPL))
+    dd = apply(ROC(initEq + tsbootxts), 2, function(x) {maxDrawdown(x, invert = FALSE)} )
+  }
   
   plot.zoo(tsbootxts, plot.type = "single", col = "lightgray", ylab = "Sampled Backtest Return Streams")
   lines(index(dailyPL), cumsum(dailyPL), col = "red")
   
   xname <- paste(n, "replicates with block length", l)
-  hist(tsb$t, main = paste("Drawdown distribution of" , xname), breaks="FD",
+  hist(dd, main = paste("Drawdown distribution of" , xname), breaks="FD",
        xlab = "Max Drawdown", ylab = "Frequency",
        col = "lightgray", border = "white")
   box(col = "darkgray")
@@ -73,9 +83,9 @@ mcsim <- function(  Portfolio
   h = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], length(b))
   text(b, h, b.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
   
-  abline(v=median(tsb$t), col = "darkgray", lty = 2)
+  abline(v=median(dd), col = "darkgray", lty = 2)
   c.label = ("Sample Median Max Drawdown")
-  text(median(tsb$t), h, c.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
+  text(median(dd), h, c.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
   
   t2 <- Sys.time()
   difftime(t2,t1)
