@@ -4,8 +4,9 @@
 \alias{mcsim}
 \title{Monte Carlo simulate strategy results}
 \usage{
-mcsim(Portfolio, Account, n = 1000, ..., l = 20, use = c("equity",
-  "txns"), pstart = 1)
+mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
+  use = c("equity", "txns", "returns"), l = 1, varblock = FALSE,
+  gap = 1)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -14,29 +15,115 @@ mcsim(Portfolio, Account, n = 1000, ..., l = 20, use = c("equity",
 
 \item{n}{number of simulations, default = 1000}
 
-\item{l}{block length, default = 20}
+\item{use}{determines whether to use 'equity', 'txn', or 'returns' P\&L, default = "equity" ie. daily}
 
-\item{use}{determines whether to use 'daily' or 'txn' PL, default = "equity" ie. daily}
+\item{l}{block length, default = 1}
 
-\item{pstart}{numeric identifier for which period in the backtest is day 1, useful for longet term MA strategies}
+\item{varblock}{boolean to determine whether to use variable block length, default FALSE}
+
+\item{gap}{numeric number of periods from start of series to start on, to eliminate leading NA's}
 
 \item{\dots}{any other passthrough parameters}
 }
 \value{
-a plot.xts object of simulated return streams
+a list containing:
+\itemize{
+  \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
+  \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
+  \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
+  \item{\code{num}:}{a numeric variable reporting the number of replicaes in the simulation}
+  \item{\code{length}:}{a numeric variable reporting the block length used in the simulation, if any}
+  \item{\code{ddvec}:}{a numeric vector of drawdowns for each replicate series}
+  \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
+  \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
+  \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
+}
 
-a hist object of sampled max drawdowns
+Note that this object and its slots may change in the future.
+Slots \code{replicates},\code{dailypl},\code{initeq}, and \code{call} are likely
+to exist in all future versions of this function, but other slots may be added
+and removed as \code{S3method}'s are developed.
 }
 \description{
-Return bands of returns based on Monte Carlo simulations of back-test results
+This function resamples the daily transaction, cash equity, or percent-return
+P&L from a portfolio of trading results.  It may be applied to both real
+(post-trade) and backtested transactions.
+}
+\details{
+The general argument here is that you can compare the performance of real
+portfolio equity or a backtest equity curve to a sampled version of the same.
+
+We've chosen to use daily frequency for the resampling period. If your holding
+period is longer than one day, on average, the samples will increase
+variability in the overall path.  If your average holding period is shorter
+than a day, the \code{\link{mcsim}} function will still provide a useful
+benchmark for comparing to other strategies, but you may additionally wish to
+sample round turn trades, as provided in \code{\link{TODO_ADD_ME}}.
+
+A few of the arguments and methods probably deserve more discussion as well.
+
+\code{use} describes the method to use to generate the initial daily P\&L to
+be sampled from.  The options are:
+\itemize{
+  \item{equity}{will use daily portfolio cash P&L}
+  \item{txn}{will use transaction \code{Net.Trading.PL}}
+  \item{returns}{will use \code{\link{PortfReturns} to generate percent returns}}
+}
+
+Sampling may be performed either with or without replacement.
+\itemize{
+  \item{without replacement}{If sampled **without** replacement, the replicated
+  equity curves will use all the same data as the input series, only reordered.
+  This will lead to all the replicates having identical final P\&L and mean
+  returns, but different paths along the way.}
+  \item{with replacement}{If sampled **with** replacement, individual
+  observations may be re-used.  This will tend to create more variability than
+  replicates without replacement.}
+}
+
+If the post-trade or backtested equity curve exhibits autocorrelation, runs,
+streaks, etc. it may be advantageous to utilize a block resampling method.
+The length of the block "\code{l}" may be fixed or variable.
+If a \code{varblock} method is used, the distribution of block lengths will
+be uniform random for \code{replacement=FALSE} and geometric random for
+\code{replacement=TRUE}.  By sampling blocks, the resampled returns will
+contain more of the structure of the original series.  If \code{varblock=TRUE},
+the blocks will be of variable length, centered around \code{l}.
 }
 \note{
 Requires boot package
+}
+\examples{
+\dontrun{
+
+demo('longtrend', ask=FALSE)
+
+nrsim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=1, gap=10)
+nrblocksim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=10, gap=10)
+rsim <- mcsim("longtrend", "longtrend", n=1000, replacement=TRUE, l=1, gap=10)
+varsim <- mcsim("longtrend", "longtrend", n=1000, replacement=TRUE, l=10, varblock=TRUE, gap=10)
+nrvarsim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=10, varblock=TRUE, gap=10)
+
+quantile(varsim)
+quantile(nrsim)
+quantile(nrvarsim)
+
+plot(nrsim, normalize=TRUE)
+plot(nrsim, normalize=FALSE)
+plot(varsim)
+plot(rsim)
+hist(rsim)
+hist(varsim)
+
+} #end dontrun
+
 }
 \author{
 Jasen Mackie, Brian G. Peterson
 }
 \seealso{
 \code{\link{boot}}
+  \code{\link{plot.mcsim}}
+  \code{\link{hist.mcsim}}
 }
 
