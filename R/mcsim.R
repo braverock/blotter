@@ -47,6 +47,7 @@
 #' @param Portfolio string identifier of portfolio name
 #' @param Account string identifier of account name
 #' @param n number of simulations, default = 1000
+#' @param replacement sample with or without replacement, default TRUE
 #' @param \dots any other passthrough parameters
 #' @param use determines whether to use 'equity', 'txn', or 'returns' P\&L, default = "equity" ie. daily
 #' @param l block length, default = 1
@@ -72,8 +73,8 @@
 #'
 #' @note
 #' Requires boot package
-#' @importFrom boot tsboot
-#' @importFrom boot boot.array
+#' @importFrom boot tsboot boot.array
+#' @importFrom foreach foreach %dopar%
 #' @author Jasen Mackie, Brian G. Peterson
 #' @seealso
 #'   \code{\link{boot}}
@@ -239,7 +240,10 @@ plot.mcsim <- function(x, y, ..., normalize=TRUE) {
 #'
 #' @param x object of type mcsim to plot
 #' @param \dots any other passthrough parameters
+#' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
+#'
+#' @importFrom graphics axis box hist lines par text
 #'
 #' @export
 hist.mcsim <- function(x, ..., normalize=TRUE) {
@@ -298,6 +302,7 @@ hist.mcsim <- function(x, ..., normalize=TRUE) {
 #'
 #' @param x object of type 'mcsim' to produce replicate quantiles
 #' @param \dots any other passthrough parameters
+#' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
 #'
 #' @export

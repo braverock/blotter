@@ -9,6 +9,8 @@
 \arguments{
 \item{x}{object of type 'mcsim' to produce replicate quantiles}
 
+\item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
+
 \item{\dots}{any other passthrough parameters}
 }
 \description{

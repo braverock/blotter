@@ -15,6 +15,8 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 
 \item{n}{number of simulations, default = 1000}
 
+\item{replacement}{sample with or without replacement, default TRUE}
+
 \item{use}{determines whether to use 'equity', 'txn', or 'returns' P\&L, default = "equity" ie. daily}
 
 \item{l}{block length, default = 1}
