@@ -173,7 +173,7 @@ mcsim <- function(  Portfolio
         if (isTRUE(varblock)){
           # this method creates variable length blocks with a uniform random
           # distribution centered on 'l'
-          s <- sort(sample(x=x[2:length(x)-1],size = l-1,replace = FALSE))
+          s <- sort(sample(x=x[2:length(x)-1],size = floor(length(x)/l),replace = FALSE))
         } else {
           # fixed block length
           # this method chooses a random start from 1:l(ength) and then
