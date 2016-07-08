@@ -209,12 +209,10 @@ mcsim <- function(  Portfolio
   ret
 }
 
-
-
 #' plot method for objects of type \code{mcsim}
 #'
 #' @param x object of type 'mcsim' to plot
-#' @param y not used, to match generic signature, may hold overlay daya in the future
+#' @param y not used, to match generic signature, may hold overlay data in the future
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
@@ -240,7 +238,7 @@ plot.mcsim <- function(x, y, ..., normalize=TRUE) {
 #'
 #' @param x object of type mcsim to plot
 #' @param \dots any other passthrough parameters
-#' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
+#' @param normalize TRUE/FALSE whether to normalize the hist by div, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
 #'
 #' @importFrom graphics axis box hist lines par text
@@ -248,39 +246,41 @@ plot.mcsim <- function(x, y, ..., normalize=TRUE) {
 #' @export
 hist.mcsim <- function(x, ..., normalize=TRUE) {
   ret <- x
-  if(isTRUE(normalize) && ret$initeq>1 && ret$use != 'returns'){
-    ret$dailypl <- rbind(xts(0,order.by=index(ret$dailypl[1])-1), ret$dailypl)
-    idxarr <- -(cummax(cumsum(ret$dailypl))-cumsum(ret$dailypl))
-    maxDD <- min(idxarr) # maxDD from idxarr
-    # find index of maxDD
-    idxmaxdd <- which(maxDD == idxarr)[1] # subset 1st element if vector length > 1
-    divhist <- cummax(cumsum((ret$dailypl)))[idxmaxdd]+ret$initeq # add max cum PL with initeq to get div to use for normalizing maxDD
+    if(isTRUE(normalize) && ret$initeq>1 && ret$use != 'returns') {
+      ret$dailypl <- rbind(xts(0,order.by=index(ret$dailypl[1])-1), ret$dailypl)
+      idxarr <- -(cummax(cumsum(ret$dailypl))-cumsum(ret$dailypl))
+      maxDD <- min(idxarr) # maxDD from idxarr
+      # find index of maxDD & subset 1st element as vector length > 1
+      idxmaxdd <- which(maxDD == idxarr)[1]
+      # add cummax PL with initeq to get div for normalizing maxDD hist
+      divhist <- cummax(cumsum((ret$dailypl)))[idxmaxdd]+ret$initeq # div for actual backtest
 
-    # now calculate div for sampled maxDDs
-    idxarrtsb <- apply(ret$replicates, 2, function(x) { -(cummax(x)-(x)) } )
-    maxDDtsb <- apply(idxarrtsb, 2, function(x) {min(x)} )
-    idxmaxddtsb <- NULL
-    for (i in 1:ret$num) {
-      idxmaxddtsb[i] <- which(maxDDtsb[i] == idxarrtsb[,i])[1]
+      # calculate div for sampled maxDD
+      idxarrtsb <- apply(ret$replicates, 2, function(x) { -(cummax(x)-(x)) } )
+      maxDDtsb <- apply(idxarrtsb, 2, function(x) {min(x)} )
+      idxmaxddtsb <- NULL
+      for (i in 1:ret$num) {
+        idxmaxddtsb[i] <- which(maxDDtsb[i] == idxarrtsb[,i])[1]
+      }
+      div <- NULL
+      for (i in 1:ret$num) {
+        div[i] <- cummax(ret$replicates[,i])[idxmaxddtsb[i]] + ret$initeq # div for samples of backtest
+      }
+
+      # calculate div for sample median (called divmed)
+      divmed <- NULL
+      divmed <- ifelse(ret$num%%2!=0, div[which(ret$ddvec==median(ret$ddvec))], div[which(ret$ddvec[-1]==median(ret$ddvec[-1]))])
+
+    } else {
+      # do not normalize
+      divhist <- 1
+      div <- 1
+      divmed <- 1
     }
-    div <- NULL
-    for (i in 1:ret$num) {
-      div[i] <- cummax(ret$replicates[,i])[idxmaxddtsb[i]] + ret$initeq
-    }
-
-    # and finally calculate div for sample median
-    divmed <- NULL
-    divmed <- ifelse(ret$num%%2!=0, div[which(ret$ddvec==median(ret$ddvec))], div[which(ret$ddvec[-1]==median(ret$ddvec[-1]))])
-
-  } else {  # do not normalize
-    divhist <- 1
-    div <- 1
-    divmed <- 1
-  }
   xname <- paste(ret$num, "replicates with block length", ret$length)
   h <- hist(ret$ddvec/div, main = paste("Drawdown distribution", ret$w, "of" , xname), breaks="FD"
-            , xlab = "Max Drawdown", ylab = "Density"
-            , col = "lightgray", border = "white", freq=FALSE
+                  , xlab = "Max Drawdown", ylab = "Density"
+                  , col = "lightgray", border = "white", freq=FALSE
   )
   h
   box(col = "darkgray")

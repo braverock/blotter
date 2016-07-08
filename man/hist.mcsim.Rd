@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{object of type mcsim to plot}
 
-\item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
+\item{normalize}{TRUE/FALSE whether to normalize the hist by div, default TRUE}
 
 \item{\dots}{any other passthrough parameters}
 }

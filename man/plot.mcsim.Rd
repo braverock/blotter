@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{object of type 'mcsim' to plot}
 
-\item{y}{not used, to match generic signature, may hold overlay daya in the future}
+\item{y}{not used, to match generic signature, may hold overlay data in the future}
 
 \item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
 
