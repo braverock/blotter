@@ -295,7 +295,13 @@ hist.mcsim <- function(x, ..., normalize=TRUE) {
   c.label = ("Sample Median Max Drawdown")
   text(median(na.omit(ret$ddvec))/divmed, h, c.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
   
-  axis(side=1, at=seq(0,min(ret$ddvec/div),-0.1), labels=seq(0,min(ret$ddvec/div),-0.1))
+    if(isTRUE(normalize)) {
+      # add x-axis labels for every -10% drawdown increment
+      axis(side=1, at=seq(0,min(ret$ddvec/div),-0.1), labels=seq(0,min(ret$ddvec/div),-0.1))
+    } else {
+      # add x-axis labels for every -10% of ret$initeq drawdown increment
+      axis(side=1, at=seq(0,min(ret$ddvec/div),-ret$initeq/10), labels=seq(0,min(ret$ddvec/div),-ret$initeq/10))
+    }
 }
 
 #' quantile method for objects of type \code{mcsim}
