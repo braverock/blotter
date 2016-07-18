@@ -149,7 +149,7 @@ mcsim <- function(  Portfolio
       sim <- 'fixed'
       # tsboot will use a fixed block length l
     }
-    tsb <- tsboot(dailyPL, function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
+    tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
     inds <- t(boot.array(tsb))
     #k <- NULL
     tsbootARR <- NULL
