@@ -28,7 +28,7 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 \item{\dots}{any other passthrough parameters}
 }
 \value{
-a list containing:
+a list object of class 'mcsim' containing:
 \itemize{
   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
   \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
@@ -38,6 +38,7 @@ a list containing:
   \item{\code{ddvec}:}{a numeric vector of drawdowns for each replicate series}
   \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
   \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
+  \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
   \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
 }
 
