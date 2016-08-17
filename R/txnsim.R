@@ -237,7 +237,7 @@ txnsim <- function(Portfolio, n = 10, replacement = TRUE,
                           TxnQty = df[r, "quantity"],
                           TxnPrice = as.numeric(last(prices[paste0("/", df[r, "start"])])))
       # closing trade
-      close <- data.frame(start = df[r,"start"] + df[r,"duration"],
+      close <- data.frame(start = index(last(prices[paste0("/", df[r,"start"] + df[r,"duration"])])),
                           TxnQty = -1 * df[r,"quantity"],
                           TxnPrice = as.numeric(last(prices[paste0("/", df[r,"start"] + df[r,"duration"])])))
       txns[[r]] <- rbind(open, close)
