@@ -56,7 +56,6 @@ especially for intraday market data.
     out <- txnsim(Portfolio,n,replacement)
     for (i in 1:n){
       p<-paste('txnsim',Portfolio,i,sep='.')
-      updatePortf(p)
       symbols<-names(getPortfolio(p)$symbols)
       for(symbol in symbols) {
         dev.new()
