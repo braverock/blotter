@@ -21,4 +21,7 @@ plot method for objects of type \code{mcsim}
 \author{
 Jasen Mackie, Brian G. Peterson
 }
+\seealso{
+\code{\link{mcsim}}
+}
 
