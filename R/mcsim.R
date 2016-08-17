@@ -12,7 +12,7 @@
 #' variability in the overall path.  If your average holding period is shorter
 #' than a day, the \code{\link{mcsim}} function will still provide a useful
 #' benchmark for comparing to other strategies, but you may additionally wish to
-#' sample round turn trades, as provided in \code{\link{TODO_ADD_ME}}.
+#' sample round turn trades, as provided in (TODO: add link once function exists).
 #'
 #' A few of the arguments and methods probably deserve more discussion as well.
 #'
@@ -53,7 +53,7 @@
 #' @param l block length, default = 1
 #' @param varblock boolean to determine whether to use variable block length, default FALSE
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's
-#' @return a list containing:
+#' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
 #'   \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
@@ -63,6 +63,7 @@
 #'   \item{\code{ddvec}:}{a numeric vector of drawdowns for each replicate series}
 #'   \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
 #'   \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
+#'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
 #'   \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
 #' }
 #'
@@ -116,7 +117,7 @@ mcsim <- function(  Portfolio
                     , gap = 1
 
 ){
-
+  seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
   use=use[1] #take the first value if the user didn't specify
   switch (use,
           Eq =, eq =, Equity =, equity =, cumPL = {
@@ -149,7 +150,7 @@ mcsim <- function(  Portfolio
       sim <- 'fixed'
       # tsboot will use a fixed block length l
     }
-    tsb <- tsboot(dailyPL, function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
+    tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
     inds <- t(boot.array(tsb))
     #k <- NULL
     tsbootARR <- NULL
@@ -202,6 +203,7 @@ mcsim <- function(  Portfolio
               , ddvec=dd
               , w=withorwithout
               , use = use
+              , seed = seed
               , call=match.call()
              ) #end return list
 
@@ -294,14 +296,14 @@ hist.mcsim <- function(x, ..., normalize=TRUE) {
   abline(v=median(na.omit(ret$ddvec))/divmed, col = "darkgray", lty = 2)
   c.label = ("Sample Median Max Drawdown")
   text(median(na.omit(ret$ddvec))/divmed, h, c.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
-  
-    if(isTRUE(normalize)) {
-      # add x-axis labels for every -10% drawdown increment
-      axis(side=1, at=seq(0,min(ret$ddvec/div),-0.1), labels=seq(0,min(ret$ddvec/div),-0.1))
-    } else {
-      # add x-axis labels for every -10% of ret$initeq drawdown increment
-      axis(side=1, at=seq(0,min(ret$ddvec/div),-ret$initeq/10), labels=seq(0,min(ret$ddvec/div),-ret$initeq/10))
-    }
+
+    # if(isTRUE(normalize)) {
+    #   # add x-axis labels for every -10% drawdown increment
+    #   axis(side=1, at=seq(0,min(ret$ddvec/div), length.out = 10), labels=seq(0,min(ret$ddvec/div), length.out = 10), cex = 0.25, srt = -45)
+    # } else {
+    #   # add x-axis labels for every -10% of ret$initeq drawdown increment
+    #   axis(side=1, at=seq(0,min(ret$ddvec/div), length.out = 10), labels=seq(0,min(ret$ddvec/div), length.out = 10), cex = 0.25, srt = -45)
+    # }
 }
 
 #' quantile method for objects of type \code{mcsim}

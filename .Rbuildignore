@@ -2,3 +2,4 @@ R/.vimrc
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^sandbox$
+.travis.yml
