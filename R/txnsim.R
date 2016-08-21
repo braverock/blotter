@@ -236,7 +236,7 @@ txnsim <- function(Portfolio, n = 10, replacement = TRUE,
     if (!is.null(dargs$prefer)) prefer <- dargs$prefer else prefer <- NULL
 
     prices <- getPrice(get(symbol, pos = env),
-                       symbol = symbol, prefer = prefer)[, 1]
+                       prefer = prefer)[, 1]
 
     # the rep list has a start, duration, quantity in each row
     # we'll loop by row over that object to create an object for addTxns
