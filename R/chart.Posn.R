@@ -8,19 +8,30 @@
 #' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @param TA a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}
+#' @param Prices An optional xts object containing price data for one or more symbols, passed to getPrice, default NULL 
 #' @export
-chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
+chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL, Prices=NULL)
 { # @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
     if (missing(Symbol)) Symbol <- ls(Portfolio$symbols)[[1]]
     else Symbol <- Symbol[1]
     # FUNCTION
-
-    Prices=get(Symbol)
+    
+    
+    if (missing(Prices)) { Prices=get(Symbol) }
+    else{
+      mtch<- grep(paste("^",Symbol,sep=""), x=colnames(Prices), perl = T)
+      if (length(mtch)>0 ) Prices=Prices[,mtch]
+       else{ 
+         warning(sprintf("No columns for symbol %s in Prices", Symbol)) 
+         Prices=get(Symbol)
+         }
+       }
+    
     if(!is.OHLC(Prices)) {
         if(hasArg(prefer)) prefer=eval(match.call(expand.dots=TRUE)$prefer) else prefer=NULL
-        Prices=getPrice(Prices, prefer=prefer)
+        Prices=getPrice(Prices, prefer=prefer, symbol = Symbol)
     }
     freq = periodicity(Prices)
     switch(freq$scale,
