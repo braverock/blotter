@@ -7,8 +7,9 @@
 ## A new paramaerter Prices is added to function chart.Posn 
 ## It is similar to the behaviour already supported by updatePortf
 
-
-# require(blotter)
+require(quantmod)
+require(blotter) # need to install this version , or 
+# source("R/chart.Posn.R")
 
 
 # try prices parameter of updateportfolio
@@ -81,18 +82,27 @@ getPortfolio(pricetester)$summary$Net.Trading.PL
 
 
 
-# transactions for each symbol
-
-
+# show transactions for each symbol
 lapply( scrips, FUN = getTxns, Portfolio = pricetester)
+
+##########################################
+# demonstrating chart.Posn with Prices
+##########################################
 
 chart.Posn(pricetester ,Symbol = scrips[1], Dates = dts, Prices = scripPrices)
 chart.Posn(pricetester ,Symbol = scrips[2], Dates = dts, Prices = scripPrices)
 chart.Posn(pricetester ,Symbol = scrips[3], Dates = dts, Prices = scripPrices)
 
-# automatically picking the first symbol
+# No Symbol given, automatically picking the first symbol
 chart.Posn(pricetester , Dates = dts, Prices = scripPrices)
-ls(getPortfolio(pricetester)$symbols)
+ls(getPortfolio(pricetester)$symbols) # which one is first?
+
+# if scripPrices represents only one symbol
+chart.Posn(pricetester , Dates = dts, Prices = scripPrices[,1:6])
+
+# if scripPrices contains only close prices
+chart.Posn(pricetester , Dates = dts, Prices = Cl(scripPrices) ) 
+#getPrice(Cl(scripPrices) )
 
 # regular usage: a separate xts for one symbol
 getSymbols("IBM", src="yahoo", auto.assign = T, from="2015-01-01", to="2016-01-01" )
