@@ -31,11 +31,20 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 a list object of class 'mcsim' containing:
 \itemize{
   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
+  \item{\code{percreplicates}:}{an xts object containing all the resampled time series replicates in percent}
   \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
+  \item{\code{percdailypl}:}{an xts object containing daily P&L in percent from the original backtest}
   \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
   \item{\code{num}:}{a numeric variable reporting the number of replicaes in the simulation}
   \item{\code{length}:}{a numeric variable reporting the block length used in the simulation, if any}
-  \item{\code{ddvec}:}{a numeric vector of drawdowns for each replicate series}
+  \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
+  \item{\code{percsamplestats}:}{a numeric dataframe of various statistics for each replicate series in percent}
+  \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
+  \item{\code{percoriginal}:}{a numeric dataframe of the statistics for the original series in percent terms}
+  \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
+  \item{\code{percstderror}:}{a numeric dataframe of the standard error of the statistics for the replicates in percent}
+  \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
+  \item{\code{CIdf_perc}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates in percent}
   \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
   \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}

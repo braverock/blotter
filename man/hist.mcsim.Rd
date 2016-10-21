@@ -4,12 +4,15 @@
 \alias{hist.mcsim}
 \title{hist method for objects of type \code{mcsim}}
 \usage{
-\method{hist}{mcsim}(x, ..., normalize = TRUE)
+\method{hist}{mcsim}(x, ..., normalize = TRUE, methods = c("mean", "median",
+  "stddev", "maxDD", "sharpe"))
 }
 \arguments{
 \item{x}{object of type mcsim to plot}
 
 \item{normalize}{TRUE/FALSE whether to normalize the hist by div, default TRUE}
+
+\item{methods}{are statistics to include in hist output, default methods=c("mean","median","stddev","maxDD","sharpe")}
 
 \item{\dots}{any other passthrough parameters}
 }

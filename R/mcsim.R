@@ -56,11 +56,20 @@
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
+#'   \item{\code{percreplicates}:}{an xts object containing all the resampled time series replicates in percent}
 #'   \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
+#'   \item{\code{percdailypl}:}{an xts object containing daily P&L in percent from the original backtest}
 #'   \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
 #'   \item{\code{num}:}{a numeric variable reporting the number of replicaes in the simulation}
 #'   \item{\code{length}:}{a numeric variable reporting the block length used in the simulation, if any}
-#'   \item{\code{ddvec}:}{a numeric vector of drawdowns for each replicate series}
+#'   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
+#'   \item{\code{percsamplestats}:}{a numeric dataframe of various statistics for each replicate series in percent}
+#'   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
+#'   \item{\code{percoriginal}:}{a numeric dataframe of the statistics for the original series in percent terms}
+#'   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
+#'   \item{\code{percstderror}:}{a numeric dataframe of the standard error of the statistics for the replicates in percent}
+#'   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
+#'   \item{\code{CIdf_perc}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates in percent}
 #'   \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
 #'   \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
 #'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
@@ -115,7 +124,7 @@ mcsim <- function(  Portfolio
                     , l = 1
                     , varblock = FALSE
                     , gap = 1
-
+                    
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
   use=use[1] #take the first value if the user didn't specify
@@ -128,12 +137,23 @@ mcsim <- function(  Portfolio
             dailyPL <- dailyTxnPL(Portfolio,  incl.total = TRUE)
             dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
           },
-          Rets =, rets =, Returns=, returns =, percent = {
-            dailyPL <- PortfReturns(Account = Account, Portfolios = Portfolio)
-            use <- 'returns' # standardize for later checks
-          }
+          #           Rets =, rets =, Returns=, returns =, percent = {
+          #             dailyPL <- PortfReturns(Account = Account, Portfolios = Portfolio)
+          #             use <- 'returns' # standardize for later checks
+          #           }
   )
-
+  
+  ##################### confidence interval formulae ###########################
+  CI_lower <- function(original, bias, merr) {
+    out <- original - bias - merr
+    out
+  }
+  CI_upper <- function(original, bias, merr) {
+    out <- original - bias + merr
+    out
+  }
+  ##############################################################################
+  
   # p <- getPortfolio(Portfolio)
   a <- getAccount(Account)
   initEq <- attributes(a)$initEq
@@ -141,7 +161,7 @@ mcsim <- function(  Portfolio
   tmp <- NULL
   k <- NULL
   EndEqdf <- data.frame(dailyPL)
-
+  
   if(isTRUE(replacement)) {
     if(isTRUE(varblock)) {
       sim <- 'geom'
@@ -150,7 +170,23 @@ mcsim <- function(  Portfolio
       sim <- 'fixed'
       # tsboot will use a fixed block length l
     }
-    tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
+    fnames <- function(x, indices) {
+      Mean <- mean(x)
+      Median <- median(x)
+      sd <- StdDev(xts(x, index(dailyPL))) # need to use xts for StdDev to work
+      maxdd <- -max(cummax(cumsum(x))-cumsum(x))
+      #     sharpedata <- xts(ROC(cumsum(x + initEq)),index(dailyPL))
+      #     sharpedata[is.na(sharpedata)] <- 0
+      #     sharpe <- SharpeRatio(sharpedata, FUN = "StdDev")
+      sharpe <- Mean/sd # this is a rough version of sharpe using 'cash' mean & stddev as opposed to 'returns'
+      fnames <- c(Mean, Median, sd, maxdd, sharpe)
+      #fnames <- c(Mean)
+      return(fnames)
+    }
+    tsb <- tsboot(coredata(dailyPL), statistic = fnames, n, l, sim = sim, ...)
+    # For a boot tutprial see http://people.tamu.edu/~alawing/materials/ESSM689/Btutorial.pdf
+    colnames(tsb$t) <- c("mean","median","stddev","maxDD","sharpe")
+    #tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
     inds <- t(boot.array(tsb))
     #k <- NULL
     tsbootARR <- NULL
@@ -159,10 +195,19 @@ mcsim <- function(  Portfolio
     for(k in 1:ncol(inds)){
       tmp <- cbind(tmp, EndEqdf[inds[,k],])
     }
-    tsbootARR <- apply(tmp, 2, function(x) cumsum(x))
-    which(is.na(tsbootARR))
-    tsbootxts <- xts(tsbootARR, index(dailyPL))
-    dd <- tsb$t
+    tsbootxts <- xts(tmp, index(dailyPL))
+    sampleoutput <- as.data.frame(tsb$t)
+    
+    roctsbootxts <- ROC(cumsum(tsbootxts)+initEq, type = "discrete")
+    roctsbootxts[is.na(roctsbootxts)] <- 0
+    samplepercoutput <- data.frame(matrix(nrow = n, ncol = 5))
+    colnames(samplepercoutput) <- c("mean","median","stddev","maxDD","sharpe")
+    samplepercoutput$mean <- apply(roctsbootxts, 2, function(x) { mean(x) } )
+    samplepercoutput$median <- apply(roctsbootxts, 2, function(x) { median(x) } )
+    samplepercoutput$stddev <- apply(roctsbootxts, 2, function(x) { StdDev(x) } )
+    samplepercoutput$maxDD <- apply(roctsbootxts, 2, function(x) { maxDrawdown(x, invert = FALSE) } )
+    samplepercoutput$sharpe <- apply(roctsbootxts, 2, function(x) { mean(x)/StdDev(x) } )
+    
     withorwithout <- "WITH REPLACEMENT"
   } else if(!isTRUE(replacement)) {
     tsbootxts <- foreach (k=1:n, .combine=cbind.xts ) %dopar% {
@@ -185,28 +230,267 @@ mcsim <- function(  Portfolio
         # now reassemble the target index order
         idx <- unlist(blocks[sample(names(blocks),size = length(blocks),replace = FALSE)]) ; names(idx)<-NULL
         tmp <- as.vector(dailyPL)[idx]
+        
       } else {
         # block length is 1, just sample with or without replacement
         tmp <- sample(as.vector(dailyPL), replace = replacement)
       }
-      tsbootARR <- cumsum(tmp)
-      tsbootxts <- xts(tsbootARR, index(dailyPL))
+      tsbootxts <- xts(tmp, index(dailyPL))
     }
-    dd <- apply(tsbootxts, 2, function(x) { -max(cummax(x)-(x)) } )
+    sampleoutput <- data.frame(matrix(nrow = n, ncol = 5))
+    colnames(sampleoutput) <- c("mean","median","stddev","maxDD","sharpe")
+    sampleoutput$mean <- apply(tsbootxts, 2, function(x) { mean(x) } )
+    sampleoutput$median <- apply(tsbootxts, 2, function(x) { median(x) } )
+    sampleoutput$stddev <- apply(tsbootxts, 2, function(x) { StdDev(x) } )
+    sampleoutput$maxDD <- apply(tsbootxts, 2, function(x) { -max(cummax(cumsum(x))-cumsum(x)) } )
+    sampleoutput$sharpe <- apply(tsbootxts, 2, function(x) { mean(x)/StdDev(x) } )
+    
+    roctsbootxts <- ROC(cumsum(tsbootxts)+initEq, type = "discrete")
+    roctsbootxts[is.na(roctsbootxts)] <- 0
+    samplepercoutput <- data.frame(matrix(nrow = n, ncol = 5))
+    colnames(samplepercoutput) <- c("mean","median","stddev","maxDD","sharpe")
+    samplepercoutput$mean <- apply(roctsbootxts, 2, function(x) { mean(x) } )
+    samplepercoutput$median <- apply(roctsbootxts, 2, function(x) { median(x) } )
+    samplepercoutput$stddev <- apply(roctsbootxts, 2, function(x) { StdDev(x) } )
+    samplepercoutput$maxDD <- apply(roctsbootxts, 2, function(x) { maxDrawdown(x, invert = FALSE) } )
+    samplepercoutput$sharpe <- apply(roctsbootxts, 2, function(x) { mean(x)/StdDev(x) } )
+    
     withorwithout <- "WITHOUT REPLACEMENT"
   }
-
+  
+  percdailyPL <- ROC(cumsum(dailyPL)+initEq, type = "discrete")
+  percdailyPL[is.na(percdailyPL)] <- 0
+  
+  # browser()
+  # store stats for use later in hist.mcsim and summary.mcsim
+  if(isTRUE(withorwithout == "WITH REPLACEMENT")) {
+    # use output from tsboot for original backtest stats, tsb$t0
+    original <- data.frame(t(tsb$t0))
+    colnames(original) <- c("mean","median","stddev","maxDD","sharpe")
+    # need to compute stats for backtest based on percent returns since tsboot called on cash returns
+    percoriginal <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(percoriginal) <- c("mean","median","stddev","maxDD","sharpe")
+    percoriginal$mean <- mean(percdailyPL)
+    percoriginal$median <- median(percdailyPL)
+    percoriginal$stddev <- StdDev(percdailyPL)
+    percoriginal$maxDD <- maxDrawdown(percdailyPL, invert = FALSE)
+    percoriginal$sharpe <- mean(percdailyPL)/StdDev(percdailyPL)
+    
+    # browser()
+    # Compute standard errors of the sample stats
+    stderror <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(stderror) <- "Std. Error"
+    stderror$mean <- StdDev(sampleoutput[,1])
+    stderror$median <- StdDev(sampleoutput[,2])
+    stderror$stddev <- StdDev(sampleoutput[,3])
+    stderror$maxDD <- StdDev(sampleoutput[,4])
+    stderror$sharpe <- StdDev(sampleoutput[,5])
+    
+    percstderror <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(percstderror) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(percstderror) <- "Std. Error"
+    percstderror$mean <- StdDev(samplepercoutput[,1])
+    percstderror$median <- StdDev(samplepercoutput[,2])
+    percstderror$stddev <- StdDev(samplepercoutput[,3])
+    percstderror$maxDD <- StdDev(samplepercoutput[,4])
+    percstderror$sharpe <- StdDev(samplepercoutput[,5])
+    
+    #browser()
+    CI_mean <- cbind(CI_lower(original$mean, mean(tsb$t[,1])-original$mean, StdDev(tsb$t[,1])*qnorm((1+0.95)/2)),
+                     CI_upper(original$mean, mean(tsb$t[,1])-original$mean, StdDev(tsb$t[,1])*qnorm((1+0.95)/2)))
+    
+    CI_median <- cbind(CI_lower(original$median, mean(tsb$t[,2])-original$median, StdDev(tsb$t[,2])*qnorm((1+0.95)/2)),
+                       CI_upper(original$median, mean(tsb$t[,2])-original$median, StdDev(tsb$t[,2])*qnorm((1+0.95)/2)))
+    
+    CI_stddev <- cbind(CI_lower(original$stddev, mean(tsb$t[,3])-original$stddev, StdDev(tsb$t[,3])*qnorm((1+0.95)/2)),
+                       CI_upper(original$stddev, mean(tsb$t[,3])-original$stddev, StdDev(tsb$t[,3])*qnorm((1+0.95)/2)))
+    
+    CI_maxDD <- cbind(CI_lower(original$maxDD, mean(tsb$t[,4])-original$maxDD, StdDev(tsb$t[,4])*qnorm((1+0.95)/2)),
+                      CI_upper(original$maxDD, mean(tsb$t[,4])-original$maxDD, StdDev(tsb$t[,4])*qnorm((1+0.95)/2)))
+    
+    CI_sharpe <- cbind(CI_lower(original$sharpe, mean(tsb$t[,5])-original$sharpe, StdDev(tsb$t[,5])*qnorm((1+0.95)/2)),
+                       CI_upper(original$sharpe, mean(tsb$t[,5])-original$sharpe, StdDev(tsb$t[,5])*qnorm((1+0.95)/2)))
+    
+    CI_percmean <- cbind(CI_lower(percoriginal$mean, mean(samplepercoutput[,1])-percoriginal$mean, StdDev(samplepercoutput[,1])*qnorm((1+0.95)/2)),
+                         CI_upper(percoriginal$mean, mean(samplepercoutput[,1])-percoriginal$mean, StdDev(samplepercoutput[,1])*qnorm((1+0.95)/2)))
+    
+    CI_percmedian <- cbind(CI_lower(percoriginal$median, mean(samplepercoutput[,2])-percoriginal$median, StdDev(samplepercoutput[,2])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$median, mean(samplepercoutput[,2])-percoriginal$median, StdDev(samplepercoutput[,2])*qnorm((1+0.95)/2)))
+    
+    CI_percstddev <- cbind(CI_lower(percoriginal$stddev, mean(samplepercoutput[,3])-percoriginal$stddev, StdDev(samplepercoutput[,3])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$stddev, mean(samplepercoutput[,3])-percoriginal$stddev, StdDev(samplepercoutput[,3])*qnorm((1+0.95)/2)))
+    
+    CI_percmaxDD <- cbind(CI_lower(percoriginal$maxDD, mean(samplepercoutput[,4])-percoriginal$maxDD, StdDev(samplepercoutput[,4])*qnorm((1+0.95)/2)),
+                          CI_upper(percoriginal$maxDD, mean(samplepercoutput[,4])-percoriginal$maxDD, StdDev(samplepercoutput[,4])*qnorm((1+0.95)/2)))
+    
+    CI_percsharpe <- cbind(CI_lower(percoriginal$sharpe, mean(samplepercoutput[,5])-percoriginal$sharpe, StdDev(samplepercoutput[,5])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$sharpe, mean(samplepercoutput[,5])-percoriginal$sharpe, StdDev(samplepercoutput[,5])*qnorm((1+0.95)/2)))
+    
+    # Build the Confidence Interval dataframes, 1 for cash and 1 for percent returns
+    CIdf <- data.frame(matrix(nrow = 2, ncol = 5))
+    colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(CIdf) <- c("Lower CI","Upper CI")
+    CIdf$mean[row.names(CIdf) == "Lower CI"] <- CI_mean[1,1]
+    CIdf$mean[row.names(CIdf) == "Upper CI"] <- CI_mean[1,2]
+    
+    CIdf$median[row.names(CIdf) == "Lower CI"] <- CI_median[1,1]
+    CIdf$median[row.names(CIdf) == "Upper CI"] <- CI_median[1,2]
+    
+    CIdf$stddev[row.names(CIdf) == "Lower CI"] <- CI_stddev[1,1]
+    CIdf$stddev[row.names(CIdf) == "Upper CI"] <- CI_stddev[1,2]
+    
+    CIdf$maxDD[row.names(CIdf) == "Lower CI"] <- CI_maxDD[1,1]
+    CIdf$maxDD[row.names(CIdf) == "Upper CI"] <- CI_maxDD[1,2]
+    
+    CIdf$sharpe[row.names(CIdf) == "Lower CI"] <- CI_sharpe[1,1]
+    CIdf$sharpe[row.names(CIdf) == "Upper CI"] <- CI_sharpe[1,2]
+    
+    CIdf_perc <- data.frame(matrix(nrow = 2, ncol = 5))
+    colnames(CIdf_perc) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(CIdf_perc) <- c("Lower CI","Upper CI")
+    CIdf_perc$mean[row.names(CIdf_perc) == "Lower CI"] <- CI_percmean[1,1]
+    CIdf_perc$mean[row.names(CIdf_perc) == "Upper CI"] <- CI_percmean[1,2]
+    
+    CIdf_perc$median[row.names(CIdf_perc) == "Lower CI"] <- CI_percmedian[1,1]
+    CIdf_perc$median[row.names(CIdf_perc) == "Upper CI"] <- CI_percmedian[1,2]
+    
+    CIdf_perc$stddev[row.names(CIdf_perc) == "Lower CI"] <- CI_percstddev[1,1]
+    CIdf_perc$stddev[row.names(CIdf_perc) == "Upper CI"] <- CI_percstddev[1,2]
+    
+    CIdf_perc$maxDD[row.names(CIdf_perc) == "Lower CI"] <- CI_percmaxDD[1,1]
+    CIdf_perc$maxDD[row.names(CIdf_perc) == "Upper CI"] <- CI_percmaxDD[1,2]
+    
+    CIdf_perc$sharpe[row.names(CIdf_perc) == "Lower CI"] <- CI_percsharpe[1,1]
+    CIdf_perc$sharpe[row.names(CIdf_perc) == "Upper CI"] <- CI_percsharpe[1,2]
+    
+  } else {
+    # compute stats for WITHOUT REPLACEMENT
+    original <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(original) <- c("mean","median","stddev","maxDD","sharpe")
+    original$mean <- mean(dailyPL)
+    original$median <- median(dailyPL)
+    original$stddev <- StdDev(dailyPL)
+    original$maxDD <- -max(cummax(cumsum(dailyPL))-cumsum(dailyPL))
+    original$sharpe <- mean(dailyPL)/StdDev(dailyPL)
+    # need to compute stats for backtest based on percent returns
+    percoriginal <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(percoriginal) <- c("mean","median","stddev","maxDD","sharpe")
+    percoriginal$mean <- mean(percdailyPL)
+    percoriginal$median <- median(percdailyPL)
+    percoriginal$stddev <- StdDev(percdailyPL)
+    percoriginal$maxDD <- maxDrawdown(percdailyPL, invert = FALSE)
+    percoriginal$sharpe <- mean(percdailyPL)/StdDev(percdailyPL)
+    
+    # Compute standard errors of the sample stats
+    stderror <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(stderror) <- "Std. Error"
+    stderror$mean <- StdDev(sampleoutput[,1])
+    stderror$median <- StdDev(sampleoutput[,2])
+    stderror$stddev <- StdDev(sampleoutput[,3])
+    stderror$maxDD <- StdDev(sampleoutput[,4])
+    stderror$sharpe <- StdDev(sampleoutput[,5])
+    
+    percstderror <- data.frame(matrix(nrow = 1, ncol = 5))
+    colnames(percstderror) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(percstderror) <- "Std. Error"
+    percstderror$mean <- StdDev(samplepercoutput[,1])
+    percstderror$median <- StdDev(samplepercoutput[,2])
+    percstderror$stddev <- StdDev(samplepercoutput[,3])
+    percstderror$maxDD <- StdDev(samplepercoutput[,4])
+    percstderror$sharpe <- StdDev(samplepercoutput[,5])
+    
+    #browser()
+    CI_mean <- cbind(CI_lower(original$mean, mean(sampleoutput[,1])-original$mean, StdDev(sampleoutput[,1])*qnorm((1+0.95)/2)),
+                     CI_upper(original$mean, mean(sampleoutput[,1])-original$mean, StdDev(sampleoutput[,1])*qnorm((1+0.95)/2)))
+    
+    CI_median <- cbind(CI_lower(original$median, mean(sampleoutput[,2])-original$median, StdDev(sampleoutput[,2])*qnorm((1+0.95)/2)),
+                       CI_upper(original$median, mean(sampleoutput[,2])-original$median, StdDev(sampleoutput[,2])*qnorm((1+0.95)/2)))
+    
+    CI_stddev <- cbind(CI_lower(original$stddev, mean(sampleoutput[,3])-original$stddev, StdDev(sampleoutput[,3])*qnorm((1+0.95)/2)),
+                       CI_upper(original$stddev, mean(sampleoutput[,3])-original$stddev, StdDev(sampleoutput[,3])*qnorm((1+0.95)/2)))
+    
+    CI_maxDD <- cbind(CI_lower(original$maxDD, mean(sampleoutput[,4])-original$maxDD, StdDev(sampleoutput[,4])*qnorm((1+0.95)/2)),
+                      CI_upper(original$maxDD, mean(sampleoutput[,4])-original$maxDD, StdDev(sampleoutput[,4])*qnorm((1+0.95)/2)))
+    
+    CI_sharpe <- cbind(CI_lower(original$sharpe, mean(sampleoutput[,5])-original$sharpe, StdDev(sampleoutput[,5])*qnorm((1+0.95)/2)),
+                       CI_upper(original$sharpe, mean(sampleoutput[,5])-original$sharpe, StdDev(sampleoutput[,5])*qnorm((1+0.95)/2)))
+    
+    CI_percmean <- cbind(CI_lower(percoriginal$mean, mean(samplepercoutput[,1])-percoriginal$mean, StdDev(samplepercoutput[,1])*qnorm((1+0.95)/2)),
+                         CI_upper(percoriginal$mean, mean(samplepercoutput[,1])-percoriginal$mean, StdDev(samplepercoutput[,1])*qnorm((1+0.95)/2)))
+    
+    CI_percmedian <- cbind(CI_lower(percoriginal$median, mean(samplepercoutput[,2])-percoriginal$median, StdDev(samplepercoutput[,2])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$median, mean(samplepercoutput[,2])-percoriginal$median, StdDev(samplepercoutput[,2])*qnorm((1+0.95)/2)))
+    
+    CI_percstddev <- cbind(CI_lower(percoriginal$stddev, mean(samplepercoutput[,3])-percoriginal$stddev, StdDev(samplepercoutput[,3])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$stddev, mean(samplepercoutput[,3])-percoriginal$stddev, StdDev(samplepercoutput[,3])*qnorm((1+0.95)/2)))
+    
+    CI_percmaxDD <- cbind(CI_lower(percoriginal$maxDD, mean(samplepercoutput[,4])-percoriginal$maxDD, StdDev(samplepercoutput[,4])*qnorm((1+0.95)/2)),
+                          CI_upper(percoriginal$maxDD, mean(samplepercoutput[,4])-percoriginal$maxDD, StdDev(samplepercoutput[,4])*qnorm((1+0.95)/2)))
+    
+    CI_percsharpe <- cbind(CI_lower(percoriginal$sharpe, mean(samplepercoutput[,5])-percoriginal$sharpe, StdDev(samplepercoutput[,5])*qnorm((1+0.95)/2)),
+                           CI_upper(percoriginal$sharpe, mean(samplepercoutput[,5])-percoriginal$sharpe, StdDev(samplepercoutput[,5])*qnorm((1+0.95)/2)))
+    
+    # Build the Confidence Interval dataframes, 1 for cash and 1 for percent returns
+    CIdf <- data.frame(matrix(nrow = 2, ncol = 5))
+    colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(CIdf) <- c("Lower CI","Upper CI")
+    CIdf$mean[row.names(CIdf) == "Lower CI"] <- CI_mean[1,1]
+    CIdf$mean[row.names(CIdf) == "Upper CI"] <- CI_mean[1,2]
+    
+    CIdf$median[row.names(CIdf) == "Lower CI"] <- CI_median[1,1]
+    CIdf$median[row.names(CIdf) == "Upper CI"] <- CI_median[1,2]
+    
+    CIdf$stddev[row.names(CIdf) == "Lower CI"] <- CI_stddev[1,1]
+    CIdf$stddev[row.names(CIdf) == "Upper CI"] <- CI_stddev[1,2]
+    
+    CIdf$maxDD[row.names(CIdf) == "Lower CI"] <- CI_maxDD[1,1]
+    CIdf$maxDD[row.names(CIdf) == "Upper CI"] <- CI_maxDD[1,2]
+    
+    CIdf$sharpe[row.names(CIdf) == "Lower CI"] <- CI_sharpe[1,1]
+    CIdf$sharpe[row.names(CIdf) == "Upper CI"] <- CI_sharpe[1,2]
+    
+    CIdf_perc <- data.frame(matrix(nrow = 2, ncol = 5))
+    colnames(CIdf_perc) <- c("mean","median","stddev","maxDD","sharpe")
+    row.names(CIdf_perc) <- c("Lower CI","Upper CI")
+    CIdf_perc$mean[row.names(CIdf_perc) == "Lower CI"] <- CI_percmean[1,1]
+    CIdf_perc$mean[row.names(CIdf_perc) == "Upper CI"] <- CI_percmean[1,2]
+    
+    CIdf_perc$median[row.names(CIdf_perc) == "Lower CI"] <- CI_percmedian[1,1]
+    CIdf_perc$median[row.names(CIdf_perc) == "Upper CI"] <- CI_percmedian[1,2]
+    
+    CIdf_perc$stddev[row.names(CIdf_perc) == "Lower CI"] <- CI_percstddev[1,1]
+    CIdf_perc$stddev[row.names(CIdf_perc) == "Upper CI"] <- CI_percstddev[1,2]
+    
+    CIdf_perc$maxDD[row.names(CIdf_perc) == "Lower CI"] <- CI_percmaxDD[1,1]
+    CIdf_perc$maxDD[row.names(CIdf_perc) == "Upper CI"] <- CI_percmaxDD[1,2]
+    
+    CIdf_perc$sharpe[row.names(CIdf_perc) == "Lower CI"] <- CI_percsharpe[1,1]
+    CIdf_perc$sharpe[row.names(CIdf_perc) == "Upper CI"] <- CI_percsharpe[1,2]
+    
+  }
+  
   ret <- list(replicates=tsbootxts
+              , percreplicates=roctsbootxts
               , dailypl=dailyPL
+              , percdailypl=percdailyPL
               , initeq=initEq
               , num=n, length=l
-              , ddvec=dd
+              , samplestats=sampleoutput
+              , percsamplestats=samplepercoutput
+              , original=original
+              , percoriginal=percoriginal
+              , stderror=stderror
+              , percstderror=percstderror
+              , CIdf=CIdf
+              , CIdf_perc=CIdf_perc
               , w=withorwithout
-              , use = use
-              , seed = seed
+              , use=use
+              , seed=seed
               , call=match.call()
-             ) #end return list
-
+  ) #end return list
+  
   class(ret) <- "mcsim"
   ret
 }
@@ -223,16 +507,18 @@ mcsim <- function(  Portfolio
 plot.mcsim <- function(x, y, ..., normalize=TRUE) {
   ret <- x
   if(isTRUE(normalize) && ret$initeq>1 && ret$use != 'returns'){
-    div <- ret$initeq
+    x1 <- cumprod(1 + ret$percreplicates)
+    x2 <- cumprod(1+ ret$percdailypl)
   } else {
-    div <- 1
+    x1 <- cumsum(ret$replicates)
+    x2 <- cumsum(ret$dailypl)
   }
-  p   <- plot.xts(ret$replicates/div
-                  , col = "lightgray"
-                  , main = paste0("Sample Backtest ",ret$w)
-                  , grid.ticks.on = 'years'
+  p <- plot.xts(x1
+                , col = "lightgray"
+                , main = paste0("Sample Backtest ",ret$w)
+                , grid.ticks.on = 'years'
   )
-  p   <- lines(cumsum(ret$dailypl/div), col = "red")
+  p   <- lines(x2, col = "red")
   p
 }
 
@@ -241,70 +527,191 @@ plot.mcsim <- function(x, y, ..., normalize=TRUE) {
 #' @param x object of type mcsim to plot
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to normalize the hist by div, default TRUE
+#' @param methods are statistics to include in hist output, default methods=c("mean","median","stddev","maxDD","sharpe")
 #' @author Jasen Mackie, Brian G. Peterson
 #'
 #' @importFrom graphics axis box hist lines par text
 #'
 #' @export
-hist.mcsim <- function(x, ..., normalize=TRUE) {
+hist.mcsim <- function(x, ..., normalize=TRUE, 
+                       methods = c("mean", 
+                                   "median", 
+                                   "stddev", 
+                                   "maxDD", 
+                                   "sharpe")) {
   ret <- x
-    if(isTRUE(normalize) && ret$initeq>1 && ret$use != 'returns') {
-      ret$dailypl <- rbind(xts(0,order.by=index(ret$dailypl[1])-1), ret$dailypl)
-      idxarr <- -(cummax(cumsum(ret$dailypl))-cumsum(ret$dailypl))
-      maxDD <- min(idxarr) # maxDD from idxarr
-      # find index of maxDD & subset 1st element as vector length > 1
-      idxmaxdd <- which(maxDD == idxarr)[1]
-      # add cummax PL with initeq to get div for normalizing maxDD hist
-      divhist <- cummax(cumsum((ret$dailypl)))[idxmaxdd]+ret$initeq # div for actual backtest
-
-      # calculate div for sampled maxDD
-      idxarrtsb <- apply(ret$replicates, 2, function(x) { -(cummax(x)-(x)) } )
-      maxDDtsb <- apply(idxarrtsb, 2, function(x) {min(x)} )
-      idxmaxddtsb <- NULL
-      for (i in 1:ret$num) {
-        idxmaxddtsb[i] <- which(maxDDtsb[i] == idxarrtsb[,i])[1]
-      }
-      div <- NULL
-      for (i in 1:ret$num) {
-        div[i] <- cummax(ret$replicates[,i])[idxmaxddtsb[i]] + ret$initeq # div for samples of backtest
-      }
-
-      # calculate div for sample median (called divmed)
-      divmed <- NULL
-      divmed <- ifelse(ret$num%%2!=0, div[which(ret$ddvec==median(ret$ddvec))], div[which(ret$ddvec[-1]==median(ret$ddvec[-1]))])
-
-    } else {
-      # do not normalize
-      divhist <- 1
-      div <- 1
-      divmed <- 1
+  hh <- function(x, main, breaks="FD"
+                 , xlab, ylab = "Density"
+                 , col = "lightgray", border = "white", freq=FALSE, ...
+                 , b, b.label, v, c.label, t, ci_L,ci_H, tci_L="Lower Confidence Interval", tci_H="Upper Confidence Interval"
+  ){
+    
+    hhh <- hist(x, main=main, breaks=breaks, xlab=xlab, ylab=ylab, col=col, border=border, freq=freq)
+    hhh
+    box(col = "darkgray")
+    abline(v = b, col = "red", lty = 2)
+    b.label = b.label
+    hhh = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], length(b))
+    text(b, hhh, b.label, offset = 0.4, pos = 2, cex = 0.8, srt = 90, col = "red")
+    abline(v = v, col = "darkgray", lty = 2)
+    c.label = c.label
+    text(t, hhh, c.label, offset = 0.4, pos = 2, cex = 0.8, srt = 90)
+    abline(v = ci_L, col="blue", lty=2)
+    text(ci_L, hhh, tci_L, offset = 0.4, pos = 2, cex = 0.8, srt = 90, col="blue")
+    abline(v = ci_H, col="blue", lty=2)
+    text(ci_H, hhh, tci_H, offset = 0.4, pos = 2, cex = 0.8, srt = 90, col="blue")
+    hhh
+  }
+  if(isTRUE(normalize) && ret$initeq>1 && ret$use != 'returns') {
+    xname <- paste(ret$num, "replicates with block length", ret$length)
+    h <- NULL
+    #browser()
+    for (method in methods) {
+      switch (method,
+              mean = {
+                dev.new()
+                hh(ret$percsamplestats$mean, paste("Mean distribution", ret$w, "of" , xname)
+                   , xlab="Mean Return"
+                   , b = ret$percoriginal$mean
+                   , b.label = ("Backtest Mean Return")
+                   , v = median(na.omit(ret$percsamplestats$mean))
+                   , c.label = ("Sample Median Mean Return")
+                   , t = median(na.omit(ret$percsamplestats$mean))
+                   , ci_L = ret$CIdf_perc$mean[1]
+                   , ci_H = ret$CIdf_perc$mean[2]
+                )
+              },
+              median = {
+                dev.new()
+                hh(ret$percsamplestats$median, paste("Median distribution", ret$w, "of" , xname)
+                   , xlab="Median Return"
+                   , b = ret$percoriginal$median
+                   , b.label = ("Backtest Median Return")
+                   , v = median(na.omit(ret$percsamplestats$median))
+                   , c.label = ("Sample Median Median Return")
+                   , t = median(na.omit(ret$percsamplestats$median))
+                   , ci_L = ret$CIdf_perc$median[1]
+                   , ci_H = ret$CIdf_perc$median[2]
+                )
+              },
+              stddev = {
+                dev.new()
+                hh(ret$percsamplestats$stddev, paste("stddev distribution", ret$w, "of" , xname)
+                   , xlab="stddev"
+                   , b = ret$percoriginal$stddev
+                   , b.label = ("Backtest stddev")
+                   , v = median(na.omit(ret$percsamplestats$stddev))
+                   , c.label = ("Sample Median stddev")
+                   , t = median(na.omit(ret$percsamplestats$stddev))
+                   , ci_L = ret$CIdf_perc$stddev[1]
+                   , ci_H = ret$CIdf_perc$stddev[2]
+                )
+              },
+              maxDD = {
+                dev.new()
+                hh(ret$percsamplestats$maxDD, paste("maxDrawdown distribution", ret$w, "of" , xname)
+                   , xlab="Max Drawdown"
+                   , b = ret$percoriginal$maxDD
+                   , b.label = ("Backtest Max Drawdown")
+                   , v = median(na.omit(ret$percsamplestats$maxDD))
+                   , c.label = ("Sample Median Max Drawdown")
+                   , t = median(na.omit(ret$percsamplestats$maxDD))
+                   , ci_L = ret$CIdf_perc$maxDD[1]
+                   , ci_H = ret$CIdf_perc$maxDD[2]
+                )
+              },
+              sharpe = {
+                dev.new()
+                hh(ret$percsamplestats$sharpe, paste("quasi sharpe distribution", ret$w, "of" , xname)
+                   , xlab="quasi-sharpe"
+                   , b = ret$percoriginal$sharpe
+                   , b.label = ("Backtest quasi-sharpe ratio")
+                   , v = median(na.omit(ret$percsamplestats$sharpe))
+                   , c.label = ("Sample Median quasi-sharpe ratio")
+                   , t = median(na.omit(ret$percsamplestats$sharpe))
+                   , ci_L = ret$CIdf_perc$sharpe[1]
+                   , ci_H = ret$CIdf_perc$sharpe[2]
+                )
+              }
+      )
     }
-  xname <- paste(ret$num, "replicates with block length", ret$length)
-  h <- hist(ret$ddvec/div, main = paste("Drawdown distribution", ret$w, "of" , xname), breaks="FD"
-                  , xlab = "Max Drawdown", ylab = "Density"
-                  , col = "lightgray", border = "white", freq=FALSE
-  )
-  h
-  box(col = "darkgray")
-
-  b = -max(cummax(cumsum(ret$dailypl))-cumsum(ret$dailypl))/divhist
-  abline(v = b, col = "darkgray", lty = 2)
-  b.label = ("Backtest Max Drawdown")
-  h = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], length(b))
-  text(b, h, b.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
-
-  abline(v=median(na.omit(ret$ddvec))/divmed, col = "darkgray", lty = 2)
-  c.label = ("Sample Median Max Drawdown")
-  text(median(na.omit(ret$ddvec))/divmed, h, c.label, offset = 0.2, pos = 2, cex = 0.8, srt = 90)
-
-    # if(isTRUE(normalize)) {
-    #   # add x-axis labels for every -10% drawdown increment
-    #   axis(side=1, at=seq(0,min(ret$ddvec/div), length.out = 10), labels=seq(0,min(ret$ddvec/div), length.out = 10), cex = 0.25, srt = -45)
-    # } else {
-    #   # add x-axis labels for every -10% of ret$initeq drawdown increment
-    #   axis(side=1, at=seq(0,min(ret$ddvec/div), length.out = 10), labels=seq(0,min(ret$ddvec/div), length.out = 10), cex = 0.25, srt = -45)
-    # }
+    
+  } else {
+    # do not normalize
+    xname <- paste(ret$num, "replicates with block length", ret$length)
+    h <- NULL
+    for (method in methods) {
+      switch (method,
+              mean = {
+                dev.new()
+                hh(ret$samplestats$mean, paste("Mean distribution", ret$w, "of" , xname)
+                   , xlab="Mean Return"
+                   , b = ret$original$mean
+                   , b.label = ("Backtest Mean Return")
+                   , v = median(na.omit(ret$samplestats$mean))
+                   , c.label = ("Sample Median Mean Return")
+                   , t = median(na.omit(ret$samplestats$mean))
+                   , ci_L = ret$CIdf$mean[1]
+                   , ci_H = ret$CIdf$mean[2]
+                )
+              },
+              median = {
+                dev.new()
+                hh(ret$samplestats$median, paste("Median distribution", ret$w, "of" , xname)
+                   , xlab="Median Return"
+                   , b = ret$original$median
+                   , b.label = ("Backtest Median Return")
+                   , v = median(na.omit(ret$samplestats$median))
+                   , c.label = ("Sample Median Median Return")
+                   , t = median(na.omit(ret$samplestats$median))
+                   , ci_L = ret$CIdf$median[1]
+                   , ci_H = ret$CIdf$median[2]
+                )
+              },
+              stddev = {
+                dev.new()
+                hh(ret$samplestats$stddev, paste("stddev distribution", ret$w, "of" , xname)
+                   , xlab="stddev"
+                   , b = ret$original$stddev
+                   , b.label = ("Backtest stddev")
+                   , v = median(na.omit(ret$samplestats$stddev))
+                   , c.label = ("Sample Median stddev")
+                   , t = median(na.omit(ret$samplestats$stddev))
+                   , ci_L = ret$CIdf$stddev[1]
+                   , ci_H = ret$CIdf$stddev[2]
+                )
+              },
+              maxDD = {
+                dev.new()
+                hh(ret$samplestats$maxDD, paste("maxDrawdown distribution", ret$w, "of" , xname)
+                   , xlab="Max Drawdown"
+                   , b = ret$original$maxDD
+                   , b.label = ("Backtest Max Drawdown")
+                   , v = median(na.omit(ret$samplestats$maxDD))
+                   , c.label = ("Sample Median Max Drawdown")
+                   , t = median(na.omit(ret$samplestats$maxDD))
+                   , ci_L = ret$CIdf$maxDD[1]
+                   , ci_H = ret$CIdf$maxDD[2]
+                )
+              },
+              sharpe = {
+                dev.new()
+                hh(ret$samplestats$sharpe, paste("quasi sharpe distribution", ret$w, "of" , xname)
+                   , xlab="quasi-sharpe"
+                   , b = ret$original$sharpe
+                   , b.label = ("Backtest quasi-sharpe ratio")
+                   , v = median(na.omit(ret$samplestats$sharpe))
+                   , c.label = ("Sample Median quasi-sharpe ratio")
+                   , t = median(na.omit(ret$samplestats$sharpe))
+                   , ci_L = ret$CIdf$sharpe[1]
+                   , ci_H = ret$CIdf$sharpe[2]
+                )
+              }
+      )
+    }
+  }
 }
+
 
 #' quantile method for objects of type \code{mcsim}
 #'
@@ -320,6 +727,71 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
   q
 }
 
+#' summary method for objects of type \code{mcsim}
+#'
+#' @param x object of type 'mcsim' to produce a sample and backtest summary
+#' @param \dots any other passthrough parameters
+#' @param normalize TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE
+#' @author Jasen Mackie, Brian G. Peterson
+#'
+#' @export
+summary.mcsim <- function(x, ..., normalize=TRUE) {
+  ret <- x
+  if(isTRUE(normalize)){
+    sampletable <- apply(ret$percsamplestats, 2, function(x) { median(x) } )
+    class(sampletable)
+    backtesttable <- NULL
+    for (name in names(sampletable)) {
+      switch (name,
+              mean = {
+                backtesttable <- cbind(backtesttable, ret$percoriginal$mean)
+              },
+              median = {
+                backtesttable <- cbind(backtesttable, ret$percoriginal$median)
+              },
+              stddev = {
+                backtesttable <- cbind(backtesttable, ret$percoriginal$stddev)
+              },
+              maxDD = {
+                backtesttable <- cbind(backtesttable, ret$percoriginal$maxDD)
+              },
+              sharpe = {
+                backtesttable <- cbind(backtesttable, ret$percoriginal$stddev)
+              }
+      )
+    }
+    summarytable <- rbind(sampletable, backtesttable)
+    rownames(summarytable) <- c("Sample Median", "Backtest")
+    t(rbind(summarytable, ret$CIdf_perc, ret$percstderror))
+    
+  } else {
+    sampletable <- apply(ret$samplestats, 2, function(x) { median(x) } )
+    class(sampletable)
+    backtesttable <- NULL
+    for (name in names(sampletable)) {
+      switch (name,
+              mean = {
+                backtesttable <- cbind(backtesttable, ret$original$mean)
+              },
+              median = {
+                backtesttable <- cbind(backtesttable, ret$original$median)
+              },
+              stddev = {
+                backtesttable <- cbind(backtesttable, ret$original$stddev)
+              },
+              maxDD = {
+                backtesttable <- cbind(backtesttable, ret$original$maxDD)
+              },
+              sharpe = {
+                backtesttable <- cbind(backtesttable, ret$original$sharpe)
+              }
+      )
+    }
+    summarytable <- rbind(sampletable, backtesttable)
+    rownames(summarytable) <- c("Sample Median", "Backtest")
+    t(rbind(summarytable, ret$CIdf, ret$stderror))
+  }
+}
 
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
