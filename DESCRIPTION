@@ -32,6 +32,7 @@ Depends:
     quantmod
 Imports:
     zoo,
+    TTR,
     graphics,
     methods,
     stats,

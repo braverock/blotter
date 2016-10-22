@@ -4,10 +4,10 @@
 \alias{summary.mcsim}
 \title{summary method for objects of type \code{mcsim}}
 \usage{
-summary.mcsim(x, ..., normalize = TRUE)
+\method{summary}{mcsim}(object, ..., normalize = TRUE)
 }
 \arguments{
-\item{x}{object of type 'mcsim' to produce a sample and backtest summary}
+\item{object}{object of type 'mcsim' to produce a sample and backtest summary}
 
 \item{normalize}{TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE}
 

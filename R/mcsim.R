@@ -729,14 +729,14 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
 
 #' summary method for objects of type \code{mcsim}
 #'
-#' @param x object of type 'mcsim' to produce a sample and backtest summary
+#' @param object object of type 'mcsim' to produce a sample and backtest summary
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
 #'
 #' @export
-summary.mcsim <- function(x, ..., normalize=TRUE) {
-  ret <- x
+summary.mcsim <- function(object, ..., normalize=TRUE) {
+  ret <- object
   if(isTRUE(normalize)){
     sampletable <- apply(ret$percsamplestats, 2, function(x) { median(x) } )
     class(sampletable)
