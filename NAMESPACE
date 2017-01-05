@@ -2,7 +2,6 @@
 
 S3method(hist,mcsim)
 S3method(plot,mcsim)
-S3method(plot,txnsim)
 S3method(quantile,mcsim)
 export(.getPortfolio)
 export(AcctReturns)

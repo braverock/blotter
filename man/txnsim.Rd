@@ -5,7 +5,7 @@
 \title{Monte Carlo analysis of transactions}
 \usage{
 txnsim(Portfolio, n = 10, replacement = TRUE, tradeDef = "flat.to.flat",
-  update = TRUE, ...)
+  ...)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}
@@ -15,8 +15,6 @@ txnsim(Portfolio, n = 10, replacement = TRUE, tradeDef = "flat.to.flat",
 \item{replacement}{sample with or without replacement, default TRUE}
 
 \item{tradeDef}{string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}}
-
-\item{update}{boolean indicating whether to call \code{\link{updatePortf}} on the simulated portfolios, default TRUE}
 
 \item{\dots}{any other passthrough parameters}
 }
@@ -37,15 +35,7 @@ to exist in all future versions of this function, but other slots may be added
 and removed as \code{S3method}'s are developed.
 }
 \description{
-Running simulations with similar properties as the backtest or production 
-portfolio may allow the analyst to evaluate the distribution of returns 
-possible with similat trading approaches and evaluate skill versus luck or
-overfitting.
-}
-\details{
-If \code{update=TRUE} (the default), the user may wish to pass \code{Interval}
-in dots to mark the portfolio at a different frequency than the market data,
-especially for intraday market data.
+Monte Carlo analysis of transactions
 }
 \examples{
 \dontrun{
@@ -56,6 +46,7 @@ especially for intraday market data.
     out <- txnsim(Portfolio,n,replacement)
     for (i in 1:n){
       p<-paste('txnsim',Portfolio,i,sep='.')
+      updatePortf(p)
       symbols<-names(getPortfolio(p)$symbols)
       for(symbol in symbols) {
         dev.new()
@@ -79,11 +70,5 @@ especially for intraday market data.
 }
 \author{
 Jasen Mackie, Brian G. Peterson
-}
-\references{
-Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
-}
-\seealso{
-\code{\link{mcsim}}, \code{\link{updatePortf}}
 }
 

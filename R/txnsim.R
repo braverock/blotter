@@ -1,21 +1,9 @@
 #' Monte Carlo analysis of transactions
 #'
-#' Running simulations with similar properties as the backtest or production 
-#' portfolio may allow the analyst to evaluate the distribution of returns 
-#' possible with similat trading approaches and evaluate skill versus luck or
-#' overfitting. 
-#' 
-#' @details 
-#' 
-#' If \code{update=TRUE} (the default), the user may wish to pass \code{Interval}
-#' in dots to mark the portfolio at a different frequency than the market data,
-#' especially for intraday market data.
-#' 
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
 #' @param tradeDef string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}
-#' @param update boolean indicating whether to call \code{\link{updatePortf}} on the simulated portfolios, default TRUE
 #' @param \dots any other passthrough parameters
 #'
 #' @return a list object of class 'txnsim' containing:
@@ -34,9 +22,6 @@
 #' and removed as \code{S3method}'s are developed.
 #'
 #' @author Jasen Mackie, Brian G. Peterson
-#' @references 
-#' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
-#' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}}
 #' @examples
 #' \dontrun{
 #'
@@ -46,6 +31,7 @@
 #'     out <- txnsim(Portfolio,n,replacement)
 #'     for (i in 1:n){
 #'       p<-paste('txnsim',Portfolio,i,sep='.')
+#'       updatePortf(p)
 #'       symbols<-names(getPortfolio(p)$symbols)
 #'       for(symbol in symbols) {
 #'         dev.new()
@@ -68,7 +54,7 @@
 #'
 #' @export
 txnsim <- function(Portfolio, n = 10, replacement = TRUE,
-                   tradeDef = "flat.to.flat", update = TRUE, ...) {
+                   tradeDef = "flat.to.flat", ...) {
 
   # store the random seed for replication, if needed
   seed <- .GlobalEnv$.Random.seed
@@ -271,12 +257,6 @@ txnsim <- function(Portfolio, n = 10, replacement = TRUE,
     ltxn <- lapply(1:length(reps[[symbol]]), txnsimtxns, symbol = symbol)
   } # end loop over symbols in replicate
 
-  for (i in seq_along(reps[[1]])) {
-    # update the simulated portfolio
-    simport <- paste("txnsim", Portfolio, i, sep = ".")
-    if(isTRUE(update)) updatePortf(Portfolio=simport, ...)
-  }
-  
   # generate the return object
   ret <- list(replicates = reps,
               transactions = ltxn,
@@ -287,46 +267,6 @@ txnsim <- function(Portfolio, n = 10, replacement = TRUE,
   class(ret) <- "txnsim"
   ret
 } # end txnsim fn
-
-
-#' plot method for objects of type 'txnsim'
-#' 
-#' @param x object of type 'txnsim' to plot
-#' @param y not used, to match generic signature, may hold overlay data in the future
-#' @param \dots any other passthrough parameters
-#' @author Jasen Mackie, Brian G. Peterson
-#' @seealso \code{\link{txnsim}}
-#' @export
-plot.txnsim <- function(x, y, ...){
-  n<-x$call$n
-  port <- x$call$Portfolio
-  cumpl <- NULL
-  for (i in 1:n){
-    p<-paste('txnsim',port,i,sep='.')
-    if(!is.null(cumpl)){
-      cumpl <- cbind(cumpl, cumsum(getPortfolio(p)$summary$Net.Trading.PL[-1]))
-      colnames(cumpl) <- c(colnames(cumpl)[-length(colnames(cumpl))],p) 
-    } else {
-      cumpl <- cumsum(.getPortfolio(p)$summary$Net.Trading.PL[-1])
-      colnames(cumpl) <- p
-    }
-  }
-  cumpl <- cumpl[-which(complete.cases(cumpl)==FALSE)] # subset away rows with NA
-  
-  backtestpl <- cumsum(.getPortfolio(port)$summary$Net.Trading.PL[-1])
-  colnames(backtestpl)<-port
-  
-  pt <- plot.xts(cumpl
-                 , col = "lightgray"
-                 , main = paste(port, 'simulation cumulative P&L')
-                 , grid.ticks.on = 'years'
-  )
-  pt <- lines(cumsum(.getPortfolio(port)$summary$Net.Trading.PL[-1]), col = "red")
-  print(pt)
-  
-  cumpl<-cbind(backtestpl, cumpl )
-  invisible(cumpl)
-}
 
 ###############################################################################
 # R (http://r-project.org/) Quantitative Strategy Model Framework

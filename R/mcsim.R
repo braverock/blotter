@@ -502,7 +502,7 @@ mcsim <- function(  Portfolio
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
-#' @seealso \code{\link{mcsim}}
+#'
 #' @export
 plot.mcsim <- function(x, y, ..., normalize=TRUE) {
   ret <- x
