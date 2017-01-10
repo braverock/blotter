@@ -6,7 +6,7 @@
 \usage{
 mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
   use = c("equity", "txns", "returns"), l = 1, varblock = FALSE,
-  gap = 1)
+  gap = 1, CI = 0.95)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -24,6 +24,8 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 \item{varblock}{boolean to determine whether to use variable block length, default FALSE}
 
 \item{gap}{numeric number of periods from start of series to start on, to eliminate leading NA's}
+
+\item{CI}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
 
 \item{\dots}{any other passthrough parameters}
 }
@@ -43,6 +45,7 @@ a list object of class 'mcsim' containing:
   \item{\code{percoriginal}:}{a numeric dataframe of the statistics for the original series in percent terms}
   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
   \item{\code{percstderror}:}{a numeric dataframe of the standard error of the statistics for the replicates in percent}
+  \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
   \item{\code{CIdf_perc}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates in percent}
   \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
@@ -79,7 +82,6 @@ be sampled from.  The options are:
 \itemize{
   \item{equity}{will use daily portfolio cash P&L}
   \item{txn}{will use transaction \code{Net.Trading.PL}}
-  \item{returns}{will use \code{\link{PortfReturns} to generate percent returns}}
 }
 
 Sampling may be performed either with or without replacement.
@@ -110,8 +112,8 @@ Requires boot package
 
 demo('longtrend', ask=FALSE)
 
-nrsim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=1, gap=10)
-nrblocksim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=10, gap=10)
+nrsim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=1, gap=10, CI=0.95)
+nrblocksim.75 <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=10, gap=10, CI=0.75)
 rsim <- mcsim("longtrend", "longtrend", n=1000, replacement=TRUE, l=1, gap=10)
 varsim <- mcsim("longtrend", "longtrend", n=1000, replacement=TRUE, l=10, varblock=TRUE, gap=10)
 nrvarsim <- mcsim("longtrend", "longtrend", n=1000, replacement=FALSE, l=10, varblock=TRUE, gap=10)
@@ -120,10 +122,15 @@ quantile(varsim)
 quantile(nrsim)
 quantile(nrvarsim)
 
+summary(varsim, normalize=FALSE)
+summary(nrsim)
+summary(nrvarsim)
+
 plot(nrsim, normalize=TRUE)
 plot(nrsim, normalize=FALSE)
 plot(varsim)
 plot(rsim)
+hist(nrblocksim.75)
 hist(rsim)
 hist(varsim)
 

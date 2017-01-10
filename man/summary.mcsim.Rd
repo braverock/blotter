@@ -4,7 +4,7 @@
 \alias{summary.mcsim}
 \title{summary method for objects of type \code{mcsim}}
 \usage{
-\method{summary}{mcsim}(object, ..., normalize = TRUE)
+summary.mcsim(object, ..., normalize = TRUE)
 }
 \arguments{
 \item{object}{object of type 'mcsim' to produce a sample and backtest summary}
