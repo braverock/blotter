@@ -16,7 +16,9 @@ warnings_are_errors: true
 
 # Binaries from Michael Rutter's ppa
 #r_binary_packages:
-
+r_binary_packages:
+ - survival
+ 
 # Done via install.packages
 #r_packages:
 
