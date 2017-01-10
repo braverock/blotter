@@ -1,0 +1,142 @@
+Cases:
+
+______________________
+
+# flat.to.flat && replace=FALSE
+This is the simplest case, as with equity curve resampling, 
+we're just rearranging the vector of durations and quanitities.
+
+To create each replicate vector:
+
+- sample(1:nrows(txnsimdf) ,nrow(txnsimdf)) 
+- rearrange our duration and quantity rows by the sample order
+
+It will probably make sense for all these methods to create a little internal 
+function to do the sampling, and then call replicate() with simplify=FALSE 
+which should return a listof the replicates which we'll then be able to iterate 
+over using foreach().
+______________________
+
+# flat.to.flat and replace=TRUE
+This is the next simplest case, the risk is that the cumulative duration 
+of our samples with replacement is longer or shorter than the total duration. 
+
+To address this, we'll try to take too many samples and then shorten it to the 
+correct duration.
+
+To create each replicate vector:
+
+- sample(1:nrows(txnsimdf) ,nrow(txnsimdf)+fudgefactor, replace=TRUE)
+- reorganize duration/quantity columns by the sampled row numbers
+- take a cumsum of duration
+- trim the end to match expected duration fo the entire series
+
+we could choose an arbitrarily large fudge factor, e.g. 50% of nrows, or we 
+could do something a little more complicated, taking a saple of nrow(txnsimdf), 
+testing the duration, and taking an additional smaple if needed until the 
+sum(duration) is longer than the duration of 
+
+The index for the replicates, in both replace=TRUE, and replace=FALSE, should be 
+the start date plus the cumsum of the duration at each row.  This should create 
+a monotonically increasing index of the beginning of each trade or flat period.
+
+______________________
+
+# round turn trade methods which are not flat.to.flat
+
+For any round turn trade methodology which is not measuring round turns as 
+flat.to.flat, things get more complicated.  Fortunately, the complication is 
+the same for txnsim regardless of the methodology used to pair entry and exit 
+trades.
+
+The first major complication with any trade that levels into a position is that
+sum(txnsimdf$duration) will be longer than the market data.  The general 
+pattern of the solution to this complication is that we sample as usual, to the 
+a duration equal to the original sum(txnsimdf$duration), and then overlap any
+overage onto the first set of samples to get leveled trades.
+
+The next major complication would be on max position.  For this first rendition, 
+I think we should focus on the *quantstrat*-compatible Poslimit slot in the 
+*blotter* portfolio object.  It can be found here:
+
+portf$symbols[[symbol]]$PosLimit
+
+and has columns:
+
+"MaxPos", "LongLevels", "MinPos", "ShortLevels"
+
+The general pattern of the solution to the maxpos problem is that we should 
+check the cumsum of the position implied by the replicate transactions, and 
+reduce or eliminate trades that would violate the max position limits.
+
+## if replace=FALSE
+
+If replace=FALSE, we start the same way as for flat.to.flat:
+
+- sample(1:nrows(txnsimdf) ,nrow(txnsimdf))
+- rearrange our duration and quantity rows by the sample order
+
+Note that the duration/quantity tuples will have total duration longer than 
+mktdata, as described above.  We'll deal with this when generating transactions.
+
+
+## if replace=TRUE
+
+If replace=TRUE, we again start the same way as for flat.to.flat:
+
+- sample(1:nrows(txnsimdf) ,nrow(txnsimdf)+fudgefactor, replace=TRUE)
+- reorganize duration/quantity columns by the sampled row numbers
+
+In all four scenarios described here, it seems as though we can have the same 
+return from the function that generates replicates.  We should return a list of 
+n replicates which contains the  duration/quantity tuples
+
+______________________
+
+# Generating transactions
+
+______________________
+
+## round turn trade method is flat.to.flat
+
+At this point, replace=TRUE and replace=FALSE are immaterial.  The object has a 
+total duration equal to the market data, and all we need to do is create the 
+addTxns object and apply it.
+
+______________________
+
+## round turn trade methods which are not flat.to.flat
+
+- add column of cumsum of duration
+- split the rearranged subset at the length of the market data, trim duration of the last row if required
+- set the index of the initial grouping as start date plus the cumsum of the duration at each row
+- sample from index(mktdata) a number of times equal to the remaining rows
+- insert the remaining rows at the sampled mktdata index dates (this gives us overlapping trades)
+
+______________________
+
+# addTxns object:
+
+At this point, we should have an object containing a single index that fits
+within the mktdata, of the same [start, duration, qty] form as the txnsimdf 
+object.  
+
+Generating data for addTxns will proceed in the same manner for all input data 
+at this point.
+
+- create an empty xts object for use with *addTxns()*
+- generate rows for entry trades at the index timestamp
+- generate exit trades (reverse the quantity) at start+duration
+
+It is important that this step be done as an xts object, because xts will keep 
+everything ordered correctly.
+
+______________________
+
+# Applying Transactions:
+
+- initPortf with the name of the original portfolio + replicate number + n
+- call addTxns
+- call updatePortf
+- return the portfolio object to a custom .combine function (see paramset and walk.forward code for examples)
+
