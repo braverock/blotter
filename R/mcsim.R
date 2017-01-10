@@ -513,10 +513,8 @@ mcsim <- function(  Portfolio
 plot.mcsim <- function(x, y, ..., normalize=TRUE) {
   ret <- x
   if(isTRUE(normalize) && ret$initeq>1){
-    x1 <- cumprod(1 + ret$percreplicates)
-    x2 <- cumprod(1+ ret$percdailypl)
-#     x1 <- cumsum(ret$percreplicates)
-#     x2 <- cumsum(ret$percdailypl)
+    x1 <- cumsum(ret$percreplicates)
+    x2 <- cumsum(ret$percdailypl)
   # browser()
   } else {
     x1 <- cumsum(ret$replicates)
