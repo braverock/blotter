@@ -770,6 +770,7 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
 #' @param normalize TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson
 #'
+#' @method summary mcsim
 #' @export
 summary.mcsim <- function(object, ..., normalize=TRUE) {
   ret <- object
