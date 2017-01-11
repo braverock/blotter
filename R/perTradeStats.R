@@ -157,6 +157,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     }
     trades$Start <- index(posPL)[trades$Start]
     trades$End <- index(posPL)[trades$End]
+    trades$Duration <- trades$End - trades$Start
 
     return(as.data.frame(trades))
 } # end fn perTradeStats
