@@ -1,3 +1,4 @@
 turtles     Example of a trend following system 
 longtrend   Example of a trend following system
 amzn_test   Example of some intraday data and transactions
+perTradeStats_test   Demonstrate different cases to testing increased.to.reduced tradeDef in perTradeStats

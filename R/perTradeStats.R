@@ -1,11 +1,36 @@
-#' calculate flat to flat per-trade statistics
-#'
-#' One 'trade' is defined as the entire time the symbol is not flat.
-#' It may contain many transactions.  From the initial transaction that
-#' moves the position away from zero to the last transaction that flattens the
-#' position is all one 'trade' for the purposes of this function.
+#' calculate trade statistics for round turn trades.
 #' 
-#' This is sometimes referred to as 'flat to flat' analysis.
+#' One 'trade' is defined as a series of transactions which make up a 'round turn'.
+#' It may contain many transactions.  This function reports statistics on these
+#' round turn trades which may be used on their own or which are also used
+#' by other functions, including \code{\link{tradeStats}} and \code{\link{tradeQuantiles}}
+#' 
+#' @details
+#' Additional methods of determining 'round turns' are also supported.
+#' 
+#' \strong{Supported Methods for \code{tradeDef}:}
+#' \describe{
+#'   \item{\code{flat.to.flat}}{From the initial transaction that moves the 
+#'     position away from zero to the last transaction that flattens the position 
+#'     make up one round turn trade for the purposes of 'flat to flat' analysis.}
+#'   \item{\code{flat.to.reduced}}{The \emph{flat.to.reduced} method starts the
+#'     round turn trade at the same point as \emph{flat.to.flat}, at the first 
+#'     transaction which moves the position from zero to a new open position. The 
+#'     end of each round turn is described by transactions which move the position
+#'     closer to zero, regardless of any other transactions which may have 
+#'     increased the position along the way.}
+#'   \item{\code{increased.to.reduced}}{The \emph{increased.to.reduced} method
+#'     is appropriate for analyzing round turns in a portfolio which is rarely 
+#'     flat, or which regularly adds to and reduces positions. Every transaction
+#'     which moves the position closer to zero (reduced position) will close a 
+#'     round turn.  this closing transaction will be paired with one or more
+#'     transaction which move the position further from zero to locate the 
+#'     initiating transactions. \code{acfifo} is an alias for this method.}
+#' }
+#' 
+#' As with the rest of \code{blotter}, \code{perTradeStats} uses average cost
+#' accounting.  For the purposes of round turns, the average cost in force is 
+#' the average cost of the open position at the time of the closing transaction.
 #' 
 #' Note that a trade that is open at the end of the measured period will
 #' be marked to the timestamp of the end of the series.  
@@ -17,9 +42,9 @@
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param includeOpenTrade whether to process only finished trades, or the last trade if it is still open, default TRUE
-#' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
+#' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.
 #' @param \dots any other passthrough parameters
-#' @author Brian G. Peterson, Jan Humme
+#' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return 
 #' A \code{data.frame} containing:
@@ -42,123 +67,166 @@
 #'      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks} 
 #' }
 #' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function, 
-#' and \code{\link{tradeStats}} for a summary view of the performance
+#' and \code{\link{tradeStats}} for a summary view of the performance, and 
+#' \code{\link{tradeQuantiles}} for round turns classified by quantile.
 #' @export
 perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="flat.to.flat", ...) {
-
-    portf <- .getPortfolio(Portfolio)
-    if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
+  
+  portf <- .getPortfolio(Portfolio)
+  if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
+  
+  posPL <- portf$symbols[[Symbol]]$posPL
+  
+  instr <- getInstrument(Symbol)
+  tick_value <- instr$multiplier*instr$tick_size
+  
+  tradeDef <- match.arg(tradeDef, c("flat.to.flat","flat.to.reduced","increased.to.reduced","acfifo"))
+  if(tradeDef=='acfifo') tradeDef<-'increased.to.reduced'
+  
+  trades <- list()
+  switch(tradeDef,
+         flat.to.flat = {
+           # identify start and end for each trade, where end means flat position
+           trades$Start <- which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0)
+           trades$End <- which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0)
+         },
+         flat.to.reduced = {
+           # find all transactions that bring position closer to zero ('trade ends')
+           decrPos <- diff(abs(posPL$Pos.Qty)) < 0
+           # find all transactions that open a position ('trade starts')
+           initPos <- posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0
+           # 'trades' start when we open a position, so determine which starts correspond to each end
+           # add small amount to Start index, so starts will always occur before ends in StartEnd
+           Start <- xts(initPos[initPos,which.i=TRUE],index(initPos[initPos])+1e-5)
+           End   <- xts(decrPos[decrPos,which.i=TRUE],index(decrPos[decrPos]))
+           StartEnd <- merge(Start,End)
+           StartEnd$Start <- na.locf(StartEnd$Start)
+           StartEnd <- StartEnd[!is.na(StartEnd$End),]
+           # populate trades list
+           trades$Start <- drop(coredata(StartEnd$Start))
+           trades$End <- drop(coredata(StartEnd$End))
+           # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
+           if(last(posPL)[,"Pos.Qty"] != 0)
+             trades$Start <- c(trades$Start, last(trades$Start))
+         },
+         increased.to.reduced = {
+           # find all transactions that bring position closer to zero ('trade ends')
+           decrPos <- diff(abs(posPL$Pos.Qty)) < 0
+           decrPosCount <- ifelse(diff(abs(posPL$Pos.Qty)) < 0,-1,0)
+           decrPosCount <- ifelse(decrPosCount[-1] == 0, 0, cumsum(decrPosCount[-1]))
+           decrPosQty <- ifelse(diff(abs(posPL$Pos.Qty)) < 0, diff(abs(posPL$Pos.Qty)),0)
+           decrPosQtyCum <- ifelse(decrPosQty[-1] == 0, 0, cumsum(decrPosQty[-1])) #subset for the leading NA
+           # find all transactions that take position further from zero ('trade starts')
+           incrPos <- diff(abs(posPL$Pos.Qty)) > 0
+           incrPosCount <- ifelse(diff(abs(posPL$Pos.Qty)) > 0,1,0)
+           incrPosCount <- ifelse(incrPosCount[-1] == 0, 0, cumsum(incrPosCount[-1]))
+           incrPosQty <- ifelse(diff(abs(posPL$Pos.Qty)) > 0, diff(abs(posPL$Pos.Qty)),0)
+           incrPosQtyCum <- ifelse(incrPosQty[-1] == 0, 0, cumsum(incrPosQty[-1])) #subset for the leading NA
+           
+           df <- cbind(incrPosCount, incrPosQty, incrPosQtyCum, decrPosCount, decrPosQty,  decrPosQtyCum)[-1]
+           names(df) <- c("incrPosCount", "incrPosQty", "incrPosQtyCum", "decrPosCount", "decrPosQty",  "decrPosQtyCum")
+           
+           consol <- cbind(incrPosQtyCum,decrPosQtyCum)
+           names(consol)<-c('incrPosQtyCum','decrPosQtyCum')
+           consol$decrPosQtyCum<- -consol$decrPosQtyCum
+           consol$incrPosQtyCum[consol$incrPosQtyCum==0]<-NA
+           consol$decrPosQtyCum[consol$decrPosQtyCum==0]<-NA
+           idx <- findInterval(na.omit(consol$decrPosQtyCum),na.omit(consol$incrPosQtyCum))
+           #consol <- cbind(na.omit(consol$incrPosQtyCum), na.omit(consol$decrPosQtyCum), idx)
+           # populate trades list
+           idx <- idx[!is.na(idx)] # remove NAs from idx vector
+           idx <- idx[-length(idx)] # remove last element...see description ***TODO: add description with example dataset?
+           idx <- idx + 1 # +1 as findInterval() finds the lower bound of the range...see description ***TODO: add description with example dataset?
+           trades$Start[1] <- first(which(consol$incrPosQtyCum != "NA"))
+           trades$End <- which(consol$decrPosQtyCum != "NA")
+           trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
+           
+           # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with falt.to.reduced and flat.to.flat
+           trades$Start <- trades$Start + 1
+           trades$End <- trades$End + 1
+           
+           # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
+           if(last(posPL)[,"Pos.Qty"] != 0)
+             trades$Start <- c(trades$Start, last(trades$Start))
+         }
+  )
+  
+  # if the last trade is still open, adjust depending on whether wants open trades or not
+  if(length(trades$Start)>length(trades$End))
+  {
+    if(includeOpenTrade)
+      trades$End <- c(trades$End,nrow(posPL))
+    else
+      trades$Start <- head(trades$Start, -1)
+  }
+  
+  # pre-allocate trades list
+  N <- length(trades$End)
+  trades <- c(trades, list(
+    Init.Pos = numeric(N),
+    Max.Pos = numeric(N),
+    Num.Txns = integer(N),
+    Max.Notional.Cost = numeric(N),
+    Net.Trading.PL = numeric(N),
+    MAE = numeric(N),
+    MFE = numeric(N),
+    Pct.Net.Trading.PL = numeric(N),
+    Pct.MAE = numeric(N),
+    Pct.MFE = numeric(N),
+    tick.Net.Trading.PL = numeric(N),
+    tick.MAE = numeric(N),
+    tick.MFE = numeric(N)))
+  
+  # calculate information about each trade
+  for(i in 1:N)
+  {
+    timespan <- seq.int(trades$Start[i], trades$End[i])
+    trade <- posPL[timespan]
+    n <- nrow(trade)
     
-    posPL <- portf$symbols[[Symbol]]$posPL
+    # calculate cost basis, PosPL, Pct.PL, tick.PL columns
+    Pos.Qty <- trade[,"Pos.Qty"]                   # avoid repeated subsetting
+    Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
+    Pos.PL <- trade[,"Pos.Value"]-Pos.Cost.Basis
+    Pct.PL <- Pos.PL/abs(Pos.Cost.Basis)           # broken for last timestamp (fixed below)
+    Tick.PL <- Pos.PL/abs(Pos.Qty)/tick_value      # broken for last timestamp (fixed below)
+    Max.Pos.Qty.loc <- which.max(abs(Pos.Qty))     # find max position quantity location
     
-    instr <- getInstrument(Symbol)
-    tick_value <- instr$multiplier*instr$tick_size
-
-    tradeDef <- match.arg(tradeDef, c("flat.to.flat","flat.to.reduced"))
+    # position sizes
+    trades$Init.Pos[i] <- Pos.Qty[1]
+    trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
     
-    trades <- list()
-    switch(tradeDef,
-        flat.to.flat = {
-            # identify start and end for each trade, where end means flat position
-            trades$Start <- which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0)
-            trades$End <- which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0)
-        },
-        flat.to.reduced = {
-            # find all transactions that bring position closer to zero ('trade ends')
-            decrPos <- diff(abs(posPL$Pos.Qty)) < 0
-            # find all transactions that open a position ('trade starts')
-            initPos <- posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0
-            # 'trades' start when we open a position, so determine which starts correspond to each end
-            # add small amount to Start index, so starts will always occur before ends in StartEnd
-            Start <- xts(initPos[initPos,which.i=TRUE],index(initPos[initPos])+1e-5)
-            End   <- xts(decrPos[decrPos,which.i=TRUE],index(decrPos[decrPos]))
-            StartEnd <- merge(Start,End)
-            StartEnd$Start <- na.locf(StartEnd$Start)
-            StartEnd <- StartEnd[!is.na(StartEnd$End),]
-            # populate trades list
-            trades$Start <- drop(coredata(StartEnd$Start))
-            trades$End <- drop(coredata(StartEnd$End))
-            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
-            if(last(posPL)[,"Pos.Qty"] != 0)
-                trades$Start <- c(trades$Start, last(trades$Start))
-        }
-    )
-
-    # if the last trade is still open, adjust depending on whether wants open trades or not
-    if(length(trades$Start)>length(trades$End))
-    {
-        if(includeOpenTrade)
-            trades$End <- c(trades$End,nrow(posPL))
-        else
-            trades$Start <- head(trades$Start, -1)
-    }
-
-    # pre-allocate trades list
-    N <- length(trades$End)
-    trades <- c(trades, list(
-        Init.Pos = numeric(N),
-        Max.Pos = numeric(N),
-        Num.Txns = integer(N),
-        Max.Notional.Cost = numeric(N),
-        Net.Trading.PL = numeric(N),
-        MAE = numeric(N),
-        MFE = numeric(N),
-        Pct.Net.Trading.PL = numeric(N),
-        Pct.MAE = numeric(N),
-        Pct.MFE = numeric(N),
-        tick.Net.Trading.PL = numeric(N),
-        tick.MAE = numeric(N),
-        tick.MFE = numeric(N)))
+    # count number of transactions
+    trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
     
-    # calculate information about each trade
-    for(i in 1:N)
-    {
-        timespan <- seq.int(trades$Start[i], trades$End[i])
-        trade <- posPL[timespan]
-        n <- nrow(trade)
-
-        # calculate cost basis, PosPL, Pct.PL, tick.PL columns
-        Pos.Qty <- trade[,"Pos.Qty"]                   # avoid repeated subsetting
-        Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
-        Pos.PL <- trade[,"Pos.Value"]-Pos.Cost.Basis
-        Pct.PL <- Pos.PL/abs(Pos.Cost.Basis)           # broken for last timestamp (fixed below)
-        Tick.PL <- Pos.PL/abs(Pos.Qty)/tick_value      # broken for last timestamp (fixed below)
-        Max.Pos.Qty.loc <- which.max(abs(Pos.Qty))     # find max position quantity location
-
-        # position sizes
-        trades$Init.Pos[i] <- Pos.Qty[1]
-        trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
-
-        # count number of transactions
-        trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
-        
-        # investment
-        trades$Max.Notional.Cost[i] <- Pos.Cost.Basis[Max.Pos.Qty.loc]
-        
-        # cash P&L
-        trades$Net.Trading.PL[i] <- Pos.PL[n]
-        trades$MAE[i] <- min(0,Pos.PL)
-        trades$MFE[i] <- max(0,Pos.PL)
-        
-        # percentage P&L
-        Pct.PL[n] <- Pos.PL[n]/abs(trades$Max.Notional.Cost[i])
-        
-        trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
-        trades$Pct.MAE[i] <- min(0,Pct.PL)
-        trades$Pct.MFE[i] <- max(0,Pct.PL)
-        
-        # tick P&L
-        # Net.Trading.PL/position/tick value = ticks
-        Tick.PL[n] <- Pos.PL[n]/abs(trades$Max.Pos[i])/tick_value
-        
-        trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
-        trades$tick.MAE[i] <- min(0,Tick.PL)
-        trades$tick.MFE[i] <- max(0,Tick.PL)
-    }
-    trades$Start <- index(posPL)[trades$Start]
-    trades$End <- index(posPL)[trades$End]
-
-    return(as.data.frame(trades))
+    # investment
+    trades$Max.Notional.Cost[i] <- Pos.Cost.Basis[Max.Pos.Qty.loc]
+    
+    # cash P&L
+    trades$Net.Trading.PL[i] <- Pos.PL[n]
+    trades$MAE[i] <- min(0,Pos.PL)
+    trades$MFE[i] <- max(0,Pos.PL)
+    
+    # percentage P&L
+    Pct.PL[n] <- Pos.PL[n]/abs(trades$Max.Notional.Cost[i])
+    
+    trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
+    trades$Pct.MAE[i] <- min(0,Pct.PL)
+    trades$Pct.MFE[i] <- max(0,Pct.PL)
+    
+    # tick P&L
+    # Net.Trading.PL/position/tick value = ticks
+    Tick.PL[n] <- Pos.PL[n]/abs(trades$Max.Pos[i])/tick_value
+    
+    trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
+    trades$tick.MAE[i] <- min(0,Tick.PL)
+    trades$tick.MFE[i] <- max(0,Tick.PL)
+  }
+  trades$Start <- index(posPL)[trades$Start]
+  trades$End <- index(posPL)[trades$End]
+  
+  return(as.data.frame(trades))
+  
 } # end fn perTradeStats
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/perTradeStats.R
 \name{perTradeStats}
 \alias{perTradeStats}
-\title{calculate flat to flat per-trade statistics}
+\title{calculate trade statistics for round turn trades.}
 \usage{
 perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
   tradeDef = "flat.to.flat", ...)
@@ -14,7 +14,7 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 
 \item{includeOpenTrade}{whether to process only finished trades, or the last trade if it is still open, default TRUE}
 
-\item{tradeDef}{string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.}
+\item{tradeDef}{string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.}
 
 \item{\dots}{any other passthrough parameters}
 }
@@ -40,13 +40,37 @@ A \code{data.frame} containing:
 }
 }
 \description{
-One 'trade' is defined as the entire time the symbol is not flat.
-It may contain many transactions.  From the initial transaction that
-moves the position away from zero to the last transaction that flattens the
-position is all one 'trade' for the purposes of this function.
+One 'trade' is defined as a series of transactions which make up a 'round turn'.
+It may contain many transactions.  This function reports statistics on these
+round turn trades which may be used on their own or which are also used
+by other functions, including \code{\link{tradeStats}} and \code{\link{tradeQuantiles}}
 }
 \details{
-This is sometimes referred to as 'flat to flat' analysis.
+Additional methods of determining 'round turns' are also supported.
+
+\strong{Supported Methods for \code{tradeDef}:}
+\describe{
+  \item{\code{flat.to.flat}}{From the initial transaction that moves the 
+    position away from zero to the last transaction that flattens the position 
+    make up one round turn trade for the purposes of 'flat to flat' analysis.}
+  \item{\code{flat.to.reduced}}{The \emph{flat.to.reduced} method starts the
+    round turn trade at the same point as \emph{flat.to.flat}, at the first 
+    transaction which moves the position from zero to a new open position. The 
+    end of each round turn is described by transactions which move the position
+    closer to zero, regardless of any other transactions which may have 
+    increased the position along the way.}
+  \item{\code{increased.to.reduced}}{The \emph{increased.to.reduced} method
+    is appropriate for analyzing round turns in a portfolio which is rarely 
+    flat, or which regularly adds to and reduces positions. Every transaction
+    which moves the position closer to zero (reduced position) will close a 
+    round turn.  this closing transaction will be paired with one or more
+    transaction which move the position further from zero to locate the 
+    initiating transactions. \code{acfifo} is an alias for this method.}
+}
+
+As with the rest of \code{blotter}, \code{perTradeStats} uses average cost
+accounting.  For the purposes of round turns, the average cost in force is 
+the average cost of the open position at the time of the closing transaction.
 
 Note that a trade that is open at the end of the measured period will
 be marked to the timestamp of the end of the series.  
@@ -56,13 +80,14 @@ most trade accounting systems and risk systems in including the open
 position in reporting.
 }
 \author{
-Brian G. Peterson, Jan Humme
+Brian G. Peterson, Jasen Mackie, Jan Humme
 }
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 }
 \seealso{
 \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function, 
-and \code{\link{tradeStats}} for a summary view of the performance
+and \code{\link{tradeStats}} for a summary view of the performance, and 
+\code{\link{tradeQuantiles}} for round turns classified by quantile.
 }
 

@@ -2,8 +2,8 @@ Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems
     Development
-Version: 0.10.4
-Date: 2017-01-10 $Date$
+Version: 0.11.0
+Date: 2017-01-24 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Daniel Cegielka [ctb],
@@ -22,7 +22,7 @@ Description: Transaction infrastructure for defining
     trading systems and simulation. Provides portfolio
     support for multi-asset class and multi-currency
     portfolios.  Actively maintained and developed.
-License: GPL
+License: GPL-3
 LazyLoad: yes
 Depends:
     R (>= 2.15),
