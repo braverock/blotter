@@ -52,8 +52,10 @@
 #' \describe{
 #'      \item{Start}{the \code{POSIXct} timestamp of the start of the trade}
 #'      \item{End}{the \code{POSIXct} timestamp of the end of the trade, when flat}
-#'      \item{Init.Pos}{the initial position on opening the trade}
+#'      \item{Init.Qty}{ transaction quantity initiating the trade}
+#'      \item{Init.Pos}{ position held after the initiating transaction of the round turn trade}
 #'      \item{Max.Pos}{the maximum (largest) position held during the open trade}
+#'      \item{End.Pos}{ the remaining quantity held after closing the trade}
 #'      \item{Num.Txns}{ the number of transactions included in this trade}
 #'      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
 #'      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
@@ -163,8 +165,10 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
   # pre-allocate trades list
   N <- length(trades$End)
   trades <- c(trades, list(
+    Init.Qty = numeric(N),
     Init.Pos = numeric(N),
     Max.Pos = numeric(N),
+    End.Pos = numeric(N),
     Num.Txns = integer(N),
     Max.Notional.Cost = numeric(N),
     Net.Trading.PL = numeric(N),
@@ -177,6 +181,9 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     tick.MAE = numeric(N),
     tick.MFE = numeric(N)))
   
+  # create txn.qty vector for computing Init.Qty and End.Pos
+  txn.qty <- diff(posPL$Pos.Qty)
+
   # calculate information about each trade
   for(i in 1:N)
   {
@@ -196,6 +203,10 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     trades$Init.Pos[i] <- Pos.Qty[1]
     trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
     
+    # initiating and ending quantities
+    trades$Init.Qty[i] <- txn.qty[timespan][1]
+    trades$End.Pos[i] <- Pos.Qty[length(trade[,1])]
+
     # count number of transactions
     trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
     

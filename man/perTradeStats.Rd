@@ -24,8 +24,10 @@ A \code{data.frame} containing:
 \describe{
      \item{Start}{the \code{POSIXct} timestamp of the start of the trade}
      \item{End}{the \code{POSIXct} timestamp of the end of the trade, when flat}
-     \item{Init.Pos}{the initial position on opening the trade}
+     \item{Init.Qty}{ transaction quantity initiating the trade}
+     \item{Init.Pos}{ position held after the initiating transaction of the round turn trade}
      \item{Max.Pos}{the maximum (largest) position held during the open trade}
+     \item{End.Pos}{ the remaining quantity held after closing the trade}
      \item{Num.Txns}{ the number of transactions included in this trade}
      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
