@@ -48,11 +48,12 @@
 #' @param n number of simulations, default = 1000
 #' @param replacement sample with or without replacement, default TRUE
 #' @param \dots any other passthrough parameters
-#' @param use determines whether to use 'equity', 'txn', or 'returns' P\&L, default = "equity" ie. daily
+#' @param use determines whether to use 'equity', 'txn', 'returns', or 'cash' P\&L, default = "equity" ie. daily
 #' @param l block length, default = 1
 #' @param varblock boolean to determine whether to use variable block length, default FALSE
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's
 #' @param CI numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95
+#' @param dailyPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
@@ -77,6 +78,9 @@
 #'   \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
 #' }
 #'
+#' If \code{use='cash'}, you must also supply a daily (or other regular frequency) 
+#' cash P&L xts object in the \code{dailyPL} argument.
+#' 
 #' Note that this object and its slots may change in the future.
 #' Slots \code{replicates},\code{dailypl},\code{initeq}, and \code{call} are likely
 #' to exist in all future versions of this function, but other slots may be added
@@ -121,16 +125,17 @@
 #' } #end dontrun
 #'
 #' @export
-mcsim <- function(  Portfolio
-                    , Account
+mcsim <- function(  Portfolio = NULL
+                    , Account = NULL
                     , n = 1000
                     , replacement = TRUE
                     , ...
-                    , use=c('equity','txns','returns')
+                    , use=c('equity','txns','returns','cash')
                     , l = 1
                     , varblock = FALSE
                     , gap = 1
                     , CI = 0.95
+                    , dailyPL = NULL
                     
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
@@ -138,13 +143,18 @@ mcsim <- function(  Portfolio
   switch (use,
           Eq =, eq =, Equity =, equity =, cumPL = {
             dailyPL <- dailyEqPL(Portfolio, incl.total = TRUE)
-            dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
           },
           Txns =, txns =, Trades =, trades = {
             dailyPL <- dailyTxnPL(Portfolio,  incl.total = TRUE)
-            dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
+          },
+          cash =, dailyPL = {
+            if(!hasArg('dailyPL') || is.null(dailyPL)) {
+              stop('you must supply cash P&L in the dailyPL arg to use cash P&L directly')
+            } 
           }
   )
+  # trim out training period defined by 'gap' argument
+  dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
   
   ##################### confidence interval formulae ###########################
   CI_lower <- function(samplemean, merr) {
@@ -159,10 +169,12 @@ mcsim <- function(  Portfolio
   }
   ##############################################################################
   
-  # p <- getPortfolio(Portfolio)
-  a <- getAccount(Account)
-  initEq <- attributes(a)$initEq
-  use=c('equity','txns')
+  if (!is.null(Account)){
+    a <- getAccount(Account)
+    initEq <- attributes(a)$initEq
+  } else {
+    initEq <- 1 #avoid div by 0 error
+  }
   tmp <- NULL
   k <- NULL
   EndEqdf <- data.frame(dailyPL)

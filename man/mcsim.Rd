@@ -4,9 +4,9 @@
 \alias{mcsim}
 \title{Monte Carlo simulate strategy results}
 \usage{
-mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
-  use = c("equity", "txns", "returns"), l = 1, varblock = FALSE,
-  gap = 1, CI = 0.95)
+mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
+  ..., use = c("equity", "txns", "returns", "cash"), l = 1,
+  varblock = FALSE, gap = 1, CI = 0.95, dailyPL = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -17,7 +17,7 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 
 \item{replacement}{sample with or without replacement, default TRUE}
 
-\item{use}{determines whether to use 'equity', 'txn', or 'returns' P\&L, default = "equity" ie. daily}
+\item{use}{determines whether to use 'equity', 'txn', 'returns', or 'cash' P\&L, default = "equity" ie. daily}
 
 \item{l}{block length, default = 1}
 
@@ -26,6 +26,8 @@ mcsim(Portfolio, Account, n = 1000, replacement = TRUE, ...,
 \item{gap}{numeric number of periods from start of series to start on, to eliminate leading NA's}
 
 \item{CI}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
+
+\item{dailyPL}{optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.}
 
 \item{\dots}{any other passthrough parameters}
 }
@@ -53,6 +55,9 @@ a list object of class 'mcsim' containing:
   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
   \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
 }
+
+If \code{use='cash'}, you must also supply a daily (or other regular frequency) 
+cash P&L xts object in the \code{dailyPL} argument.
 
 Note that this object and its slots may change in the future.
 Slots \code{replicates},\code{dailypl},\code{initeq}, and \code{call} are likely
