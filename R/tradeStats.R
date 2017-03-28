@@ -98,7 +98,39 @@
 #' Josh has suggested adding \%-return based stats too
 tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat',inclZeroDays=FALSE)
 {
-    ret <- NULL
+    # initialize the ret data.frame so column types are correct  
+    ret <- data.frame(Portfolio=pname, 
+                      Symbol             = character(),
+                      Num.Txns           = integer(),
+                      Num.Trades         = integer(),
+                      Total.Net.Profit   = double(),
+                      Avg.Trade.PL       = double(),
+                      Med.Trade.PL       = double(),
+                      Largest.Winner     = double(),
+                      Largest.Loser      = double(),
+                      Gross.Profits      = double(),
+                      Gross.Losses       = double(),
+                      Std.Dev.Trade.PL   = double(),
+                      Percent.Positive   = double(),
+                      Percent.Negative   = double(),
+                      Profit.Factor      = double(),
+                      Avg.Win.Trade      = double(),
+                      Med.Win.Trade      = double(),
+                      Avg.Losing.Trade   = double(),
+                      Med.Losing.Trade   = double(),
+                      Avg.Daily.PL       = double(),
+                      Med.Daily.PL       = double(),
+                      Std.Dev.Daily.PL   = double(),
+                      Ann.Sharpe         = double(),
+                      Max.Drawdown       = double(),
+                      Profit.To.Max.Draw = double(),
+                      Avg.WinLoss.Ratio  = double(),
+                      Med.WinLoss.Ratio  = double(),
+                      Max.Equity         = double(),
+                      Min.Equity         = double(),
+                      End.Equity         = double(),
+                      stringsAsFactors   = FALSE)
+    
     use <- use[1] #use the first(default) value only if user hasn't specified
     tradeDef <- tradeDef[1]
     for (Portfolio in Portfolios){
@@ -125,7 +157,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             if(length(PL.ne0) == 0)
             {
                 # apply.daily will crash
-                next
+                next()
             }
 
             if(!isTRUE(inclZeroDays)) DailyPL <- apply.daily(PL.ne0,sum)
