@@ -53,7 +53,7 @@
 #' @param varblock boolean to determine whether to use variable block length, default FALSE
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's
 #' @param CI numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95
-#' @param dailyPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
+#' @param cashPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
@@ -135,7 +135,7 @@ mcsim <- function(  Portfolio = NULL
                     , varblock = FALSE
                     , gap = 1
                     , CI = 0.95
-                    , dailyPL = NULL
+                    , cashPL = NULL
                     
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
@@ -147,10 +147,11 @@ mcsim <- function(  Portfolio = NULL
           Txns =, txns =, Trades =, trades = {
             dailyPL <- dailyTxnPL(Portfolio,  incl.total = TRUE)
           },
-          cash =, dailyPL = {
-            if(!hasArg('dailyPL') || is.null(dailyPL)) {
-              stop('you must supply cash P&L in the dailyPL arg to use cash P&L directly')
+          cash =, cashPL =, {
+            if(!hasArg('cashPL') || is.null(cashPL)) {
+              stop('you must supply regular cash P&L xts in the cashPL arg to use cash P&L directly')
             } 
+            dailyPL <- checkData(cashPL)
           }
   )
   # trim out training period defined by 'gap' argument

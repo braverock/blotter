@@ -6,7 +6,7 @@
 \usage{
 mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
   ..., use = c("equity", "txns", "returns", "cash"), l = 1,
-  varblock = FALSE, gap = 1, CI = 0.95, dailyPL = NULL)
+  varblock = FALSE, gap = 1, CI = 0.95, cashPL = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -27,7 +27,7 @@ mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
 
 \item{CI}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
 
-\item{dailyPL}{optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.}
+\item{cashPL}{optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.}
 
 \item{\dots}{any other passthrough parameters}
 }
