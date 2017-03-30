@@ -588,11 +588,9 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
   if(isTRUE(normalize) && ret$initeq>1) {
     xname <- paste(ret$num, "replicates", ret$w, "using block length", ret$length, "and", ret$CI, "confidence interval")
     h <- NULL
-    #browser()
     for (method in methods) {
       switch (method,
               mean = {
-                dev.new()
                 hh(ret$percsamplestats$mean, paste("Mean distribution of" , xname)
                    , xlab="Mean Return"
                    , b = ret$percoriginal$mean
@@ -607,7 +605,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               median = {
-                dev.new()
                 hh(ret$percsamplestats$median, paste("Median distribution of", xname)
                    , xlab="Median Return"
                    , b = ret$percoriginal$median
@@ -622,7 +619,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               stddev = {
-                dev.new()
                 hh(ret$percsamplestats$stddev, paste("Std Dev distribution of" , xname)
                    , xlab="stddev"
                    , b = ret$percoriginal$stddev
@@ -637,7 +633,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               maxDD = {
-                dev.new()
                 hh(ret$percsamplestats$maxDD, paste("maxDrawdown distribution of" , xname)
                    , xlab="Max Drawdown"
                    , b = ret$percoriginal$maxDD
@@ -652,7 +647,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               sharpe = {
-                dev.new()
                 hh(ret$percsamplestats$sharpe, paste("quasi-Sharpe distribution of" , xname)
                    , xlab="quasi-sharpe"
                    , b = ret$percoriginal$sharpe
@@ -676,7 +670,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
     for (method in methods) {
       switch (method,
               mean = {
-                dev.new()
                 hh(ret$samplestats$mean, paste("Mean distribution of" , xname)
                    , xlab="Mean Return"
                    , b = ret$original$mean
@@ -691,7 +684,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               median = {
-                dev.new()
                 hh(ret$samplestats$median, paste("Median distribution of" , xname)
                    , xlab="Median Return"
                    , b = ret$original$median
@@ -706,7 +698,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               stddev = {
-                dev.new()
                 hh(ret$samplestats$stddev, paste("Std Dev distribution of" , xname)
                    , xlab="stddev"
                    , b = ret$original$stddev
@@ -721,7 +712,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               maxDD = {
-                dev.new()
                 hh(ret$samplestats$maxDD, paste("maxDrawdown distribution of" , xname)
                    , xlab="Max Drawdown"
                    , b = ret$original$maxDD
@@ -736,7 +726,6 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
                 )
               },
               sharpe = {
-                dev.new()
                 hh(ret$samplestats$sharpe, paste("quasi-Sharpe distribution of" , xname)
                    , xlab="quasi-sharpe"
                    , b = ret$original$sharpe
