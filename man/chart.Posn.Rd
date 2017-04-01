@@ -4,7 +4,7 @@
 \alias{chart.Posn}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL)
+chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL, Prices = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio to chart}
@@ -14,6 +14,8 @@ chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL)
 \item{Dates}{xts ISO 8601 style subsetting}
 
 \item{TA}{a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}}
+
+\item{Prices}{An optional xts object containing price data for one or more symbols, passed to getPrice, default NULL}
 
 \item{\dots}{any other passthru parameters to \code{\link[quantmod]{chart_Series}}}
 }
