@@ -99,7 +99,7 @@
 tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat',inclZeroDays=FALSE)
 {
     # initialize the ret data.frame so column types are correct  
-    ret <- data.frame(Portfolio=pname, 
+    ret <- data.frame(Portfolio          = character(), 
                       Symbol             = character(),
                       Num.Txns           = integer(),
                       Num.Trades         = integer(),
