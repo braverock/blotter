@@ -45,4 +45,4 @@ Suggests:
 URL: https://r-forge.r-project.org/projects/blotter/
 Copyright: (c) 2008-2016
 ByteCompile: TRUE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

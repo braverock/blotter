@@ -58,4 +58,3 @@ initDate and initEq can be used in addCapital to initalize the account?
 Track cash at this level???
 Calc gross PL and subtract fees? Or calc net PL and add fees.
 }
-

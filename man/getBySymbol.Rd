@@ -30,4 +30,3 @@ for graphing or calculations
 items typically include things like
 'Pos.Qty', 'Pos.Value', 'Txn.Value', 'Realized.PL', 'Unrealized.PL',or 'Trading.PL'
 }
-

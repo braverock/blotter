@@ -25,4 +25,3 @@ This function provides easy access to the values of transactions contained in a 
 \seealso{
 \code{\link{initPortf}}
 }
-

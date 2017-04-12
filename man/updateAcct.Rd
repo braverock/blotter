@@ -16,4 +16,3 @@ updateAcct(name = "default", Dates = NULL)
 Constructs the equity account calculations from the portfolio data and
 corresponding close prices.
 }
-

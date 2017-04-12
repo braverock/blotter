@@ -19,4 +19,3 @@ TxnAvgCost: unit normalized (per share) cost implied by the transaction
 \description{
 Calculates a per share or per contract cost of the transaction to match the units the price is quoted in
 }
-

@@ -12,11 +12,11 @@ tradeQuantiles(Portfolio, Symbol, ..., scale = c("cash", "percent", "tick"),
 
 \item{Symbol}{string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used}
 
+\item{\dots}{any other passthrough parameters}
+
 \item{scale}{string specifying 'cash', or 'percent' for percentage of investment, or 'tick'}
 
 \item{probs}{vector of probabilities for \code{quantile}}
-
-\item{\dots}{any other passthrough parameters}
 }
 \description{
 The quantiles of your trade statistics get to the heart of quantitatively 
@@ -48,13 +48,12 @@ information to work with in addition to the raw quantiles.
 For example, it may make more sense to use the max of a loess or
 kernel or other non-linear fit as the target point.
 }
-\author{
-Brian G. Peterson
-}
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 }
 \seealso{
 \code{\link{tradeStats}}
 }
-
+\author{
+Brian G. Peterson
+}

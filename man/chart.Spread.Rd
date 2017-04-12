@@ -23,4 +23,3 @@ chart.Spread(Account, Portfolio, Spread = NULL, Symbols = NULL,
 \description{
 Charts the transaction series, positions, and P&L of a spread against prices
 }
-

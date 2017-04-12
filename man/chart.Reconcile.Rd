@@ -16,11 +16,11 @@ chart.Reconcile(theoPort, actualPort, Symbol, Dates = NULL, ...,
 
 \item{Dates}{xts ISO 8601 style subsetting}
 
+\item{\dots}{any other passthru parameters to \code{\link[quantmod]{chart_Series}}}
+
 \item{PLdiff}{one of 'cumulative' or 'episodic', see Details.}
 
 \item{data}{what to do with the calculated data, see Details}
-
-\item{\dots}{any other passthru parameters to \code{\link[quantmod]{chart_Series}}}
 }
 \description{
 Produces a three or four-panel or chart of time series charts that contains prices and transactions in the top panel, 
@@ -43,4 +43,3 @@ Expect changes to this function, since the underlying charts are experimental fu
 \seealso{
 \code{\link{chart.Posn}}
 }
-
