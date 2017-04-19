@@ -242,13 +242,13 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     # cash P&L
     trades$Net.Trading.PL[i] <- Pos.PL
     Cum.PL <- cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL'])
-    trades$MAE[i] <- min(0,Cum.PL) * prorata
-    trades$MFE[i] <- max(0,Cum.PL) * prorata
+    trades$MAE[i] <- min(0,Cum.PL * prorata) 
+    trades$MFE[i] <- max(0,Cum.PL * prorata) 
 
     # percentage P&L
     Pct.PL <- Cum.PL/abs(trades$Max.Notional.Cost[i])
 
-    trades$Pct.Net.Trading.PL[i] <- Pct.PL
+    trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
     trades$Pct.MAE[i] <- min(0,Pct.PL) * prorata
     trades$Pct.MFE[i] <- max(0,Pct.PL) * prorata
 
@@ -256,7 +256,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     # Net.Trading.PL/position/tick value = ticks
     Tick.PL <- Cum.PL/abs(trades$Max.Pos[i])/tick_value
 
-    trades$tick.Net.Trading.PL[i] <- Tick.PL
+    trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
     trades$tick.MAE[i] <- min(0,Tick.PL) * prorata
     trades$tick.MFE[i] <- max(0,Tick.PL) * prorata
   }
