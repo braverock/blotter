@@ -38,7 +38,7 @@ A \code{data.frame} containing:
      \item{Pct.MFE}{ Maximum Favorable Excursion (MFE), in percent}
      \item{tick.Net.Trading.PL}{  net trading P&L in ticks}
      \item{tick.MAE}{ Maximum Adverse Excursion (MAE) in ticks}
-     \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks} 
+     \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
 }
 }
 \description{
@@ -52,41 +52,52 @@ Additional methods of determining 'round turns' are also supported.
 
 \strong{Supported Methods for \code{tradeDef}:}
 \describe{
-  \item{\code{flat.to.flat}}{From the initial transaction that moves the 
-    position away from zero to the last transaction that flattens the position 
+  \item{\code{flat.to.flat}}{From the initial transaction that moves the
+    position away from zero to the last transaction that flattens the position
     make up one round turn trade for the purposes of 'flat to flat' analysis.}
   \item{\code{flat.to.reduced}}{The \emph{flat.to.reduced} method starts the
-    round turn trade at the same point as \emph{flat.to.flat}, at the first 
-    transaction which moves the position from zero to a new open position. The 
+    round turn trade at the same point as \emph{flat.to.flat}, at the first
+    transaction which moves the position from zero to a new open position. The
     end of each round turn is described by transactions which move the position
-    closer to zero, regardless of any other transactions which may have 
+    closer to zero, regardless of any other transactions which may have
     increased the position along the way.}
   \item{\code{increased.to.reduced}}{The \emph{increased.to.reduced} method
-    is appropriate for analyzing round turns in a portfolio which is rarely 
+    is appropriate for analyzing round turns in a portfolio which is rarely
     flat, or which regularly adds to and reduces positions. Every transaction
-    which moves the position closer to zero (reduced position) will close a 
+    which moves the position closer to zero (reduced position) will close a
     round turn.  this closing transaction will be paired with one or more
-    transaction which move the position further from zero to locate the 
+    transaction which move the position further from zero to locate the
     initiating transactions. \code{acfifo} is an alias for this method.}
 }
 
 As with the rest of \code{blotter}, \code{perTradeStats} uses average cost
-accounting.  For the purposes of round turns, the average cost in force is 
+accounting.  For the purposes of round turns, the average cost in force is
 the average cost of the open position at the time of the closing transaction.
 
 Note that a trade that is open at the end of the measured period will
-be marked to the timestamp of the end of the series.  
-If that trade is later closed, the stats for it will likely change. 
+be marked to the timestamp of the end of the series.
+If that trade is later closed, the stats for it will likely change.
 This is 'mark to market' for the open position, and corresponds to
 most trade accounting systems and risk systems in including the open
 position in reporting.
+
+\code{Net.Trading.PL} and MAE/MFE are calculated somewhat differently
+depending on the \code{tradeDef}.  All three \code{tradeDef} types utilize
+\emph{Period.Realized.PL} to calculate the trading P&L of the round turn trade.
+If the method is \emph{flat.to.flat}, the cumulative sum of all transaction
+realized P&L's during the round turn is added.  If the method is
+\emph{flat.to.reduced}, the realized P&L is the period realized P&L of the
+closing transaction.  If the method is \emph{increased.to.reduced} (or the
+equvalent \emph{acfifo}), the realized P&L for the round turn trade will be
+the period realized P&L potentially pro-rated by the difference in size between
+the initiating and closing transactions.
 }
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 }
 \seealso{
-\code{\link{chart.ME}} for a chart of MAE and MFE derived from this function, 
-and \code{\link{tradeStats}} for a summary view of the performance, and 
+\code{\link{chart.ME}} for a chart of MAE and MFE derived from this function,
+and \code{\link{tradeStats}} for a summary view of the performance, and
 \code{\link{tradeQuantiles}} for round turns classified by quantile.
 }
 \author{
