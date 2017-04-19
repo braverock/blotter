@@ -260,8 +260,8 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     trades$tick.MAE[i] <- min(0,Tick.PL) * prorata
     trades$tick.MFE[i] <- max(0,Tick.PL) * prorata
   }
-  trades$Start[i] <- first(index(trade))
-  trades$End[i]   <- last(index(trade))
+  trades$Start <- index(posPL)[trades$Start]
+  trades$End   <- index(posPL)[trades$End]
 
   return(as.data.frame(trades))
 
