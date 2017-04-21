@@ -90,7 +90,16 @@ realized P&L's during the round turn is added.  If the method is
 closing transaction.  If the method is \emph{increased.to.reduced} (or the
 equvalent \emph{acfifo}), the realized P&L for the round turn trade will be
 the period realized P&L potentially pro-rated by the difference in size between
-the initiating and closing transactions.
+the initiating and closing transactions.  
+
+MAE and MFE are pro-rated for \emph{increased.to.reduced} (or  \emph{acfifo})
+and \emph{flat.to.reduced} using the proportion of the total traded quantity 
+over \emph{timespan} that is attributable to this round turn.  For these 
+definitions of round turns, this is complicated because there can be multiple
+initating transactions which will adjust the average cost (and thus the net P&L)
+of the position.  After pro-rating the cash measures, the percent and tick 
+versions are constructed by dividing by the maximum notional position cost and 
+the tick value, respectively.
 }
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)

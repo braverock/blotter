@@ -49,6 +49,15 @@
 #' equvalent \emph{acfifo}), the realized P&L for the round turn trade will be
 #' the period realized P&L potentially pro-rated by the difference in size between
 #' the initiating and closing transactions.  
+#' 
+#' MAE and MFE are pro-rated for \emph{increased.to.reduced} (or  \emph{acfifo})
+#' and \emph{flat.to.reduced} using the proportion of the total traded quantity 
+#' over \emph{timespan} that is attributable to this round turn.  For these 
+#' definitions of round turns, this is complicated because there can be multiple
+#' initating transactions which will adjust the average cost (and thus the net P&L)
+#' of the position.  After pro-rating the cash measures, the percent and tick 
+#' versions are constructed by dividing by the maximum notional position cost and 
+#' the tick value, respectively.
 #'
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
@@ -259,16 +268,16 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     Pct.PL <- Cum.PL/abs(trades$Max.Notional.Cost[i])
 
     trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
-    trades$Pct.MAE[i] <- min(0,Pct.PL) * prorata
-    trades$Pct.MFE[i] <- max(0,Pct.PL) * prorata
+    trades$Pct.MAE[i] <- min(0,trades$MAE[i]/abs(trades$Max.Notional.Cost[i]))
+    trades$Pct.MFE[i] <- max(0,trades$MFE[i]/abs(trades$Max.Notional.Cost[i]))
 
     # tick P&L
     # Net.Trading.PL/position/tick value = ticks
     Tick.PL <- Cum.PL/abs(trades$Max.Pos[i])/tick_value
 
     trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
-    trades$tick.MAE[i] <- min(0,Tick.PL) * prorata
-    trades$tick.MFE[i] <- max(0,Tick.PL) * prorata
+    trades$tick.MAE[i] <- min(0,trades$MAE[i]/tick_value)
+    trades$tick.MFE[i] <- max(0,trades$MFE[i]/tick_value)
   }
   trades$Start <- index(posPL)[trades$Start]
   trades$End   <- index(posPL)[trades$End]
