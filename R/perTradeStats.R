@@ -212,27 +212,31 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
 
     # initiating and ending quantities
     trades$Init.Qty[i] <- txn.qty[timespan][1]
-    trades$End.Pos[i] <- Pos.Qty[length(trade[,1])]
-    trades$Closing.Txn.Qty[i] <- Pos.Qty[length(trade[,1])-1] - trades$End.Pos[i]
+    trades$End.Pos[i] <- Pos.Qty[n]
+    trades$Closing.Txn.Qty[i] <- Pos.Qty[n-1] - trades$End.Pos[i]
+    if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n]
 
     Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
 
     switch(tradeDef,
            flat.to.flat = {
-             prorata <- 1
-             Pos.PL <- sum(trade[,"Period.Realized.PL"])
+             prorata  <- 1
+             trade.PL <- sum(trade[,"Net.Trading.PL"])
            },
            flat.to.reduced = {
-             prorata <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]
-             Pos.PL <- trade[n,"Period.Realized.PL"]
+             prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]
+             trade.PL <- trade[n,"Period.Realized.PL"]
+             fees     <- sum(trade[,'Txn.Fees']) * prorata
+             trade.PL <- trade.PL + fees 
            },
            increased.to.reduced = {
-             prorata <- trades$Init.Qty[i] / trades$Closing.Txn.Qty[i]
-             Pos.PL <- trade[n,"Period.Realized.PL"] * prorata
+             prorata  <- trades$Closing.Txn.Qty[i] / trades$Init.Qty[i]  
+             trade.PL <- trade[n,"Period.Realized.PL"]
+             fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
+             trade.PL <- trade.PL + fees 
            }
     )
-
-
+    
     # count number of transactions
     trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
 
@@ -240,8 +244,14 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     trades$Max.Notional.Cost[i] <- Pos.Cost.Basis[Max.Pos.Qty.loc]
 
     # cash P&L
-    trades$Net.Trading.PL[i] <- Pos.PL
-    Cum.PL <- cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL'])
+    trades$Net.Trading.PL[i] <- trade.PL
+    
+    #include unrealized P&L for open position, if necessary
+    if(i==N && trades$Net.Trading.PL[i]==0 && includeOpenTrade){ 
+      trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL']) 
+    }
+    
+    Cum.PL <- cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL']) + trade[,'Txn.Fees']
     trades$MAE[i] <- min(0,Cum.PL * prorata) 
     trades$MFE[i] <- max(0,Cum.PL * prorata) 
 
