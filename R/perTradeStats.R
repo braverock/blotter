@@ -230,22 +230,38 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     switch(tradeDef,
            flat.to.flat = {
              prorata  <- 1
+             ts.prop  <- 1
              trade.PL <- sum(trade[,"Net.Trading.PL"])
+             Cum.PL   <- cumsum(trade[,"Net.Trading.PL"])
            },
            flat.to.reduced = {
-             prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]
+             prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i] #not precisely correct
+             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # this won't reconcile for flat.to.reduced 
+             ts.prop[n] <- 0 # no unrealized PL for last observation is counted
              trade.PL <- trade[n,"Period.Realized.PL"]
              fees     <- sum(trade[,'Txn.Fees']) * prorata
              trade.PL <- trade.PL + fees 
+             Cum.PL   <- (cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL']) + trade[,'Txn.Fees']) * ts.prop
            },
            increased.to.reduced = {
              prorata  <- trades$Closing.Txn.Qty[i] / trades$Init.Qty[i]  
+             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # correct for this method 
+             ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
              trade.PL <- trade[n,"Period.Realized.PL"]
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
+             # remove fees not part of this round turn
+             # increased.to.reduced has precisely one opening and closing trade
+             trade$Txn.Fees[2:(n-1)] <- 0 
+             # scale opening trade fees to correct proportion
+             trade$Txn.Fees[1] <- trade[1,'Txn.Fees'] * prorata 
+             # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
+             # numers for Period.Realized.PL and Txn.Fees, but need to take prorata
+             # for unrealized P&L
+             Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
            }
     )
-    
+
     # count number of transactions
     trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
 
@@ -260,9 +276,9 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
       trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL']) 
     }
     
-    Cum.PL <- cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL']) + trade[,'Txn.Fees']
-    trades$MAE[i] <- min(0,Cum.PL * prorata) 
-    trades$MFE[i] <- max(0,Cum.PL * prorata) 
+    # cash MAE/MFE
+    trades$MAE[i] <- min(0,Cum.PL) 
+    trades$MFE[i] <- max(0,Cum.PL) 
 
     # percentage P&L
     Pct.PL <- Cum.PL/abs(trades$Max.Notional.Cost[i])
