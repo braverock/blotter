@@ -123,13 +123,15 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
            End   <- xts(decrPos[decrPos,which.i=TRUE],index(decrPos[decrPos]))
            StartEnd <- merge(Start,End)
            StartEnd$Start <- na.locf(StartEnd$Start)
+           if(includeOpenTrade){
+             SEtail <- StartEnd[paste0(index(last(StartEnd[!is.na(StartEnd$End)])+1),'/')]
+             SEtail <- SEtail[-1,]
+           }
            StartEnd <- StartEnd[!is.na(StartEnd$End),]
+           if(includeOpenTrade) StartEnd <- rbind(StartEnd,SEtail)
            # populate trades list
-           trades$Start <- drop(coredata(StartEnd$Start))
-           trades$End <- drop(coredata(StartEnd$End))
-           # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
-           if(last(posPL)[,"Pos.Qty"] != 0)
-             trades$Start <- c(trades$Start, last(trades$Start))
+           trades$Start <- drop(coredata(StartEnd[!is.na(StartEnd$Start[]),]$Start))
+           trades$End <- drop(coredata(StartEnd[!is.na(StartEnd$End),]$End))
          },
          increased.to.reduced = {
            # find all transactions that bring position closer to zero ('trade ends')
@@ -237,7 +239,11 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
            flat.to.reduced = {
              prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i] #not precisely correct
              ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # this won't reconcile for flat.to.reduced 
-             ts.prop[n] <- 0 # no unrealized PL for last observation is counted
+             if(i==N && includeOpenTrade){ 
+               ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
+             } else {
+               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+             }
              trade.PL <- trade[n,"Period.Realized.PL"]
              fees     <- sum(trade[,'Txn.Fees']) * prorata
              trade.PL <- trade.PL + fees 
