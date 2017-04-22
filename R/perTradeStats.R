@@ -169,7 +169,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
            if(last(posPL)[,"Pos.Qty"] != 0)
-             trades$Start <- c(trades$Start, last(trades$Start))
+             trades$Start <- c(trades$Start, last(which(incrPos==TRUE)))
          }
   ) # end round turn trade separation by tradeDef
 
@@ -205,7 +205,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
   # create txn.qty vector for computing Init.Qty and End.Pos
   txn.qty <- diff(posPL$Pos.Qty)
 
-  # calculate information about each trade
+  # calculate information about each round turn 'trade'
   for(i in 1:N)
   {
     timespan <- seq.int(trades$Start[i], trades$End[i])
@@ -246,7 +246,11 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
            increased.to.reduced = {
              prorata  <- trades$Closing.Txn.Qty[i] / trades$Init.Qty[i]  
              ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # correct for this method 
-             ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+             if(i==N && includeOpenTrade){ 
+               ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
+             } else {
+               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+             }
              trade.PL <- trade[n,"Period.Realized.PL"]
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
