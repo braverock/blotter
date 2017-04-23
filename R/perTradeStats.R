@@ -165,7 +165,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
            trades$End <- which(consol$decrPosQtyCum != "NA")
            trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
 
-           # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with falt.to.reduced and flat.to.flat
+           # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
            trades$Start <- trades$Start + 1
            trades$End <- trades$End + 1
 
@@ -183,7 +183,13 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     else
       trades$Start <- head(trades$Start, -1)
   }
-
+  
+  # check for an open trade that starts on the last observation, remove
+  if(last(trades$End)==last(trades$Start)){
+    trades$End <- trades$End[-length(trades$End)]
+    trades$Start <- trades$Start[-length(trades$Start)]
+  }
+  
   # pre-allocate trades list
   N <- length(trades$End)
   trades <- c(trades, list(
