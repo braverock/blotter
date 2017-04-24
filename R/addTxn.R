@@ -53,6 +53,13 @@
 #' @param eps value to add to force unique indices
 #' @param TxnData  An xts object containing all required txn fields (for addTxns)
 #' @note 
+#' Transactions must be added in date-time order.  All per-transaction
+#' accounting is calculated when appending transactions to the 'txn' table.
+#' Adding transactions out of order will cause incorrect accounting, and is
+#' therefore not allowed.  Both \code{addTxn} and \code{addTxns} will throw an
+#' error if called with a \code{TxnDate} (or an xts index value) before the
+#' last date in the 'txn' table.
+#'
 #' The addTxn function will eventually also handle other transaction types, 
 #' such as adjustments for corporate actions or expire/assign for options. 
 #' See \code{\link{addDiv}} 
@@ -73,6 +80,12 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
     
     if(!is.timeBased(TxnDate) ){
         TxnDate<-as.POSIXct(TxnDate)
+    }
+
+    lastTxnDate <- end(Portfolio$symbols[[Symbol]]$txn)
+    if (TxnDate < lastTxnDate) {
+      stop("Transactions must be added in order. TxnDate (", TxnDate, ") is ",
+           "before last transaction in portfolio (", lastTxnDate, ") for ", Symbol)
     }
 
     # Coerce the transaction fees to a function if a string was supplied
@@ -171,6 +184,13 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
         addPortfInstr(Portfolio=pname, symbols=Symbol)
     Portfolio <- .getPortfolio(pname)
+
+    TxnDate <- start(TxnData)
+    lastTxnDate <- end(Portfolio$symbols[[Symbol]]$txn)
+    if (TxnDate < lastTxnDate) {
+      stop("Transactions must be added in order. First TxnDate (", TxnDate, ") is ",
+           "before last transaction in portfolio (", lastTxnDate, ") for ", Symbol)
+    }
 
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)

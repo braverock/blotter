@@ -190,6 +190,6 @@
 #'@importFrom graphics abline grid plot points
 #'@importFrom grDevices dev.new
 #'@importFrom methods hasArg
-#'@importFrom stats complete.cases lag median na.omit quantile qnorm sd start
+#'@importFrom stats complete.cases lag median na.omit quantile qnorm sd start end
 #'@importFrom utils View head tail
 NULL

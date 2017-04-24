@@ -41,6 +41,27 @@ test.addTxn <- function() {
   # summary <- calcPortfSummary(portfolio)
 }
 
+test.addTxn_TxnDate_out_of_order_errors <- function() {
+  on.exit({
+    # remove objects created by unit tests
+    try(rm_currencies("USD"))
+    try(rm_stocks("A"))
+    try(rm(list=paste0("portfolio.",p), pos=.blotter))
+  })
+
+  currency("USD")
+  stock("A", currency = "USD")
+  initPortf("TxnDateOrder", "A")
+
+  # Initialize a portfolio object 'p'
+  # Creating portfolio:
+  p <- initPortf("runitAddTxn", symbols="A")
+
+  # Trades must be made in date order.
+  addTxn(p, "A", "2007-01-04", -50,  97.1)
+  checkException(addTxn(p, "A", "2007-01-03",  50,  96.5))
+}
+
 test.addTxns <- function() {
   on.exit({
     # remove objects created by unit tests
@@ -74,5 +95,26 @@ test.addTxns <- function() {
   t1 <- getPortfolio("amzn_txn")$symbols$AMZN$txn
   t2 <- getPortfolio("amzn_txns")$symbols$AMZN$txn
   checkIdentical(t1, t2)
+}
+
+test.addTxns_TxnDate_out_of_order_errors <- function() {
+  on.exit({
+    # remove objects created by unit tests
+    try(rm_currencies("USD"), silent=TRUE)
+    try(rm_stocks("A"), silent=TRUE)
+    try(rm(list=c("account.amzn_acct","portfolio.amzn_txn","portfolio.amzn_txns"), pos=.blotter), silent=TRUE)
+  })
+
+  currency("USD")
+  stock("AMZN", currency="USD", multiplier=1)
+
+  # Initialize the account/portfolios
+  initAcct("amzn_acct", portfolios="amzn_txns", initEq=10000)
+  initPortf("amzn_txns", symbols="AMZN")
+
+  # Add the transactions to the portfolios
+  addTxns("amzn_txns", "AMZN", TxnData=amzn.trades)
+  # Trades must be made in date order.
+  checkException(addTxns("amzn_txns", "AMZN", TxnData=amzn.trades[1:2,]))
 }
 

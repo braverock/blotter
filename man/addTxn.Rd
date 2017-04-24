@@ -79,6 +79,13 @@ dots to avoid an error. We have chosen not to use named arguments
 to reduce issues from user-supplied fee functions.
 }
 \note{
+Transactions must be added in date-time order.  All per-transaction
+accounting is calculated when appending transactions to the 'txn' table.
+Adding transactions out of order will cause incorrect accounting, and is
+therefore not allowed.  Both \code{addTxn} and \code{addTxns} will throw an
+error if called with a \code{TxnDate} (or an xts index value) before the
+last date in the 'txn' table.
+
 The addTxn function will eventually also handle other transaction types, 
 such as adjustments for corporate actions or expire/assign for options. 
 See \code{\link{addDiv}}
