@@ -47,9 +47,9 @@
         # Parse ISO8601 dates and check for NA and bounds
         parsedDates <- .parseISO8601(Dates)
         t1 <- parsedDates$first.time
-        t1 <- if (is.na(t1) || t1 < as.POSIXct(start(prices))) "" else t1
+        t1 <- if (is.na(t1) || t1 < as.POSIXct(start(prices))) "" else format(t1)
         tN <- parsedDates$last.time
-        tN <- if (is.na(tN) || tN > as.POSIXct(end(prices))) "" else tN
+        tN <- if (is.na(tN) || tN > as.POSIXct(end(prices))) "" else format(tN)
 
         # Warn user if bound and/or NA check failed
         dateRange <- paste(t1, tN, sep="/")
