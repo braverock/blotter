@@ -44,10 +44,24 @@
             Dates <- as.POSIXct(as.character(as.Date(Dates)), tz=portfTZ)
         }
     } else if(!is.timeBased(Dates)) {
-        Dates<- if(is.na(.parseISO8601(Dates)$first.time) ||
-            .parseISO8601(Dates)$first.time < as.POSIXct(first(index(prices)))){
-            index(prices[paste('/',.parseISO8601(Dates)$last.time,sep='')])
-        } else index(prices[Dates])
+        # Parse ISO8601 dates and check for NA and bounds
+        parsedDates <- .parseISO8601(Dates)
+        t1 <- parsedDates$first.time
+        t1 <- if (is.na(t1) || t1 < as.POSIXct(start(prices))) "" else t1
+        tN <- parsedDates$last.time
+        tN <- if (is.na(tN) || tN > as.POSIXct(end(prices))) "" else tN
+
+        # Warn user if bound and/or NA check failed
+        dateRange <- paste(t1, tN, sep="/")
+        if(t1 == "" || tN == "") {
+            priceRange <- paste(range(index(prices)), collapse="/")
+            dateRangeStr <- if(dateRange == "/") "all data" else dateRange
+            warning("Could not parse ", Dates, " as ISO8601 string, or one/both",
+                    "ends of the range were outside the available prices: ",
+                    priceRange, ". Using ", dateRangeStr," instead.")
+        }
+        # Date subset
+        Dates <- index(prices[dateRange])
     }
     if(!missing(Interval) && !is.null(Interval)) {
         ep_args <- .parse_interval(Interval)
