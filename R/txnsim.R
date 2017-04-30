@@ -129,8 +129,7 @@ txnsim <- function(Portfolio,
     
     #start building txnsimdf - WOOHOO (still needs Qty though which is gonna be tricky...if we take it from 'txns', which is surely preferred over Max.Pos from 'pt')
     txnsimdf <- rbind.data.frame(startdf, enddf)
-    require(data.table)
-    txnsimdf <- data.table(txnsimdf, key = "start")
+    txnsimdf <- txnsimdf[order(txnsimdf$start),]
     
     qty <- vector(length = length(txnsimdf$start))
     idx_start <- txnsimdf$start %in% start
