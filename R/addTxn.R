@@ -78,8 +78,11 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
 
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
     
-    if(!is.timeBased(TxnDate) ){
-        TxnDate<-as.POSIXct(TxnDate)
+    if(!inherits(TxnDate, "POSIXct")) {
+      if(inherits(TxnDate, "Date"))
+        TxnDate <- as.POSIXct(TxnDate, tz="UTC")
+      else
+        TxnDate <- as.POSIXct(TxnDate)
     }
 
     lastTxnDate <- end(Portfolio$symbols[[Symbol]]$txn)
