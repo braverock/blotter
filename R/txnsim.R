@@ -92,33 +92,18 @@ txnsim <- function(Portfolio,
     start <- pt$Start
     end <- pt$End
     
-    #TO BE DELETED - just keeping around for some code tips
-    # appidx <- append(start, end, after = length(start))
-    # idx <- order(as.Date(appidx, format = "%Y-%m-%d"))
-    # newindex <- appidx[idx]
-    # duration <- append(difftime(newindex[-1], newindex[-length(newindex)], units = "days"), 0) # add zero for first row of duration vector
-    # newindex <- newindex[-which(duration == 0)] # remove all zero duration trades from duration
-    # duration <- duration[duration != 0] # remove all zero duration trades from newindex
-    # qty <- vector(length = length(newindex)) # create a qty vector with length of newindex
-    # testindex <- newindex %in% start # create a TRUE or FALSE vector for newindex in start
-    # qty[testindex == 1] <- pt$Max.Pos[which(start == newindex[newindex %in% start])]
-    # txnsimdf <- data.frame(newindex, duration, qty)
-    
     # get duration of non-flat periods
-    # duration <- end - start # duration for non-flat periods
     duration <- difftime(end, start, units = "secs")
-    #stratduration <- end[length(end)] - start[1] # this is for info
-    stratduration <-
-      difftime(end[length(end)], start[1], units = "secs") # this is for info
+
+    # calendar duration of the entire strategy
+    stratduration <- difftime(end[length(end)], start[1], units = "secs") 
     
     # get duration of flat periods
-    txns <- cumsum(getTxns(Portfolio, "IBM"))
+    txns <- cumsum(getTxns(Portfolio, symbols[i]))
     lagtxns <- lag(txns)
     startzero <- txns[which(txns$Txn.Qty == 0)]
     endzero <- lagtxns[which(lagtxns$Txn.Qty == 0)]
-    #zeroduration <- index(endzero) - index(startzero)
-    zeroduration <-
-      difftime(index(endzero), index(startzero), units = "secs")
+    zeroduration <- difftime(index(endzero), index(startzero), units = "secs")
     
     # build dataframe of start dates and durations
     startdf <- cbind.data.frame(start, duration)
@@ -127,8 +112,10 @@ txnsim <- function(Portfolio,
       cbind.data.frame(index(startzero)[-1], zeroduration[-1])
     names(enddf) <- c("start", "duration")
     
-    #start building txnsimdf - WOOHOO (still needs Qty though which is gonna be tricky...if we take it from 'txns', which is surely preferred over Max.Pos from 'pt')
+    #start building txnsimdf 
     txnsimdf <- rbind.data.frame(startdf, enddf)
+    #TODO: I think we could remove the dependency on data.table
+    txnsimdf <- data.table(txnsimdf, key = "start")
     txnsimdf <- txnsimdf[order(txnsimdf$start),]
     
     qty <- vector(length = length(txnsimdf$start))
@@ -139,7 +126,9 @@ txnsim <- function(Portfolio,
     txnsimdf <- cbind.data.frame(txnsimdf, qty)
     
     names(txnsimdf) <- c("start", "duration", "quantity")
-    #names(txnsimdf) <- c("start", "duration") # taken out quantity for now
+    attr(txnsimdf,"calendarduration") <- stratduration
+    attr(txnsimdf,"flatduration") <- zeroduration
+
     txnsimdf
   }
   
@@ -165,7 +154,7 @@ txnsim <- function(Portfolio,
         cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
       #cumsum(seconds_to_period(as.numeric(backtest.trades[[i]]$duration[idx[[j]]])))
       # add the fist start time back in
-      start <- c(first(as.Date(backtest.trades[[i]]$start)), start)
+      start <- c(first(backtest.trades[[i]]$start), start)
       # take off the last end time, since we won't put in a closing trade
       start <- start[-length(start)]
       x <- data.frame(

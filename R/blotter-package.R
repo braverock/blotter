@@ -192,4 +192,5 @@
 #'@importFrom methods hasArg
 #'@importFrom stats complete.cases lag median na.omit quantile qnorm sd start
 #'@importFrom utils View head tail
+#'@importFrom data.table data.table
 NULL

@@ -39,6 +39,7 @@ Imports:
     utils,
     boot,
     foreach
+    , data.table
 Suggests:
     Hmisc,
     RUnit,
