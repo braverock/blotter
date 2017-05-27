@@ -104,6 +104,7 @@ txnsim <- function(Portfolio,
     startzero <- txns[which(txns$Txn.Qty == 0)]
     endzero <- lagtxns[which(lagtxns$Txn.Qty == 0)]
     zeroduration <- difftime(index(endzero), index(startzero), units = "secs")
+    zerostddev <- sd(txns[which(txns$Txn.Qty == 0)]$duration)
     
     # build dataframe of start dates and durations
     startdf <- cbind.data.frame(start, duration)
@@ -120,15 +121,15 @@ txnsim <- function(Portfolio,
     
     qty <- vector(length = length(txnsimdf$start))
     idx_start <- txnsimdf$start %in% start
-    qty[idx_start == 1] <-
-      pt$Init.Qty[index(which(idx_start == TRUE))]
+    qty[idx_start == 1] <- pt$Init.Qty[index(which(idx_start == TRUE))]
     
     txnsimdf <- cbind.data.frame(txnsimdf, qty)
     
     names(txnsimdf) <- c("start", "duration", "quantity")
     attr(txnsimdf,"calendar.duration") <- stratduration
-    attr(txnsimdf,"flat.duration") <- zeroduration
-
+    attr(txnsimdf,"flat.duration") <- sum(zeroduration)
+    attr(txnsimdf,"flat.stddev") <- zerostddev
+    
     txnsimdf
   }
   
@@ -257,17 +258,14 @@ txnsim <- function(Portfolio,
     repsgen.nr <- function(j, i, idx) {
       # build a vector of start times
       start <- first(backtest.trades[[i]]$start) +
-        #start <- as.Date(first(backtest.trades[[i]]$start)) +
-        cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
+                     cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
       # add the fist start time back in
       start <- c(first(backtest.trades[[i]]$start), start)
       # take off the last end time, since we won't put in a closing trade
       start <- start[-length(start)]
-      x <- data.frame(
-        start = start,
-        duration = backtest.trades[[i]]$duration[idx[[j]]],
-        quantity = backtest.trades[[i]]$quantity[idx[[j]]]
-      )
+      x <- data.frame(start = start,
+                      duration = backtest.trades[[i]]$duration[idx[[j]]],
+                      quantity = backtest.trades[[i]]$quantity[idx[[j]]])
     } # end inner lapply function
     
     # outer function over the symbols
@@ -298,17 +296,34 @@ txnsim <- function(Portfolio,
           tdf <- rbind(tdf, sdf)
         }
         dur <- sum(tdf$duration)
-        nsamples <-
-          round(((targetdur - dur) / avgdur) * fudgefactor, 0)
+        nsamples <- round(((targetdur - dur) / avgdur) * fudgefactor, 0)
         nsamples <- ifelse(nsamples == 0, 1, nsamples)
         # print(nsamples) # for debugging
         dur
       }
       # could truncate data frame here to correct total duration
       
+      # check flat duration of samples
+      flatsamples  <- tdf[which(tdf$quantity == 0),]
+      flatduration <- sum(tdf$duration)
+      flatdiff     <- flatduration - attr(backtest.trades[[i]], 'flat.duration')
+      absflatdiff  <- abs(flatdiff)
+      flatmargin   <- 2 * attr(backtest.trades[[i]], 'flat.stddev')
+      if (absflatdiff < flatmargin) {
+        print('success! flat duration of replicate series within bounds')
+      } else {
+        # we'll need to do some resampling
+        if (flatdiff > flatmargin) {
+          #truncate
+          print('need to truncate flat samples by', flatdiff - flatmargin)
+        } else {
+          #need more samples
+          print('need more flat samples by ~ ', flatdiff)
+        }
+      }
+      
       # the row which takes our duration over the target
-      xsrow <-
-        last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
+      xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
       if (xsrow == nrow(tdf)) {
         # the last row sampled takes us over targetdur
         adjxsrow <- sum(tdf$duration) - targetdur
@@ -316,29 +331,25 @@ txnsim <- function(Portfolio,
       } else if (xsrow < nrow(tdf)) {
         # the last iteration of the while loop added more than one row
         # which took our duration over the target
-        tdf <- tdf[-seq.int(xsrow + 1, nrow(tdf), 1), ]
+        tdf <- tdf[-seq.int(xsrow + 1, nrow(tdf), 1),]
         adjxsrow <- sum(tdf$duration) - targetdur
         tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
       }
       # build a vector of start times
       # retrieve calendar duration of original backtest
       actualdur <- attr(backtest.trades, 'calendar.duration')
-      num_overlaps <-
-        ceiling(as.numeric(targetdur) / as.numeric(actualdur))
+      num_overlaps <- ceiling(as.numeric(targetdur) / as.numeric(actualdur))
       tl <- list()
       xsrow2_count <- 0
       for (j in 1:num_overlaps) {
         if (j < num_overlaps) {
-          xsrow2 <-
-            last(which(cumsum(as.numeric(
-              tdf$duration
-            )) < (actualdur) * j)) + 1
+          xsrow2 <- last(which(cumsum(as.numeric(tdf$duration)) < (actualdur) * j)) + 1
         } else if (i == num_overlaps) {
           xsrow2 <- length(tdf$duration)
         }
         if (xsrow2 == nrow(tdf)) {
           # the last row sampled takes us over targetdur
-          tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2, ]
+          tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
           # adjxsrow2 <- sum(tl[[i]]$duration) - actualdur
           # tl[[i]][xsrow2-xsrow2_count,1] <- tl[[i]]$duration[xsrow2-xsrow2_count] - adjxsrow2
         } else if (xsrow2 < nrow(tdf)) {
@@ -346,9 +357,9 @@ txnsim <- function(Portfolio,
           # which took our duration over the target
           #tdf <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1),]
           if (xsrow2_count == 0) {
-            tl[[j]] <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1), ]
+            tl[[j]] <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1),]
           } else if (xsrow2_count > 0) {
-            tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2, ]
+            tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
           }
           adjxsrow2 <- sum(tl[[j]]$duration) - actualdur
           #tdf$duration[xsrow2] <- tdf$duration[xsrow2] - adjxsrow2
@@ -360,11 +371,9 @@ txnsim <- function(Portfolio,
       start <- list()
       tdf <- list()
       for (k in 1:num_overlaps) {
-        start[[k]] <-
-          first(backtest.trades[[i]]$start) + cumsum(as.numeric(tl[[k]]$duration))
+        start[[k]] <- first(backtest.trades[[i]]$start) + cumsum(as.numeric(tl[[k]]$duration))
         # add the fist start time back in
-        start[[k]] <-
-          c(first(backtest.trades[[i]]$start), start[[k]])
+        start[[k]] <- c(first(backtest.trades[[i]]$start), start[[k]])
         # take off the last end time, since we won't put in a closing trade
         start[[k]] <- start[[k]][-length(start[[k]])]
         tdf[[k]] <- cbind(start[[k]], tl[[k]])
