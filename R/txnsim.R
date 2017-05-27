@@ -126,8 +126,8 @@ txnsim <- function(Portfolio,
     txnsimdf <- cbind.data.frame(txnsimdf, qty)
     
     names(txnsimdf) <- c("start", "duration", "quantity")
-    attr(txnsimdf,"calendarduration") <- stratduration
-    attr(txnsimdf,"flatduration") <- zeroduration
+    attr(txnsimdf,"calendar.duration") <- stratduration
+    attr(txnsimdf,"flat.duration") <- zeroduration
 
     txnsimdf
   }
@@ -321,14 +321,8 @@ txnsim <- function(Portfolio,
         tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
       }
       # build a vector of start times
-      # but first compute actual duration
-      #actualdur <- last(backtest.trades[[i]]$start) + last(backtest.trades[[i]]$duration) - first(backtest.trades[[i]]$start)
-      actualdur <-
-        difftime(
-          last(backtest.trades[[i]]$start) + last(backtest.trades[[i]]$duration),
-          first(backtest.trades[[i]]$start),
-          units = "secs"
-        )
+      # retrieve calendar duration of original backtest
+      actualdur <- attr(backtest.trades, 'calendar.duration')
       num_overlaps <-
         ceiling(as.numeric(targetdur) / as.numeric(actualdur))
       tl <- list()
