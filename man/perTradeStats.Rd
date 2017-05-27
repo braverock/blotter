@@ -101,6 +101,9 @@ of the position.  After pro-rating the cash measures, the percent and tick
 versions are constructed by dividing by the maximum notional position cost and 
 the tick value, respectively.
 }
+\author{
+Brian G. Peterson, Jasen Mackie, Jan Humme
+}
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 }
@@ -109,6 +112,4 @@ Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system dev
 and \code{\link{tradeStats}} for a summary view of the performance, and
 \code{\link{tradeQuantiles}} for round turns classified by quantile.
 }
-\author{
-Brian G. Peterson, Jasen Mackie, Jan Humme
-}
+

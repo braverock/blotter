@@ -74,3 +74,4 @@ Initialized portfolio structure with a start date and initial positions.
 \author{
 Peter Carl
 }
+

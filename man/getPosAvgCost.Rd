@@ -19,3 +19,4 @@ Numeric value of the average cost of the current position
 \description{
 Retrieves the most recent average cost of the position
 }
+

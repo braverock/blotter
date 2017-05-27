@@ -17,3 +17,4 @@ Numeric value of the equity account
 \description{
 Retrieves the most recent value of the capital account
 }
+

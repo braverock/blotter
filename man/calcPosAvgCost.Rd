@@ -23,3 +23,4 @@ PosAvgCost: average cost of the resulting position
 \description{
 Calculates the average cost of a resulting position from a transaction
 }
+

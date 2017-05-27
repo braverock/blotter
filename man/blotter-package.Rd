@@ -176,15 +176,16 @@ p$summary
 }
 
 }
+\author{
+Peter Carl, Brian Peterson
+
+Maintainer: Brian Peterson \email{brian@braverock.com}
+}
 \seealso{
 \code{\link[quantmod:quantmod-package]{quantmod}}, 
 \code{\link[xts:xts-package]{xts}}, 
 \code{\link[PerformanceAnalytics:PerformanceAnalytics-package]{
 PerformanceAnalytics}}
 }
-\author{
-Peter Carl, Brian Peterson
-
-Maintainer: Brian Peterson \email{brian@braverock.com}
-}
 \keyword{package}
+

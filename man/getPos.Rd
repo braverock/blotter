@@ -24,3 +24,4 @@ All data elements related to position in a row of an xts object
 \description{
 NOTE This could get much more complicated from here, particularly when it's conditional on symbol, etc.
 }
+

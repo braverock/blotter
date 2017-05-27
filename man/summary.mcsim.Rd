@@ -9,9 +9,9 @@
 \arguments{
 \item{object}{object of type 'mcsim' to produce a sample and backtest summary}
 
-\item{\dots}{any other passthrough parameters}
-
 \item{normalize}{TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE}
+
+\item{\dots}{any other passthrough parameters}
 }
 \description{
 summary method for objects of type \code{mcsim}
@@ -19,3 +19,4 @@ summary method for objects of type \code{mcsim}
 \author{
 Jasen Mackie, Brian G. Peterson
 }
+

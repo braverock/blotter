@@ -16,13 +16,13 @@ addDiv(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees = 0,
 
 \item{DivPerShare}{The amount of the cash dividend paid per share or per unit quantity.}
 
-\item{\dots}{Any other passthrough parameters.}
-
 \item{TxnFees}{Fees associated with the transaction, e.g. commissions. See Details.}
 
 \item{ConMult}{Contract or instrument multiplier for the Symbol if it is not defined in an instrument specification.}
 
 \item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @ 77.6". Suppress using FALSE.}
+
+\item{\dots}{Any other passthrough parameters.}
 }
 \description{
 Adding a cash dividend does not affect position quantity, like a split would.
@@ -32,3 +32,4 @@ Adding a cash dividend does not affect position quantity, like a split would.
 
 # TODO add AsOfDate
 }
+

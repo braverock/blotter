@@ -11,16 +11,17 @@
 
 \item{y}{not used, to match generic signature, may hold overlay data in the future}
 
-\item{\dots}{any other passthrough parameters}
-
 \item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
+
+\item{\dots}{any other passthrough parameters}
 }
 \description{
 plot method for objects of type \code{mcsim}
 }
-\seealso{
-\code{\link{mcsim}}
-}
 \author{
 Jasen Mackie, Brian G. Peterson
 }
+\seealso{
+\code{\link{mcsim}}
+}
+

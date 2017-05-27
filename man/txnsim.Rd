@@ -37,8 +37,8 @@ to exist in all future versions of this function, but other slots may be added
 and removed as \code{S3method}'s are developed.
 }
 \description{
-Running simulations with similar properties as the backtest or production 
-portfolio may allow the analyst to evaluate the distribution of returns 
+Running simulations with similar properties as the backtest or production
+portfolio may allow the analyst to evaluate the distribution of returns
 possible with similat trading approaches and evaluate skill versus luck or
 overfitting.
 }
@@ -52,8 +52,10 @@ especially for intraday market data.
 
   n <- 10
 
-  ex.txnsim <- function(Portfolio,n,replacement) {
-    out <- txnsim(Portfolio,n,replacement)
+  ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced') {
+    #out <- txnsim(Portfolio,n,replacement)
+    out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
+    #out <- txnsim(Portfolio,n,replacement, tradeDef = "increased.to.reduced")
     for (i in 1:n){
       p<-paste('txnsim',Portfolio,i,sep='.')
       symbols<-names(getPortfolio(p)$symbols)
@@ -63,7 +65,7 @@ especially for intraday market data.
       }
     }
     out
-  }
+  } # end ex.txnsim
 
   demo('longtrend',ask=FALSE)
   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
@@ -77,12 +79,13 @@ especially for intraday market data.
 } #end dontrun
 
 }
+\author{
+Jasen Mackie, Brian G. Peterson
+}
 \references{
 Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 }
 \seealso{
 \code{\link{mcsim}}, \code{\link{updatePortf}}
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
+

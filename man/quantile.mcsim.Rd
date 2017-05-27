@@ -9,9 +9,9 @@
 \arguments{
 \item{x}{object of type 'mcsim' to produce replicate quantiles}
 
-\item{\dots}{any other passthrough parameters}
-
 \item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
+
+\item{\dots}{any other passthrough parameters}
 }
 \description{
 quantile method for objects of type \code{mcsim}
@@ -19,3 +19,4 @@ quantile method for objects of type \code{mcsim}
 \author{
 Jasen Mackie, Brian G. Peterson
 }
+

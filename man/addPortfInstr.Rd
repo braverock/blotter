@@ -16,3 +16,4 @@ addPortfInstr(Portfolio, symbols, ...)
 \description{
 thanks to WolfGang Wu for making this function more usable
 }
+

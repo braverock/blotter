@@ -23,6 +23,9 @@ Produces a scatterplot with one point per trade, with x-axis: absolute
 value of Drawdown (Adverse), or Run Up (Favourable), 
 and y-axis: absolute value of Net Profit or Loss
 }
+\author{
+Jan Humme
+}
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
 }
@@ -30,6 +33,4 @@ Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system dev
 \code{\link{perTradeStats}} for the calculations used by this chart, 
 and \code{\link{tradeStats}} for a summary view of the performance
 }
-\author{
-Jan Humme
-}
+

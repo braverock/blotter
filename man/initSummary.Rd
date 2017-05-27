@@ -14,3 +14,4 @@
 \description{
 initialize the summary table used in portfolio and account lists
 }
+

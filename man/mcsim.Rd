@@ -17,8 +17,6 @@ mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
 
 \item{replacement}{sample with or without replacement, default TRUE}
 
-\item{\dots}{any other passthrough parameters}
-
 \item{use}{determines whether to use 'equity', 'txn', 'returns', or 'cash' P\&L, default = "equity" ie. daily}
 
 \item{l}{block length, default = 1}
@@ -30,6 +28,8 @@ mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
 \item{CI}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
 
 \item{cashPL}{optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.}
+
+\item{\dots}{any other passthrough parameters}
 }
 \value{
 a list object of class 'mcsim' containing:
@@ -142,11 +142,12 @@ hist(varsim)
 } #end dontrun
 
 }
+\author{
+Jasen Mackie, Brian G. Peterson
+}
 \seealso{
 \code{\link{boot}}
   \code{\link{plot.mcsim}}
   \code{\link{hist.mcsim}}
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
+

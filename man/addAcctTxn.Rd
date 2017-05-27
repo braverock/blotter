@@ -16,9 +16,9 @@ addAcctTxn(Account, TxnDate, TxnType = c("Additions", "Withdrawals",
 
 \item{Amount}{As of now, the currency of the transaction MUST MATCH the currency of the Account.  Patches welcome.}
 
-\item{\dots}{any other passthrough parameters}
-
 \item{verbose}{If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 Withdrawal 15,012,235". Suppress using FALSE.}
+
+\item{\dots}{any other passthrough parameters}
 }
 \description{
 For the specified Account, take in the date, amount, and type of transaction and append it to the correct list in the account object
@@ -28,9 +28,10 @@ Adds capital transactions to a rudimentary transactions table in the Account obj
 In the Account$summary table, there are several placeholder columns that mimic the CFTC's 13-column report.  Columns of interest here are "Additions", "Withdrawals", and "Interest".  
 Transactions added with this function will be added into the appropriate one of three slots in the Account object (Account$additions, Account$withdrawals, or Account$Interest), which contains an xts object of individual transactions with a date and amount.  The \code{\link{updateAcct}} function will read the transactions from each list in turn, aggregate them by the specified date scope, and slot them into the \code{Account$summary} table as it's built. \code{\link{updateEndEq}} should then just work.
 }
-\seealso{
-\code{\link{initAcct}}, \code{\link{updateAcct}}, \code{\link{updateEndEq}}
-}
 \author{
 Peter Carl
 }
+\seealso{
+\code{\link{initAcct}}, \code{\link{updateAcct}}, \code{\link{updateEndEq}}
+}
+

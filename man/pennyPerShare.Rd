@@ -15,3 +15,4 @@ This is an example intended to demonstrate how a cost function could be used in 
 \description{
 Example TxnFee cost function
 }
+

@@ -19,3 +19,4 @@ Constructs multi-column xts object used to store transactions
 \description{
 The data series stored here will be an irregular time series.
 }
+
