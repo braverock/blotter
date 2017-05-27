@@ -2,8 +2,8 @@ Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems
     Development
-Version: 0.11.3
-Date: 2017-03-30 $Date$
+Version: 0.11.4
+Date: 2017-05-27 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Daniel Cegielka [ctb],
@@ -38,12 +38,12 @@ Imports:
     stats,
     utils,
     boot,
-    foreach
-    , data.table
+    foreach,
+    data.table
 Suggests:
     Hmisc,
     RUnit,
 URL: https://r-forge.r-project.org/projects/blotter/
 Copyright: (c) 2008-2016
 ByteCompile: TRUE
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1
