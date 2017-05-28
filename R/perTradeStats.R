@@ -59,11 +59,21 @@
 #' versions are constructed by dividing by the maximum notional position cost and 
 #' the tick value, respectively.
 #'
+#' If \code{includeFlatPeriods=TRUE}, \code{perTradeStats} will include periods
+#' when the series is flat (holds no position). Flat periods at the beginning of 
+#' the series will be removed, as they are presumed to hold no information, and 
+#' may be easily retrived if desired. This information is likely most useful in 
+#' constructing stylized facts about the trading style, calculating values such
+#' as time in market.  It is also extremely useful for Monte Carlo simulation of
+#' random trading strategies with similar style to the series under investigation.
+#' For more information on this latter use, see \code{\link{txnsim}}.
+#'  
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param includeOpenTrade whether to process only finished trades, or the last trade if it is still open, default TRUE
 #' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.
 #' @param \dots any other passthrough parameters
+#' @param includeFlatPeriods boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}
 #' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return
@@ -87,12 +97,20 @@
 #'      \item{tick.Net.Trading.PL}{  net trading P&L in ticks}
 #'      \item{tick.MAE}{ Maximum Adverse Excursion (MAE) in ticks}
 #'      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
+#'      \item{duration}{ \code{difftime} describing the duration of the round turn, in seconds }
 #' }
+#'
 #' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function,
 #' and \code{\link{tradeStats}} for a summary view of the performance, and
 #' \code{\link{tradeQuantiles}} for round turns classified by quantile.
 #' @export
-perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="flat.to.flat", ...) {
+perTradeStats <- function(Portfolio
+                          , Symbol
+                          , includeOpenTrade=TRUE
+                          , tradeDef="flat.to.flat"
+                          , ...
+                          , includeFlatPeriods=FALSE)
+{
 
   portf <- .getPortfolio(Portfolio)
   if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
@@ -175,7 +193,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
          }
   ) # end round turn trade separation by tradeDef
 
-  # if the last trade is still open, adjust depending on whether wants open trades or not
+  # if the last trade is still open, adjust depending on whether we want open trades or not
   if(length(trades$Start)>length(trades$End))
   {
     if(includeOpenTrade)
@@ -314,8 +332,66 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
   trades$Start <- index(posPL)[trades$Start]
   trades$End   <- index(posPL)[trades$End]
 
-  return(as.data.frame(trades))
-
+  #make into data.frame
+  trades<- as.data.frame(trades)
+  
+  if(includeFlatPeriods){
+    # use a list to put things together
+    flat.p<-list()
+    flat.p$Start <- which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0)
+    flat.p$End <- which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0)
+    
+    # check for initial flat period, remove as non-informational
+    if(first(flat.p$End)<first(flat.p$Start)){
+      flat.p$End <- flat.p$End[-1]
+    }
+    
+    # check for a flat period that starts on the last observation, remove
+    if(last(flat.p$End)==last(flat.p$Start)){
+      flat.p$End <- flat.p$End[-length(flat.p$End)]
+      flat.p$Start <- flat.p$Start[-length(flat.p$Start)]
+    }
+    
+    # check for trailing flat period, keep this if it exists
+    if(last(flat.p$End) < last(flat.p$Start) && 
+       length(flat.p$Start)>length(flat.p$End)){
+      # add an artificial end at the end of the series
+      flat.p$End <- c(flat.p$End,length(index(posPL)))
+    }
+    
+    # allocate flat periods list
+    N <- length(flat.p$End)
+    flat.p <- c(flat.p, list(
+      Init.Qty = rep(0,N),
+      Init.Pos = rep(0,N),
+      Max.Pos = rep(0,N),
+      End.Pos = rep(0,N),
+      Closing.Txn.Qty = rep(0,N),
+      Num.Txns = rep(0,N),
+      Max.Notional.Cost = rep(0,N),
+      Net.Trading.PL = rep(0,N),
+      MAE = rep(0,N),
+      MFE = rep(0,N),
+      Pct.Net.Trading.PL = rep(0,N),
+      Pct.MAE = rep(0,N),
+      Pct.MFE = rep(0,N),
+      tick.Net.Trading.PL = rep(0,N),
+      tick.MAE = rep(0,N),
+      tick.MFE = rep(0,N)))
+    
+    flat.p$Start <- index(posPL)[flat.p$Start]
+    flat.p$End   <- index(posPL)[flat.p$End]
+    
+    flat.p <- as.data.frame(flat.p)
+    
+    #combine with the trades data.frame
+    trades <- rbind(trades,flat.p)
+  }
+  
+  #add duration
+  trades$duration <- difftime(trades$End, trades$Start, units='secs') #for POSIXct compliance
+  
+  return(trades)
 } # end fn perTradeStats
 
 
