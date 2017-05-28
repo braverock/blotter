@@ -79,13 +79,12 @@ especially for intraday market data.
 } #end dontrun
 
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
 \references{
 Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 }
 \seealso{
 \code{\link{mcsim}}, \code{\link{updatePortf}}
 }
-
+\author{
+Jasen Mackie, Brian G. Peterson
+}

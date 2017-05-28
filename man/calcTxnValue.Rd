@@ -21,4 +21,3 @@ TxnValue: total dollar value of the transaction, including fees
 \description{
 Calculates the total value of a transaction or trade
 }
-

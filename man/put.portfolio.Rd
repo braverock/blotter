@@ -16,4 +16,3 @@ put.portfolio(portfolio.st, portfolio, envir = .blotter)
 \description{
 put a portfolio object in .blotter env
 }
-

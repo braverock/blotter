@@ -33,4 +33,3 @@ Note that the portfolio will be marked on every time stamp where prices are avai
 As such, your \code{Dates} range must reflect timestamps which appear in the price stream.
 Also note that you probably don't want to mark the portfolio on every tick,
 }
-

@@ -16,10 +16,9 @@
 \description{
 plot method for objects of type 'txnsim'
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
 \seealso{
 \code{\link{txnsim}}
 }
-
+\author{
+Jasen Mackie, Brian G. Peterson
+}

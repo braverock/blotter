@@ -29,4 +29,3 @@ option will likely be 'Net.Value'.
 For separating long and short weights, 'Long.Value' and 'Short.Value' may be 
 needed as denominators.
 }
-

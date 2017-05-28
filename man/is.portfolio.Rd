@@ -18,4 +18,3 @@ string \code{x} and tested.  Otherwise, the object passed will be tested.
 \seealso{
 \code{\link{getPortfolio}}
 }
-

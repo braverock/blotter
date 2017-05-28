@@ -33,4 +33,3 @@ Calculates position PL from the position data and corresponding close price data
 \author{
 Peter Carl, Brian Peterson
 }
-

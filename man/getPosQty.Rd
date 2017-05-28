@@ -19,4 +19,3 @@ Numeric value of the most recent position.
 \description{
 gets position at Date
 }
-

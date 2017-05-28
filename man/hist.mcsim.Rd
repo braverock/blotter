@@ -10,11 +10,11 @@
 \arguments{
 \item{x}{object of type mcsim to plot}
 
+\item{\dots}{any other passthrough parameters}
+
 \item{normalize}{TRUE/FALSE whether to normalize the hist by div, default TRUE}
 
 \item{methods}{are statistics to include in hist output, default methods=c("mean","median","stddev","maxDD","sharpe")}
-
-\item{\dots}{any other passthrough parameters}
 }
 \description{
 hist method for objects of type \code{mcsim}
@@ -22,4 +22,3 @@ hist method for objects of type \code{mcsim}
 \author{
 Jasen Mackie, Brian G. Peterson
 }
-

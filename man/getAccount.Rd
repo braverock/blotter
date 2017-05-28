@@ -17,4 +17,3 @@ Account object
 \description{
 Retrieves an account object from the \code{.blotter} environment.  Useful for local examination or charting, or storing interim results for later reference.
 }
-

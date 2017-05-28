@@ -22,6 +22,8 @@ addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ..., ConMult = NULL,
 
 \item{TxnPrice}{Price at which the transaction was done}
 
+\item{\dots}{Any other passthrough parameters}
+
 \item{TxnFees}{Fees associated with the transaction, e.g. commissions., See Details}
 
 \item{allowRebates}{whether to allow positive (rebate) TxnFees, default FALSE}
@@ -33,8 +35,6 @@ addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ..., ConMult = NULL,
 \item{eps}{value to add to force unique indices}
 
 \item{TxnData}{An xts object containing all required txn fields (for addTxns)}
-
-\item{\dots}{Any other passthrough parameters}
 }
 \description{
 When a trade or adjustment is made to the Portfolio, the addTxn function 
@@ -83,10 +83,9 @@ The addTxn function will eventually also handle other transaction types,
 such as adjustments for corporate actions or expire/assign for options. 
 See \code{\link{addDiv}}
 }
-\author{
-Peter Carl, Brian G. Peterson
-}
 \seealso{
 \code{\link{addTxns}}, \code{\link{pennyPerShare}}, \code{\link{initPortf}}
 }
-
+\author{
+Peter Carl, Brian G. Peterson
+}

@@ -13,9 +13,9 @@ chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL)
 
 \item{Dates}{xts ISO 8601 style subsetting}
 
-\item{TA}{a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}}
-
 \item{\dots}{any other passthru parameters to \code{\link[quantmod]{chart_Series}}}
+
+\item{TA}{a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}}
 }
 \description{
 Produces a three-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, and a cumulative profit-loss line chart in the third.
@@ -23,4 +23,3 @@ Produces a three-panel chart of time series charts that contains prices and tran
 \note{
 Expect changes to this function, since the underlying charts are experimental functions in quantmod.
 }
-

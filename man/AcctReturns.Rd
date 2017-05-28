@@ -63,9 +63,6 @@ TODO explicitly handle portfolio weights
 
 TODO support additions and withdrawals to available capital
 }
-\author{
-Brian Peterson, Andrii Babii
-}
 \references{
 Christopherson, Jon A., Carino, David R., Ferson, Wayne E. 
 \emph{Portfolio Performance Measurement and Benchmarking}. McGraw-Hill. 
@@ -75,6 +72,8 @@ Measurement and Attribution}. Wiley. 2004. Chapter 2 \cr
 \seealso{
 PortfReturns
 }
+\author{
+Brian Peterson, Andrii Babii
+}
 \keyword{portfolio}
 \keyword{returns}
-
