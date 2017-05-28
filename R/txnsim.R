@@ -109,14 +109,11 @@ txnsim <- function(Portfolio,
     # build dataframe of start dates and durations
     startdf <- cbind.data.frame(start, duration)
     # build dataframe of end dates and durations
-    enddf <-
-      cbind.data.frame(index(startzero)[-1], zeroduration[-1])
+    enddf   <- cbind.data.frame(index(startzero)[-1], zeroduration[-1])
     names(enddf) <- c("start", "duration")
     
     #start building txnsimdf 
     txnsimdf <- rbind.data.frame(startdf, enddf)
-    #TODO: I think we could remove the dependency on data.table
-    txnsimdf <- data.table(txnsimdf, key = "start")
     txnsimdf <- txnsimdf[order(txnsimdf$start),]
     
     qty <- vector(length = length(txnsimdf$start))
