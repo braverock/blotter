@@ -88,44 +88,30 @@ txnsim <- function(Portfolio,
   
   
   txnstruct <- function(i) {
-    pt <- perTradeStats(Portfolio, symbols[i], tradeDef = tradeDef)
-    start <- pt$Start
-    end <- pt$End
+    pt <- perTradeStats(Portfolio, symbols[i], tradeDef = tradeDef, includeFlatPeriods = TRUE)
+
+    nonflat <- which(pt$Init.Qty!=0)
     
     # get duration of non-flat periods
-    duration <- difftime(end, start, units = "secs")
-
-    # calendar duration of the entire strategy
-    stratduration <- difftime(end[length(end)], start[1], units = "secs") 
+    tradeduration <- sum(pt$duration[nonflat])
     
-    # get duration of flat periods
-    txns <- cumsum(getTxns(Portfolio, symbols[i]))
-    lagtxns <- lag(txns)
-    startzero <- txns[which(txns$Txn.Qty == 0)]
-    endzero <- lagtxns[which(lagtxns$Txn.Qty == 0)]
-    zeroduration <- difftime(index(endzero), index(startzero), units = "secs")
-    zerostddev <- sd(txns[which(txns$Txn.Qty == 0)]$duration)
+    # get duration and standard deviation of flat periods
+    zeroduration  <- sum(pt$duration[-nonflat])
+    zerostddev    <- sd(pt$duration[-nonflat])
+    
+    # calendar duration of the entire strategy
+    stratduration <- difftime(last(pt$End[nonflat]), pt$Start[1], units = "secs")
     
     # build dataframe of start dates and durations
-    startdf <- cbind.data.frame(start, duration)
-    # build dataframe of end dates and durations
-    enddf   <- cbind.data.frame(index(startzero)[-1], zeroduration[-1])
-    names(enddf) <- c("start", "duration")
-    
-    #start building txnsimdf 
-    txnsimdf <- rbind.data.frame(startdf, enddf)
-    txnsimdf <- txnsimdf[order(txnsimdf$start),]
-    
-    qty <- vector(length = length(txnsimdf$start))
-    idx_start <- txnsimdf$start %in% start
-    qty[idx_start == 1] <- pt$Init.Qty[index(which(idx_start == TRUE))]
-    
-    txnsimdf <- cbind.data.frame(txnsimdf, qty)
-    
-    names(txnsimdf) <- c("start", "duration", "quantity")
+    txnsimdf <- data.frame(start    = pt$Start,
+                           duration = pt$duration,
+                           quantity = pt$Init.Qty)
+  
     attr(txnsimdf,"calendar.duration") <- stratduration
-    attr(txnsimdf,"flat.duration") <- sum(zeroduration)
-    attr(txnsimdf,"flat.stddev") <- zerostddev
+    attr(txnsimdf,"trade.duration")    <- tradeduration
+    attr(txnsimdf,"flat.duration")     <- zeroduration
+    attr(txnsimdf,"flat.stddev")       <- zerostddev
+    attr(txnsimdf,"first.start")       <- pt$Start[1]
     
     txnsimdf
   }
@@ -135,40 +121,41 @@ txnsim <- function(Portfolio,
   names(backtest.trades) <- symbols
   
   ################################################################
+  # common utility functions
+
+  # no replacement functions are common to all tradeDef methods
+
+  # index expression for the replicate call, without replacement
+  idxexpr.nr <- function(i, ...) {
+    sample(nrow(backtest.trades[[i]]))
+  }
+
+  # inner function to build the replicate df
+  repsgen.nr <- function(j, i, idx) {
+    # build a vector of start times
+    start <- first(backtest.trades[[i]]$start) +
+      cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
+    # add the fist start time back in
+    start <- c(first(backtest.trades[[i]]$start), start)
+    # take off the last end time, since we won't put in a closing trade
+    start <- start[-length(start)]
+    x <- data.frame(start = start,
+                    duration = backtest.trades[[i]]$duration[idx[[j]]],
+                    quantity = backtest.trades[[i]]$quantity[idx[[j]]])
+  } # end inner lapply function
+  
+  # outer function over the symbols
+  symsample.nr <- function(i) {
+    idx <- replicate(n, idxexpr.nr(i), simplify = FALSE)
+    symreps <- lapply(1:length(idx), repsgen.nr, i, idx)
+  }
+  
+  ################################################################
+  ################################################################
   
   if (tradeDef == "flat.to.flat") {
     ### first set up functions for the lapply
-    ## no replacement fns:
-    # index expression for the replicate call, without replacement
-    idxexpr.nr <- function(i, ...) {
-      sample(nrow(backtest.trades[[i]]))
-    }
-    
-    # inner function to build the replicate df
-    repsgen.nr <- function(j, i, idx) {
-      # build a vector of start times
-      start <- first(backtest.trades[[i]]$start) +
-        #start <- as.Date(first(backtest.trades[[i]]$start)) +
-        cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
-      #cumsum(seconds_to_period(as.numeric(backtest.trades[[i]]$duration[idx[[j]]])))
-      # add the fist start time back in
-      start <- c(first(backtest.trades[[i]]$start), start)
-      # take off the last end time, since we won't put in a closing trade
-      start <- start[-length(start)]
-      x <- data.frame(
-        start = start,
-        duration = backtest.trades[[i]]$duration[idx[[j]]],
-        quantity = backtest.trades[[i]]$quantity[idx[[j]]]
-      )
-    } # end inner lapply function
-    
-    # outer function over the symbols
-    symsample.nr <- function(i) {
-      idx <- replicate(n, idxexpr.nr(i), simplify = FALSE)
-      symreps <- lapply(1:length(idx), repsgen.nr, i, idx)
-    }
-    
-    ## with replacement fns
+    ## with replacement fns are different between flat.to.flat and other methods
     
     # index expression for the replicate call, with replacement
     idxexpr.wr <- function(i) {
@@ -245,33 +232,7 @@ txnsim <- function(Portfolio,
   if (tradeDef == "flat.to.reduced" |
       tradeDef == "increased.to.reduced") {
     ### first set up functions for the lapply
-    ## no replacement fns:
-    # index expression for the replicate call, without replacement
-    idxexpr.nr <- function(i, ...) {
-      sample(nrow(backtest.trades[[i]]))
-    }
-    
-    # inner function to build the replicate df
-    repsgen.nr <- function(j, i, idx) {
-      # build a vector of start times
-      start <- first(backtest.trades[[i]]$start) +
-                     cumsum(as.numeric(backtest.trades[[i]]$duration[idx[[j]]]))
-      # add the fist start time back in
-      start <- c(first(backtest.trades[[i]]$start), start)
-      # take off the last end time, since we won't put in a closing trade
-      start <- start[-length(start)]
-      x <- data.frame(start = start,
-                      duration = backtest.trades[[i]]$duration[idx[[j]]],
-                      quantity = backtest.trades[[i]]$quantity[idx[[j]]])
-    } # end inner lapply function
-    
-    # outer function over the symbols
-    symsample.nr <- function(i) {
-      idx <- replicate(n, idxexpr.nr(i), simplify = FALSE)
-      symreps <- lapply(1:length(idx), repsgen.nr, i, idx)
-    }
-    
-    ## with replacement fns
+    ## with replacement fns are different to other methods
     
     # index expression for the replicate call, with replacement
     idxexpr.wr <- function(i) {
@@ -300,22 +261,23 @@ txnsim <- function(Portfolio,
       }
       # could truncate data frame here to correct total duration
       
-      # check flat duration of samples
+      # check flat duration of samples, does this belong in the while loop above?
+      # for the moment, these are merely informational, but might point to what needs changing
       flatsamples  <- tdf[which(tdf$quantity == 0),]
       flatduration <- sum(tdf$duration)
       flatdiff     <- flatduration - attr(backtest.trades[[i]], 'flat.duration')
       absflatdiff  <- abs(flatdiff)
-      flatmargin   <- 2 * attr(backtest.trades[[i]], 'flat.stddev')
+      flatmargin   <- structure(2 * attr(backtest.trades[[i]], 'flat.stddev'),units='secs',class='difftime')
       if (absflatdiff < flatmargin) {
         print('success! flat duration of replicate series within bounds')
       } else {
         # we'll need to do some resampling
         if (flatdiff > flatmargin) {
           #truncate
-          print('need to truncate flat samples by', flatdiff - flatmargin)
+          print(paste('need to truncate flat samples by ~', flatdiff - flatmargin, 'seconds'))
         } else {
           #need more samples
-          print('need more flat samples by ~ ', flatdiff)
+          print(paste('need more flat samples by ~ ', flatdiff,'seconds'))
         }
       }
       
@@ -334,7 +296,7 @@ txnsim <- function(Portfolio,
       }
       # build a vector of start times
       # retrieve calendar duration of original backtest
-      actualdur <- attr(backtest.trades, 'calendar.duration')
+      actualdur <- attr(backtest.trades[[i]], 'calendar.duration')
       num_overlaps <- ceiling(as.numeric(targetdur) / as.numeric(actualdur))
       tl <- list()
       xsrow2_count <- 0
@@ -347,21 +309,16 @@ txnsim <- function(Portfolio,
         if (xsrow2 == nrow(tdf)) {
           # the last row sampled takes us over targetdur
           tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
-          # adjxsrow2 <- sum(tl[[i]]$duration) - actualdur
-          # tl[[i]][xsrow2-xsrow2_count,1] <- tl[[i]]$duration[xsrow2-xsrow2_count] - adjxsrow2
         } else if (xsrow2 < nrow(tdf)) {
           # the last iteration of the while loop added more than one row
           # which took our duration over the target
-          #tdf <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1),]
           if (xsrow2_count == 0) {
             tl[[j]] <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1),]
           } else if (xsrow2_count > 0) {
             tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
           }
           adjxsrow2 <- sum(tl[[j]]$duration) - actualdur
-          #tdf$duration[xsrow2] <- tdf$duration[xsrow2] - adjxsrow2
-          tl[[j]][xsrow2 - xsrow2_count, 1] <-
-            tl[[j]]$duration[xsrow2 - xsrow2_count] - adjxsrow2
+          tl[[j]][xsrow2 - xsrow2_count, 1] <- tl[[j]]$duration[xsrow2 - xsrow2_count] - adjxsrow2
           xsrow2_count = xsrow2
         }
       }
@@ -376,11 +333,7 @@ txnsim <- function(Portfolio,
         tdf[[k]] <- cbind(start[[k]], tl[[k]])
         #colnames(tdf[[k]][1]) <- 'start'
       }
-      # add start column to tdf
-      #tdf$start <- start
-      
-      # rearrange columns for consistency
-      #tdf <- tdf[,c("start", "duration", "quantity")]
+
       #return the data frame
       tdf
     } # end idexpr.wr
