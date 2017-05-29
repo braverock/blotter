@@ -45,7 +45,41 @@ overfitting.
 \details{
 If \code{update=TRUE} (the default), the user may wish to pass \code{Interval}
 in dots to mark the portfolio at a different frequency than the market data,
-especially for intraday market data.
+especially for intraday market data.  Note that market data must be available
+to call \code{\link{updatePortf}} on.
+
+With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging 
+quantity and duration of round turns.  This may be enough for a strategy that
+only puts on a single level per round turn.
+
+With \code{tradeDef='increased.to.reduced'}, typically used for more complex 
+strategies, the simulation is also significantly more complicated, especially
+with \code{replacement=TRUE}.  In this latter case, the simulation must try 
+to retain stylized factos of the observed strategy, specifically:
+
+\itemize{
+  \item{percent time in market}
+  \item{percent time flat}
+  \item{ratio of long to short position taking}
+  \item{number of levels or layered trades observed}
+}
+
+In order to do this, samples are taken and randomized for flat periods, 
+short periods, and long periods, and then these samples are interleaved and 
+layered to construct the random strategy.  The overall goal is to construct a 
+random strategy that preserves as many of the stylized facts (or style) of
+the observed strtaegy as possible, while demonstrating no skill.  The round 
+turn trades of the random replicate strategies, while outwardly resembling 
+the original strategy in summaryt time series statstis, are the result of 
+random combinations of observed features taking place at random times in the
+observed time period.
+
+It should be noted that the first opened trade of the observed series and the
+replicates will take place at the same time.  Quantity and duration may differ,
+but the trade will start at the same time, unless the first sampled period is
+a flat one.  We may choose to relax this in the future and add or subtract a 
+short amount of duration to the replicates to randomize the first entry more
+fully as well.
 }
 \examples{
 \dontrun{

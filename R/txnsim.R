@@ -9,8 +9,42 @@
 #'
 #' If \code{update=TRUE} (the default), the user may wish to pass \code{Interval}
 #' in dots to mark the portfolio at a different frequency than the market data,
-#' especially for intraday market data.
+#' especially for intraday market data.  Note that market data must be available
+#' to call \code{\link{updatePortf}} on.
+#' 
+#' With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging 
+#' quantity and duration of round turns.  This may be enough for a strategy that
+#' only puts on a single level per round turn.
+#' 
+#' With \code{tradeDef='increased.to.reduced'}, typically used for more complex 
+#' strategies, the simulation is also significantly more complicated, especially
+#' with \code{replacement=TRUE}.  In this latter case, the simulation must try 
+#' to retain stylized factos of the observed strategy, specifically:
+#' 
+#' \itemize{
+#'   \item{percent time in market}
+#'   \item{percent time flat}
+#'   \item{ratio of long to short position taking}
+#'   \item{number of levels or layered trades observed}
+#' }
 #'
+#' In order to do this, samples are taken and randomized for flat periods, 
+#' short periods, and long periods, and then these samples are interleaved and 
+#' layered to construct the random strategy.  The overall goal is to construct a 
+#' random strategy that preserves as many of the stylized facts (or style) of
+#' the observed strtaegy as possible, while demonstrating no skill.  The round 
+#' turn trades of the random replicate strategies, while outwardly resembling 
+#' the original strategy in summaryt time series statstis, are the result of 
+#' random combinations of observed features taking place at random times in the
+#' observed time period.
+#' 
+#' It should be noted that the first opened trade of the observed series and the
+#' replicates will take place at the same time.  Quantity and duration may differ,
+#' but the trade will start at the same time, unless the first sampled period is
+#' a flat one.  We may choose to relax this in the future and add or subtract a 
+#' short amount of duration to the replicates to randomize the first entry more
+#' fully as well.
+#'  
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
@@ -186,8 +220,7 @@ txnsim <- function(Portfolio,
       # could truncate data frame here to correct total duration
       
       # the row which takes our duration over the target
-      xsrow <-
-        last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
+      xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
       if (xsrow == nrow(tdf)) {
         # the last row sampled takes us over targetdur
         adjxsrow <- sum(tdf$duration) - targetdur
@@ -200,9 +233,8 @@ txnsim <- function(Portfolio,
         tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
       }
       # build a vector of start times
-      start <-
-        first(backtest.trades[[i]]$start) + cumsum(as.numeric(tdf$duration))
-      # add the fist start time back in
+      start <- first(backtest.trades[[i]]$start) + cumsum(as.numeric(tdf$duration))
+      # add the first start time back in
       start <- c(first(backtest.trades[[i]]$start), start)
       # take off the last end time, since we won't put in a closing trade
       start <- start[-length(start)]
@@ -234,113 +266,105 @@ txnsim <- function(Portfolio,
     ### first set up functions for the lapply
     ## with replacement fns are different to other methods
     
-    # index expression for the replicate call, with replacement
-    idxexpr.wr <- function(i) {
+    # sample and layer trades, with replacement
+    tradesample.wr <- function(trades) {
+      
       fudgefactor <- 1.1 # fudgefactor is added to size for sampling
-      targetdur   <- sum(backtest.trades[[i]]$duration)
-      avgdur      <- as.numeric(mean(backtest.trades[[i]]$duration))
       
-      dur <- 0 # initialize duration counter
-      tdf <- data.frame() #initialize output data.frame
-      nsamples <- round(nrow(backtest.trades[[i]]) * fudgefactor, 0)
-      while (dur < targetdur) {
-        s <- sample(1:nrow(backtest.trades[[i]]), nsamples, replace = TRUE)
-        sdf <-
-          data.frame(duration = backtest.trades[[i]]$duration[s],
-                     quantity = backtest.trades[[i]]$quantity[s])
-        if (is.null(tdf$duration)) {
-          tdf <- sdf
-        } else {
-          tdf <- rbind(tdf, sdf)
-        }
-        dur <- sum(tdf$duration)
-        nsamples <- round(((targetdur - dur) / avgdur) * fudgefactor, 0)
-        nsamples <- ifelse(nsamples == 0, 1, nsamples)
-        # print(nsamples) # for debugging
-        dur
-      }
-      # could truncate data frame here to correct total duration
+      # stylized facts
+      calendardur <- attr(trades, 'calendar.duration')
+      totaldur    <- sum(trades$duration)
+      avgdur      <- as.numeric(mean(trades$duration))
+      traderows   <- which(trades$quantity != 0)
+      longrows    <- which(trades$quantity  > 0)
+      shortrows   <- which(trades$quantity  < 0)
+      flatrows    <- which(trades$quantity == 0)
+      flatdur     <- sum(trades[flatrows,'duration'])
+      longdur     <- sum(trades[longrows,'duration'])
+      shortdur    <- sum(trades[shortrows,'duration'])
+      lsratio     <- as.numeric(longdur)/as.numeric(shortdur)
       
-      # check flat duration of samples, does this belong in the while loop above?
-      # for the moment, these are merely informational, but might point to what needs changing
-      flatsamples  <- tdf[which(tdf$quantity == 0),]
-      flatduration <- sum(tdf$duration)
-      flatdiff     <- flatduration - attr(backtest.trades[[i]], 'flat.duration')
-      absflatdiff  <- abs(flatdiff)
-      flatmargin   <- structure(2 * attr(backtest.trades[[i]], 'flat.stddev'),units='secs',class='difftime')
-      if (absflatdiff < flatmargin) {
-        print('success! flat duration of replicate series within bounds')
-      } else {
-        # we'll need to do some resampling
-        if (flatdiff > flatmargin) {
-          #truncate
-          print(paste('need to truncate flat samples by ~', flatdiff - flatmargin, 'seconds'))
-        } else {
-          #need more samples
-          print(paste('need more flat samples by ~ ', flatdiff,'seconds'))
+      subsample <- function(svector, targetdur) {
+        #`trades` already exists in function scope 
+        
+        dur <- 0 # initialize duration counter
+        tdf <- data.frame() #initialize output data.frame
+        nsamples <- round(length(svector) * fudgefactor, 0)
+        while (dur < targetdur) {
+          s <- sample(svector, nsamples, replace = TRUE)
+          sdf <- data.frame(duration = trades[s,'duration'],
+                            quantity = trades[s,'quantity'])
+          if (is.null(tdf$duration)) {
+            tdf <- sdf
+          } else {
+            tdf <- rbind(tdf, sdf)
+          }
+          dur <- sum(tdf$duration)
+          nsamples <- round(((targetdur - dur) / avgdur) * fudgefactor, 0)
+          nsamples <- ifelse(nsamples == 0, 1, nsamples)
+          # print(nsamples) # for debugging
+          dur
         }
-      }
-      
-      # the row which takes our duration over the target
-      xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
-      if (xsrow == nrow(tdf)) {
-        # the last row sampled takes us over targetdur
-        adjxsrow <- sum(tdf$duration) - targetdur
-        tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
-      } else if (xsrow < nrow(tdf)) {
-        # the last iteration of the while loop added more than one row
-        # which took our duration over the target
-        tdf <- tdf[-seq.int(xsrow + 1, nrow(tdf), 1),]
-        adjxsrow <- sum(tdf$duration) - targetdur
-        tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
-      }
-      # build a vector of start times
-      # retrieve calendar duration of original backtest
-      actualdur <- attr(backtest.trades[[i]], 'calendar.duration')
-      num_overlaps <- ceiling(as.numeric(targetdur) / as.numeric(actualdur))
-      tl <- list()
-      xsrow2_count <- 0
-      for (j in 1:num_overlaps) {
-        if (j < num_overlaps) {
-          xsrow2 <- last(which(cumsum(as.numeric(tdf$duration)) < (actualdur) * j)) + 1
-        } else if (i == num_overlaps) {
-          xsrow2 <- length(tdf$duration)
-        }
-        if (xsrow2 == nrow(tdf)) {
+        # could truncate data frame here to correct total duration
+        # the row which takes our duration over the target
+        xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
+        if (xsrow == nrow(tdf)) {
           # the last row sampled takes us over targetdur
-          tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
-        } else if (xsrow2 < nrow(tdf)) {
+          adjxsrow <- sum(tdf$duration) - targetdur
+          tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
+        } else if (xsrow < nrow(tdf)) {
           # the last iteration of the while loop added more than one row
           # which took our duration over the target
-          if (xsrow2_count == 0) {
-            tl[[j]] <- tdf[-seq.int(xsrow2 + 1, nrow(tdf), 1),]
-          } else if (xsrow2_count > 0) {
-            tl[[j]] <- tdf[(sum(sapply(tl, nrow)) + 1):xsrow2,]
-          }
-          adjxsrow2 <- sum(tl[[j]]$duration) - actualdur
-          tl[[j]][xsrow2 - xsrow2_count, 1] <- tl[[j]]$duration[xsrow2 - xsrow2_count] - adjxsrow2
-          xsrow2_count = xsrow2
+          tdf <- tdf[-seq.int(xsrow + 1, nrow(tdf), 1), ]
+          adjxsrow <- sum(tdf$duration) - targetdur
+          tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
         }
-      }
-      start <- list()
-      tdf <- list()
-      for (k in 1:num_overlaps) {
-        start[[k]] <- first(backtest.trades[[i]]$start) + cumsum(as.numeric(tl[[k]]$duration))
-        # add the fist start time back in
-        start[[k]] <- c(first(backtest.trades[[i]]$start), start[[k]])
-        # take off the last end time, since we won't put in a closing trade
-        start[[k]] <- start[[k]][-length(start[[k]])]
-        tdf[[k]] <- cbind(start[[k]], tl[[k]])
-        #colnames(tdf[[k]][1]) <- 'start'
-      }
+        
+        tdf  # return target data frame
+      } # end subsample
+      
+      #sample long, short, flat periods
+      flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
+      longdf  <- subsample(svector = longrows, targetdur = longdur)
+      shortdf <- subsample(svector = shortrows, targetdur = shortdur)
+      
+      
+      # make the first layer
+      # 1. start with flat periods
+      firstlayer <- flatdf
+      # 2. segment trades for first layer
+      targetlongdur <- structure(round((calendardur-flatdur)*lsratio),units='secs',class='difftime')
+      targetlongrow <- last(which(cumsum(as.numeric(longdf$duration))<targetlongdur))
+      firstlayer    <- rbind(firstlayer,longdf[1:targetlongrow,])
+      targetshortrow<- last( which( cumsum(as.numeric(shortdf$duration))<(calendardur-sum(firstlayer$duration)) ) )
+      firstlayer    <- rbind(firstlayer,shortdf[1:targetshortrow,])
+      firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]       
+      # firstlayer should be just slightly longer than calendardur, we'll truncate later
+      # add extra layers
+      # how many layers do we need?
+      num_overlaps <- round(totaldur/as.numeric(calendardur))
+      # split by num_overlaps -1 
+      # now build the extra layers
+      
+      tdf <- firstlayer # FIXME wrong, only the first layer is done, but should compile 
 
+      # build a vector of start times
+      start <- first(trades$start) + cumsum(as.numeric(tdf$duration))
+      # add the first start time back in
+      start <- c(first(trades$start), start)
+      # take off the last end time, since we won't put in a closing trade
+      start <- start[-length(start)]
+      # add start column to tdf
+      tdf$start <- start
+      # rearrange columns for consistency
+      tdf <- tdf[, c("start", "duration", "quantity")]
       #return the data frame
       tdf
     } # end idexpr.wr
     
     # outer function over the symbols
     symsample.wr <- function(i) {
-      symreps <- replicate(n, idxexpr.wr(i), simplify = FALSE)
+      symreps <- replicate(n, tradesample.wr(trades=backtest.trades[[i]]), simplify = FALSE)
     }
     
     # now create the replication series
