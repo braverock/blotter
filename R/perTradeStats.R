@@ -188,8 +188,9 @@ perTradeStats <- function(Portfolio
            trades$End <- trades$End + 1
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
-           if(last(posPL)[,"Pos.Qty"] != 0)
-             trades$Start <- c(trades$Start, last(which(incrPos==TRUE)))
+           if(last(posPL)[,"Pos.Qty"] != 0){
+             trades$Start <- c(trades$Start,which(incrPos == TRUE)[first(which(which(incrPos == TRUE) > last(trades$Start)))])
+           }
          }
   ) # end round turn trade separation by tradeDef
 
