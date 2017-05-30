@@ -143,9 +143,10 @@ txnsim <- function(Portfolio,
   
     attr(txnsimdf,"calendar.duration") <- stratduration
     attr(txnsimdf,"trade.duration")    <- tradeduration
-    attr(txnsimdf,"flat.duration")     <- zeroduration
+    attr(txnsimdf,"flat.duration")     <- zeroduration 
     attr(txnsimdf,"flat.stddev")       <- zerostddev
     attr(txnsimdf,"first.start")       <- pt$Start[1]
+    attr(txnsimdf,"period")            <- attr(pt,'trade.periodicity')
     
     txnsimdf
   }
@@ -343,10 +344,8 @@ txnsim <- function(Portfolio,
       # add extra layers
       # how many layers do we need?
       num_overlaps <- round(totaldur/as.numeric(calendardur))
-      # split by num_overlaps -1 
-      # now build the extra layers
-      
-      tdf <- firstlayer # FIXME wrong, only the first layer is done, but should compile 
+
+      tdf <- firstlayer # establish target data.frame
 
       # build a vector of start times
       start <- first(trades$start) + cumsum(as.numeric(tdf$duration))
@@ -358,6 +357,40 @@ txnsim <- function(Portfolio,
       tdf$start <- start
       # rearrange columns for consistency
       tdf <- tdf[, c("start", "duration", "quantity")]
+      
+      ###########
+      # now build the extra layers
+      # further layers need to respect flat periods, and long/short.
+      # they can 'overlap' existing round turns, even sequential shorter round turns
+      # in many cases the layer one simulated portfolios may put multiple
+      # trades on in sequence, without intervening flat periods
+      
+      # construct the cumulative position
+      pos <- cumsum(tdf$quantity)
+      
+      # split remaining longs and shorts by num_overlaps -1  ?
+      
+      # construct series of random starts
+      period <- attr(trades,'period')
+      timeseq <- seq.POSIXt( from = attr(trades,"first.start")
+                           , to = period$end
+                           , by = period$units
+                           )
+      
+      shortrange <- (targetshortrow+1):nrow(shortdf)
+      nshort     <- length(shortrange)
+      longrange  <- (targetlongrow+1):nrow(longdf)
+      nlong      <- length(longrange)
+      
+      sh.samples <- replicate( n = num_overlaps-1
+                              ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
+      
+      # test them for long/short
+      # test them for duration
+      # push them around so they work with layering
+      # for the layers, we need to directly construct the start,quantity, duration format
+      # subsequent layers need to be on top of earlier layers, so keep them spearate
+      
       #return the data frame
       tdf
     } # end idexpr.wr

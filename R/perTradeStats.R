@@ -392,6 +392,9 @@ perTradeStats <- function(Portfolio
   #add duration
   trades$duration <- difftime(trades$End, trades$Start, units='secs') #for POSIXct compliance
   
+  #add periodicity
+  attr(trades, 'trade.periodicity') <- periodicity(posPL)
+  
   return(trades)
 } # end fn perTradeStats
 
