@@ -212,8 +212,7 @@ txnsim <- function(Portfolio,
           tdf <- rbind(tdf, sdf)
         }
         dur <- sum(tdf$duration)
-        nsamples <-
-          round(((targetdur - dur) / avgdur) * fudgefactor, 0)
+        nsamples <- round(((targetdur - dur) / avgdur) * fudgefactor, 0)
         nsamples <- ifelse(nsamples == 0, 1, nsamples)
         # print(nsamples) # for debugging
         dur
@@ -341,9 +340,6 @@ txnsim <- function(Portfolio,
       firstlayer    <- rbind(firstlayer,shortdf[1:targetshortrow,])
       firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]       
       # firstlayer should be just slightly longer than calendardur, we'll truncate later
-      # add extra layers
-      # how many layers do we need?
-      num_overlaps <- round(totaldur/as.numeric(calendardur))
 
       tdf <- firstlayer # establish target data.frame
 
@@ -364,36 +360,54 @@ txnsim <- function(Portfolio,
       # they can 'overlap' existing round turns, even sequential shorter round turns
       # in many cases the layer one simulated portfolios may put multiple
       # trades on in sequence, without intervening flat periods
+
+      # how many layers do we need?
+      num_overlaps <- round(totaldur/as.numeric(calendardur))
       
-      # construct the cumulative position
-      pos <- cumsum(tdf$quantity)
-      
-      # split remaining longs and shorts by num_overlaps -1  ?
-      
-      # construct series of random starts
-      period <- attr(trades,'period')
-      timeseq <- seq.POSIXt( from = attr(trades,"first.start")
-                           , to = period$end
-                           , by = period$units
-                           )
-      
-      shortrange <- (targetshortrow+1):nrow(shortdf)
-      nshort     <- length(shortrange)
-      longrange  <- (targetlongrow+1):nrow(longdf)
-      nlong      <- length(longrange)
-      
-      sh.samples <- replicate( n = num_overlaps-1
-                              ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
-      
-      # test them for long/short
-      # test them for duration
-      # push them around so they work with layering
-      # for the layers, we need to directly construct the start,quantity, duration format
-      # subsequent layers need to be on top of earlier layers, so keep them spearate
+      if(num_overlaps>1){
+
+        ###
+        #construct a frame of the first layer for reference
+        # construct the cumulative position
+        tmpdf <- tdf
+        tmpdf$pos <- cumsum(tdf$quantity)
+        # construct a vector of end times:
+        tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
+        tmpdf$lsi <- ifelse(tmpdf$pos>0, 1, ifelse(tmdf$pos<0,-1,0))
+        # split remaining longs and shorts by num_overlaps -1  ?
+        
+        # construct series of random starts
+        period <- attr(trades,'period')
+        timeseq <- seq.POSIXt( from = attr(trades,"first.start")
+                               , to = period$end
+                               , by = period$units
+        )
+        
+        shortrange <- (targetshortrow+1):nrow(shortdf)
+        nshort     <- length(shortrange)
+        longrange  <- (targetlongrow+1):nrow(longdf)
+        nlong      <- length(longrange)
+        
+        sh.samples <- replicate( n = num_overlaps-1
+                                 ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
+        
+        ln.samples <- replicate( n = num_overlaps-1
+                                 ,expr = sample(x = timeseq, size = nlong, replace = FALSE) )
+        
+        
+        # @TODO
+        # test the samples for long/short
+        # test the samples for duration
+        # push the samples around so they work with layering
+        # for the layers, we need to directly construct the start,quantity, duration format
+        # subsequent layers need to be on top of earlier layers, so keep them spearate
+        # ??? test for percentage of trades at each layer, and adjust accordingly ???
+        
+      }
       
       #return the data frame
       tdf
-    } # end idexpr.wr
+    } # end tradesample.wr inner fn
     
     # outer function over the symbols
     symsample.wr <- function(i) {
