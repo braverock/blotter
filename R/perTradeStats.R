@@ -165,27 +165,67 @@ perTradeStats <- function(Portfolio
            incrPosQty <- ifelse(diff(abs(posPL$Pos.Qty)) > 0, diff(abs(posPL$Pos.Qty)),0)
            incrPosQtyCum <- ifelse(incrPosQty[-1] == 0, 0, cumsum(incrPosQty[-1])) #subset for the leading NA
 
-           df <- cbind(incrPosCount, incrPosQty, incrPosQtyCum, decrPosCount, decrPosQty,  decrPosQtyCum)[-1]
-           names(df) <- c("incrPosCount", "incrPosQty", "incrPosQtyCum", "decrPosCount", "decrPosQty",  "decrPosQtyCum")
-
-           consol <- cbind(incrPosQtyCum,decrPosQtyCum)
-           names(consol)<-c('incrPosQtyCum','decrPosQtyCum')
-           consol$decrPosQtyCum<- -consol$decrPosQtyCum
-           consol$incrPosQtyCum[consol$incrPosQtyCum==0]<-NA
-           consol$decrPosQtyCum[consol$decrPosQtyCum==0]<-NA
-           idx <- findInterval(na.omit(consol$decrPosQtyCum),na.omit(consol$incrPosQtyCum))
-           #consol <- cbind(na.omit(consol$incrPosQtyCum), na.omit(consol$decrPosQtyCum), idx)
-           # populate trades list
-           idx <- idx[!is.na(idx)] # remove NAs from idx vector
-           idx <- idx[-length(idx)] # remove last element...see description ***TODO: add description with example dataset?
-           idx <- idx + 1 # +1 as findInterval() finds the lower bound of the range...see description ***TODO: add description with example dataset?
-           trades$Start[1] <- first(which(consol$incrPosQtyCum != "NA"))
-           trades$End <- which(consol$decrPosQtyCum != "NA")
-           trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
-
+           # df <- cbind(incrPosCount, incrPosQty, incrPosQtyCum, decrPosCount, decrPosQty,  decrPosQtyCum)[-1]
+           # names(df) <- c("incrPosCount", "incrPosQty", "incrPosQtyCum", "decrPosCount", "decrPosQty",  "decrPosQtyCum")
+           # 
+           # consol <- cbind(incrPosQtyCum,decrPosQtyCum)
+           # names(consol)<-c('incrPosQtyCum','decrPosQtyCum')
+           # consol$decrPosQtyCum<- -consol$decrPosQtyCum
+           # consol$incrPosQtyCum[consol$incrPosQtyCum==0]<-NA
+           # consol$decrPosQtyCum[consol$decrPosQtyCum==0]<-NA
+           # idx <- findInterval(na.omit(consol$decrPosQtyCum),na.omit(consol$incrPosQtyCum))
+           # #consol <- cbind(na.omit(consol$incrPosQtyCum), na.omit(consol$decrPosQtyCum), idx)
+           # # populate trades list
+           # idx <- idx[!is.na(idx)] # remove NAs from idx vector
+           # idx <- idx[-length(idx)] # remove last element...see description ***TODO: add description with example dataset?
+           # idx <- idx + 1 # +1 as findInterval() finds the lower bound of the range...see description ***TODO: add description with example dataset?
+           # trades$Start[1] <- first(which(consol$incrPosQtyCum != "NA"))
+           # trades$End <- which(consol$decrPosQtyCum != "NA")
+           # trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
+           # 
+           # # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
+           # trades$Start <- trades$Start + 1
+           # trades$End <- trades$End + 1
+           
+           ### NEW ###
+           # Calculate txn qty
+           txnqty <- rbind(incrPosQtyCum, abs(decrPosQtyCum))
+           txnqty <- txnqty[-which(txnqty == 0)]
+           txnqty <- rbind(xts(0,as.POSIXct("1950-01-01")),txnqty)
+           txnqty <- as.data.frame(txnqty)
+           txnqty <- txnqty[order(txnqty[,1]),]
+           txnqty <- diff(txnqty)
+           txnqty <- na.omit(txnqty)
+           
+           # Get start and end dates
+           starts <- incrPosQtyCum[-which(incrPosQtyCum==0)]
+           ends <- abs(decrPosQtyCum[-which(decrPosQtyCum==0)])
+           cumsum(txnqty) # let's investigate cumsum(txnqty)
+           end_idx <- findInterval(cumsum(txnqty), ends, left.open = TRUE) + 1 # can disregard last element as it relates to open trade
+           end_idx
+           start_idx <- findInterval(cumsum(txnqty), starts, left.open = TRUE) + 1 # can disregard last element as it relates to open trade
+           start_idx
+           
+           testdf <- data.frame(cbind(txnqty, cumsum(txnqty), start_idx, end_idx))
+           testdf$start_ts <- index(starts)[start_idx]
+           testdf$end_ts <- index(ends)[end_idx]
+           testdf <- testdf[-which(testdf$txnqty == 0),]
+           
+           # build trades$Start and trades$End in trades list
+           # iterating over testdf, for all txns that have an end date
+           # and are therefore round turn trades
+           for(i in 1:length(which(!is.na(testdf$end_ts)))){
+             trades$Start[i] <- which(index(incrPosQtyCum) == testdf$start_ts[i])
+             trades$End[i] <- which(index(decrPosQtyCum) == testdf$end_ts[i])
+           }
            # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
            trades$Start <- trades$Start + 1
            trades$End <- trades$End + 1
+           
+           # # for debugging, looking at AAPL
+           # transactions <- getTxns("bbands","AAPL") # for testing
+           # print(transactions)
+           # chart.Posn(Portfolio='bbands',Symbol="AAPL")
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
            if(last(posPL)[,"Pos.Qty"] != 0){
