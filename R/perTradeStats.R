@@ -289,8 +289,8 @@ perTradeStats <- function(Portfolio
     # initiating and ending quantities
     trades$Init.Qty[i] <- txn.qty[timespan][1]
     trades$End.Pos[i] <- Pos.Qty[n]
-    trades$Closing.Txn.Qty[i] <- Pos.Qty[n-1] - trades$End.Pos[i]
-    if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n]
+    trades$Closing.Txn.Qty[i] <- trades$End.Pos[i] - Pos.Qty[n-1]
+    if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n] * -1
 
     Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
 
