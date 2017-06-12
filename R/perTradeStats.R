@@ -165,29 +165,6 @@ perTradeStats <- function(Portfolio
            incrPosQty <- ifelse(diff(abs(posPL$Pos.Qty)) > 0, diff(abs(posPL$Pos.Qty)),0)
            incrPosQtyCum <- ifelse(incrPosQty[-1] == 0, 0, cumsum(incrPosQty[-1])) #subset for the leading NA
 
-           # df <- cbind(incrPosCount, incrPosQty, incrPosQtyCum, decrPosCount, decrPosQty,  decrPosQtyCum)[-1]
-           # names(df) <- c("incrPosCount", "incrPosQty", "incrPosQtyCum", "decrPosCount", "decrPosQty",  "decrPosQtyCum")
-           # 
-           # consol <- cbind(incrPosQtyCum,decrPosQtyCum)
-           # names(consol)<-c('incrPosQtyCum','decrPosQtyCum')
-           # consol$decrPosQtyCum<- -consol$decrPosQtyCum
-           # consol$incrPosQtyCum[consol$incrPosQtyCum==0]<-NA
-           # consol$decrPosQtyCum[consol$decrPosQtyCum==0]<-NA
-           # idx <- findInterval(na.omit(consol$decrPosQtyCum),na.omit(consol$incrPosQtyCum))
-           # #consol <- cbind(na.omit(consol$incrPosQtyCum), na.omit(consol$decrPosQtyCum), idx)
-           # # populate trades list
-           # idx <- idx[!is.na(idx)] # remove NAs from idx vector
-           # idx <- idx[-length(idx)] # remove last element...see description ***TODO: add description with example dataset?
-           # idx <- idx + 1 # +1 as findInterval() finds the lower bound of the range...see description ***TODO: add description with example dataset?
-           # trades$Start[1] <- first(which(consol$incrPosQtyCum != "NA"))
-           # trades$End <- which(consol$decrPosQtyCum != "NA")
-           # trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
-           # 
-           # # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
-           # trades$Start <- trades$Start + 1
-           # trades$End <- trades$End + 1
-           
-           ### NEW ###
            # Calculate txn qty
            txnqty <- rbind(incrPosQtyCum, abs(decrPosQtyCum))
            txnqty <- txnqty[-which(txnqty == 0)]
@@ -302,8 +279,8 @@ perTradeStats <- function(Portfolio
              Cum.PL   <- cumsum(trade[,"Net.Trading.PL"])
            },
            flat.to.reduced = {
-             prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i] #not precisely correct
-             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # this won't reconcile for flat.to.reduced 
+             prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]) #not precisely correct
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # this won't reconcile for flat.to.reduced 
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
@@ -312,11 +289,11 @@ perTradeStats <- function(Portfolio
              trade.PL <- trade[n,"Period.Realized.PL"]
              fees     <- sum(trade[,'Txn.Fees']) * prorata
              trade.PL <- trade.PL + fees 
-             Cum.PL   <- (cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL']) + trade[,'Txn.Fees']) * ts.prop
+             Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
            },
            increased.to.reduced = {
-             prorata  <- trades$Closing.Txn.Qty[i] / trades$Init.Qty[i]  
-             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # correct for this method 
+             prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # correct for this method 
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
