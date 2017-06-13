@@ -284,7 +284,11 @@ perTradeStats <- function(Portfolio
              } else {
                ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
              }
-             trade.PL <- trade[n,"Period.Realized.PL"]
+             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0){
+               trade.PL <- 0
+             } else {
+               trade.PL <- trade[n,"Period.Realized.PL"]
+             }
              fees     <- sum(trade[,'Txn.Fees']) * prorata
              trade.PL <- trade.PL + fees 
              Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
