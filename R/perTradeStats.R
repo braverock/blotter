@@ -198,26 +198,24 @@ perTradeStats <- function(Portfolio
            # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
            trades$Start <- trades$Start + 1
            trades$End <- trades$End + 1
-           
-           # # for debugging, looking at AAPL
-           # transactions <- getTxns("bbands","AAPL") # for testing
-           # print(transactions)
-           # chart.Posn(Portfolio='bbands',Symbol="AAPL")
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
-           if(last(posPL)[,"Pos.Qty"] != 0){
-             trades$Start <- c(trades$Start,which(incrPos == TRUE)[first(which(which(incrPos == TRUE) > last(trades$Start)))])
+           if(any(is.na(testdf$end_ts))){
+             trades$Start <- c(trades$Start,which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))]))
            }
          }
   ) # end round turn trade separation by tradeDef
 
   # if the last trade is still open, adjust depending on whether we want open trades or not
-  if(length(trades$Start)>length(trades$End))
+  if(last(posPL)[,"Pos.Qty"] != 0)
   {
     if(includeOpenTrade)
       trades$End <- c(trades$End,nrow(posPL))
     else
       trades$Start <- head(trades$Start, -1)
+  }
+  if(length(trades$Start)!=length(trades$End)){
+    trades$Start[(length(trades$Start)+1):length(trades$End)] <- last(trades$Start)
   }
   
   # check for an open trade that starts on the last observation, remove
