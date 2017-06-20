@@ -346,7 +346,8 @@ perTradeStats <- function(Portfolio
     
     #include unrealized P&L for open position, if necessary
     if(i==N && trades$Net.Trading.PL[i]==0 && includeOpenTrade){ 
-      trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL']) 
+      #trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL'])
+      trades$Net.Trading.PL[i] <- sum(posPL$Net.Trading.PL) - sum(posPL$Period.Realized.PL)
     }
     
     # cash MAE/MFE
