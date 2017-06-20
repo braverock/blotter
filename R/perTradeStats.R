@@ -219,7 +219,9 @@ perTradeStats <- function(Portfolio
   }
   
   # check for an open trade that starts on the last observation, remove
+  last.trade.is.open <- FALSE
   if(last(trades$End)==last(trades$Start)){
+    last.trade.is.open <- TRUE
     trades$End <- trades$End[-length(trades$End)]
     trades$Start <- trades$Start[-length(trades$Start)]
   }
@@ -262,10 +264,16 @@ perTradeStats <- function(Portfolio
     trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
 
     # initiating and ending quantities
-    trades$Init.Qty[i] <- txn.qty[timespan][1]
     trades$End.Pos[i] <- Pos.Qty[n]
+    #trades$Init.Qty[i] <- txn.qty[timespan][1]
+    if(tradeDef == "flat.to.flat" || tradeDef == "flat.to.reduced"){
+    trades$Init.Qty[i] <- txn.qty[timespan][1]
     trades$Closing.Txn.Qty[i] <- trades$End.Pos[i] - Pos.Qty[n-1]
     if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n] * -1
+    } else if(tradeDef == "increased.to.reduced"){
+      trades$Init.Qty[i] <- testdf$txnqty[i] * sign(txn.qty[timespan][1])
+      trades$Closing.Txn.Qty[i] <- trades$Init.Qty[i] * -1
+    }
 
     Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
 
@@ -284,7 +292,7 @@ perTradeStats <- function(Portfolio
              } else {
                ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
              }
-             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0){
+             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
              } else {
                trade.PL <- trade[n,"Period.Realized.PL"]
@@ -301,7 +309,14 @@ perTradeStats <- function(Portfolio
              } else {
                ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
              }
-             trade.PL <- trade[n,"Period.Realized.PL"]
+             #trade.PL <- trade[n,"Period.Realized.PL"]
+             if(trade[n,'Pos.Qty'] == 0) { # Pos.Avg.Cost will be zero on this row, so get the avg cost from the previous row
+               avg.cost <- coredata(trade[n-1,'Pos.Avg.Cost'])
+             } else {
+               avg.cost <- coredata(trade[n,'Pos.Avg.Cost'])
+             }
+             tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
+             trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - avg.cost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
@@ -310,7 +325,7 @@ perTradeStats <- function(Portfolio
              # scale opening trade fees to correct proportion
              trade$Txn.Fees[1] <- trade[1,'Txn.Fees'] * prorata 
              # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
-             # numers for Period.Realized.PL and Txn.Fees, but need to take prorata
+             # numbers for Period.Realized.PL and Txn.Fees, but need to take prorata
              # for unrealized P&L
              Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
            }
