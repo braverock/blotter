@@ -316,7 +316,11 @@ perTradeStats <- function(Portfolio
                avg.cost <- coredata(trade[n,'Pos.Avg.Cost'])
              }
              tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
-             trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - avg.cost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
+             if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
+               trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - avg.cost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
+             } else {
+               trade.PL <- 0
+             }
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
