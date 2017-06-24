@@ -86,6 +86,7 @@
 #'      \item{Init.Pos}{ position held after the initiating transaction of the round turn trade}
 #'      \item{Max.Pos}{the maximum (largest) position held during the open trade}
 #'      \item{End.Pos}{ the remaining quantity held after closing the trade}
+#'      \item{Closing.Txn.Qty}{ the transaction quantity which closes the round turn trade }
 #'      \item{Num.Txns}{ the number of transactions included in this trade}
 #'      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
 #'      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
