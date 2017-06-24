@@ -291,7 +291,8 @@ perTradeStats <- function(Portfolio
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted
+               ts.prop[n] <- ts.prop[n-1]
              }
              if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
@@ -308,7 +309,8 @@ perTradeStats <- function(Portfolio
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+               ts.prop[n] <- ts.prop[n-1]
              }
              #trade.PL <- trade[n,"Period.Realized.PL"]
              if(trade[n,'Pos.Qty'] == 0) { # Pos.Avg.Cost will be zero on this row, so get the avg cost from the previous row
