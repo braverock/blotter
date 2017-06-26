@@ -312,15 +312,11 @@ perTradeStats <- function(Portfolio
                # ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
                ts.prop[n] <- ts.prop[n-1]
              }
-             #trade.PL <- trade[n,"Period.Realized.PL"]
-             if(trade[n,'Pos.Qty'] == 0) { # Pos.Avg.Cost will be zero on this row, so get the avg cost from the previous row
-               avg.cost <- coredata(trade[n-1,'Pos.Avg.Cost'])
-             } else {
-               avg.cost <- coredata(trade[n,'Pos.Avg.Cost'])
-             }
              tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
+             gettxns <- getTxns(portfolio.st, Symbol)
+             tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])])
              if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
-               trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - avg.cost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
+               trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - tradecost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
              } else {
                trade.PL <- 0
              }
