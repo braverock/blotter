@@ -49,7 +49,6 @@
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
 #' @param tradeDef string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}
-#' @param update boolean indicating whether to call \code{\link{updatePortf}} on the simulated portfolios, default TRUE
 #' @param \dots any other passthrough parameters
 #'
 #' @return a list object of class 'txnsim' containing:
@@ -57,7 +56,8 @@
 #'   \item{\code{backtest.trades}:}{list by symbol containing trade start, quantity, duration from the original backtest}
 #'   \item{\code{replicates}:}{a list by symbol containing all the resampled start,quantity, duration time series replicates}
 #'   \item{\code{transactions}:}{a list by symbol for each replicate of the Txn object passed to \code{\link{addTxns}}}
-#'   \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
+#'   \item{\code{cumpl}:}{an \code{xts} object containing the cumulative P&L of each replicate portfolio}
+#'   \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
 #'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
 #'   \item{\code{call}:}{an object of type \code{call} that contains the \code{txnsim} call}
 #' }
@@ -95,7 +95,7 @@
 #'   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
 #'   lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE)
 #'
-#'   require('quantstrat')
+#'   require('quantstrat') #sorry for the circular dependency
 #'   demo('rsi',ask=FALSE)
 #'   rsi.nr <- ex.txnsim('RSI',n, replacement = FALSE)
 #'   rsi.wr <- ex.txnsim('RSI',n, replacement = TRUE)
@@ -107,7 +107,6 @@ txnsim <- function(Portfolio,
                    n = 10,
                    replacement = TRUE,
                    tradeDef = "flat.to.flat",
-                   update = TRUE,
                    ...) {
   # store the random seed for replication, if needed
   seed <- .GlobalEnv$.Random.seed
@@ -430,11 +429,11 @@ txnsim <- function(Portfolio,
   
   ####################
   # Generate Transactions
-  
+  portnames <- txnsim.portnames(Portfolio, replacement, n=length(reps[[1]]))
   # create portfolios
   for (i in seq_along(reps[[1]])) {
     # name the simulated portfolio
-    simport <- paste("txnsim", Portfolio, i, sep = ".")
+    simport <- portnames[i]
     # remove portfolio if it exists, we need to overwrite it anyway
     suppressWarnings(rm(list = paste0("portfolio.", simport), envir = .blotter))
     # generate portfolio
@@ -449,7 +448,7 @@ txnsim <- function(Portfolio,
   
   # this will be called by lapply over the list of replicates for a
   txnsimtxns <- function (i, symbol = symbol, ...) {
-    simport <- paste("txnsim", Portfolio, i, sep = ".")
+    simport <- portnames[i]
     #print(paste(simport,symbol))
     dargs <- list(...)
     if (!is.null(dargs$env))
@@ -461,8 +460,7 @@ txnsim <- function(Portfolio,
     else
       prefer <- NULL
     
-    prices <- getPrice(get(symbol, pos = env),
-                       prefer = prefer)[, 1]
+    prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
     
     # the rep list has a start, duration, quantity in each row
     # we'll loop by row over that object to create an object for addTxns
@@ -477,8 +475,7 @@ txnsim <- function(Portfolio,
       txns <- list()
       df <- dflist[[li]]
       #df <- df[which(df$quantity != 0),] # remove zero quantity trades
-      df <-
-        df[which(df$duration != 0), ] # remove zero duration trades
+      df <- df[which(df$duration != 0), ] # remove zero duration trades
       for (r in 1:nrow(df)) {
         # opening trade
         open  <- data.frame(
@@ -497,8 +494,7 @@ txnsim <- function(Portfolio,
       } # end loop over rows
       # we now have a list of transactions, turn them into an xts object
       txns <- do.call(rbind, txns)
-      txns <-
-        xts(txns[, c("TxnQty", "TxnPrice")], order.by = txns[, 1])
+      txns <- xts(txns[, c("TxnQty", "TxnPrice")], order.by = txns[, 1])
       txns <- txns[which(txns$TxnQty != 0), ]
       txnlist[[li]] <- txns
     }
@@ -511,22 +507,33 @@ txnsim <- function(Portfolio,
   
   # loop over symbols in each replicate
   for (symbol in symbols) {
-    ltxn <-
-      lapply(1:length(reps[[symbol]]), txnsimtxns, symbol = symbol)
+    ltxn <- lapply(1:length(reps[[symbol]]), txnsimtxns, symbol = symbol)
   } # end loop over symbols in replicate
-  
+
+  cumpl<-NULL  
   for (i in seq_along(reps[[1]])) {
     # update the simulated portfolio
-    simport <- paste("txnsim", Portfolio, i, sep = ".")
-    if (isTRUE(update))
-      updatePortf(Portfolio = simport, ...)
+    p <- portnames[i]
+    updatePortf(Portfolio = p, ...)
+    # construct the cumulative P&L slot
+    if (is.null(cumpl)) {
+      cumpl <- cumsum(.getPortfolio(p)$summary$Net.Trading.PL[-1])
+    } else {
+      cumpl <- cbind(cumpl, cumsum(getPortfolio(p)$summary$Net.Trading.PL[-1]))
+    }
   }
-  
+  colnames(cumpl) <- portnames
+  cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
+  backtestpl <- cumsum(.getPortfolio(Portfolio)$summary$Net.Trading.PL[-1])
+  colnames(backtestpl) <- Portfolio
+  cumpl <- cbind(backtestpl,cumpl)
+    
   # generate the return object
   ret <- list(
     replicates = reps,
     transactions = ltxn,
     backtest.trades = backtest.trades,
+    cumpl = cumpl,
     initeq = initEq,
     seed = seed,
     call = match.call()
@@ -535,6 +542,29 @@ txnsim <- function(Portfolio,
   ret
 } # end txnsim fn
 
+
+#' helper function for generating txnsim portfolio names
+#'
+#' called internally by txnsim and other txnsim generics to generate list 
+#' of portfolios to/which hold the replcates
+#' 
+#' @param Portfolio root portfolio string name
+#' @param replacement boolean
+#' @param n number of replicate numbers
+#'
+#' @return character vector of portfolio names
+txnsim.portnames <- function(Portfolio, replacement, n) {
+  # name portfolios
+  if (isTRUE(replacement)) {
+    rpcstr <- 'wr'
+  } else {
+    rpcstr <- 'nr'
+  }
+  i <- 1:n
+  # NOTE we may still want to clean out existing portfolios, 
+  # or allow some other naming options
+  portnames <- paste("txnsim", rpcstr, Portfolio, i, sep = ".")
+}
 
 #' plot method for objects of type 'txnsim'
 #'
@@ -547,41 +577,36 @@ txnsim <- function(Portfolio,
 plot.txnsim <- function(x, y, ...) {
   n <- x$call$n
   port <- x$call$Portfolio
-  cumpl <- NULL
-  for (i in 1:n) {
-    p <- paste('txnsim', port, i, sep = '.')
-    if (!is.null(cumpl)) {
-      cumpl <-
-        cbind(cumpl, cumsum(getPortfolio(p)$summary$Net.Trading.PL[-1]))
-      colnames(cumpl) <-
-        c(colnames(cumpl)[-length(colnames(cumpl))], p)
-    } else {
-      cumpl <- cumsum(.getPortfolio(p)$summary$Net.Trading.PL[-1])
-      colnames(cumpl) <- p
-    }
-  }
-  cumpl <-
-    cumpl[-which(complete.cases(cumpl) == FALSE)] # subset away rows with NA
+  rpc <- x$call$replacement
+  cumpl <- x$cumpl
+
+  portnames <- txnsim.portnames(Portfolio=port, replacement=rpc , n=n)
+
+  backtestpl <- cumpl[,1]
   
-  backtestpl <-
-    cumsum(.getPortfolio(port)$summary$Net.Trading.PL[-1])
-  colnames(backtestpl) <- port
-  
-  pt <- plot.xts(
-    cumpl
-    ,
-    col = "lightgray"
-    ,
-    main = paste(port, 'simulation cumulative P&L')
-    ,
-    grid.ticks.on = 'years'
-  )
-  pt <-
-    lines(cumsum(.getPortfolio(port)$summary$Net.Trading.PL[-1]), col = "red")
+  #TODO FIXME make grid.ticks.on smarter based on periodicity
+  pt <- plot.xts(  cumpl
+                 , col = "lightgray"
+                 , main = paste(port, 'simulation cumulative P&L')
+                 , grid.ticks.on = 'years'
+                )
+  pt <- lines(backtestpl, col = "red")
   print(pt)
   
-  cumpl <- cbind(backtestpl, cumpl)
   invisible(cumpl)
+}
+
+#' quantile method for objects of type \code{txnsim}
+#'
+#' @param x object of type 'txnsim' to produce replicate quantiles
+#' @param \dots any other passthrough parameters to \code{\link{quantile}}
+#' @author Jasen Mackie, Brian G. Peterson
+#'
+#' @export
+quantile.txnsim <- function(x, ...) {
+  ret <- x$cumpl
+  q   <- quantile(ret)
+  q
 }
 
 ###############################################################################

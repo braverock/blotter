@@ -1,9 +1,8 @@
 Package: blotter
 Type: Package
-Title: Tools for Transaction-Oriented Trading Systems
-    Development
-Version: 0.11.6
-Date: 2017-05-30 $Date$
+Title: Tools for Transaction-Oriented Trading Systems Development
+Version: 0.11.7
+Date: 2017-06-25 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Daniel Cegielka [ctb],
@@ -25,7 +24,7 @@ Description: Transaction infrastructure for defining
 License: GPL-3
 LazyLoad: yes
 Depends:
-    R (>= 2.15),
+    R (>= 3.0.0),
     xts (>= 0.10-0),
     FinancialInstrument(>= 0.6.3),
     PerformanceAnalytics,

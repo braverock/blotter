@@ -5,7 +5,7 @@
 \title{Monte Carlo analysis of transactions}
 \usage{
 txnsim(Portfolio, n = 10, replacement = TRUE, tradeDef = "flat.to.flat",
-  update = TRUE, ...)
+  ...)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}
@@ -16,8 +16,6 @@ txnsim(Portfolio, n = 10, replacement = TRUE, tradeDef = "flat.to.flat",
 
 \item{tradeDef}{string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}}
 
-\item{update}{boolean indicating whether to call \code{\link{updatePortf}} on the simulated portfolios, default TRUE}
-
 \item{\dots}{any other passthrough parameters}
 }
 \value{
@@ -26,7 +24,8 @@ a list object of class 'txnsim' containing:
   \item{\code{backtest.trades}:}{list by symbol containing trade start, quantity, duration from the original backtest}
   \item{\code{replicates}:}{a list by symbol containing all the resampled start,quantity, duration time series replicates}
   \item{\code{transactions}:}{a list by symbol for each replicate of the Txn object passed to \code{\link{addTxns}}}
-  \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
+  \item{\code{cumpl}:}{an \code{xts} object containing the cumulative P&L of each replicate portfolio}
+  \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
   \item{\code{call}:}{an object of type \code{call} that contains the \code{txnsim} call}
 }
@@ -105,7 +104,7 @@ fully as well.
   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
   lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE)
 
-  require('quantstrat')
+  require('quantstrat') #sorry for the circular dependency
   demo('rsi',ask=FALSE)
   rsi.nr <- ex.txnsim('RSI',n, replacement = FALSE)
   rsi.wr <- ex.txnsim('RSI',n, replacement = TRUE)
