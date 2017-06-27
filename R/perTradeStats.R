@@ -304,17 +304,27 @@ perTradeStats <- function(Portfolio
              Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
            },
            increased.to.reduced = {
-             prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
-             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # correct for this method 
+             tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty'])) # used in computing trade.PL
+             gettxns <- getTxns(portfolio.st, Symbol) # used in computing trade.cost
+             tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
+             # prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
+             if(abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]) < 1) { # closing qty less than init.pos, incl full realized.pl
+               prorata <- 1
+               } else {
+                 prorata <- (abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]))^(-1)
+                   }
+             #prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]) # slightly different implementation compared with flat.to.reduced
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # slightly different implementation compared with flat.to.reduced
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted
                ts.prop[n] <- ts.prop[n-1]
              }
-             tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
-             gettxns <- getTxns(portfolio.st, Symbol)
-             tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])])
+             # tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
+             # gettxns <- getTxns(portfolio.st, Symbol)
+             # tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])])
+             ts.prop[is.infinite(ts.prop)] <- 0 # once a position is closed out to flat, dividing by 0 gives an infinite number so we zero it out as there should be no
              if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
                trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - tradecost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
              } else {
@@ -330,7 +340,7 @@ perTradeStats <- function(Portfolio
              # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
              # numbers for Period.Realized.PL and Txn.Fees, but need to take prorata
              # for unrealized P&L
-             Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
+             Cum.PL   <- cumsum(trade[,'Period.Realized.PL']*prorata + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
            }
     )
 
