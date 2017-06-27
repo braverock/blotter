@@ -305,13 +305,16 @@ perTradeStats <- function(Portfolio
            },
            increased.to.reduced = {
              tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty'])) # used in computing trade.PL
-             gettxns <- getTxns(portfolio.st, Symbol) # used in computing trade.cost
+             gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
+             if(index(trade[nrow(trade),]) %in% index(gettxns)){
+             closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
+             }
              tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
              # prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
-             if(abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]) < 1) { # closing qty less than init.pos, incl full realized.pl
+             if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
                prorata <- 1
                } else {
-                 prorata <- (abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]))^(-1)
+                 prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
                    }
              #prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]) # slightly different implementation compared with flat.to.reduced
              ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # slightly different implementation compared with flat.to.reduced
@@ -321,15 +324,17 @@ perTradeStats <- function(Portfolio
                # ts.prop[n] <- 0 # no unrealized PL for last observation is counted
                ts.prop[n] <- ts.prop[n-1]
              }
-             # tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))
-             # gettxns <- getTxns(portfolio.st, Symbol)
-             # tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])])
-             ts.prop[is.infinite(ts.prop)] <- 0 # once a position is closed out to flat, dividing by 0 gives an infinite number so we zero it out as there should be no
-             if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
-               trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - tradecost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
-             } else {
+             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
+             } else {
+               trade.PL <- trade[n,"Period.Realized.PL"]*prorata
              }
+             ts.prop[is.infinite(ts.prop)] <- 0 # once a position is closed out to flat, dividing by 0 gives an infinite number so we zero it out as there should be no
+             # if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
+             #   trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - tradecost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
+             # } else {
+             #   trade.PL <- 0
+             # }
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
@@ -357,6 +362,7 @@ perTradeStats <- function(Portfolio
     if(i==N && trades$Net.Trading.PL[i]==0 && includeOpenTrade){ 
       #trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL'])
       trades$Net.Trading.PL[i] <- sum(posPL$Net.Trading.PL) - sum(posPL$Period.Realized.PL)
+      #trades$Net.Trading.PL[i] <- sum(posPL$Net.Trading.PL) - sum(trades$Net.Trading.PL) # balancing final inclOpenTrade round turn PL
     }
     
     # cash MAE/MFE
