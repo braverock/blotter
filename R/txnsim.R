@@ -372,7 +372,7 @@ txnsim <- function(Portfolio,
         tmpdf$pos <- cumsum(tdf$quantity)
         # construct a vector of end times:
         tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
-        tmpdf$lsi <- ifelse(tmpdf$pos>0, 1, ifelse(tmdf$pos<0,-1,0))
+        tmpdf$lsi <- ifelse(tmpdf$pos>0, 1, ifelse(tmpdf$pos<0,-1,0))
         # split remaining longs and shorts by num_overlaps -1  ?
         
         # construct series of random starts

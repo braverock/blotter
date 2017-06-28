@@ -307,15 +307,15 @@ perTradeStats <- function(Portfolio
              tradeqty <- (coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty'])) # used in computing trade.PL
              gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
              if(index(trade[nrow(trade),]) %in% index(gettxns)){
-             closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
+               closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
              }
              tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
              # prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
              if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
                prorata <- 1
-               } else {
-                 prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
-                   }
+             } else {
+               prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
+             }
              #prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Pos[i]) # slightly different implementation compared with flat.to.reduced
              ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # slightly different implementation compared with flat.to.reduced
              if(i==N && includeOpenTrade){ 
@@ -349,6 +349,9 @@ perTradeStats <- function(Portfolio
            }
     )
 
+    # scale cost basis based on how much of the Txn.Value should be used for this round turn
+    Pos.Cost.Basis <- Pos.Cost.Basis * prorata
+    
     # count number of transactions
     trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
 
