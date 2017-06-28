@@ -322,8 +322,8 @@ perTradeStats <- function(Portfolio
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted
-               ts.prop[n] <- ts.prop[n-1]
+                ts.prop[n] <- 0 # no unrealized PL for last observation is counted
+               #ts.prop[n] <- ts.prop[n-1]
              }
              if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
@@ -346,7 +346,8 @@ perTradeStats <- function(Portfolio
              # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
              # numbers for Period.Realized.PL and Txn.Fees, but need to take prorata
              # for unrealized P&L
-             Cum.PL   <- cumsum((trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop))*prorata) + trade[,'Txn.Fees']
+             #Cum.PL   <- cumsum((trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop))*prorata) + trade[,'Txn.Fees']
+             Cum.PL   <- cumsum(trade[n,'Period.Realized.PL']) + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
              colnames(Cum.PL) <- 'Cum.PL'
            }
     )
@@ -377,7 +378,8 @@ perTradeStats <- function(Portfolio
     # percentage P&L
     Pct.PL <- Cum.PL/abs(trades$Max.Notional.Cost[i])
 
-    trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
+    if(nrow(Pct.PL)>1){trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]}
+    if(nrow(Pct.PL)==1){trades$Pct.Net.Trading.PL[i] <- Pct.PL}
     trades$Pct.MAE[i] <- min(0,trades$MAE[i]/abs(trades$Max.Notional.Cost[i]))
     trades$Pct.MFE[i] <- max(0,trades$MFE[i]/abs(trades$Max.Notional.Cost[i]))
 
@@ -385,7 +387,8 @@ perTradeStats <- function(Portfolio
     # Net.Trading.PL/position/tick value = ticks
     Tick.PL <- Cum.PL/abs(trades$Max.Pos[i])/tick_value
 
-    trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
+    if(nrow(Tick.PL)>1){trades$tick.Net.Trading.PL[i] <- Tick.PL[n]}
+    if(nrow(Tick.PL)==1){trades$tick.Net.Trading.PL[i] <- Tick.PL}
     trades$tick.MAE[i] <- min(0,trades$MAE[i]/tick_value)
     trades$tick.MFE[i] <- max(0,trades$MFE[i]/tick_value)
   }
