@@ -286,13 +286,12 @@ perTradeStats <- function(Portfolio
              Cum.PL   <- cumsum(trade[,"Net.Trading.PL"])
            },
            flat.to.reduced = {
-             prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]) #not precisely correct
-             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # this won't reconcile for flat.to.reduced 
+             prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]) #not precisely correct?
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) 
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               # ts.prop[n] <- 0 # no unrealized PL for last observation is counted
-               ts.prop[n] <- ts.prop[n-1]
+                ts.prop[n] <- 0 # no unrealized PL for last observation is counted
              }
              if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
@@ -310,20 +309,18 @@ perTradeStats <- function(Portfolio
                closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
              }
              tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
-             # prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Init.Qty[i])  
              if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
                prorata <- 1
              } else {
                prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
              }
-             # calculate trade size as proportion of total position size
+             # calculate trade size as proportion of total position size (ts.prop)
              ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # slightly different implementation compared with flat.to.reduced for trade size proportion
              colnames(ts.prop) <- 'ts.prop'
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
                 ts.prop[n] <- 0 # no unrealized PL for last observation is counted
-               #ts.prop[n] <- ts.prop[n-1]
              }
              if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
                trade.PL <- 0
@@ -331,11 +328,7 @@ perTradeStats <- function(Portfolio
                trade.PL <- trade[n,"Period.Realized.PL"]*prorata
              }
              ts.prop[is.infinite(ts.prop)] <- 0 # once a position is closed out to flat, dividing by 0 gives an infinite number so we zero it out as there should be no
-             # if(trade[n,'Txn.Value'] != 0){ # ie. there was a closing txn at this timestamp
-             #   trade.PL <- (abs(trade[n,'Txn.Value']/tradeqty) - tradecost) * (trades$Closing.Txn.Qty[i]) * -1 # compute realized PL from the price, avg cost and closing qty data directly
-             # } else {
-             #   trade.PL <- 0
-             # }
+
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
@@ -343,11 +336,10 @@ perTradeStats <- function(Portfolio
              trade$Txn.Fees[2:(n-1)] <- 0 
              # scale opening trade fees to correct proportion
              trade$Txn.Fees[1] <- trade[1,'Txn.Fees'] * prorata 
-             # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
+             # for cumulative P&L for increased.to.reduced/acfifo, we have precise
              # numbers for Period.Realized.PL and Txn.Fees, but need to take prorata
              # for unrealized P&L
-             #Cum.PL   <- cumsum((trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop))*prorata) + trade[,'Txn.Fees']
-             Cum.PL   <- cumsum(trade[n,'Period.Realized.PL']) + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
+             Cum.PL   <- cumsum(trade[n,'Period.Realized.PL'])*prorata + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
              colnames(Cum.PL) <- 'Cum.PL'
            }
     )
