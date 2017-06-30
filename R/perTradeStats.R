@@ -314,6 +314,7 @@ perTradeStats <- function(Portfolio
              #Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
              Cum.PL   <- merge(trade[n,'Period.Realized.PL']*prorata, cumsum(trade[,'Period.Unrealized.PL']*ts.prop), trade[,'Txn.Fees'])
              Cum.PL[is.na(Cum.PL)] <- 0
+             Cum.PL[n,2] <- 0
              Cum.PL <- rowSums(Cum.PL)
              #colnames(Cum.PL) <- 'Cum.PL'
            },
@@ -357,6 +358,7 @@ perTradeStats <- function(Portfolio
              #Cum.PL   <- cumsum(trade[n,'Period.Realized.PL'])*prorata + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
              Cum.PL   <- merge(trade[n,'Period.Realized.PL']*prorata, cumsum(trade[,'Period.Unrealized.PL']*ts.prop), trade[,'Txn.Fees'])
              Cum.PL[is.na(Cum.PL)] <- 0
+             Cum.PL[n,2] <- 0
              Cum.PL <- rowSums(Cum.PL)
              #colnames(Cum.PL) <- 'Cum.PL'
            }
