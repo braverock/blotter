@@ -1,16 +1,21 @@
-#' Monte Carlo analysis of transactions
+#' Monte Carlo analysis of round turn trades
 #'
 #' Running simulations with similar properties as the backtest or production
 #' portfolio may allow the analyst to evaluate the distribution of returns
-#' possible with similat trading approaches and evaluate skill versus luck or
+#' possible with similar trading approaches and evaluate skill versus luck or
 #' overfitting.
 #'
 #' @details
 #'
-#' If \code{update=TRUE} (the default), the user may wish to pass \code{Interval}
-#' in dots to mark the portfolio at a different frequency than the market data,
-#' especially for intraday market data.  Note that market data must be available
-#' to call \code{\link{updatePortf}} on.
+#' Statisticians talk about the 'stylized facts' of a data set.  If you consider
+#' the stylized facts of a series of transactions that are the output of a 
+#' discretionary or systematic trading strategy, it should be clear that there 
+#' is a lot of information available to work with.  Initial analysis such as 
+#' \code{\link{tradeStats}} and \code{\link{perTradeStats}} can describe the 
+#' results of the series of transactions which resulted from the trading 
+#' strategy.  What else can we learn from these transactions regarding trading 
+#' style or the skill of the trader? \code{txnsim} seeks to conduct a simulation
+#' over the properties of sampled round turn trades to help evaluate this.
 #' 
 #' With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging 
 #' quantity and duration of round turns.  This may be enough for a strategy that
@@ -32,11 +37,11 @@
 #' short periods, and long periods, and then these samples are interleaved and 
 #' layered to construct the random strategy.  The overall goal is to construct a 
 #' random strategy that preserves as many of the stylized facts (or style) of
-#' the observed strtaegy as possible, while demonstrating no skill.  The round 
+#' the observed strategy as possible, while demonstrating no skill.  The round 
 #' turn trades of the random replicate strategies, while outwardly resembling 
-#' the original strategy in summaryt time series statstis, are the result of 
+#' the original strategy in summary time series statistics, are the result of 
 #' random combinations of observed features taking place at random times in the
-#' observed time period.
+#' tested time period.
 #' 
 #' It should be noted that the first opened trade of the observed series and the
 #' replicates will take place at the same time.  Quantity and duration may differ,
@@ -45,6 +50,11 @@
 #' short amount of duration to the replicates to randomize the first entry more
 #' fully as well.
 #'  
+#' The user may wish to pass \code{Interval} in dots to mark the portfolio at a
+#' different frequency than the market data, especially for intraday market
+#' data.  Note that market data must be available to call
+#' \code{\link{updatePortf}} on.
+#' 
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
@@ -53,9 +63,9 @@
 #'
 #' @return a list object of class 'txnsim' containing:
 #' \itemize{
-#'   \item{\code{backtest.trades}:}{list by symbol containing trade start, quantity, duration from the original backtest}
 #'   \item{\code{replicates}:}{a list by symbol containing all the resampled start,quantity, duration time series replicates}
 #'   \item{\code{transactions}:}{a list by symbol for each replicate of the Txn object passed to \code{\link{addTxns}}}
+#'   \item{\code{backtest.trades}:}{list by symbol containing trade start, quantity, duration from the original backtest}
 #'   \item{\code{cumpl}:}{an \code{xts} object containing the cumulative P&L of each replicate portfolio}
 #'   \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
 #'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
@@ -66,11 +76,32 @@
 #' Slots \code{replicates},\code{transactions}, and \code{call} are likely
 #' to exist in all future versions of this function, but other slots may be added
 #' and removed as \code{S3method}'s are developed.
-#'
+#' 
+#' The \code{backtest.trades} object contains the stylized facts of the observed 
+#' series, and consists of a list with one slot per instrument in the input 
+#' portfolio.  Each slot in that list contains a \code{data.frame} of
+#' \itemize{
+#'   \item{\code{Start}:}{timestamp of the start of the round turn, discarded later}
+#'   \item{\code{duration}:}{duration (difference from beginning ot end) of the observed round turn trade}
+#'   \item{\code{quantity}:}{quantity of the round turn trade, or 0 for flat periods}
+#' }
+#' 
+#' with additional attributes for the observed stylized facts:
+#' 
+#' \itemize{
+#'   \item{\code{calendar.duration}:}{total length/duration of the observed series}
+#'   \item{\code{trade.duration}:}{total length/durtation used by round turn trades }
+#'   \item{\code{flat.duration}:}{aggregate length/duration of periods when observed series was flat}
+#'   \item{\code{flat.stddev}:}{standard deviation of the duration of individual flat periods}
+#'   \item{\code{first.start}:}{timestamp of the start of the first trade, to avoid starting simulations during a training period}
+#'   \item{\code{period}:}{periodicity of the observed series}
+#' }
+#' 
+#' 
 #' @author Jasen Mackie, Brian G. Peterson
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
-#' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}}
+#' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}
 #' @examples
 #' \dontrun{
 #'
