@@ -137,10 +137,15 @@
 txnsim <- function(Portfolio,
                    n = 10,
                    replacement = TRUE,
-                   tradeDef = "flat.to.flat",
-                   ...) {
-  # store the random seed for replication, if needed
+                   tradeDef = c('increased.to.reduced', 'flat.to.flat', 'flat.to.reduced'),
+                   ...) 
+{
+  # befor doing anything inside the function which would affect the state,
+  # store the current random seed for later replication, if needed 
   seed <- .GlobalEnv$.Random.seed
+
+  # use the first tradeDef
+  tradeDef <- tradeDef[1]
   
   # First get strategy start dates, duration and quantity
   # get portfolio, account and symbols objects
@@ -392,7 +397,7 @@ txnsim <- function(Portfolio,
       # trades on in sequence, without intervening flat periods
 
       # how many layers do we need?
-      num_overlaps <- round(totaldur/as.numeric(calendardur))
+      num_overlaps <- ceiling(totaldur/as.numeric(calendardur))
       
       if(num_overlaps>1){
 
@@ -413,18 +418,108 @@ txnsim <- function(Portfolio,
                                , by = period$units
         )
         
+        # get the range and number of rows remaining of long and short trades
         shortrange <- (targetshortrow+1):nrow(shortdf)
         nshort     <- length(shortrange)
         longrange  <- (targetlongrow+1):nrow(longdf)
         nlong      <- length(longrange)
         
+        # construct randomized target starting timestamps for long and short 
+        # trades for each layer after the first layer
         sh.samples <- replicate( n = num_overlaps-1
                                  ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
-        
+        names(ln.samples)<-2:num_overlaps
         ln.samples <- replicate( n = num_overlaps-1
                                  ,expr = sample(x = timeseq, size = nlong, replace = FALSE) )
+        names(ln.samples)<-2:num_overlaps
         
-        
+        layerdfs<-list()
+        li <- longrange[1]
+        si <- shortrange[1]
+        #some challenges:
+        #  - each slot in the ln.samples and sh.samples list contains a number 
+        #    of timestamps equal to the *total* number of desired long/short trades
+        #  - we don't know how many trades should occure on each layer
+        #  - we don't really know how the trades were overlapped in the original, 
+        #    just the stylized facts.
+        #  - the timestamps may not line up with long/short periods
+        #  - any 'valid' timestamps, when paired with a trade, may overlap the 
+        #    end of a non-flat period
+        # 
+        # given these challenges, we still need to construct a target series
+        # 
+        ############
+        # proposed process
+        ############
+        # - loop over layers
+        #    - loop over long/short timestamps
+        #       - if timestamp occurs in a long/short period
+        #            - get the next trade from longdf/shortdf 
+        #            - increment li/si so we don't duplicate trades
+        #            - if timestamp + trade duration overlaps the next flat period, do we truncate?
+        #       - else move to next timestamp
+        #    - if we run out of trades, stop
+        #    - if on last layer, and we still have trades, find places to put them
+        #
+        # I think this can construct our layers using the randomized start times
+
+        # now loop over the layers and construct a target data frame for each
+        for(laynum in names(ln.samples)){
+          ln.ts <- ln.samples[[laynum]]
+          sh.ts <- sh.samples[[laynum]]
+
+          layer.trades <- NULL
+          
+          # loop over the long/short timestamps
+          for(lts in 1:length(ln.ts)){
+            if(li>max(longrange)) break() # no more trades to process
+            test.ts <- ln.ts[lts]
+            # get the closest trade from the first layer
+            flayer.tn <- last(which(firstlayer$start<=test.ts))
+            flayer.trade <- firstlayer[flayer.tn,]
+            if(flayer.trade$quantity>0){
+              targetend <- test.ts + flayer.trade$duration
+              ftend <- flayer.trade$start + flayer.trade$duration
+              while(targetend > ftend){
+                # we've gone over the duration, check the next trade
+                if (firstlayer[flayer.tn+1,'quantity']>0){
+                  ftend <- ftend + firstlayer[flayer.tn+1,'duration']
+                  if(targetend < ftend){
+                    break() # we're good, move on
+                  }
+                } else {
+                  # truncate duration here? probably
+                  # break the while loop
+                  break()
+                }
+              } 
+              # now we can build the target trade
+              if(is.null(layer.trades)){
+                layer.trades <- data.frame(start=test.ts,
+                                           duration = longdf[li,'duration'],
+                                           quantity = longdf[li,'quantity']
+                                           )                
+              } else {
+                layer.trades <- rbind(layer.trades,
+                                      data.frame(start=test.ts,
+                                                 duration = longdf[li,'duration'],
+                                                 quantity = longdf[li,'quantity']
+                                                 )
+                                      )
+              }
+              li<-li+1 #increment long index
+            } else next() #next may be unecessary if we can avoid more code after this point in longs loop
+          }
+          #repeat a similar approach for shorts
+          for(sts in 1:length(sn.ts)){
+            
+          }
+          
+          #now store the result
+          layerdfs[[laynum]] <- layer.trades
+        }
+        layerdfs<-do.call(rbind,layerdfs)
+        tdf <- rbind(tdf,layerdfs)
         # @TODO
         # test the samples for long/short
         # test the samples for duration
@@ -432,6 +527,7 @@ txnsim <- function(Portfolio,
         # for the layers, we need to directly construct the start,quantity, duration format
         # subsequent layers need to be on top of earlier layers, so keep them spearate
         # ??? test for percentage of trades at each layer, and adjust accordingly ???
+        # ??? test for maximum position? ???
         
       }
       
