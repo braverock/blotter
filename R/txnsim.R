@@ -1,3 +1,4 @@
+
 #' Monte Carlo analysis of round turn trades
 #'
 #' Running simulations with similar properties as the backtest or production
@@ -317,7 +318,7 @@ txnsim <- function(Portfolio,
       flatdur     <- sum(trades[flatrows,'duration'])
       longdur     <- sum(trades[longrows,'duration'])
       shortdur    <- sum(trades[shortrows,'duration'])
-      lsratio     <- as.numeric(longdur)/as.numeric(shortdur)
+      lsratio     <- as.numeric(longdur)/(as.numeric(longdur) + as.numeric(shortdur))
       
       subsample <- function(svector, targetdur) {
         #`trades` already exists in function scope 
@@ -362,7 +363,6 @@ txnsim <- function(Portfolio,
       flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
       longdf  <- subsample(svector = longrows, targetdur = longdur)
       shortdf <- subsample(svector = shortrows, targetdur = shortdur)
-      
       
       # make the first layer
       # 1. start with flat periods
@@ -428,7 +428,7 @@ txnsim <- function(Portfolio,
         # trades for each layer after the first layer
         sh.samples <- replicate( n = num_overlaps-1
                                  ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
-        names(ln.samples)<-2:num_overlaps
+        names(sh.samples)<-2:num_overlaps
         ln.samples <- replicate( n = num_overlaps-1
                                  ,expr = sample(x = timeseq, size = nlong, replace = FALSE) )
         names(ln.samples)<-2:num_overlaps
