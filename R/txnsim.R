@@ -397,18 +397,18 @@ txnsim <- function(Portfolio,
       # trades on in sequence, without intervening flat periods
 
       # how many layers do we need?
-      num_overlaps <- ceiling(totaldur/as.numeric(calendardur))
+      num_overlaps <- ceiling(as.numeric(totaldur)/as.numeric(calendardur))
       
       if(num_overlaps>1){
 
         ###
-        #construct a frame of the first layer for reference
+        # construct a temporary frame of the first layer for reference
+        # the rows are the round turns, not a full time series of transactions
         # construct the cumulative position
         tmpdf <- tdf
-        tmpdf$pos <- cumsum(tdf$quantity)
         # construct a vector of end times:
         tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
-        tmpdf$lsi <- ifelse(tmpdf$pos>0, 1, ifelse(tmpdf$pos<0,-1,0))
+        tmpdf$lsi <- ifelse(tmpdf$quantity>0, 1, ifelse(tmpdf$quantity<0,-1,0))
         # split remaining longs and shorts by num_overlaps -1  ?
         
         # construct series of random starts
@@ -426,13 +426,19 @@ txnsim <- function(Portfolio,
         
         # construct randomized target starting timestamps for long and short 
         # trades for each layer after the first layer
-        sh.samples <- replicate( n = num_overlaps-1
-                                 ,expr = sample(x = timeseq, size = nshort, replace = FALSE) )
-        names(sh.samples)<-2:num_overlaps
-        ln.samples <- replicate( n = num_overlaps-1
-                                 ,expr = sample(x = timeseq, size = nlong, replace = FALSE) )
-        names(ln.samples)<-2:num_overlaps
+        timesample <- function(timeseq, num_overlaps) {
+          x <- NULL
+          for(n in 2:num_overlaps) { 
+            if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nlong, replace = FALSE))
+            else x<-cbind(x,data.frame(sample(x = timeseq, size = nlong, replace = FALSE)))
+          } 
+          colnames(x) <- 2:num_overlaps
+          x
+        }
         
+        sh.samples <- timesample(timeseq,num_overlaps)
+        ln.samples <- timesample(timeseq,num_overlaps)
+
         layerdfs<-list()
         li <- longrange[1]
         si <- shortrange[1]
@@ -475,8 +481,8 @@ txnsim <- function(Portfolio,
             if(li>max(longrange)) break() # no more trades to process
             test.ts <- ln.ts[lts]
             # get the closest trade from the first layer
-            flayer.tn <- last(which(firstlayer$start<=test.ts))
-            flayer.trade <- firstlayer[flayer.tn,]
+            flayer.tn <- last(which(tdf$start<=test.ts))
+            flayer.trade <- tdf[flayer.tn,]
             if(flayer.trade$quantity>0){
               targetend <- test.ts + flayer.trade$duration
               ftend <- flayer.trade$start + flayer.trade$duration
@@ -511,7 +517,7 @@ txnsim <- function(Portfolio,
             } else next() #next may be unecessary if we can avoid more code after this point in longs loop
           }
           #repeat a similar approach for shorts
-          for(sts in 1:length(sn.ts)){
+          for(sts in 1:length(sh.ts)){
             
           }
           
