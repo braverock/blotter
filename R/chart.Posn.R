@@ -8,8 +8,9 @@
 #' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @param TA a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}
+#' @param env environment to locate market data in.  default .globalEnv
 #' @export
-chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
+chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL,env=.GlobalEnv)
 { # @author Peter Carl, Brian Peterson
     pname<-Portfolio
     Portfolio<-getPortfolio(pname)
@@ -17,7 +18,7 @@ chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL)
     else Symbol <- Symbol[1]
     # FUNCTION
 
-    Prices=get(Symbol)
+    Prices=get(Symbol, envir=env)
     if(!is.OHLC(Prices)) {
         if(hasArg(prefer)) prefer=eval(match.call(expand.dots=TRUE)$prefer) else prefer=NULL
         Prices=getPrice(Prices, prefer=prefer)
