@@ -488,8 +488,8 @@ txnsim <- function(Portfolio,
               ftend <- flayer.trade$start + flayer.trade$duration
               while(targetend > ftend){
                 # we've gone over the duration, check the next trade
-                if (firstlayer[flayer.tn+1,'quantity']>0){
-                  ftend <- ftend + firstlayer[flayer.tn+1,'duration']
+                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){ 
+                  ftend <- ftend + tdf[flayer.tn+1,'duration']
                   if(targetend < ftend){
                     break() # we're good, move on
                   }
