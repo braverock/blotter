@@ -756,9 +756,9 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
 quantile.mcsim <- function(x, ..., normalize=TRUE) {
   ret <- x
   if(isTRUE(normalize)) {
-    q   <- quantile(ret$percreplicates)
+    q   <- quantile(na.omit(ret$percreplicates))
   } else {
-    q   <- quantile(ret$replicates)
+    q   <- quantile(na.omit(ret$replicates))
   }
   q
 }
