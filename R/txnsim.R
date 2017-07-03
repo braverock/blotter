@@ -522,7 +522,44 @@ txnsim <- function(Portfolio,
           }
           #repeat a similar approach for shorts
           for(sts in 1:length(sh.ts)){
-            
+            if(si>max(shortrange)) break() # no more trades to process
+            test.ts <- sh.ts[sts]
+            # get the closest trade from the first layer
+            flayer.tn <- last(which(tdf$start<=test.ts))
+            flayer.trade <- tdf[flayer.tn,]
+            if(flayer.trade$quantity<0){
+              targetend <- test.ts + flayer.trade$duration
+              ftend <- flayer.trade$start + flayer.trade$duration
+              while(targetend > ftend){
+                # we've gone over the duration, check the next trade
+                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){ 
+                  ftend <- ftend + tdf[flayer.tn+1,'duration']
+                  if(targetend < ftend){
+                    break() # we're good, move on
+                  }
+                } else {
+                  # truncate duration here
+                  shortdf[si,'duration']<-ftend-test.ts
+                  # break the while loop
+                  break()
+                }
+              } 
+              # now we can build the target trade
+              if(is.null(layer.trades)){
+                layer.trades <- data.frame(start=test.ts,
+                                           duration = shortdf[si,'duration'],
+                                           quantity = shortdf[si,'quantity']
+                )                
+              } else {
+                layer.trades <- rbind(layer.trades,
+                                      data.frame(start=test.ts,
+                                                 duration = shortdf[si,'duration'],
+                                                 quantity = shortdf[si,'quantity']
+                                      )
+                )
+              }
+              si<-si+1 #increment short index
+            } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
           }
           
           #now store the result
