@@ -563,88 +563,27 @@ txnsim <- function(Portfolio,
   # reps now exists as a list of structure reps[[symbol]][[rep]]
   # each rep has columns start, duration, quantity
   
-  ####################
-  # Generate Transactions
-  portnames <- txnsim.portnames(Portfolio, replacement, n=length(reps[[1]]))
-  # create portfolios
-  for (i in seq_along(reps[[1]])) {
-    # name the simulated portfolio
-    simport <- portnames[i]
-    # remove portfolio if it exists, we need to overwrite it anyway
-    suppressWarnings(rm(list = paste0("portfolio.", simport), envir = .blotter))
-    # generate portfolio
-    simport <- initPortf(
-      name = simport,
-      symbols = symbols,
-      initDate = initDate,
-      currency = currency,
-      initEq = initEq
-    )
-  }
+  # ####################
+  # # Generate Transactions
+  # create the portfolios
+  portnames <- txnsim.portnames(Portfolio, replacement, n)
+  txnsim.portfs( Portfolio=Portfolio
+               , replacement=replacement
+               , n=length(reps[[1]])
+               , symbols=symbols
+               , initDate=initDate
+               , currency=currency
+               , initEq=initEq
+               , ...
+               )
   
-  # this will be called by lapply over the list of replicates for a
-  txnsimtxns <- function (i, symbol = symbol, ...) {
-    simport <- portnames[i]
-    #print(paste(simport,symbol))
-    dargs <- list(...)
-    if (!is.null(dargs$env))
-      env <- dargs$env
-    else
-      env <- .GlobalEnv
-    if (!is.null(dargs$prefer))
-      prefer <- dargs$prefer
-    else
-      prefer <- NULL
-    
-    prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
-    
-    # the rep list has a start, duration, quantity in each row
-    # we'll loop by row over that object to create an object for addTxns
-    # @TODO find something more efficient than a for loop here
-    # txns <- list()
-    df <- reps[[symbol]][[i]]
-    if (class(df) == 'data.frame')
-      df <- list('1' = df)
-    dflist <- df
-    txnlist <- list()
-    for (li in 1:length(dflist)) {
-      txns <- list()
-      df <- dflist[[li]]
-      #df <- df[which(df$quantity != 0),] # remove zero quantity trades
-      df <- df[which(df$duration != 0), ] # remove zero duration trades
-      for (r in 1:nrow(df)) {
-        # opening trade
-        open  <- data.frame(
-          start = df[r, 1],
-          TxnQty = df[r, "quantity"],
-          TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1])]))
-        )
-        # closing trade
-        close <-
-          data.frame(
-            start = index(last(prices[paste0("/", df[r, 1] + df[r, "duration"])])),
-            TxnQty = -1 * df[r, "quantity"],
-            TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1] + df[r, "duration"])]))
-          )
-        txns[[r]] <- rbind(open, close)
-      } # end loop over rows
-      # we now have a list of transactions, turn them into an xts object
-      txns <- do.call(rbind, txns)
-      txns <- xts(txns[, c("TxnQty", "TxnPrice")], order.by = txns[, 1])
-      txns <- txns[which(txns$TxnQty != 0), ]
-      txnlist[[li]] <- txns
-    }
-    txns <- do.call(rbind, txnlist)
-    addTxns(Portfolio = simport,
-            Symbol = symbol,
-            TxnData = txns)
-    txns # return the data for later use
-  }
-  
-  # loop over symbols in each replicate
-  for (symbol in symbols) {
-    ltxn <- lapply(1:length(reps[[symbol]]), txnsimtxns, symbol = symbol)
-  } # end loop over symbols in replicate
+  # create the transactions
+  ltxn <- txnsim.txns( reps = reps
+                     , Portfolio=Portfolio
+                     , replacement=replacement
+                     , n=length(reps[[1]]) 
+                     , ...
+                     ) 
 
   cumpl<-NULL  
   for (i in seq_along(reps[[1]])) {
@@ -681,6 +620,118 @@ txnsim <- function(Portfolio,
   ret
 } # end txnsim fn
 
+
+#' convenience function to generate portfolios for txnsim replicates
+#'
+#' If you have a txnsim object and market data, you should be able to rebuild 
+#' the replicate portfolios. This function creates all those portfolios.
+#' 
+#' @param Portfolio string identifying a portfolio
+#' @param n number of simulations, default = 100
+#' @param replacement sample with or without replacement, default TRUE
+#' @param symbols character vector of symbol names
+#' @param initDate initialization Date to use for replicate portfolios
+#' @param currency base currency for replicate portfolios
+#' @param initEq initial equity to use for replicate portfolios
+#'
+#' @seealso \code{\link{txnsim}}, \code{\link{txnsim.txns}} 
+txnsim.portfs <- function(Portfolio, replacement, n, symbols, initDate, currency, initEq) {
+  portnames <- txnsim.portnames(Portfolio, replacement, n)
+  # create portfolios
+  for (i in 1:n) {
+    # name the simulated portfolio
+    simport <- portnames[i]
+    # remove portfolio if it exists, we need to overwrite it anyway
+    suppressWarnings(rm(list = paste0("portfolio.", simport), envir = .blotter))
+    # generate portfolio
+    simport <- initPortf(
+      name = simport,
+      symbols = symbols,
+      initDate = initDate,
+      currency = currency,
+      initEq = initEq
+    )
+  }
+}
+
+#' convenience function to create transactions from txnsim replicates
+#' 
+#' If you have a txnsim object and market data, you should be able to rebuild 
+#' the replicate portfolios.
+#'
+#' @param reps replicates slot from txnsim object 
+#' @param Portfolio string identifying a portfolio
+#' @param replacement sample with or without replacement, default TRUE
+#' @param n number of simulations, default = 100
+#' @param \dots any other passthrough parameters, most usefully \code{env} and \code{prefer}
+#'
+#' @return a list by symbol of txns suitable for calling \code{\link{addTxns}}
+#'
+#' @seealso \code{\link{txnsim}}, \code{\link{txnsim.txns}} , \code{\link{addTxns}}
+txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
+  portnames <- txnsim.portnames(Portfolio, replacement, n)
+  ltxn <- list()
+  for (symbol in names(reps)){
+    ltxn[[symbol]] <- lapply(1:length(reps[[symbol]]), function(i) {
+      simport <- portnames[i]
+      #print(paste(simport,symbol))
+      dargs <- list(...)
+      if (!is.null(dargs$env))
+        env <- dargs$env
+      else
+        env <- .GlobalEnv
+      if (!is.null(dargs$prefer))
+        prefer <- dargs$prefer
+      else
+        prefer <- NULL
+      
+      prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
+      
+      # the rep list has a start, duration, quantity in each row
+      # we'll loop by row over that object to create an object for addTxns
+      # @TODO find something more efficient than a for loop here
+      # txns <- list()
+      df <- reps[[symbol]][[i]]
+      if (class(df) == 'data.frame')
+        df <- list('1' = df)
+      dflist <- df
+      txnlist <- list()
+      for (li in 1:length(dflist)) {
+        txns <- list()
+        df <- dflist[[li]]
+        #df <- df[which(df$quantity != 0),] # remove zero quantity trades
+        df <- df[which(df$duration != 0), ] # remove zero duration trades
+        for (r in 1:nrow(df)) {
+          # opening trade
+          open  <- data.frame(
+            start = df[r, 1],
+            TxnQty = df[r, "quantity"],
+            TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1])]))
+          )
+          # closing trade
+          close <-
+            data.frame(
+              start = index(last(prices[paste0("/", df[r, 1] + df[r, "duration"])])),
+              TxnQty = -1 * df[r, "quantity"],
+              TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1] + df[r, "duration"])]))
+            )
+          txns[[r]] <- rbind(open, close)
+        } # end loop over rows
+        # we now have a list of transactions, turn them into an xts object
+        txns <- do.call(rbind, txns)
+        txns <- xts(txns[, c("TxnQty", "TxnPrice")], order.by = txns[, 1])
+        txns <- txns[which(txns$TxnQty != 0), ]
+        txnlist[[li]] <- txns
+      }
+      txns <- do.call(rbind, txnlist)
+      addTxns(Portfolio = simport,
+              Symbol = symbol,
+              TxnData = txns)
+      txns # return the data for later use
+    })
+  }
+  ltxn # return the transaction list for later use
+}
 
 #' helper function for generating txnsim portfolio names
 #'
