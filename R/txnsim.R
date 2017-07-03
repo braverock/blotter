@@ -519,7 +519,7 @@ txnsim <- function(Portfolio,
               }
               li<-li+1 #increment long index
             } else next() #next may be unecessary if we can avoid more code after this point in longs loop
-          }
+          } # end long layering
           #repeat a similar approach for shorts
           for(sts in 1:length(sh.ts)){
             if(si>max(shortrange)) break() # no more trades to process
@@ -560,7 +560,7 @@ txnsim <- function(Portfolio,
               }
               si<-si+1 #increment short index
             } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
-          }
+          } # end short layering
           
           #now store the result
           layerdfs[[laynum]] <- layer.trades
@@ -568,14 +568,8 @@ txnsim <- function(Portfolio,
         layerdfs<-do.call(rbind,layerdfs)
         tdf <- rbind(tdf,layerdfs)
         # @TODO
-        # test the samples for long/short
-        # test the samples for duration
-        # push the samples around so they work with layering
-        # for the layers, we need to directly construct the start,quantity, duration format
-        # subsequent layers need to be on top of earlier layers, so keep them spearate
         # ??? test for percentage of trades at each layer, and adjust accordingly ???
         # ??? test for maximum position? ???
-        
       }
       
       #return the data frame
@@ -595,7 +589,7 @@ txnsim <- function(Portfolio,
     }
     names(reps) <- symbols
     
-  } # end flat.to.reduced
+  } # end flat.to.reduced/increased.to.reduced method
   
   ################################################################
   # reps now exists as a list of structure reps[[symbol]][[rep]]
