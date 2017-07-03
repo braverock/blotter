@@ -724,7 +724,7 @@ plot.txnsim <- function(x, y, ...) {
   #TODO FIXME make grid.ticks.on smarter based on periodicity
   pt <- plot.xts(  cumpl
                  , col = "lightgray"
-                 , main = paste(port, 'txnsim simulation cumulative P&L')
+                 , main = paste(port, 'txnsim cumulative P&L',n,'reps. with replace=',replacement)
                  , grid.ticks.on = 'years'
                 )
   pt <- lines(backtestpl, col = "red")
