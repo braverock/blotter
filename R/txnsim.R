@@ -568,6 +568,7 @@ txnsim <- function(Portfolio,
         layerdfs<-do.call(rbind,layerdfs)
         tdf <- rbind(tdf,layerdfs)
         # @TODO
+        # double check that all long and short trades have been allocated, do something if not
         # ??? test for percentage of trades at each layer, and adjust accordingly ???
         # ??? test for maximum position? ???
       }
