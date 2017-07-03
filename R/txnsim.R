@@ -824,7 +824,7 @@ plot.txnsim <- function(x, y, ...) {
 #' @export
 quantile.txnsim <- function(x, ...) {
   ret <- x$cumpl
-  q   <- quantile(ret)
+  q   <- quantile(na.omit(ret))
   q
 }
 
