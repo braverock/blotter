@@ -429,18 +429,18 @@ txnsim <- function(Portfolio,
         
         # construct randomized target starting timestamps for long and short 
         # trades for each layer after the first layer
-        timesample <- function(timeseq, num_overlaps) {
+        timesample <- function(timeseq, num_overlaps,nsample) {
           x <- NULL
           for(n in 2:num_overlaps) { 
-            if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nlong, replace = FALSE))
-            else x<-cbind(x,data.frame(sample(x = timeseq, size = nlong, replace = FALSE)))
+            if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nsample, replace = FALSE))
+            else x<-cbind(x,data.frame(sample(x = timeseq, size = nsample, replace = FALSE)))
           } 
           colnames(x) <- 2:num_overlaps
           x
         }
         
-        sh.samples <- timesample(timeseq,num_overlaps)
-        ln.samples <- timesample(timeseq,num_overlaps)
+        sh.samples <- timesample(timeseq,num_overlaps,nsample=nlong)
+        ln.samples <- timesample(timeseq,num_overlaps,nsample=nshort)
 
         layerdfs<-list()
         li <- longrange[1]
