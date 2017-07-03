@@ -497,7 +497,8 @@ txnsim <- function(Portfolio,
                     break() # we're good, move on
                   }
                 } else {
-                  # truncate duration here? probably
+                  # truncate duration here
+                  longdf[li,'duration']<-ftend-test.ts
                   # break the while loop
                   break()
                 }
@@ -754,7 +755,9 @@ txnsim.portnames <- function(Portfolio, replacement, n) {
   # NOTE we may still want to clean out existing portfolios, 
   # or allow some other naming options
   portnames <- paste("txnsim", rpcstr, Portfolio, i, sep = ".")
+  return(portnames)
 }
+
 
 #' plot method for objects of type 'txnsim'
 #'
@@ -765,9 +768,6 @@ txnsim.portnames <- function(Portfolio, replacement, n) {
 #' @seealso \code{\link{txnsim}}
 #' @export
 plot.txnsim <- function(x, y, ...) {
-  n <- x$n
-  port <- x$Portfolio
-  rpc <- x$replacement
   cumpl <- x$cumpl
 
   backtestpl <- cumpl[,1]
@@ -775,7 +775,7 @@ plot.txnsim <- function(x, y, ...) {
   #TODO FIXME make grid.ticks.on smarter based on periodicity
   pt <- plot.xts(  cumpl
                  , col = "lightgray"
-                 , main = paste(port, 'txnsim cumulative P&L',n,'reps. with replace=',replacement)
+                 , main = paste(x$Portfolio, 'txnsim cumulative P&L',x$n,'reps. with replace=',x$replacement)
                  , grid.ticks.on = 'years'
                 )
   pt <- lines(backtestpl, col = "red")
