@@ -71,6 +71,9 @@
 #'   \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
 #'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
 #'   \item{\code{call}:}{an object of type \code{call} that contains the \code{txnsim} call}
+#'   \item{\code{Portfolio}:}{ string identifying a portfolio}
+#'   \item{\code{n}:}{ number of simulations, default = 100}
+#'   \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
 #' }
 #'
 #' Note that this object and its slots may change in the future.
@@ -669,7 +672,10 @@ txnsim <- function(Portfolio,
     cumpl = cumpl,
     initeq = initEq,
     seed = seed,
-    call = match.call()
+    call = match.call(),
+    replacement = replacement,
+    Portfolio = Portfolio,
+    n = n
   )
   class(ret) <- "txnsim"
   ret
@@ -708,19 +714,17 @@ txnsim.portnames <- function(Portfolio, replacement, n) {
 #' @seealso \code{\link{txnsim}}
 #' @export
 plot.txnsim <- function(x, y, ...) {
-  n <- x$call$n
-  port <- x$call$Portfolio
-  rpc <- x$call$replacement
+  n <- x$n
+  port <- x$Portfolio
+  rpc <- x$replacement
   cumpl <- x$cumpl
-
-  portnames <- txnsim.portnames(Portfolio=port, replacement=rpc , n=n)
 
   backtestpl <- cumpl[,1]
   
   #TODO FIXME make grid.ticks.on smarter based on periodicity
   pt <- plot.xts(  cumpl
                  , col = "lightgray"
-                 , main = paste(port, 'simulation cumulative P&L')
+                 , main = paste(port, 'txnsim simulation cumulative P&L')
                  , grid.ticks.on = 'years'
                 )
   pt <- lines(backtestpl, col = "red")

@@ -29,6 +29,9 @@ a list object of class 'txnsim' containing:
   \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
   \item{\code{call}:}{an object of type \code{call} that contains the \code{txnsim} call}
+  \item{\code{Portfolio}:}{ string identifying a portfolio}
+  \item{\code{n}:}{ number of simulations, default = 100}
+  \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
 }
 
 Note that this object and its slots may change in the future.
