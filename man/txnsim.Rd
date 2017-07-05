@@ -6,7 +6,7 @@
 \usage{
 txnsim(Portfolio, n = 10, replacement = TRUE,
   tradeDef = c("increased.to.reduced", "flat.to.flat", "flat.to.reduced"),
-  ...)
+  ..., CI = 0.95)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}
@@ -16,6 +16,8 @@ txnsim(Portfolio, n = 10, replacement = TRUE,
 \item{replacement}{sample with or without replacement, default TRUE}
 
 \item{tradeDef}{string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}}
+
+\item{CI}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
 
 \item{\dots}{any other passthrough parameters}
 }
@@ -32,6 +34,11 @@ a list object of class 'txnsim' containing:
   \item{\code{Portfolio}:}{ string identifying a portfolio}
   \item{\code{n}:}{ number of simulations, default = 100}
   \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
+  \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
+  \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
+  \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
+  \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
+  \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
 }
 
 Note that this object and its slots may change in the future.
@@ -146,12 +153,13 @@ data.  Note that market data must be available to call
 } #end dontrun
 
 }
+\author{
+Jasen Mackie, Brian G. Peterson
+}
 \references{
 Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 }
 \seealso{
 \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
+
