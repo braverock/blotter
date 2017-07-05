@@ -61,6 +61,7 @@
 #' @param replacement sample with or without replacement, default TRUE
 #' @param tradeDef string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}
 #' @param \dots any other passthrough parameters
+#' @param CI numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95
 #'
 #' @return a list object of class 'txnsim' containing:
 #' \itemize{
