@@ -5,7 +5,7 @@
 \title{calculate trade statistics for round turn trades.}
 \usage{
 perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
-  tradeDef = "flat.to.flat", ...)
+  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}
@@ -17,6 +17,8 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 \item{tradeDef}{string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.}
 
 \item{\dots}{any other passthrough parameters}
+
+\item{includeFlatPeriods}{boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}}
 }
 \value{
 A \code{data.frame} containing:
@@ -28,6 +30,7 @@ A \code{data.frame} containing:
      \item{Init.Pos}{ position held after the initiating transaction of the round turn trade}
      \item{Max.Pos}{the maximum (largest) position held during the open trade}
      \item{End.Pos}{ the remaining quantity held after closing the trade}
+     \item{Closing.Txn.Qty}{ the transaction quantity which closes the round turn trade }
      \item{Num.Txns}{ the number of transactions included in this trade}
      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
@@ -39,6 +42,7 @@ A \code{data.frame} containing:
      \item{tick.Net.Trading.PL}{  net trading P&L in ticks}
      \item{tick.MAE}{ Maximum Adverse Excursion (MAE) in ticks}
      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
+     \item{duration}{ \code{difftime} describing the duration of the round turn, in seconds }
 }
 }
 \description{
@@ -100,6 +104,15 @@ initating transactions which will adjust the average cost (and thus the net P&L)
 of the position.  After pro-rating the cash measures, the percent and tick 
 versions are constructed by dividing by the maximum notional position cost and 
 the tick value, respectively.
+
+If \code{includeFlatPeriods=TRUE}, \code{perTradeStats} will include periods
+when the series is flat (holds no position). Flat periods at the beginning of 
+the series will be removed, as they are presumed to hold no information, and 
+may be easily retrived if desired. This information is likely most useful in 
+constructing stylized facts about the trading style, calculating values such
+as time in market.  It is also extremely useful for Monte Carlo simulation of
+random trading strategies with similar style to the series under investigation.
+For more information on this latter use, see \code{\link{txnsim}}.
 }
 \references{
 Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)

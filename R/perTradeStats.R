@@ -59,11 +59,21 @@
 #' versions are constructed by dividing by the maximum notional position cost and 
 #' the tick value, respectively.
 #'
+#' If \code{includeFlatPeriods=TRUE}, \code{perTradeStats} will include periods
+#' when the series is flat (holds no position). Flat periods at the beginning of 
+#' the series will be removed, as they are presumed to hold no information, and 
+#' may be easily retrived if desired. This information is likely most useful in 
+#' constructing stylized facts about the trading style, calculating values such
+#' as time in market.  It is also extremely useful for Monte Carlo simulation of
+#' random trading strategies with similar style to the series under investigation.
+#' For more information on this latter use, see \code{\link{txnsim}}.
+#'  
 #' @param Portfolio string identifying the portfolio
 #' @param Symbol string identifying the symbol to examin trades for. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param includeOpenTrade whether to process only finished trades, or the last trade if it is still open, default TRUE
 #' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.
 #' @param \dots any other passthrough parameters
+#' @param includeFlatPeriods boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}
 #' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return
@@ -76,6 +86,7 @@
 #'      \item{Init.Pos}{ position held after the initiating transaction of the round turn trade}
 #'      \item{Max.Pos}{the maximum (largest) position held during the open trade}
 #'      \item{End.Pos}{ the remaining quantity held after closing the trade}
+#'      \item{Closing.Txn.Qty}{ the transaction quantity which closes the round turn trade }
 #'      \item{Num.Txns}{ the number of transactions included in this trade}
 #'      \item{Max.Notional.Cost}{ the largest notional investment cost of this trade}
 #'      \item{Net.Trading.PL}{ net trading P&L in the currency of \code{Symbol}}
@@ -87,12 +98,20 @@
 #'      \item{tick.Net.Trading.PL}{  net trading P&L in ticks}
 #'      \item{tick.MAE}{ Maximum Adverse Excursion (MAE) in ticks}
 #'      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
+#'      \item{duration}{ \code{difftime} describing the duration of the round turn, in seconds }
 #' }
+#'
 #' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function,
 #' and \code{\link{tradeStats}} for a summary view of the performance, and
 #' \code{\link{tradeQuantiles}} for round turns classified by quantile.
 #' @export
-perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="flat.to.flat", ...) {
+perTradeStats <- function(Portfolio
+                          , Symbol
+                          , includeOpenTrade=TRUE
+                          , tradeDef="flat.to.flat"
+                          , ...
+                          , includeFlatPeriods=FALSE)
+{
 
   portf <- .getPortfolio(Portfolio)
   if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
@@ -147,45 +166,63 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
            incrPosQty <- ifelse(diff(abs(posPL$Pos.Qty)) > 0, diff(abs(posPL$Pos.Qty)),0)
            incrPosQtyCum <- ifelse(incrPosQty[-1] == 0, 0, cumsum(incrPosQty[-1])) #subset for the leading NA
 
-           df <- cbind(incrPosCount, incrPosQty, incrPosQtyCum, decrPosCount, decrPosQty,  decrPosQtyCum)[-1]
-           names(df) <- c("incrPosCount", "incrPosQty", "incrPosQtyCum", "decrPosCount", "decrPosQty",  "decrPosQtyCum")
-
-           consol <- cbind(incrPosQtyCum,decrPosQtyCum)
-           names(consol)<-c('incrPosQtyCum','decrPosQtyCum')
-           consol$decrPosQtyCum<- -consol$decrPosQtyCum
-           consol$incrPosQtyCum[consol$incrPosQtyCum==0]<-NA
-           consol$decrPosQtyCum[consol$decrPosQtyCum==0]<-NA
-           idx <- findInterval(na.omit(consol$decrPosQtyCum),na.omit(consol$incrPosQtyCum))
-           #consol <- cbind(na.omit(consol$incrPosQtyCum), na.omit(consol$decrPosQtyCum), idx)
-           # populate trades list
-           idx <- idx[!is.na(idx)] # remove NAs from idx vector
-           idx <- idx[-length(idx)] # remove last element...see description ***TODO: add description with example dataset?
-           idx <- idx + 1 # +1 as findInterval() finds the lower bound of the range...see description ***TODO: add description with example dataset?
-           trades$Start[1] <- first(which(consol$incrPosQtyCum != "NA"))
-           trades$End <- which(consol$decrPosQtyCum != "NA")
-           trades$Start[2:length(trades$End)] <- which(consol$incrPosQtyCum != "NA")[idx]
-
+           # Calculate txn qty
+           txnqty <- rbind(incrPosQtyCum, abs(decrPosQtyCum))
+           txnqty <- txnqty[-which(txnqty == 0)]
+           txnqty <- rbind(xts(0,as.POSIXct("1950-01-01")),txnqty)
+           txnqty <- as.data.frame(txnqty)
+           txnqty <- txnqty[order(txnqty[,1]),]
+           txnqty <- diff(txnqty)
+           txnqty <- na.omit(txnqty)
+           
+           # Get start and end dates
+           starts <- incrPosQtyCum[-which(incrPosQtyCum==0)]
+           ends <- abs(decrPosQtyCum[-which(decrPosQtyCum==0)])
+           cumsum(txnqty) # let's investigate cumsum(txnqty)
+           end_idx <- findInterval(cumsum(txnqty), ends, left.open = TRUE) + 1 # can disregard last element as it relates to open trade
+           end_idx
+           start_idx <- findInterval(cumsum(txnqty), starts, left.open = TRUE) + 1 # can disregard last element as it relates to open trade
+           start_idx
+           
+           testdf <- data.frame(cbind(txnqty, cumsum(txnqty), start_idx, end_idx))
+           testdf$start_ts <- index(starts)[start_idx]
+           testdf$end_ts <- index(ends)[end_idx]
+           testdf <- testdf[-which(testdf$txnqty == 0),]
+           
+           # build trades$Start and trades$End in trades list
+           # iterating over testdf, for all txns that have an end date
+           # and are therefore round turn trades
+           for(i in 1:length(which(!is.na(testdf$end_ts)))){
+             trades$Start[i] <- which(index(incrPosQtyCum) == testdf$start_ts[i])
+             trades$End[i] <- which(index(decrPosQtyCum) == testdf$end_ts[i])
+           }
            # now add 1 to idx for missing initdate from incr/decrPosQtyCum - adds consistency with flat.to.reduced and flat.to.flat
            trades$Start <- trades$Start + 1
            trades$End <- trades$End + 1
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
-           if(last(posPL)[,"Pos.Qty"] != 0)
-             trades$Start <- c(trades$Start, last(which(incrPos==TRUE)))
+           if(any(is.na(testdf$end_ts))){
+             trades$Start <- c(trades$Start,which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))]))
+           }
          }
   ) # end round turn trade separation by tradeDef
 
-  # if the last trade is still open, adjust depending on whether wants open trades or not
-  if(length(trades$Start)>length(trades$End))
+  # if the last trade is still open, adjust depending on whether we want open trades or not
+  if(last(posPL)[,"Pos.Qty"] != 0)
   {
     if(includeOpenTrade)
       trades$End <- c(trades$End,nrow(posPL))
     else
       trades$Start <- head(trades$Start, -1)
   }
+  if(length(trades$Start)!=length(trades$End)){
+    trades$Start[(length(trades$Start)+1):length(trades$End)] <- last(trades$Start)
+  }
   
   # check for an open trade that starts on the last observation, remove
+  last.trade.is.open <- FALSE
   if(last(trades$End)==last(trades$Start)){
+    last.trade.is.open <- TRUE
     trades$End <- trades$End[-length(trades$End)]
     trades$Start <- trades$Start[-length(trades$Start)]
   }
@@ -228,10 +265,16 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     trades$Max.Pos[i] <- Pos.Qty[Max.Pos.Qty.loc]
 
     # initiating and ending quantities
-    trades$Init.Qty[i] <- txn.qty[timespan][1]
     trades$End.Pos[i] <- Pos.Qty[n]
-    trades$Closing.Txn.Qty[i] <- Pos.Qty[n-1] - trades$End.Pos[i]
-    if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n]
+    #trades$Init.Qty[i] <- txn.qty[timespan][1]
+    if(tradeDef == "flat.to.flat" || tradeDef == "flat.to.reduced"){
+    trades$Init.Qty[i] <- txn.qty[timespan][1]
+    trades$Closing.Txn.Qty[i] <- trades$End.Pos[i] - Pos.Qty[n-1]
+    if(trades$Closing.Txn.Qty[i] == 0) trades$Closing.Txn.Qty[i] <- Pos.Qty[n] * -1
+    } else if(tradeDef == "increased.to.reduced"){
+      trades$Init.Qty[i] <- testdf$txnqty[i] * sign(txn.qty[timespan][1])
+      trades$Closing.Txn.Qty[i] <- trades$Init.Qty[i] * -1
+    }
 
     Pos.Cost.Basis <- cumsum(trade[,"Txn.Value"])
 
@@ -243,27 +286,64 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
              Cum.PL   <- cumsum(trade[,"Net.Trading.PL"])
            },
            flat.to.reduced = {
-             prorata  <- trades$Closing.Txn.Qty[i] / trades$Max.Pos[i] #not precisely correct
-             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # this won't reconcile for flat.to.reduced 
+             #prorata  <- abs(trades$Closing.Txn.Qty[i] / trades$Max.Pos[i]) #not precisely correct?
+             gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
+             if(index(trade[nrow(trade),]) %in% index(gettxns)){
+               closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
+             }
+             tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
+             if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
+               prorata <- 1
+             } else {
+               prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
+             }
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) 
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+                ts.prop[n] <- 0 # no unrealized PL for last observation is counted
              }
-             trade.PL <- trade[n,"Period.Realized.PL"]
+             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
+               trade.PL <- 0
+             } else {
+               trade.PL <- trade[n,"Period.Realized.PL"]
+             }
              fees     <- sum(trade[,'Txn.Fees']) * prorata
              trade.PL <- trade.PL + fees 
-             Cum.PL   <- (cumsum(trade[,'Period.Realized.PL'] + trade[,'Period.Unrealized.PL']) + trade[,'Txn.Fees']) * ts.prop
+             #Cum.PL   <- cumsum(trade[n,'Period.Realized.PL'])*prorata + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
+             #Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
+             Cum.PL   <- merge(trade[n,'Period.Realized.PL']*prorata, cumsum(trade[,'Period.Unrealized.PL'])*ts.prop, trade[,'Txn.Fees'])
+             Cum.PL[is.na(Cum.PL)] <- 0
+             Cum.PL <- rowSums(Cum.PL)
+             #colnames(Cum.PL) <- 'Cum.PL'
            },
            increased.to.reduced = {
-             prorata  <- trades$Closing.Txn.Qty[i] / trades$Init.Qty[i]  
-             ts.prop  <- trades$Closing.Txn.Qty[i] / Pos.Qty # correct for this method 
+             tradeqty <- as.numeric((coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))) # used in computing trade.PL
+             gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
+             if(index(trade[nrow(trade),]) %in% index(gettxns)){
+               closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
+             }
+             tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
+             if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
+               prorata <- 1
+             } else {
+               prorata <- as.numeric((abs(trades$Closing.Txn.Qty[i] / closeqty)))
+             }
+             # calculate trade size as proportion of total position size (ts.prop)
+             ts.prop  <- abs(trades$Closing.Txn.Qty[i] / Pos.Qty) # slightly different implementation compared with flat.to.reduced for trade size proportion
+             colnames(ts.prop) <- 'ts.prop'
              if(i==N && includeOpenTrade){ 
                ts.prop[n] <- 1 # all unrealized PL for last observation is counted 
              } else {
-               ts.prop[n] <- 0 # no unrealized PL for last observation is counted 
+                ts.prop[n] <- 0 # no unrealized PL for last observation is counted
              }
-             trade.PL <- trade[n,"Period.Realized.PL"]
+             if(i==N && includeOpenTrade && trade[n,"Period.Realized.PL"] !=0 && last.trade.is.open == FALSE){
+               trade.PL <- 0
+             } else {
+               trade.PL <- trade[n,"Period.Realized.PL"]*prorata
+             }
+             ts.prop[is.infinite(ts.prop)] <- 0 # once a position is closed out to flat, dividing by 0 gives an infinite number so we zero it out as there should be no
+
              fees     <- as.numeric(trade[1,'Txn.Fees'] * prorata) + as.numeric(trade[n,'Txn.Fees'])
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
@@ -271,13 +351,20 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
              trade$Txn.Fees[2:(n-1)] <- 0 
              # scale opening trade fees to correct proportion
              trade$Txn.Fees[1] <- trade[1,'Txn.Fees'] * prorata 
-             # for cumulative P%&L for increased.to.reduced/acfifo, we have precise
-             # numers for Period.Realized.PL and Txn.Fees, but need to take prorata
+             # for cumulative P&L for increased.to.reduced/acfifo, we have precise
+             # numbers for Period.Realized.PL and Txn.Fees, but need to take prorata
              # for unrealized P&L
-             Cum.PL   <- cumsum(trade[,'Period.Realized.PL'] + (trade[,'Period.Unrealized.PL']*ts.prop)) + trade[,'Txn.Fees']
+             #Cum.PL   <- cumsum(trade[n,'Period.Realized.PL'])*prorata + cumsum(trade[,'Period.Unrealized.PL']*ts.prop) + trade[,'Txn.Fees']
+             Cum.PL   <- merge(trade[n,'Period.Realized.PL']*prorata, cumsum(trade[,'Period.Unrealized.PL'])*ts.prop, trade[,'Txn.Fees'])
+             Cum.PL[is.na(Cum.PL)] <- 0
+             Cum.PL <- rowSums(Cum.PL)
+             #colnames(Cum.PL) <- 'Cum.PL'
            }
     )
 
+    # scale cost basis based on how much of the Txn.Value should be used for this round turn
+    Pos.Cost.Basis <- Pos.Cost.Basis * prorata
+    
     # count number of transactions
     trades$Num.Txns[i] <- sum(trade[,"Txn.Value"]!=0)
 
@@ -289,7 +376,9 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     
     #include unrealized P&L for open position, if necessary
     if(i==N && trades$Net.Trading.PL[i]==0 && includeOpenTrade){ 
-      trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL']) 
+      #trades$Net.Trading.PL[i] <- sum(trade[,'Period.Unrealized.PL'])
+      trades$Net.Trading.PL[i] <- sum(posPL$Net.Trading.PL) - sum(posPL$Period.Realized.PL)
+      #trades$Net.Trading.PL[i] <- sum(posPL$Net.Trading.PL) - sum(trades$Net.Trading.PL) # balancing final inclOpenTrade round turn PL
     }
     
     # cash MAE/MFE
@@ -299,7 +388,10 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     # percentage P&L
     Pct.PL <- Cum.PL/abs(trades$Max.Notional.Cost[i])
 
-    trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]
+    #if(nrow(Pct.PL)>1){trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]}
+    #if(nrow(Pct.PL)==1){trades$Pct.Net.Trading.PL[i] <- Pct.PL}
+    if(length(Pct.PL)>1){trades$Pct.Net.Trading.PL[i] <- Pct.PL[n]}
+    if(length(Pct.PL)==1){trades$Pct.Net.Trading.PL[i] <- Pct.PL}
     trades$Pct.MAE[i] <- min(0,trades$MAE[i]/abs(trades$Max.Notional.Cost[i]))
     trades$Pct.MFE[i] <- max(0,trades$MFE[i]/abs(trades$Max.Notional.Cost[i]))
 
@@ -307,15 +399,79 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
     # Net.Trading.PL/position/tick value = ticks
     Tick.PL <- Cum.PL/abs(trades$Max.Pos[i])/tick_value
 
-    trades$tick.Net.Trading.PL[i] <- Tick.PL[n]
+    # if(nrow(Tick.PL)>1){trades$tick.Net.Trading.PL[i] <- Tick.PL[n]}
+    # if(nrow(Tick.PL)==1){trades$tick.Net.Trading.PL[i] <- Tick.PL}
+    if(length(Tick.PL)>1){trades$tick.Net.Trading.PL[i] <- Tick.PL[n]}
+    if(length(Tick.PL)==1){trades$tick.Net.Trading.PL[i] <- Tick.PL}
     trades$tick.MAE[i] <- min(0,trades$MAE[i]/tick_value)
     trades$tick.MFE[i] <- max(0,trades$MFE[i]/tick_value)
   }
   trades$Start <- index(posPL)[trades$Start]
   trades$End   <- index(posPL)[trades$End]
 
-  return(as.data.frame(trades))
-
+  #make into data.frame
+  trades<- as.data.frame(trades)
+  
+  if(includeFlatPeriods){
+    # use a list to put things together
+    flat.p<-list()
+    flat.p$Start <- which(posPL$Pos.Qty==0 & lag(posPL$Pos.Qty)!=0)
+    flat.p$End <- which(posPL$Pos.Qty!=0 & lag(posPL$Pos.Qty)==0)
+    
+    # check for initial flat period, remove as non-informational
+    if(first(flat.p$End)<first(flat.p$Start)){
+      flat.p$End <- flat.p$End[-1]
+    }
+    
+    # check for a flat period that starts on the last observation, remove
+    if(last(flat.p$End)==last(flat.p$Start)){
+      flat.p$End <- flat.p$End[-length(flat.p$End)]
+      flat.p$Start <- flat.p$Start[-length(flat.p$Start)]
+    }
+    
+    # check for trailing flat period, keep this if it exists
+    if(last(flat.p$End) < last(flat.p$Start) && 
+       length(flat.p$Start)>length(flat.p$End)){
+      # add an artificial end at the end of the series
+      flat.p$End <- c(flat.p$End,length(index(posPL)))
+    }
+    
+    # allocate flat periods list
+    N <- length(flat.p$End)
+    flat.p <- c(flat.p, list(
+      Init.Qty = rep(0,N),
+      Init.Pos = rep(0,N),
+      Max.Pos = rep(0,N),
+      End.Pos = rep(0,N),
+      Closing.Txn.Qty = rep(0,N),
+      Num.Txns = rep(0,N),
+      Max.Notional.Cost = rep(0,N),
+      Net.Trading.PL = rep(0,N),
+      MAE = rep(0,N),
+      MFE = rep(0,N),
+      Pct.Net.Trading.PL = rep(0,N),
+      Pct.MAE = rep(0,N),
+      Pct.MFE = rep(0,N),
+      tick.Net.Trading.PL = rep(0,N),
+      tick.MAE = rep(0,N),
+      tick.MFE = rep(0,N)))
+    
+    flat.p$Start <- index(posPL)[flat.p$Start]
+    flat.p$End   <- index(posPL)[flat.p$End]
+    
+    flat.p <- as.data.frame(flat.p)
+    
+    #combine with the trades data.frame
+    trades <- rbind(trades,flat.p)
+  }
+  
+  #add duration
+  trades$duration <- difftime(trades$End, trades$Start, units='secs') #for POSIXct compliance
+  
+  #add periodicity
+  attr(trades, 'trade.periodicity') <- periodicity(posPL)
+  
+  return(trades)
 } # end fn perTradeStats
 
 
