@@ -17,9 +17,9 @@ txnsim(Portfolio, n = 10, replacement = TRUE,
 
 \item{tradeDef}{string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}}
 
-\item{CI}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
-
 \item{\dots}{any other passthrough parameters}
+
+\item{CI}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
 }
 \value{
 a list object of class 'txnsim' containing:
@@ -37,7 +37,7 @@ a list object of class 'txnsim' containing:
   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
-  \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
+  \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
 }
 
@@ -153,13 +153,12 @@ data.  Note that market data must be available to call
 } #end dontrun
 
 }
-\author{
-Jasen Mackie, Brian G. Peterson
-}
 \references{
 Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 }
 \seealso{
-\code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}
+\code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}
 }
-
+\author{
+Jasen Mackie, Brian G. Peterson
+}

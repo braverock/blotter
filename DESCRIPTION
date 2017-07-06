@@ -1,19 +1,19 @@
 Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems Development
-Version: 0.11.10
-Date: 2017-07-03 $Date$
+Version: 0.12.0
+Date: 2017-07-06 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
+    Joshua Ulrich [ctb],
+    Jasen Mackie [ctb],
     Daniel Cegielka [ctb],
     Dirk Eddelbuettel [ctb],
     Jan Humme [ctb],
     Lance Levenson [ctb],
-    Jasen Mackie [ctb],
     Ben McCann [ctb],
     Jeff Ryan [ctb],
     Garrett See [ctb],
-    Joshua Ulrich [ctb],
     Wolfgang Wu [ctb]
 Maintainer: Brian G. Peterson <brian@braverock.com>
 Description: Transaction infrastructure for defining

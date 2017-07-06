@@ -78,7 +78,7 @@
 #'   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
 #'   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
 #'   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
-#'   \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
+#'   \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
 #'   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
 #' }
 #'
@@ -111,7 +111,7 @@
 #' @author Jasen Mackie, Brian G. Peterson
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
-#' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}
+#' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}
 #' @examples
 #' \dontrun{
 #'
@@ -313,9 +313,14 @@ txnsim <- function(Portfolio,
     ## with replacement fns are different to other methods
     
     # sample and layer trades, with replacement
-    tradesample.wr <- function(trades) {
+    tradesample <- function(trades, replacement=TRUE) {
       
-      fudgefactor <- 1.1 # fudgefactor is added to size for sampling
+      # fudgefactor is added to size for sampling
+      if (isTRUE(replacement)){
+        fudgefactor <- 1.1 # fudgefactor is added to size for sampling
+      } else {
+        fudgefactor <- 1 # no factor needed
+      }
       
       # stylized facts
       calendardur <- attr(trades, 'calendar.duration')
@@ -330,14 +335,14 @@ txnsim <- function(Portfolio,
       shortdur    <- sum(trades[shortrows,'duration'])
       lsratio     <- as.numeric(longdur)/(as.numeric(longdur) + as.numeric(shortdur))
       
-      subsample <- function(svector, targetdur) {
+      subsample <- function(svector, targetdur, replacement=TRUE) {
         #`trades` already exists in function scope 
         
         dur <- 0 # initialize duration counter
         tdf <- data.frame() #initialize output data.frame
         nsamples <- round(length(svector) * fudgefactor, 0)
         while (dur < targetdur) {
-          s <- sample(svector, nsamples, replace = TRUE)
+          s <- sample(svector, nsamples, replace = replacement)
           sdf <- data.frame(duration = trades[s,'duration'],
                             quantity = trades[s,'quantity'])
           if (is.null(tdf$duration)) {
@@ -436,7 +441,7 @@ txnsim <- function(Portfolio,
         
         # construct randomized target starting timestamps for long and short 
         # trades for each layer after the first layer
-        timesample <- function(timeseq, num_overlaps,nsample) {
+        timesample <- function(timeseq, num_overlaps, nsample) {
           x <- NULL
           for(n in 2:num_overlaps) { 
             if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nsample, replace = FALSE))
@@ -585,16 +590,10 @@ txnsim <- function(Portfolio,
     } # end tradesample.wr inner fn
     
     # outer function over the symbols
-    symsample.wr <- function(i) {
-      symreps <- replicate(n, tradesample.wr(trades=backtest.trades[[i]]), simplify = FALSE)
+    symsample <- function(i) {
+      symreps <- replicate(n, tradesample(trades=backtest.trades[[i]], replacement=replacement), simplify = FALSE)
     }
-    
-    # now create the replication series
-    if (isTRUE(replacement)) {
-      reps <- lapply(1:length(symbols), symsample.wr)
-    } else {
-      reps <- lapply(1:length(symbols), symsample.nr)
-    }
+    reps <- lapply(1:length(symbols), symsample )
     names(reps) <- symbols
     
   } # end flat.to.reduced/increased.to.reduced method
