@@ -8,7 +8,7 @@
 #' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
 #' @param TA a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}
-#' @param env environment to locate market data in.  default .globalEnv
+#' @param env environment to locate market data in.  default .GlobalEnv
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL,env=.GlobalEnv)
 { # @author Peter Carl, Brian Peterson
