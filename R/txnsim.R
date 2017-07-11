@@ -117,29 +117,34 @@
 #'
 #'   n <- 10
 #'
-#'   ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced') {
-#'     #out <- txnsim(Portfolio,n,replacement)
+#'   ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced', chart=FALSE) {
 #'     out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
-#'     #out <- txnsim(Portfolio,n,replacement, tradeDef = "increased.to.reduced")
-#'     for (i in 1:n){
-#'       p<-paste('txnsim',Portfolio,i,sep='.')
-#'       symbols<-names(getPortfolio(p)$symbols)
+#'     if(isTRUE(chart)) {
+#'       portnames <- blotter:::txnsim.portnames(Portfolio, replacement, n)
+#'       for (i in 1:n){
+#'       p<- portnames[i]
+#'         symbols<-names(getPortfolio(p)$symbols)
 #'       for(symbol in symbols) {
 #'         dev.new()
-#'         chart.Posn(p,symbol)
+#'     	   chart.Posn(p,symbol)
 #'       }
 #'     }
-#'     out
-#'   } # end ex.txnsim
+#'   }
+#'	 invisible(out)
+#'}
 #'
 #'   demo('longtrend',ask=FALSE)
 #'   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
-#'   lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE)
+#'   lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE, chart = TRUE)
+#'   plot(lt.wr)
+#'   hist(lt.wr)
 #'
 #'   require('quantstrat') #sorry for the circular dependency
-#'   demo('rsi',ask=FALSE)
-#'   rsi.nr <- ex.txnsim('RSI',n, replacement = FALSE)
-#'   rsi.wr <- ex.txnsim('RSI',n, replacement = TRUE)
+#'   demo('bbands',ask=FALSE)
+#'   bb.nr <- ex.txnsim('bbands',n, replacement = FALSE)
+#'   bb.wr <- ex.txnsim('bbands',n, replacement = TRUE, chart = TRUE)
+#'   plot(rsi.wr)
+#'   hist(bb.wr)
 #'
 #' } #end dontrun
 #'
@@ -376,18 +381,35 @@ txnsim <- function(Portfolio,
       
       #sample long, short, flat periods
       flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
-      longdf  <- subsample(svector = longrows, targetdur = longdur)
-      shortdf <- subsample(svector = shortrows, targetdur = shortdur)
-      
+      if(longdur > 0){ # ie. there are long round turn trades in the strategy
+        longdf  <- subsample(svector = longrows, targetdur = longdur)
+      } else {
+        longdf <- NULL
+      }
+      if(shortdur > 0){ # ie. there are short round turn trades in the strategy
+        shortdf <- subsample(svector = shortrows, targetdur = shortdur)
+        } else {
+          shortdf <- NULL
+        }
+      #browser()
       # make the first layer
       # 1. start with flat periods
       firstlayer <- flatdf
       # 2. segment trades for first layer
       targetlongdur <- structure(round((calendardur-flatdur)*lsratio),units='secs',class='difftime')
-      targetlongrow <- last(which(cumsum(as.numeric(longdf$duration))<targetlongdur))
-      firstlayer    <- rbind(firstlayer,longdf[1:targetlongrow,])
-      targetshortrow<- last( which( cumsum(as.numeric(shortdf$duration))<(calendardur-sum(firstlayer$duration)) ) )
-      firstlayer    <- rbind(firstlayer,shortdf[1:targetshortrow,])
+      if(!is.null(longdf)){ # ie. there are long round turn trades in the strategy
+        targetlongrow <- last(which(cumsum(as.numeric(longdf$duration))<targetlongdur))
+        firstlayer    <- rbind(firstlayer,longdf[1:targetlongrow,])
+      } else {
+        targetlongrow <- 0
+      }
+      # firstlayer    <- rbind(firstlayer,longdf[1:targetlongrow,])
+      if(!is.null(shortdf)){ # ie. there are short round turn trades in the strategy
+        targetshortrow <- last( which( cumsum(as.numeric(shortdf$duration))<(calendardur-sum(firstlayer$duration)) ) )
+        firstlayer     <- rbind(firstlayer,shortdf[1:targetshortrow,])
+      } else {
+        targetshortrow <- 0
+      }
       firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]       
       # firstlayer should be just slightly longer than calendardur, we'll truncate later
 
@@ -414,7 +436,7 @@ txnsim <- function(Portfolio,
       # how many layers do we need?
       num_overlaps <- ceiling(as.numeric(totaldur)/as.numeric(calendardur))
       
-      if(num_overlaps>1){
+      if(num_overlaps>1){ # ie. total duration > calendar duration
 
         ###
         # construct a temporary frame of the first layer for reference
@@ -434,10 +456,22 @@ txnsim <- function(Portfolio,
         )
         
         # get the range and number of rows remaining of long and short trades
-        shortrange <- (targetshortrow+1):nrow(shortdf)
-        nshort     <- length(shortrange)
-        longrange  <- (targetlongrow+1):nrow(longdf)
-        nlong      <- length(longrange)
+        if(targetshortrow != 0){ # ie. there are short round turn trades in the strategy
+          shortrange <- (targetshortrow+1):nrow(shortdf)
+          nshort     <- length(shortrange)
+        } else {
+          shortrange <- 0
+          nshort <- 0
+        }
+        # nshort     <- length(shortrange)
+        if(targetlongrow != 0){ # ie. there are long round turn trades in the strategy
+          longrange  <- (targetlongrow+1):nrow(longdf)
+          nlong      <- length(longrange)
+        } else {
+          longrange <- 0
+          nlong <- 0
+        }
+        # nlong      <- length(longrange)
         
         # construct randomized target starting timestamps for long and short 
         # trades for each layer after the first layer
@@ -451,9 +485,9 @@ txnsim <- function(Portfolio,
           x
         }
         
-        sh.samples <- timesample(timeseq,num_overlaps,nsample=nlong)
-        ln.samples <- timesample(timeseq,num_overlaps,nsample=nshort)
-
+        ln.samples <- timesample(timeseq,num_overlaps,nsample=nlong)
+        sh.samples <- timesample(timeseq,num_overlaps,nsample=nshort)
+        # browser()
         layerdfs<-list()
         li <- longrange[1]
         si <- shortrange[1]
@@ -492,6 +526,7 @@ txnsim <- function(Portfolio,
           layer.trades <- NULL
           
           # loop over the long/short timestamps
+          if(length(ln.ts) != 0) { # ie. there are long round turn trades, proceed
           for(lts in 1:length(ln.ts)){
             if(li>max(longrange)) break() # no more trades to process
             test.ts <- ln.ts[lts]
@@ -531,8 +566,10 @@ txnsim <- function(Portfolio,
               }
               li<-li+1 #increment long index
             } else next() #next may be unecessary if we can avoid more code after this point in longs loop
-          } # end long layering
+          }
+            }# end long layering
           #repeat a similar approach for shorts
+          if(length(sh.ts) != 0) { # ie. there are short round turn trades, proceed
           for(sts in 1:length(sh.ts)){
             if(si>max(shortrange)) break() # no more trades to process
             test.ts <- sh.ts[sts]
@@ -572,7 +609,8 @@ txnsim <- function(Portfolio,
               }
               si<-si+1 #increment short index
             } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
-          } # end short layering
+          }
+            }# end short layering
           
           #now store the result
           layerdfs[[laynum]] <- layer.trades
