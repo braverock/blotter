@@ -33,6 +33,7 @@ a \code{data.frame} containing:
    \item{Net.Trading.PL}{ }
    \item{Avg.Trade.PL}{ mean trading P&L per trade }
    \item{Med.Trade.PL}{ median trading P&L per trade}
+   \item{Std.Err.Trade.PL}{ standard error of the trading P&L per trade }
    \item{Largest.Winner}{ largest winning trade }
    \item{Largest.Loser}{ largest losing trade }
    \item{Gross.Profits}{ gross (pre-fee) trade profits }
@@ -48,6 +49,7 @@ a \code{data.frame} containing:
    \item{Avg.Daily.PL}{mean daily realized P&L on days there were transactions, see \code{\link{dailyStats}} for all days }
    \item{Med.Daily.PL}{ median daily P&L }
    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
+   \item{Std.Err.Daily.PL}{ standard error of daily P&L }
    \item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
    \item{Max.Drawdown}{ max drawdown }
    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }

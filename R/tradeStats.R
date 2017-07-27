@@ -59,6 +59,7 @@
 #'    \item{Net.Trading.PL}{ }
 #'    \item{Avg.Trade.PL}{ mean trading P&L per trade }
 #'    \item{Med.Trade.PL}{ median trading P&L per trade}
+#'    \item{Std.Err.Trade.PL}{ standard error of the trading P&L per trade }
 #'    \item{Largest.Winner}{ largest winning trade }
 #'    \item{Largest.Loser}{ largest losing trade }
 #'    \item{Gross.Profits}{ gross (pre-fee) trade profits }
@@ -74,6 +75,7 @@
 #'    \item{Avg.Daily.PL}{mean daily realized P&L on days there were transactions, see \code{\link{dailyStats}} for all days }
 #'    \item{Med.Daily.PL}{ median daily P&L }
 #'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
+#'    \item{Std.Err.Daily.PL}{ standard error of daily P&L }
 #'    \item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
@@ -106,6 +108,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                       Total.Net.Profit   = double(),
                       Avg.Trade.PL       = double(),
                       Med.Trade.PL       = double(),
+                      Std.Err.Trade.PL   = double(),
                       Largest.Winner     = double(),
                       Largest.Loser      = double(),
                       Gross.Profits      = double(),
@@ -121,6 +124,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                       Avg.Daily.PL       = double(),
                       Med.Daily.PL       = double(),
                       Std.Dev.Daily.PL   = double(),
+                      Std.Err.Daily.PL   = double(),
                       Ann.Sharpe         = double(),
                       Max.Drawdown       = double(),
                       Profit.To.Max.Draw = double(),
@@ -163,9 +167,14 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             if(!isTRUE(inclZeroDays)) DailyPL <- apply.daily(PL.ne0,sum)
             else DailyPL <- apply.daily(txn$Net.Txn.Realized.PL,sum)
             
+            stderr <- function(x){
+              sd(x)/sqrt(length(x))
+            }
+            
             AvgDailyPL <- mean(DailyPL)
             MedDailyPL <- median(DailyPL)
             StdDailyPL <- sd(as.numeric(as.vector(DailyPL)))
+            StdErrDailyPL <- stderr(as.numeric(as.vector(DailyPL)))
             
             switch(use,
                    txns = {
@@ -189,6 +198,8 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
             StdTradePL <- sd(as.numeric(as.vector(PL.ne0)))  
             AnnSharpe  <- ifelse(StdDailyPL == 0, NA, AvgDailyPL/StdDailyPL * sqrt(252))
             
+            StdErrTradePL  <- stderr(as.numeric(as.vector(PL.ne0)))
+
             NumberOfTxns   <- nrow(txn)-1
             NumberOfTrades <- length(PL.ne0)
             
@@ -246,6 +257,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                                  Gross.Profits      = GrossProfits,
                                  Gross.Losses       = GrossLosses,
                                  Std.Dev.Trade.PL   = StdTradePL,
+                                 Std.Err.Trade.PL   = StdErrTradePL,
                                  Percent.Positive   = PercentPositive,
                                  Percent.Negative   = PercentNegative,
                                  Profit.Factor      = ProfitFactor,
@@ -256,6 +268,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                                  Avg.Daily.PL       = AvgDailyPL,
                                  Med.Daily.PL       = MedDailyPL,
                                  Std.Dev.Daily.PL   = StdDailyPL,
+                                 Std.Err.Daily.PL   = StdErrDailyPL,
                                  Ann.Sharpe         = AnnSharpe,
                                  Max.Drawdown       = MaxDrawdown,
                                  Profit.To.Max.Draw = ProfitToMaxDraw,
