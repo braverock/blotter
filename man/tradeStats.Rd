@@ -9,7 +9,7 @@
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
   tradeDef = "flat.to.flat", inclZeroDays = FALSE)
 
-dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE)
+dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
@@ -22,7 +22,9 @@ dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE)
 
 \item{inclZeroDays}{TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.}
 
-\item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default FALSE}
+\item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE}
+
+\item{\dots}{any other passthrough params (e.g. \code{method} for skewness/kurtosis)}
 }
 \value{
 a \code{data.frame} containing:
@@ -52,6 +54,8 @@ a \code{data.frame} containing:
    \item{Med.Daily.PL}{ median daily P&L }
    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
    \item{Std.Err.Daily.PL}{ standard error of daily P&L }
+   \item{Skewness}{skewness of daily P&L, for \code{dailyStats} only }
+   \item{Kurtosis}{kurtosis of daily P&L, for \code{dailyStats} only }
    \item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
    \item{Max.Drawdown}{ max drawdown }
    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
@@ -103,7 +107,7 @@ WARNING: we're not sure this function is stable/complete yet.  If you're using i
 TODO document each statistic included in this function, with equations 
 
 TODO add more stats, potentially
-PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sortino
+PerformanceAnalytics: upside/downside semidieviation, Sortino
 
 mean absolute deviation stats
 

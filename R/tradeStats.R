@@ -76,6 +76,8 @@
 #'    \item{Med.Daily.PL}{ median daily P&L }
 #'    \item{Std.Dev.Daily.PL}{ standard deviation of daily P&L }
 #'    \item{Std.Err.Daily.PL}{ standard error of daily P&L }
+#'    \item{Skewness}{skewness of daily P&L, for \code{dailyStats} only }
+#'    \item{Kurtosis}{kurtosis of daily P&L, for \code{dailyStats} only }
 #'    \item{Ann.Sharpe}{annualized Sharpe-like ratio, assuming no outside capital additions and 252 day count convention}
 #'    \item{Max.Drawdown}{ max drawdown }
 #'    \item{Avg.WinLoss.Ratio}{ ratio of mean winning over mean losing trade }
@@ -87,7 +89,7 @@
 #' TODO document each statistic included in this function, with equations 
 #' 
 #' TODO add more stats, potentially
-#' PerformanceAnalytics: skewness, kurtosis, upside/downside semidieviation, Sortino
+#' PerformanceAnalytics: upside/downside semidieviation, Sortino
 #' 
 #' mean absolute deviation stats
 #' 
@@ -377,8 +379,9 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 
 #' @rdname tradeStats
 #' @param perSymbol boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE
+#' @param \dots any other passthrough params (e.g. \code{method} for skewness/kurtosis)
 #' @export
-dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE)
+dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...)
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
@@ -410,6 +413,9 @@ dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE)
         AvgDayPL <- as.numeric(mean(PL.ne0))
         MedDayPL <- as.numeric(median(PL.ne0))
         StdDayPL <- as.numeric(sd(PL.ne0))   
+        
+        skew     <- skewness(x,...)
+        kurt     <- kurtosis(x,...)
         
         #NumberOfDays <- nrow(txn)
         WinDays         <- length(PL.gt0)
@@ -463,6 +469,8 @@ dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE)
                 Avg.Daily.PL       = AvgDailyPL,
                 Med.Daily.PL       = MedDailyPL,
                 Std.Dev.Daily.PL   = StdDailyPL,
+                Skewness           = skew,
+                Kurtosis           = kurt,
                 Ann.Sharpe         = AnnSharpe,
                 Max.Drawdown       = MaxDrawdown,
                 Profit.To.Max.Draw = ProfitToMaxDraw,
