@@ -9,7 +9,7 @@
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
   tradeDef = "flat.to.flat", inclZeroDays = FALSE)
 
-dailyStats(Portfolios, use = c("equity", "txns"))
+dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
@@ -21,6 +21,8 @@ dailyStats(Portfolios, use = c("equity", "txns"))
 \item{tradeDef}{string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.}
 
 \item{inclZeroDays}{TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.}
+
+\item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default FALSE}
 }
 \value{
 a \code{data.frame} containing:

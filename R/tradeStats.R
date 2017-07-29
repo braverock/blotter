@@ -364,7 +364,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
             
             #DailyPL <- apply.daily(Equity,last)
             DailyPL           <- apply.daily(posPL$Net.Trading.PL,colSums)
-            colnames(DailyPL) <- paste(symbol,'DailyEndEq',sep='.')
+            colnames(DailyPL) <- paste(symbol,'DailyEqPL',sep='.')
             if(is.null(ret)) ret=DailyPL else ret<-cbind(ret,DailyPL)
             
         } # end symbol loop
@@ -376,8 +376,9 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 }
 
 #' @rdname tradeStats
+#' @param perSymbol boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE
 #' @export
-dailyStats <- function(Portfolios,use=c('equity','txns'))
+dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE)
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
@@ -388,6 +389,11 @@ dailyStats <- function(Portfolios,use=c('equity','txns'))
                 dailyPL <- dailyTxnPL(Portfolios)
             }
             )
+    
+    if(!isTRUE(perSymbol)){
+      dailyPL <- xts(rowSums(dailyPL),order.by = index(dailyPL))
+      colnames(dailyPL) <- 'dailyPL' #would like to include portfolio names
+    }
     
     dailyFUN <- function (x){
         x<-t(t(x))
