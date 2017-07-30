@@ -36,6 +36,8 @@ a list object of class 'txnsim' containing:
   \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
+  \item{\code{ranks}:}{a numeric dataframe containing the ranking of the statistics}
+  \item{\code{pvalues}:}{a numeric dataframe containing the pvalues for the observed backtest compared to the sampled ranks }
   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
   \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
@@ -114,47 +116,77 @@ replicates will take place at the same time.  Quantity and duration may differ,
 but the trade will start at the same time, unless the first sampled period is
 a flat one.  We may choose to relax this in the future and add or subtract a 
 short amount of duration to the replicates to randomize the first entry more
-fully as well.
+fully as well.  Inclusion of flat periods should provide a fair amount of 
+variation, so this may not be an issue.
  
 The user may wish to pass \code{Interval} in dots to mark the portfolio at a
 different frequency than the market data, especially for intraday market
 data.  Note that market data must be available to call
 \code{\link{updatePortf}} on.
+
+We are including p-values for some sample statistics in the output as well.
+Some notes are in order on how this is calculatated, and how it may be
+interpreted. With small \code{n}, these p-values are meaningless.  With large
+\code{n}, they should be fairly stable.  Per North et. al. (2002) who use
+Davison & Hinkley (1997) as their source, the correct unbiased p-value for a 
+simulation sample statistic is:
+
+\deqn{ \frac{rank_bt+1}{n_samples+1} }{rank+1/n+1}
+
+where the rank of the observed statistic is compared against statistics
+calculated on the simulation. Interpretation of this result takes some care.   
+The skeptical analyst would prefer to see a low p-value (e.g. the customary 
+0.05). The same analyst should be concerned about overfitting if an
+extraordinarily low p-value (e.g. 0.0001) is observed, or conclude that there
+may be room to improve the strategy is available if the p-value is low but not
+compelling (e.g. 0.15).  Issues of multiple testing bias should also be 
+considered.  Interpretation of the p-value of the mean is most easily fit into 
+the customary p<0.05 target.  Appropriate critical values for other statistics 
+may be lower or higher.
 }
 \examples{
 \dontrun{
 
   n <- 10
 
-  ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced') {
-    #out <- txnsim(Portfolio,n,replacement)
+  ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced', chart=FALSE) {
     out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
-    #out <- txnsim(Portfolio,n,replacement, tradeDef = "increased.to.reduced")
-    for (i in 1:n){
-      p<-paste('txnsim',Portfolio,i,sep='.')
-      symbols<-names(getPortfolio(p)$symbols)
+    if(isTRUE(chart)) {
+      portnames <- blotter:::txnsim.portnames(Portfolio, replacement, n)
+      for (i in 1:n){
+      p<- portnames[i]
+        symbols<-names(getPortfolio(p)$symbols)
       for(symbol in symbols) {
         dev.new()
-        chart.Posn(p,symbol)
+    	   chart.Posn(p,symbol)
       }
     }
-    out
-  } # end ex.txnsim
+  }
+ invisible(out)
+}
 
   demo('longtrend',ask=FALSE)
   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
-  lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE)
+  lt.wr <- ex.txnsim('longtrend',n, replacement = TRUE, chart = TRUE)
+  plot(lt.wr)
+  hist(lt.wr)
 
   require('quantstrat') #sorry for the circular dependency
-  demo('rsi',ask=FALSE)
-  rsi.nr <- ex.txnsim('RSI',n, replacement = FALSE)
-  rsi.wr <- ex.txnsim('RSI',n, replacement = TRUE)
+  demo('bbands',ask=FALSE)
+  bb.nr <- ex.txnsim('bbands',n, replacement = FALSE)
+  bb.wr <- ex.txnsim('bbands',n, replacement = TRUE, chart = TRUE)
+  plot(rsi.wr)
+  hist(bb.wr)
 
 } #end dontrun
 
 }
 \references{
 Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
+
+North, B.V., D. Curtis, and P.C. Sham. Aug 2002. A Note on the Calculation of Empirical P Values from Monte Carlo Procedures. Am J Hum Genet. 2002 Aug; 71(2): 439–441. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
+
+Davison & Hinkley. 1997. Bootstrap methods and their application.
 }
 \seealso{
 \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}

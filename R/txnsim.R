@@ -49,12 +49,33 @@
 #' but the trade will start at the same time, unless the first sampled period is
 #' a flat one.  We may choose to relax this in the future and add or subtract a 
 #' short amount of duration to the replicates to randomize the first entry more
-#' fully as well.
+#' fully as well.  Inclusion of flat periods should provide a fair amount of 
+#' variation, so this may not be an issue.
 #'  
 #' The user may wish to pass \code{Interval} in dots to mark the portfolio at a
 #' different frequency than the market data, especially for intraday market
 #' data.  Note that market data must be available to call
 #' \code{\link{updatePortf}} on.
+#' 
+#' We are including p-values for some sample statistics in the output as well.
+#' Some notes are in order on how this is calculatated, and how it may be
+#' interpreted. With small \code{n}, these p-values are meaningless.  With large
+#' \code{n}, they should be fairly stable.  Per North et. al. (2002) who use
+#' Davison & Hinkley (1997) as their source, the correct unbiased p-value for a 
+#' simulation sample statistic is:
+#' 
+#' \deqn{ \frac{rank_bt+1}{n_samples+1} }{rank+1/n+1}
+#' 
+#' where the rank of the observed statistic is compared against statistics
+#' calculated on the simulation. Interpretation of this result takes some care.   
+#' The skeptical analyst would prefer to see a low p-value (e.g. the customary 
+#' 0.05). The same analyst should be concerned about overfitting if an
+#' extraordinarily low p-value (e.g. 0.0001) is observed, or conclude that there
+#' may be room to improve the strategy is available if the p-value is low but not
+#' compelling (e.g. 0.15).  Issues of multiple testing bias should also be 
+#' considered.  Interpretation of the p-value of the mean is most easily fit into 
+#' the customary p<0.05 target.  Appropriate critical values for other statistics 
+#' may be lower or higher. 
 #' 
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
@@ -77,6 +98,8 @@
 #'   \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
 #'   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
 #'   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
+#'   \item{\code{ranks}:}{a numeric dataframe containing the ranking of the statistics}
+#'   \item{\code{pvalues}:}{a numeric dataframe containing the pvalues for the observed backtest compared to the sampled ranks }
 #'   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
 #'   \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
 #'   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
@@ -111,6 +134,11 @@
 #' @author Jasen Mackie, Brian G. Peterson
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
+#' 
+#' North, B.V., D. Curtis, and P.C. Sham. Aug 2002. A Note on the Calculation of Empirical P Values from Monte Carlo Procedures. Am J Hum Genet. 2002 Aug; 71(2): 439–441. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
+#' 
+#' Davison & Hinkley. 1997. Bootstrap methods and their application.
+#' 
 #' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}
 #' @examples
 #' \dontrun{
@@ -677,46 +705,54 @@ txnsim <- function(Portfolio,
       cumpl <- cbind(cumpl, cumsum(getPortfolio(p)$summary$Net.Trading.PL[-1]))
     }
   }
+
   colnames(perpl) <- portnames
-  perpl <- perpl[-which(complete.cases(perpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
+  colnames(cumpl) <- portnames
+
+  # add the observed portfolio here for comparison
   backtestperpl <- .getPortfolio(Portfolio)$summary$Net.Trading.PL[-1]
   colnames(backtestperpl) <- Portfolio
-  #perpl <- cbind(backtestperpl,perpl)
-  
-  colnames(cumpl) <- portnames
-  cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
-  backtestpl <- cumsum(.getPortfolio(Portfolio)$summary$Net.Trading.PL[-1])
-  colnames(backtestpl) <- Portfolio
+  backtestpl <- cumsum(backtestperpl)
   cumpl <- cbind(backtestpl,cumpl)
-  #browser()
+  perpl <- cbind(backtestperpl,perpl)
+
+  cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
+  
   # compute sample stats
-  sampleoutput <- data.frame(matrix(nrow = n, ncol = 5))
-  colnames(sampleoutput) <- c("mean","median","stddev","maxDD","sharpe")
-  sampleoutput$mean <- apply(perpl, 2, function(x) { mean(x) } )
-  sampleoutput$median <- apply(perpl, 2, function(x) { median(x) } )
-  sampleoutput$stddev <- apply(perpl, 2, function(x) { StdDev(x) } )
-  sampleoutput$maxDD <- apply(perpl, 2, function(x) { -max(cummax(cumsum(x))-cumsum(x)) } )
-  sampleoutput$sharpe <- apply(perpl, 2, function(x) { mean(x)/StdDev(x) } )
+  sampleoutput <- data.frame(matrix(nrow = n+1, ncol = 6))
+  colnames(sampleoutput) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
+  sampleoutput$mean    <- apply(perpl, 2, function(x) { mean(x, na.rm=TRUE) } )
+  sampleoutput$median  <- apply(perpl, 2, function(x) { median(x, na.rm=TRUE) } )
+  sampleoutput$stddev  <- apply(perpl, 2, function(x) { StdDev(x) } )
+  sampleoutput$maxDD   <- apply(perpl, 2, function(x) { -max(cummax(cumsum(na.omit(x)))-cumsum(na.omit(x))) } )
+  sampleoutput$sharpe  <- apply(perpl, 2, function(x) { mean(x, na.rm=TRUE)/StdDev(x) } )
+  sampleoutput$totalPL <- apply(perpl, 2, function(x) { sum(na.omit(x)) } )
+  rownames(sampleoutput)<-colnames(perpl)
   
   # store stats for use later in hist.mcsim and summary.mcsim
-  original <- data.frame(matrix(nrow = 1, ncol = 5))
-  colnames(original) <- c("mean","median","stddev","maxDD","sharpe")
+  original <- sampleoutput[1,]
   
-  original$mean <- mean(backtestperpl)
-  original$median <- median(backtestperpl)
-  original$stddev <- StdDev(backtestperpl)
-  original$maxDD <- -max(cummax(cumsum(backtestperpl))-cumsum(backtestperpl))
-  original$sharpe <- mean(backtestperpl)/StdDev(backtestperpl)
+
+  # compute p-values
+  ranks <- apply(-sampleoutput,2,rank)
+  # correct calc for unbiased p-value is rank+1/nsamples+1 
+  # where rank is rank of the sample statistic of the observation vs. samples
+  # we've included the observed series in the sample, so the correct calc
+  # is rank/nsamples
+  pvalues <- ranks[1,]/nrow(ranks)
+  sigd    <- nchar(n+1)
+  pvalues <- round(pvalues, digits=sigd )
   
   # Compute standard errors of the sample stats
-  stderror <- data.frame(matrix(nrow = 1, ncol = 5))
-  colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe")
+  stderror <- data.frame(matrix(nrow = 1, ncol = 6))
+  colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
   row.names(stderror) <- "Std. Error"
   stderror$mean <- StdDev(sampleoutput[,1])
   stderror$median <- StdDev(sampleoutput[,2])
   stderror$stddev <- StdDev(sampleoutput[,3])
   stderror$maxDD <- StdDev(sampleoutput[,4])
   stderror$sharpe <- StdDev(sampleoutput[,5])
+  stderror$totalPL <- StdDev(sampleoutput[,6])
   
   # Compute Confidence Intervals, but first add the CI functions
   CI_lower <- function(samplemean, merr) {
@@ -778,6 +814,8 @@ txnsim <- function(Portfolio,
     n = n,
     samplestats=sampleoutput,
     original=original,
+    ranks=ranks,
+    pvalues=pvalues,
     stderror=stderror,
     CI=CI,
     CIdf=CIdf
