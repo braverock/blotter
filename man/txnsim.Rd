@@ -147,9 +147,15 @@ may be lower or higher.
 \examples{
 \dontrun{
 
-  n <- 10
+ n <- 10
 
-  ex.txnsim <- function(Portfolio,n=10,replacement=FALSE, tradeDef='increased.to.reduced', chart=FALSE) {
+ ex.txnsim <- function(Portfolio
+                        ,n=10
+                        ,replacement=FALSE
+                        , tradeDef='increased.to.reduced'
+                        , chart=FALSE
+                        ) 
+ {
     out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
     if(isTRUE(chart)) {
       portnames <- blotter:::txnsim.portnames(Portfolio, replacement, n)
@@ -163,7 +169,7 @@ may be lower or higher.
     }
   }
  invisible(out)
-}
+ } # end ex.txnsim
 
   demo('longtrend',ask=FALSE)
   lt.nr <- ex.txnsim('longtrend',n, replacement = FALSE)
