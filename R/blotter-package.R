@@ -1,7 +1,7 @@
 #'@name blotter
 #'@rdname blotter-package
 #'@docType package
-#'@useDynLib blotter
+#'@useDynLib blotter, .registration=TRUE, .fixes="C_"
 #'
 #'@title
 #'Tools for Transaction-Oriented Trading Systems Development
