@@ -135,7 +135,7 @@
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 #' 
-#' North, B.V., D. Curtis, and P.C. Sham. Aug 2002. A Note on the Calculation of Empirical P Values from Monte Carlo Procedures. Am J Hum Genet. 2002 Aug; 71(2): 439–441. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
+#' North, B.V., D. Curtis, and P.C. Sham. Aug 2002. A Note on the Calculation of Empirical P Values from Monte Carlo Procedures. Am J Hum Genet. 2002 Aug; 71(2): 439-441. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
 #' 
 #' Davison & Hinkley. 1997. Bootstrap methods and their application.
 #' 
