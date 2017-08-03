@@ -7,7 +7,7 @@
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
-  tradeDef = "flat.to.flat", inclZeroDays = FALSE)
+  tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter)
 
 dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
   envir = .blotter)
@@ -22,6 +22,8 @@ dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
 \item{tradeDef}{string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.}
 
 \item{inclZeroDays}{TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.}
+
+\item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
 
 \item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE}
 

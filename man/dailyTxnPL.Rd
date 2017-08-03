@@ -20,6 +20,8 @@ dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
 \item{drop.time}{remove time component of POSIX datestamp (if any), default TRUE}
 
 \item{incl.total}{if TRUE, add a column with the daily portfolio total P&L, default FALSE}
+
+\item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
 }
 \value{
 a multi-column \code{xts} time series, one column per symbol, one row per day
