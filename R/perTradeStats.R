@@ -322,6 +322,7 @@ perTradeStats <- function(Portfolio
              gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
              if(index(trade[nrow(trade),]) %in% index(gettxns)){
                closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
+               if(length(closeqty)>1) closeqty<-sum(closeqqty) #multiple closing trades share the timestamp, so combine for pro-rata calc
              }
              tradecost <- coredata(gettxns$Txn.Price[index(trade[1,])]) # used in computing trade.PL
              if(abs(trades$Closing.Txn.Qty[i] / closeqty) >= 1) { # closing qty less than init.pos, incl full realized.pl
