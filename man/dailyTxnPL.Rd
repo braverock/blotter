@@ -6,9 +6,11 @@
 \alias{dailyEqPL}
 \title{generate daily Transaction Realized or Equity Curve P&L by instrument}
 \usage{
-dailyTxnPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE)
+dailyTxnPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
+  envir = .blotter)
 
-dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE)
+dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
+  envir = envir)
 }
 \arguments{
 \item{Portfolios}{portfolio string}

@@ -306,12 +306,12 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
 #' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
-dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
-        Portfolio <- getPortfolio(pname)        
+        Portfolio <- .getPortfolio(pname, envir=envir)        
         
         
         ## FIXME: need a way to define symbols for each portfolio    
@@ -342,12 +342,12 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=envir)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
-        Portfolio <- getPortfolio(pname)        
+        Portfolio <- .getPortfolio(pname, envir=envir)        
         
         ## FIXME: need a way to define symbols for each portfolio    
         if(missing(Symbols)) symbols <- ls(Portfolio$symbols)
@@ -381,15 +381,15 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE)
 #' @param perSymbol boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE
 #' @param \dots any other passthrough params (e.g. \code{method} for skewness/kurtosis)
 #' @export
-dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...)
+dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,..., envir=.blotter)
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
             Eq =, eq =, Equity =, equity =, cumPL = {
-                dailyPL <- dailyEqPL(Portfolios)
+                dailyPL <- dailyEqPL(Portfolios, envir=envir)
             },
             Txns =, txns =, Trades =, trades = {
-                dailyPL <- dailyTxnPL(Portfolios)
+                dailyPL <- dailyTxnPL(Portfolios, envir=envir)
             }
             )
     

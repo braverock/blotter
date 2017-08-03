@@ -9,7 +9,8 @@
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
   tradeDef = "flat.to.flat", inclZeroDays = FALSE)
 
-dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...)
+dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
+  envir = .blotter)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
