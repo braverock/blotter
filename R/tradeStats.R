@@ -344,7 +344,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
 
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=envir)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter)
 {
     ret <- NULL
     for (Portfolio in Portfolios){

@@ -10,7 +10,7 @@ dailyTxnPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
   envir = .blotter)
 
 dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
-  envir = envir)
+  envir = .blotter)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
