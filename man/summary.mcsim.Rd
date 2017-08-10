@@ -2,9 +2,12 @@
 % Please edit documentation in R/mcsim.R
 \name{summary.mcsim}
 \alias{summary.mcsim}
-\title{summary method for objects of type \code{mcsim}}
+\alias{print.mcsim}
+\title{summary and print methods for objects of type \code{mcsim}}
 \usage{
 \method{summary}{mcsim}(object, ..., normalize = TRUE)
+
+\method{print}{mcsim}(x, ...)
 }
 \arguments{
 \item{object}{object of type 'mcsim' to produce a sample and backtest summary}
@@ -14,7 +17,7 @@
 \item{normalize}{TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE}
 }
 \description{
-summary method for objects of type \code{mcsim}
+summary and print methods for objects of type \code{mcsim}
 }
 \author{
 Jasen Mackie, Brian G. Peterson

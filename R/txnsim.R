@@ -786,9 +786,12 @@ txnsim <- function(Portfolio,
   CI_sharpe <- cbind(CI_lower(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
   
+  CI_totalPL <- cbind(CI_lower(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
+                      CI_upper(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
+  
   # Build the Confidence Interval dataframes
-  CIdf <- data.frame(matrix(nrow = 2, ncol = 5))
-  colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe")
+  CIdf <- data.frame(matrix(nrow = 2, ncol = 6))
+  colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
   row.names(CIdf) <- c("Lower CI","Upper CI")
   CIdf$mean[row.names(CIdf) == "Lower CI"] <- CI_mean[1,1]
   CIdf$mean[row.names(CIdf) == "Upper CI"] <- CI_mean[1,2]
@@ -804,6 +807,9 @@ txnsim <- function(Portfolio,
   
   CIdf$sharpe[row.names(CIdf) == "Lower CI"] <- CI_sharpe[1,1]
   CIdf$sharpe[row.names(CIdf) == "Upper CI"] <- CI_sharpe[1,2]
+
+  CIdf$totalPL[row.names(CIdf) == "Lower CI"] <- CI_totalPL[1,1]
+  CIdf$totalPL[row.names(CIdf) == "Upper CI"] <- CI_totalPL[1,2]
   
   # generate the return object
   ret <- list(
@@ -1207,6 +1213,28 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
   }
 }
 
+
+
+#' summary and print methods for objects of type txnsim
+#'
+#' @param x an object of type txnsim
+#' @param ... any other passthrough parameters
+#'
+#' @method summary txnsim
+#' @export
+summary.txnsim <- function(x,...){
+  out<-t(rbind(x$original,x$stderror,x$CIdf))
+  colnames(out)[1]<-'backtest'
+  out
+}
+
+#' @rdname summary.txnsim
+#' @method print txnsim
+#' @export
+print.txnsim <- function(x,...){
+  summary.txnsim(x)  
+}
+  
 ###############################################################################
 # R (http://r-project.org/) Quantitative Strategy Model Framework
 #

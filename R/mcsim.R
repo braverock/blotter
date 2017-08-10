@@ -763,7 +763,7 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
   q
 }
 
-#' summary method for objects of type \code{mcsim}
+#' summary and print methods for objects of type \code{mcsim}
 #'
 #' @param object object of type 'mcsim' to produce a sample and backtest summary
 #' @param \dots any other passthrough parameters
@@ -830,6 +830,13 @@ summary.mcsim <- function(object, ..., normalize=TRUE) {
   }
 }
 
+#' @rdname summary.mcsim
+#' @method print mcsim
+#' @export
+print.mcsim <- function(x,...){
+  summary.mcsim(x)
+}
+  
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
 # for R (see http://r-project.org/)
