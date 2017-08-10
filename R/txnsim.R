@@ -1232,7 +1232,7 @@ summary.txnsim <- function(x,...){
 #' @method print txnsim
 #' @export
 print.txnsim <- function(x,...){
-  summary.txnsim(x)  
+  round(summary.txnsim(x),3)  
 }
   
 ###############################################################################
