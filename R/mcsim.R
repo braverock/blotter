@@ -775,6 +775,7 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
 #' summary and print methods for objects of type \code{mcsim}
 #'
 #' @param object object of type 'mcsim' to produce a sample and backtest summary
+#' @param x an object of type 'mcsim'
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE
 #' @author Jasen Mackie, Brian G. Peterson

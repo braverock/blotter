@@ -15,6 +15,8 @@
 \item{\dots}{any other passthrough parameters}
 
 \item{normalize}{TRUE/FALSE whether to use normalized percent-based summary stats, default TRUE}
+
+\item{x}{an object of type 'mcsim'}
 }
 \description{
 summary and print methods for objects of type \code{mcsim}
