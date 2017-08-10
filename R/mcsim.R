@@ -842,8 +842,8 @@ summary.mcsim <- function(object, ..., normalize=TRUE) {
 #' @rdname summary.mcsim
 #' @method print mcsim
 #' @export
-print.mcsim <- function(x,...){
-  round(summary.mcsim(x),3)
+print.mcsim <- function(x,..., normalize=TRUE){
+  round(summary.mcsim(x,..., normalize=normalize),3)
 }
   
 ###############################################################################

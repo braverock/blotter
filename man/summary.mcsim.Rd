@@ -7,7 +7,7 @@
 \usage{
 \method{summary}{mcsim}(object, ..., normalize = TRUE)
 
-\method{print}{mcsim}(x, ...)
+\method{print}{mcsim}(x, ..., normalize = TRUE)
 }
 \arguments{
 \item{object}{object of type 'mcsim' to produce a sample and backtest summary}
