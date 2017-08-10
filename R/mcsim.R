@@ -747,6 +747,8 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
 
 #' quantile method for objects of type \code{mcsim}
 #'
+#' generates quantiles of cumulative P&L of the replicated equity curves
+#' 
 #' @param x object of type 'mcsim' to produce replicate quantiles
 #' @param \dots any other passthrough parameters
 #' @param normalize TRUE/FALSE whether to normalize the plot by initEq, default TRUE
@@ -755,10 +757,17 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
 #' @export
 quantile.mcsim <- function(x, ..., normalize=TRUE) {
   ret <- x
-  if(isTRUE(normalize)) {
-    q   <- quantile(na.omit(ret$percreplicates))
+  
+  if(isTRUE(normalize) && ret$initeq>1){
+    x1 <- cumsum(ret$percreplicates)
   } else {
-    q   <- quantile(na.omit(ret$replicates))
+    x1 <- cumsum(ret$replicates)
+  }
+  
+  if(isTRUE(normalize)) {
+    q   <- quantile(na.omit(x1))
+  } else {
+    q   <- quantile(na.omit(x1))
   }
   q
 }

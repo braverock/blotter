@@ -12,7 +12,7 @@
 \item{\dots}{any other passthrough parameters to \code{\link{quantile}}}
 }
 \description{
-quantile method for objects of type \code{txnsim}
+calculates quantiles of cumulative P&L of the simulated strategies
 }
 \author{
 Jasen Mackie, Brian G. Peterson

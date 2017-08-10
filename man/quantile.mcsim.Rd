@@ -14,7 +14,7 @@
 \item{normalize}{TRUE/FALSE whether to normalize the plot by initEq, default TRUE}
 }
 \description{
-quantile method for objects of type \code{mcsim}
+generates quantiles of cumulative P&L of the replicated equity curves
 }
 \author{
 Jasen Mackie, Brian G. Peterson

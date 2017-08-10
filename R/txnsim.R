@@ -1001,6 +1001,8 @@ plot.txnsim <- function(x, y, ...) {
 
 #' quantile method for objects of type \code{txnsim}
 #'
+#' calculates quantiles of cumulative P&L of the simulated strategies
+#' 
 #' @param x object of type 'txnsim' to produce replicate quantiles
 #' @param \dots any other passthrough parameters to \code{\link{quantile}}
 #' @author Jasen Mackie, Brian G. Peterson
