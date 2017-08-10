@@ -1220,11 +1220,12 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
 #' summary and print methods for objects of type txnsim
 #'
 #' @param x an object of type txnsim
+#' @param object an object of type txnsim
 #' @param ... any other passthrough parameters
 #'
 #' @method summary txnsim
 #' @export
-summary.txnsim <- function(x,...){
+summary.txnsim <- function(object,...){
   out<-t(rbind(x$original,x$stderror,x$CIdf))
   colnames(out)[1]<-'backtest'
   out
@@ -1234,7 +1235,7 @@ summary.txnsim <- function(x,...){
 #' @method print txnsim
 #' @export
 print.txnsim <- function(x,...){
-  round(summary.txnsim(x),3)  
+  round(summary.txnsim(x,...),3)  
 }
   
 ###############################################################################

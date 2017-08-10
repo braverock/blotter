@@ -5,14 +5,16 @@
 \alias{print.txnsim}
 \title{summary and print methods for objects of type txnsim}
 \usage{
-\method{summary}{txnsim}(x, ...)
+\method{summary}{txnsim}(object, ...)
 
 \method{print}{txnsim}(x, ...)
 }
 \arguments{
-\item{x}{an object of type txnsim}
+\item{object}{an object of type txnsim}
 
 \item{...}{any other passthrough parameters}
+
+\item{x}{an object of type txnsim}
 }
 \description{
 summary and print methods for objects of type txnsim
