@@ -387,17 +387,18 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, env
 
 #' @rdname tradeStats
 #' @param perSymbol boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE
+#' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @param \dots any other passthrough params (e.g. \code{method} for skewness/kurtosis)
 #' @export
-dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,..., envir=.blotter)
+dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,..., envir=.blotter, native=TRUE)
 {
     use=use[1] #take the first value if the user didn't specify
     switch (use,
             Eq =, eq =, Equity =, equity =, cumPL = {
-                dailyPL <- dailyEqPL(Portfolios, envir=envir)
+                dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native)
             },
             Txns =, txns =, Trades =, trades = {
-                dailyPL <- dailyTxnPL(Portfolios, envir=envir)
+                dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir)
             }
             )
     

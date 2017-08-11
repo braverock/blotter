@@ -10,7 +10,7 @@ tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
   tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter)
 
 dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
-  envir = .blotter)
+  envir = .blotter, native = TRUE)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
@@ -28,6 +28,8 @@ dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
 \item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE}
 
 \item{\dots}{any other passthrough params (e.g. \code{method} for skewness/kurtosis)}
+
+\item{native}{if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE}
 }
 \value{
 a \code{data.frame} containing:
