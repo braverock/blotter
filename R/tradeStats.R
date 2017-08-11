@@ -361,7 +361,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, env
             if (isTRUE(native)){
               posPL <- Portfolio$symbols[[symbol]]$posPL
             } else {
-              currPosPL <- paste0('PosPL.',attributes(Portfolio)$currency)
+              currPosPL <- paste0('posPL.',attributes(Portfolio)$currency)
               posPL <- Portfolio$symbols[[symbol]][[currPosPL]]
             }
             posPL <- posPL[-1,] # remove initialization row
