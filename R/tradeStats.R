@@ -342,9 +342,10 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
     return(ret)
 }
 
+#' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
@@ -357,7 +358,12 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, env
         
         ## Trade Statistics
         for (symbol in symbols){
-            posPL <- Portfolio$symbols[[symbol]]$posPL
+            if (isTRUE(native)){
+              posPL <- Portfolio$symbols[[symbol]]$posPL
+            } else {
+              currPosPL <- paste0('PosPL.',attributes(Portfolio)$currency)
+              posPL <- Portfolio$symbols[[symbol]][[currPosPL]]
+            }
             posPL <- posPL[-1,] # remove initialization row
             
             Equity <- cumsum(posPL$Net.Trading.PL)

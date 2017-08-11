@@ -10,7 +10,7 @@ dailyTxnPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
   envir = .blotter)
 
 dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
-  envir = .blotter)
+  envir = .blotter, native = TRUE)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
@@ -22,6 +22,8 @@ dailyEqPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,
 \item{incl.total}{if TRUE, add a column with the daily portfolio total P&L, default FALSE}
 
 \item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
+
+\item{native}{if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE}
 }
 \value{
 a multi-column \code{xts} time series, one column per symbol, one row per day
