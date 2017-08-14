@@ -9,24 +9,24 @@
 #' @details
 #'
 #' Statisticians talk about the 'stylized facts' of a data set.  If you consider
-#' the stylized facts of a series of transactions that are the output of a 
-#' discretionary or systematic trading strategy, it should be clear that there 
-#' is a lot of information available to work with.  Initial analysis such as 
-#' \code{\link{tradeStats}} and \code{\link{perTradeStats}} can describe the 
-#' results of the series of transactions which resulted from the trading 
-#' strategy.  What else can we learn from these transactions regarding trading 
+#' the stylized facts of a series of transactions that are the output of a
+#' discretionary or systematic trading strategy, it should be clear that there
+#' is a lot of information available to work with.  Initial analysis such as
+#' \code{\link{tradeStats}} and \code{\link{perTradeStats}} can describe the
+#' results of the series of transactions which resulted from the trading
+#' strategy.  What else can we learn from these transactions regarding trading
 #' style or the skill of the trader? \code{txnsim} seeks to conduct a simulation
 #' over the properties of sampled round turn trades to help evaluate this.
-#' 
-#' With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging 
+#'
+#' With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging
 #' quantity and duration of round turns.  This may be enough for a strategy that
 #' only puts on a single level per round turn.
-#' 
-#' With \code{tradeDef='increased.to.reduced'}, typically used for more complex 
+#'
+#' With \code{tradeDef='increased.to.reduced'}, typically used for more complex
 #' strategies, the simulation is also significantly more complicated, especially
-#' with \code{replacement=TRUE}.  In this latter case, the simulation must try 
+#' with \code{replacement=TRUE}.  In this latter case, the simulation must try
 #' to retain stylized factos of the observed strategy, specifically:
-#' 
+#'
 #' \itemize{
 #'   \item{percent time in market}
 #'   \item{percent time flat}
@@ -34,49 +34,49 @@
 #'   \item{number of levels or layered trades observed}
 #' }
 #'
-#' In order to do this, samples are taken and randomized for flat periods, 
-#' short periods, and long periods, and then these samples are interleaved and 
-#' layered to construct the random strategy.  The overall goal is to construct a 
+#' In order to do this, samples are taken and randomized for flat periods,
+#' short periods, and long periods, and then these samples are interleaved and
+#' layered to construct the random strategy.  The overall goal is to construct a
 #' random strategy that preserves as many of the stylized facts (or style) of
-#' the observed strategy as possible, while demonstrating no skill.  The round 
-#' turn trades of the random replicate strategies, while outwardly resembling 
-#' the original strategy in summary time series statistics, are the result of 
+#' the observed strategy as possible, while demonstrating no skill.  The round
+#' turn trades of the random replicate strategies, while outwardly resembling
+#' the original strategy in summary time series statistics, are the result of
 #' random combinations of observed features taking place at random times in the
 #' tested time period.
-#' 
+#'
 #' It should be noted that the first opened trade of the observed series and the
 #' replicates will take place at the same time.  Quantity and duration may differ,
 #' but the trade will start at the same time, unless the first sampled period is
-#' a flat one.  We may choose to relax this in the future and add or subtract a 
+#' a flat one.  We may choose to relax this in the future and add or subtract a
 #' short amount of duration to the replicates to randomize the first entry more
-#' fully as well.  Inclusion of flat periods should provide a fair amount of 
+#' fully as well.  Inclusion of flat periods should provide a fair amount of
 #' variation, so this may not be an issue.
-#'  
+#'
 #' The user may wish to pass \code{Interval} in dots to mark the portfolio at a
 #' different frequency than the market data, especially for intraday market
 #' data.  Note that market data must be available to call
 #' \code{\link{updatePortf}} on.
-#' 
+#'
 #' We are including p-values for some sample statistics in the output as well.
 #' Some notes are in order on how this is calculatated, and how it may be
 #' interpreted. With small \code{n}, these p-values are meaningless.  With large
 #' \code{n}, they should be fairly stable.  Per North et. al. (2002) who use
-#' Davison & Hinkley (1997) as their source, the correct unbiased p-value for a 
+#' Davison & Hinkley (1997) as their source, the correct unbiased p-value for a
 #' simulation sample statistic is:
-#' 
+#'
 #' \deqn{ \frac{rank_bt+1}{n_samples+1} }{rank+1/n+1}
-#' 
+#'
 #' where the rank of the observed statistic is compared against statistics
-#' calculated on the simulation. Interpretation of this result takes some care.   
-#' The skeptical analyst would prefer to see a low p-value (e.g. the customary 
+#' calculated on the simulation. Interpretation of this result takes some care.
+#' The skeptical analyst would prefer to see a low p-value (e.g. the customary
 #' 0.05). The same analyst should be concerned about overfitting if an
 #' extraordinarily low p-value (e.g. 0.0001) is observed, or conclude that there
 #' may be room to improve the strategy is available if the p-value is low but not
-#' compelling (e.g. 0.15).  Issues of multiple testing bias should also be 
-#' considered.  Interpretation of the p-value of the mean is most easily fit into 
-#' the customary p<0.05 target.  Appropriate critical values for other statistics 
-#' may be lower or higher. 
-#' 
+#' compelling (e.g. 0.15).  Issues of multiple testing bias should also be
+#' considered.  Interpretation of the p-value of the mean is most easily fit into
+#' the customary p<0.05 target.  Appropriate critical values for other statistics
+#' may be lower or higher.
+#'
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
@@ -109,18 +109,18 @@
 #' Slots \code{replicates},\code{transactions}, and \code{call} are likely
 #' to exist in all future versions of this function, but other slots may be added
 #' and removed as \code{S3method}'s are developed.
-#' 
-#' The \code{backtest.trades} object contains the stylized facts of the observed 
-#' series, and consists of a list with one slot per instrument in the input 
+#'
+#' The \code{backtest.trades} object contains the stylized facts of the observed
+#' series, and consists of a list with one slot per instrument in the input
 #' portfolio.  Each slot in that list contains a \code{data.frame} of
 #' \itemize{
 #'   \item{\code{Start}:}{timestamp of the start of the round turn, discarded later}
 #'   \item{\code{duration}:}{duration (difference from beginning ot end) of the observed round turn trade}
 #'   \item{\code{quantity}:}{quantity of the round turn trade, or 0 for flat periods}
 #' }
-#' 
+#'
 #' with additional attributes for the observed stylized facts:
-#' 
+#'
 #' \itemize{
 #'   \item{\code{calendar.duration}:}{total length/duration of the observed series}
 #'   \item{\code{trade.duration}:}{total length/durtation used by round turn trades }
@@ -129,16 +129,16 @@
 #'   \item{\code{first.start}:}{timestamp of the start of the first trade, to avoid starting simulations during a training period}
 #'   \item{\code{period}:}{periodicity of the observed series}
 #' }
-#' 
-#' 
+#'
+#'
 #' @author Jasen Mackie, Brian G. Peterson
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
-#' 
+#'
 #' North, B.V., D. Curtis, and P.C. Sham. Aug 2002. A Note on the Calculation of Empirical P Values from Monte Carlo Procedures. Am J Hum Genet. 2002 Aug; 71(2): 439-441. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/
-#' 
+#'
 #' Davison & Hinkley. 1997. Bootstrap methods and their application.
-#' 
+#'
 #' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}
 #' @examples
 #' \dontrun{
@@ -150,7 +150,7 @@
 #'                         ,replacement=FALSE
 #'                         , tradeDef='increased.to.reduced'
 #'                         , chart=FALSE
-#'                         ) 
+#'                         )
 #'  {
 #'     out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
 #'     if(isTRUE(chart)) {
@@ -188,15 +188,15 @@ txnsim <- function(Portfolio,
                    replacement = TRUE,
                    tradeDef = c('increased.to.reduced', 'flat.to.flat', 'flat.to.reduced'),
                    ...,
-                   CI = 0.95) 
+                   CI = 0.95)
 {
   # befor doing anything inside the function which would affect the state,
-  # store the current random seed for later replication, if needed 
+  # store the current random seed for later replication, if needed
   seed <- .GlobalEnv$.Random.seed
 
   # use the first tradeDef
   tradeDef <- tradeDef[1]
-  
+
   # First get strategy start dates, duration and quantity
   # get portfolio, account and symbols objects
   p <- getPortfolio(Portfolio)
@@ -204,42 +204,42 @@ txnsim <- function(Portfolio,
   initDate <- attr(p, "initDate")
   currency <- attr(p, "currency")
   initEq   <- attr(p, "initEq")
-  
-  
+
+
   txnstruct <- function(i) {
     pt <- perTradeStats(Portfolio, symbols[i], tradeDef = tradeDef, includeFlatPeriods = TRUE)
 
     nonflat <- which(pt$Init.Qty!=0)
-    
+
     # get duration of non-flat periods
     tradeduration <- sum(pt$duration[nonflat])
-    
+
     # get duration and standard deviation of flat periods
     zeroduration  <- sum(pt$duration[-nonflat])
     zerostddev    <- sd(pt$duration[-nonflat])
-    
+
     # calendar duration of the entire strategy
     stratduration <- difftime(last(pt$End[nonflat]), pt$Start[1], units = "secs")
-    
+
     # build dataframe of start dates and durations
     txnsimdf <- data.frame(start    = pt$Start,
                            duration = pt$duration,
                            quantity = pt$Init.Qty)
-  
+
     attr(txnsimdf,"calendar.duration") <- stratduration
     attr(txnsimdf,"trade.duration")    <- tradeduration
-    attr(txnsimdf,"flat.duration")     <- zeroduration 
+    attr(txnsimdf,"flat.duration")     <- zeroduration
     attr(txnsimdf,"flat.stddev")       <- zerostddev
     attr(txnsimdf,"first.start")       <- pt$Start[1]
     attr(txnsimdf,"period")            <- attr(pt,'trade.periodicity')
-    
+
     txnsimdf
   }
-  
+
   # create a list of perTradeStats outputs per symbol
   backtest.trades <- lapply(1:length(symbols), txnstruct)
   names(backtest.trades) <- symbols
-  
+
   ################################################################
   # common utility functions
 
@@ -263,26 +263,26 @@ txnsim <- function(Portfolio,
                     duration = backtest.trades[[i]]$duration[idx[[j]]],
                     quantity = backtest.trades[[i]]$quantity[idx[[j]]])
   } # end inner lapply function
-  
+
   # outer function over the symbols
   symsample.nr <- function(i) {
     idx <- replicate(n, idxexpr.nr(i), simplify = FALSE)
     symreps <- lapply(1:length(idx), repsgen.nr, i, idx)
   }
-  
+
   ################################################################
   ################################################################
-  
+
   if (tradeDef == "flat.to.flat") {
     ### first set up functions for the lapply
     ## with replacement fns are different between flat.to.flat and other methods
-    
+
     # index expression for the replicate call, with replacement
     idxexpr.wr <- function(i) {
       fudgefactor <- 1.1 # fudgefactor is added to size for sampling
       targetdur   <- sum(backtest.trades[[i]]$duration)
       avgdur      <- as.numeric(mean(backtest.trades[[i]]$duration))
-      
+
       dur <- 0 # initialize duration counter
       tdf <- data.frame() #initialize output data.frame
       nsamples <- round(nrow(backtest.trades[[i]]) * fudgefactor, 0)
@@ -303,7 +303,7 @@ txnsim <- function(Portfolio,
         dur
       }
       # could truncate data frame here to correct total duration
-      
+
       # the row which takes our duration over the target
       xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
       if (xsrow == nrow(tdf)) {
@@ -330,12 +330,12 @@ txnsim <- function(Portfolio,
       #return the data frame
       tdf
     } # end idexpr.wr
-    
+
     # outer function over the symbols
     symsample.wr <- function(i) {
       symreps <- replicate(n, idxexpr.wr(i), simplify = FALSE)
     }
-    
+
     # now create the replication series
     if (isTRUE(replacement)) {
       reps <- lapply(1:length(symbols), symsample.wr)
@@ -343,24 +343,24 @@ txnsim <- function(Portfolio,
       reps <- lapply(1:length(symbols), symsample.nr)
     }
     names(reps) <- symbols
-    
+
   } # end flat.to.flat
-  
+
   if (tradeDef == "flat.to.reduced" |
       tradeDef == "increased.to.reduced") {
     ### first set up functions for the lapply
     ## with replacement fns are different to other methods
-    
+
     # sample and layer trades, with replacement
     tradesample <- function(trades, replacement=TRUE) {
-      
+
       # fudgefactor is added to size for sampling
       if (isTRUE(replacement)){
         fudgefactor <- 1.1 # fudgefactor is added to size for sampling
       } else {
         fudgefactor <- 1 # no factor needed
       }
-      
+
       # stylized facts
       calendardur <- attr(trades, 'calendar.duration')
       totaldur    <- sum(trades$duration)
@@ -373,10 +373,10 @@ txnsim <- function(Portfolio,
       longdur     <- sum(trades[longrows,'duration'])
       shortdur    <- sum(trades[shortrows,'duration'])
       lsratio     <- as.numeric(longdur)/(as.numeric(longdur) + as.numeric(shortdur))
-      
+
       subsample <- function(svector, targetdur, replacement=TRUE) {
-        #`trades` already exists in function scope 
-        
+        #`trades` already exists in function scope
+
         dur <- 0 # initialize duration counter
         tdf <- data.frame() #initialize output data.frame
         nsamples <- round(length(svector) * fudgefactor, 0)
@@ -409,10 +409,10 @@ txnsim <- function(Portfolio,
           adjxsrow <- sum(tdf$duration) - targetdur
           tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
         }
-        
+
         tdf  # return target data frame
       } # end subsample
-      
+
       #sample long, short, flat periods
       flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
       if(longdur > 0){ # ie. there are long round turn trades in the strategy
@@ -444,7 +444,7 @@ txnsim <- function(Portfolio,
       } else {
         targetshortrow <- 0
       }
-      firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]       
+      firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]
       # firstlayer should be just slightly longer than calendardur, we'll truncate later
 
       tdf <- firstlayer # establish target data.frame
@@ -459,7 +459,7 @@ txnsim <- function(Portfolio,
       tdf$start <- start
       # rearrange columns for consistency
       tdf <- tdf[, c("start", "duration", "quantity")]
-      
+
       ###########
       # now build the extra layers
       # further layers need to respect flat periods, and long/short.
@@ -469,7 +469,7 @@ txnsim <- function(Portfolio,
 
       # how many layers do we need?
       num_overlaps <- ceiling(as.numeric(totaldur)/as.numeric(calendardur))
-      
+
       if(num_overlaps>1){ # ie. total duration > calendar duration
 
         ###
@@ -481,14 +481,14 @@ txnsim <- function(Portfolio,
         tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
         tmpdf$lsi <- ifelse(tmpdf$quantity>0, 1, ifelse(tmpdf$quantity<0,-1,0))
         # split remaining longs and shorts by num_overlaps -1  ?
-        
+
         # construct series of random starts
         period <- attr(trades,'period')
         timeseq <- seq.POSIXt( from = attr(trades,"first.start")
                                , to = period$end
                                , by = period$units
         )
-        
+
         # get the range and number of rows remaining of long and short trades
         if(targetshortrow != 0){ # ie. there are short round turn trades in the strategy
           shortrange <- (targetshortrow+1):nrow(shortdf)
@@ -506,19 +506,19 @@ txnsim <- function(Portfolio,
           nlong <- 0
         }
         # nlong      <- length(longrange)
-        
-        # construct randomized target starting timestamps for long and short 
+
+        # construct randomized target starting timestamps for long and short
         # trades for each layer after the first layer
         timesample <- function(timeseq, num_overlaps, nsample) {
           x <- NULL
-          for(n in 2:num_overlaps) { 
+          for(n in 2:num_overlaps) {
             if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nsample, replace = FALSE))
             else x<-cbind(x,data.frame(sample(x = timeseq, size = nsample, replace = FALSE)))
-          } 
+          }
           colnames(x) <- 2:num_overlaps
           x
         }
-        
+
         ln.samples <- timesample(timeseq,num_overlaps,nsample=nlong)
         sh.samples <- timesample(timeseq,num_overlaps,nsample=nshort)
         # browser()
@@ -526,24 +526,24 @@ txnsim <- function(Portfolio,
         li <- longrange[1]
         si <- shortrange[1]
         #some challenges:
-        #  - each slot in the ln.samples and sh.samples list contains a number 
+        #  - each slot in the ln.samples and sh.samples list contains a number
         #    of timestamps equal to the *total* number of desired long/short trades
         #  - we don't know how many trades should occure on each layer
-        #  - we don't really know how the trades were overlapped in the original, 
+        #  - we don't really know how the trades were overlapped in the original,
         #    just the stylized facts.
         #  - the timestamps may not line up with long/short periods
-        #  - any 'valid' timestamps, when paired with a trade, may overlap the 
+        #  - any 'valid' timestamps, when paired with a trade, may overlap the
         #    end of a non-flat period
-        # 
+        #
         # given these challenges, we still need to construct a target series
-        # 
+        #
         ############
         # proposed process
         ############
         # - loop over layers
         #    - loop over long/short timestamps
         #       - if timestamp occurs in a long/short period
-        #            - get the next trade from longdf/shortdf 
+        #            - get the next trade from longdf/shortdf
         #            - increment li/si so we don't duplicate trades
         #            - if timestamp + trade duration overlaps the next flat period, do we truncate?
         #       - else move to next timestamp
@@ -558,7 +558,7 @@ txnsim <- function(Portfolio,
           sh.ts <- sh.samples[[laynum]]
 
           layer.trades <- NULL
-          
+
           # loop over the long/short timestamps
           if(length(ln.ts) != 0) { # ie. there are long round turn trades, proceed
           for(lts in 1:length(ln.ts)){
@@ -572,7 +572,7 @@ txnsim <- function(Portfolio,
               ftend <- flayer.trade$start + flayer.trade$duration
               while(targetend > ftend){
                 # we've gone over the duration, check the next trade
-                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){ 
+                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){
                   ftend <- ftend + tdf[flayer.tn+1,'duration']
                   if(targetend < ftend){
                     break() # we're good, move on
@@ -583,13 +583,13 @@ txnsim <- function(Portfolio,
                   # break the while loop
                   break()
                 }
-              } 
+              }
               # now we can build the target trade
               if(is.null(layer.trades)){
                 layer.trades <- data.frame(start=test.ts,
                                            duration = longdf[li,'duration'],
                                            quantity = longdf[li,'quantity']
-                                           )                
+                                           )
               } else {
                 layer.trades <- rbind(layer.trades,
                                       data.frame(start=test.ts,
@@ -615,7 +615,7 @@ txnsim <- function(Portfolio,
               ftend <- flayer.trade$start + flayer.trade$duration
               while(targetend > ftend){
                 # we've gone over the duration, check the next trade
-                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){ 
+                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){
                   ftend <- ftend + tdf[flayer.tn+1,'duration']
                   if(targetend < ftend){
                     break() # we're good, move on
@@ -626,13 +626,13 @@ txnsim <- function(Portfolio,
                   # break the while loop
                   break()
                 }
-              } 
+              }
               # now we can build the target trade
               if(is.null(layer.trades)){
                 layer.trades <- data.frame(start=test.ts,
                                            duration = shortdf[si,'duration'],
                                            quantity = shortdf[si,'quantity']
-                )                
+                )
               } else {
                 layer.trades <- rbind(layer.trades,
                                       data.frame(start=test.ts,
@@ -645,7 +645,7 @@ txnsim <- function(Portfolio,
             } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
           }
             }# end short layering
-          
+
           #now store the result
           layerdfs[[laynum]] <- layer.trades
         }
@@ -656,24 +656,24 @@ txnsim <- function(Portfolio,
         # ??? test for percentage of trades at each layer, and adjust accordingly ???
         # ??? test for maximum position? ???
       }
-      
+
       #return the data frame
       tdf
     } # end tradesample.wr inner fn
-    
+
     # outer function over the symbols
     symsample <- function(i) {
       symreps <- replicate(n, tradesample(trades=backtest.trades[[i]], replacement=replacement), simplify = FALSE)
     }
     reps <- lapply(1:length(symbols), symsample )
     names(reps) <- symbols
-    
+
   } # end flat.to.reduced/increased.to.reduced method
-  
+
   ################################################################
   # reps now exists as a list of structure reps[[symbol]][[rep]]
   # each rep has columns start, duration, quantity
-  
+
   # ####################
   # # Generate Transactions
   # create the portfolios
@@ -687,14 +687,14 @@ txnsim <- function(Portfolio,
                , initEq=initEq
                , ...
                )
-  
+
   # create the transactions
   ltxn <- txnsim.txns( reps = reps
                      , Portfolio=Portfolio
                      , replacement=replacement
-                     , n=length(reps[[1]]) 
+                     , n=length(reps[[1]])
                      , ...
-                     ) 
+                     )
 
   cumpl<-NULL
   perpl<-NULL
@@ -723,7 +723,7 @@ txnsim <- function(Portfolio,
   perpl <- cbind(backtestperpl,perpl)
 
   cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
-  
+
   # compute sample stats
   sampleoutput <- data.frame(matrix(nrow = n+1, ncol = 6))
   colnames(sampleoutput) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
@@ -734,21 +734,21 @@ txnsim <- function(Portfolio,
   sampleoutput$sharpe  <- apply(perpl, 2, function(x) { mean(x, na.rm=TRUE)/StdDev(x) } )
   sampleoutput$totalPL <- apply(perpl, 2, function(x) { sum(na.omit(x)) } )
   rownames(sampleoutput)<-colnames(perpl)
-  
+
   # store stats for use later in hist.mcsim and summary.mcsim
   original <- sampleoutput[1,]
-  
+
 
   # compute p-values
   ranks <- apply(-sampleoutput,2,rank)
-  # correct calc for unbiased p-value is rank+1/nsamples+1 
+  # correct calc for unbiased p-value is rank+1/nsamples+1
   # where rank is rank of the sample statistic of the observation vs. samples
   # we've included the observed series in the sample, so the correct calc
   # is rank/nsamples
   pvalues <- ranks[1,]/nrow(ranks)
   sigd    <- nchar(n+1)
   pvalues <- round(pvalues, digits=sigd )
-  
+
   # Compute standard errors of the sample stats
   stderror <- data.frame(matrix(nrow = 1, ncol = 6))
   colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
@@ -759,7 +759,7 @@ txnsim <- function(Portfolio,
   stderror$maxDD <- StdDev(sampleoutput[,4])
   stderror$sharpe <- StdDev(sampleoutput[,5])
   stderror$totalPL <- StdDev(sampleoutput[,6])
-  
+
   # Compute Confidence Intervals, but first add the CI functions
   CI_lower <- function(samplemean, merr) {
     #out <- original - bias - merr #based on boot package implementation in norm.ci
@@ -773,44 +773,44 @@ txnsim <- function(Portfolio,
   }
   CI_mean <- cbind(CI_lower(mean(sampleoutput[,1]), StdDev(sampleoutput[,1])*qnorm((1+CI)/2)),
                    CI_upper(mean(sampleoutput[,1]), StdDev(sampleoutput[,1])*qnorm((1+CI)/2)))
-  
+
   CI_median <- cbind(CI_lower(mean(sampleoutput[,2]), StdDev(sampleoutput[,2])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,2]), StdDev(sampleoutput[,2])*qnorm((1+CI)/2)))
-  
+
   CI_stddev <- cbind(CI_lower(mean(sampleoutput[,3]), StdDev(sampleoutput[,3])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,3]), StdDev(sampleoutput[,3])*qnorm((1+CI)/2)))
-  
+
   CI_maxDD <- cbind(CI_lower(mean(sampleoutput[,4]), StdDev(sampleoutput[,4])*qnorm((1+CI)/2)),
                     CI_upper(mean(sampleoutput[,4]), StdDev(sampleoutput[,4])*qnorm((1+CI)/2)))
-  
+
   CI_sharpe <- cbind(CI_lower(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
-  
+
   CI_totalPL <- cbind(CI_lower(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
                       CI_upper(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
-  
+
   # Build the Confidence Interval dataframes
   CIdf <- data.frame(matrix(nrow = 2, ncol = 6))
   colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
   row.names(CIdf) <- c("Lower CI","Upper CI")
   CIdf$mean[row.names(CIdf) == "Lower CI"] <- CI_mean[1,1]
   CIdf$mean[row.names(CIdf) == "Upper CI"] <- CI_mean[1,2]
-  
+
   CIdf$median[row.names(CIdf) == "Lower CI"] <- CI_median[1,1]
   CIdf$median[row.names(CIdf) == "Upper CI"] <- CI_median[1,2]
-  
+
   CIdf$stddev[row.names(CIdf) == "Lower CI"] <- CI_stddev[1,1]
   CIdf$stddev[row.names(CIdf) == "Upper CI"] <- CI_stddev[1,2]
-  
+
   CIdf$maxDD[row.names(CIdf) == "Lower CI"] <- CI_maxDD[1,1]
   CIdf$maxDD[row.names(CIdf) == "Upper CI"] <- CI_maxDD[1,2]
-  
+
   CIdf$sharpe[row.names(CIdf) == "Lower CI"] <- CI_sharpe[1,1]
   CIdf$sharpe[row.names(CIdf) == "Upper CI"] <- CI_sharpe[1,2]
 
   CIdf$totalPL[row.names(CIdf) == "Lower CI"] <- CI_totalPL[1,1]
   CIdf$totalPL[row.names(CIdf) == "Upper CI"] <- CI_totalPL[1,2]
-  
+
   # generate the return object
   ret <- list(
     replicates = reps,
@@ -839,9 +839,9 @@ txnsim <- function(Portfolio,
 
 #' convenience function to generate portfolios for txnsim replicates
 #'
-#' If you have a txnsim object and market data, you should be able to rebuild 
+#' If you have a txnsim object and market data, you should be able to rebuild
 #' the replicate portfolios. This function creates all those portfolios.
-#' 
+#'
 #' @param Portfolio string identifying a portfolio
 #' @param n number of simulations, default = 100
 #' @param replacement sample with or without replacement, default TRUE
@@ -850,7 +850,7 @@ txnsim <- function(Portfolio,
 #' @param currency base currency for replicate portfolios
 #' @param initEq initial equity to use for replicate portfolios
 #'
-#' @seealso \code{\link{txnsim}}, \code{\link{txnsim.txns}} 
+#' @seealso \code{\link{txnsim}}, \code{\link{txnsim.txns}}
 txnsim.portfs <- function(Portfolio, replacement, n, symbols, initDate, currency, initEq) {
   portnames <- txnsim.portnames(Portfolio, replacement, n)
   # create portfolios
@@ -871,11 +871,11 @@ txnsim.portfs <- function(Portfolio, replacement, n, symbols, initDate, currency
 }
 
 #' convenience function to create transactions from txnsim replicates
-#' 
-#' If you have a txnsim object and market data, you should be able to rebuild 
+#'
+#' If you have a txnsim object and market data, you should be able to rebuild
 #' the replicate portfolios.
 #'
-#' @param reps replicates slot from txnsim object 
+#' @param reps replicates slot from txnsim object
 #' @param Portfolio string identifying a portfolio
 #' @param replacement sample with or without replacement, default TRUE
 #' @param n number of simulations, default = 100
@@ -900,9 +900,9 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         prefer <- dargs$prefer
       else
         prefer <- NULL
-      
+
       prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
-      
+
       # the rep list has a start, duration, quantity in each row
       # we'll loop by row over that object to create an object for addTxns
       # @TODO find something more efficient than a for loop here
@@ -951,9 +951,9 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
 
 #' helper function for generating txnsim portfolio names
 #'
-#' called internally by txnsim and other txnsim generics to generate list 
+#' called internally by txnsim and other txnsim generics to generate list
 #' of portfolios to/which hold the replcates
-#' 
+#'
 #' @param Portfolio root portfolio string name
 #' @param replacement boolean
 #' @param n number of replicate numbers
@@ -967,7 +967,7 @@ txnsim.portnames <- function(Portfolio, replacement, n) {
     rpcstr <- 'nr'
   }
   i <- 1:n
-  # NOTE we may still want to clean out existing portfolios, 
+  # NOTE we may still want to clean out existing portfolios,
   # or allow some other naming options
   portnames <- paste("txnsim", rpcstr, Portfolio, i, sep = ".")
   return(portnames)
@@ -986,7 +986,7 @@ plot.txnsim <- function(x, y, ...) {
   cumpl <- x$cumpl
 
   backtestpl <- cumpl[,1]
-  
+
   #TODO FIXME make grid.ticks.on smarter based on periodicity
   pt <- plot.xts(  cumpl
                  , col = "lightgray"
@@ -995,14 +995,14 @@ plot.txnsim <- function(x, y, ...) {
                 )
   pt <- lines(backtestpl, col = "red")
   print(pt)
-  
+
   invisible(cumpl)
 }
 
 #' quantile method for objects of type \code{txnsim}
 #'
 #' calculates quantiles of cumulative P&L of the simulated strategies
-#' 
+#'
 #' @param x object of type 'txnsim' to produce replicate quantiles
 #' @param \dots any other passthrough parameters to \code{\link{quantile}}
 #' @author Jasen Mackie, Brian G. Peterson
@@ -1025,11 +1025,11 @@ quantile.txnsim <- function(x, ...) {
 #' @importFrom graphics axis box hist lines par text
 #'
 #' @export
-hist.txnsim <- function(x, ..., normalize=FALSE, 
-                       methods = c("mean", 
-                                   "median", 
-                                   "stddev", 
-                                   "maxDD", 
+hist.txnsim <- function(x, ..., normalize=FALSE,
+                       methods = c("mean",
+                                   "median",
+                                   "stddev",
+                                   "maxDD",
                                    "sharpe")) {
   ret <- x
   hh <- function(x, main, breaks="FD"
@@ -1037,7 +1037,7 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
                  , col = "lightgray", border = "white", freq=FALSE, ...
                  , b, b.label, v, c.label, t, u, u.label, ci_L,ci_H, tci_L="Lower Confidence Interval", tci_H="Upper Confidence Interval"
   ){
-    
+
     hhh <- hist(x, main=main, breaks=breaks, xlab=xlab, ylab=ylab, col=col, border=border, freq=freq, cex.main=0.70)
     hhh
     box(col = "darkgray")
@@ -1133,7 +1133,7 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
               }
       )
     }
-    
+
   } else {
     # do not normalize
     xname <- paste(ret$n, "replicates", ret$w, "using", ret$CI, "confidence interval")
@@ -1226,7 +1226,7 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
 #' @method summary txnsim
 #' @export
 summary.txnsim <- function(object,...){
-  out<-t(rbind(x$original,x$stderror,x$CIdf))
+  out<-t(rbind(object$original,object$stderror,object$CIdf))
   colnames(out)[1]<-'backtest'
   out
 }
@@ -1235,9 +1235,9 @@ summary.txnsim <- function(object,...){
 #' @method print txnsim
 #' @export
 print.txnsim <- function(x,...){
-  round(summary.txnsim(x,...),3)  
+  round(summary.txnsim(x,...),3)
 }
-  
+
 ###############################################################################
 # R (http://r-project.org/) Quantitative Strategy Model Framework
 #
