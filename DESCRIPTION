@@ -1,8 +1,8 @@
 Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems Development
-Version: 0.12.3
-Date: 2017-08-07 $Date$
+Version: 0.12.4
+Date: 2017-08-16 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Joshua Ulrich [ctb],

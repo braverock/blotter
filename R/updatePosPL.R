@@ -191,15 +191,15 @@
 				FXrate<-try(get(FXrate.str), silent=TRUE)
 				#TODO FIXME: this uses convention to sort out the rate, we should check $currency and $counter_currency and make sure directionality is correct 
 				if(inherits(FXrate,"try-error")){
+				  #try to get the inversion
 					FXrate.str<-paste(p.ccy.str, tmp_instr$currency, sep='')
 					FXrate<-try(get(FXrate.str), silent=TRUE)
-					if(inherits(FXrate,"try-error")){ 
+					if(inherits(FXrate,"try-error")){
+					  # inversion not found
 						warning("Exchange Rate",FXrate.str," not found for symbol,',Symbol,' using currency multiplier of 1")
 						CcyMult<-1
-					} else {
-						invert=TRUE
-					}
-				}
+					} 
+				} 
 			}		
 			
 		}
