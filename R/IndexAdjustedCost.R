@@ -4,8 +4,6 @@
 #' average execution price and the price of the asset at the time the
 #' order was entered into the market, ie. the Arrival Price.
 #'
-#' \deqn{ArrivalCost_bp} = Side \dot \frac{P_avg - P_0 }{P_0} \dot {10^4}_bp
-#' \deqn{{p^s} = Pr( |r| > t-ratio)}{p^s = Pr(|r|>t-ratio)}
 #'
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
@@ -18,7 +16,6 @@
 #' @export
 #'
 #' @examples
-#' ArrivalCost("testport", "IBM", side = "Buy")
 #' 
 ArrivalCost <- function(Portfolio, Symbol, side="Buy")
 {

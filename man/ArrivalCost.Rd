@@ -21,11 +21,6 @@ The Arrival Cost (or Trading Cost) is the difference between the
 average execution price and the price of the asset at the time the
 order was entered into the market, ie. the Arrival Price.
 }
-\details{
-\deqn{ArrivalCost_bp} = Side \dot \frac{P_avg - P_0 }{P_0} \dot {10^4}_bp
-\deqn{{p^s} = Pr( |r| > t-ratio)}{p^s = Pr(|r|>t-ratio)}
-}
 \examples{
-ArrivalCost("testport", "IBM", side = "Buy")
 
 }
