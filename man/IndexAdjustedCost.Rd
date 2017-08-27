@@ -7,11 +7,11 @@
 IndexAdjustedCost(ArrivalCost, IndexCost, beta)
 }
 \arguments{
-\item{ArrivalCost}{}
+\item{ArrivalCost}{value representing arrival cost}
 
-\item{IndexCost}{}
+\item{IndexCost}{value representing index cost}
 
-\item{beta}{}
+\item{beta}{value represent underlying stock beta to index}
 }
 \description{
 Index Adjusted Cost

@@ -7,21 +7,35 @@
 #' \deqn{ArrivalCost_bp} = Side \dot \frac{P_avg - P_0 }{P_0} \dot {10^4}_bp
 #' \deqn{{p^s} = Pr( |r| > t-ratio)}{p^s = Pr(|r|>t-ratio)}
 #'
+#' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
+#' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param side string identifying either "Buy" or "Sell"
-#' @param p_avg value representing average executoin price
-#' @param p_0 value representing arrival price
 #'
 #' @return
+#' 
+#' A numeric value in basis points
+#' 
 #' @export
 #'
 #' @examples
-#' ArrivalCost(side = "Buy", p_avg = 100.50, p_0 = 100)
+#' ArrivalCost("testport", "IBM", side = "Buy")
 #' 
-ArrivalCost <- function(side="Buy", p_avg=NULL, p_0=NULL){
-  ac <- ifelse(side == "Buy",
-               1*((p_avg - p_0)/p_0)*10000,
-               -1*((p_avg - p_0)/p_0)*10000
-  )
+ArrivalCost <- function(Portfolio, Symbol, side="Buy")
+{
+  pname <- Portfolio
+  #If there is no table for the symbol then create a new one
+  if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+    addPortfInstr(Portfolio=pname, symbols=Symbol)
+  Portfolio <- .getPortfolio(pname)
+  txns <- Portfolio$symbols[[Symbol]]$txn
+  p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
+  p_0 <- as.numeric(txns$Pos.Avg.Cost[min(which(txns != 0))])
+  
+  ac <- if(side == "Buy"){
+    1*((p_avg - p_0)/p_0)*10000
+  } else if(side == "Sell"){
+    -1*((p_avg - p_0)/p_0)*10000
+  }
   ac
 }
 
@@ -43,9 +57,9 @@ IndexCost <- function(IndexVWAP, IndexArrivalCost){
 
 #'  Index Adjusted Cost
 #'
-#' @param ArrivalCost 
-#' @param IndexCost 
-#' @param beta 
+#' @param ArrivalCost value representing arrival cost
+#' @param IndexCost value representing index cost
+#' @param beta value represent underlying stock beta to index
 #'
 #' @return
 #' @export
@@ -65,4 +79,3 @@ IndexAdjustedCost <- function(ArrivalCost, IndexCost, beta){
 # #write.csv(txns, "C:/Users/jasen/Personal/GitHub/sample_txns.csv")
 # txns <- read.csv("C:/Users/jasen/Personal/GitHub/blotter/demo/sample_txns.csv")
 # 
-

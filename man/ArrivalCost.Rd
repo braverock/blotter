@@ -4,14 +4,17 @@
 \alias{ArrivalCost}
 \title{Arrival Cost}
 \usage{
-ArrivalCost(side = "Buy", p_avg = NULL, p_0 = NULL)
+ArrivalCost(Portfolio, Symbol, side = "Buy")
 }
 \arguments{
+\item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
+
+\item{Symbol}{An instrument identifier for a symbol included in the portfolio, e.g., "IBM"}
+
 \item{side}{string identifying either "Buy" or "Sell"}
-
-\item{p_avg}{value representing average executoin price}
-
-\item{p_0}{value representing arrival price}
+}
+\value{
+A numeric value in basis points
 }
 \description{
 The Arrival Cost (or Trading Cost) is the difference between the
@@ -23,6 +26,6 @@ order was entered into the market, ie. the Arrival Price.
 \deqn{{p^s} = Pr( |r| > t-ratio)}{p^s = Pr(|r|>t-ratio)}
 }
 \examples{
-ArrivalCost(side = "Buy", p_avg = 100.50, p_0 = 100)
+ArrivalCost("testport", "IBM", side = "Buy")
 
 }
