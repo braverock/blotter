@@ -45,7 +45,6 @@ ArrivalCost <- function(Portfolio, Symbol, side="Buy")
 #' @export
 #'
 #' @examples
-#' IndexCost(IndexVWAP = 50100, IndexArrivalCost = 50000)
 #' 
 IndexCost <- function(IndexVWAP, IndexArrivalCost){
   ic <- ((IndexVWAP - IndexArrivalCost)/IndexArrivalCost)*10000
@@ -62,9 +61,6 @@ IndexCost <- function(IndexVWAP, IndexArrivalCost){
 #' @export
 #'
 #' @examples
-#' ac <- ArrivalCost(side = "Buy", p_avg = 100.50, p_0 = 100)
-#' ic <- IndexCost(IndexVWAP = 50100, IndexArrivalCost = 50000)
-#' iac <- IndexAdjustedCost(ac, ic, 0.7)
 #' 
 IndexAdjustedCost <- function(ArrivalCost, IndexCost, beta){
   iac <- ArrivalCost - beta * IndexCost

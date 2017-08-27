@@ -17,8 +17,5 @@ IndexAdjustedCost(ArrivalCost, IndexCost, beta)
 Index Adjusted Cost
 }
 \examples{
-ac <- ArrivalCost(side = "Buy", p_avg = 100.50, p_0 = 100)
-ic <- IndexCost(IndexVWAP = 50100, IndexArrivalCost = 50000)
-iac <- IndexAdjustedCost(ac, ic, 0.7)
 
 }

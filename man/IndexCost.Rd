@@ -15,6 +15,5 @@ IndexCost(IndexVWAP, IndexArrivalCost)
 Index Cost
 }
 \examples{
-IndexCost(IndexVWAP = 50100, IndexArrivalCost = 50000)
 
 }
