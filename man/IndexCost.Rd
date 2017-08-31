@@ -4,15 +4,26 @@
 \alias{IndexCost}
 \title{Index Cost}
 \usage{
-IndexCost(IndexVWAP, IndexArrivalCost)
+IndexCost(Portfolio, IndexSymbol)
 }
 \arguments{
-\item{IndexVWAP}{value representing the benchmark VWAP}
+\item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
 
-\item{IndexArrivalCost}{value representing the benchmark arrival price}
+\item{IndexSymbol}{An instrument identifier for an index used for adjusting a stock's Arrival Cost (typicall ETF)}
+}
+\value{
+A numeric value in basis points
 }
 \description{
-Index Cost
+The Index Cost is the difference between the
+average execution price and the price of the Index (or ETF) at the time the
+order was entered into the market, ie. the Arrival Price.
+}
+\details{
+To get the index VWAP of one does not have the underlying trades and weightings,
+a commonly used proxy is an ETF tracking the relevant index.
+
+Positive means a cost, negative means a saving.
 }
 \examples{
 

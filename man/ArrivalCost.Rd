@@ -21,6 +21,9 @@ The Arrival Cost (or Trading Cost) is the difference between the
 average execution price and the price of the asset at the time the
 order was entered into the market, ie. the Arrival Price.
 }
+\details{
+Positive means a cost, negative means a saving.
+}
 \examples{
 
 }

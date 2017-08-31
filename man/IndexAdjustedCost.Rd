@@ -11,10 +11,14 @@ IndexAdjustedCost(ArrivalCost, IndexCost, beta)
 
 \item{IndexCost}{value representing index cost}
 
-\item{beta}{value represent underlying stock beta to index}
+\item{beta}{value representing stock K's sensitivity to the index}
+}
+\value{
+The Index Adjusted Cost
 }
 \description{
-Index Adjusted Cost
+A market or index adjusted metric accounting for price trend in a stock
+due to the overall market.
 }
 \examples{
 
