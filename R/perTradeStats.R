@@ -202,7 +202,7 @@ perTradeStats <- function(Portfolio
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
            if(any(is.na(testdf$end_ts))){
-             trades$Start <- c(trades$Start,which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))]))
+             trades$Start <- c(trades$Start,last(which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))])))
            }
          }
   ) # end round turn trade separation by tradeDef
