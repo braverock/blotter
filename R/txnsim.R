@@ -414,7 +414,11 @@ txnsim <- function(Portfolio,
       } # end subsample
 
       #sample long, short, flat periods
-      flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
+      if(flatdur > 0){
+        flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
+      } else {
+        flatdf <- NULL
+      }
       if(longdur > 0){ # ie. there are long round turn trades in the strategy
         longdf  <- subsample(svector = longrows, targetdur = longdur)
       } else {
