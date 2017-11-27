@@ -110,10 +110,11 @@ perTradeStats <- function(Portfolio
                           , includeOpenTrade=TRUE
                           , tradeDef="flat.to.flat"
                           , ...
-                          , includeFlatPeriods=FALSE)
+                          , includeFlatPeriods=FALSE
+                          , envir=.blotter)
 {
 
-  portf <- .getPortfolio(Portfolio)
+  portf <- .getPortfolio(Portfolio, envir = envir)
   if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
 
   posPL <- portf$symbols[[Symbol]]$posPL
