@@ -21,7 +21,7 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 
 \item{includeFlatPeriods}{boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}}
 
-\item{envir}{Environment containing the portfolio (default \code{.blotter})}
+\item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
 }
 \value{
 A \code{data.frame} containing:
