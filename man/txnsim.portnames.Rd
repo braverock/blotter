@@ -17,6 +17,6 @@ txnsim.portnames(Portfolio, replacement, n)
 character vector of portfolio names
 }
 \description{
-called internally by txnsim and other txnsim generics to generate list 
+called internally by txnsim and other txnsim generics to generate list
 of portfolios to/which hold the replcates
 }

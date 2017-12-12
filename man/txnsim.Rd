@@ -48,8 +48,8 @@ Slots \code{replicates},\code{transactions}, and \code{call} are likely
 to exist in all future versions of this function, but other slots may be added
 and removed as \code{S3method}'s are developed.
 
-The \code{backtest.trades} object contains the stylized facts of the observed 
-series, and consists of a list with one slot per instrument in the input 
+The \code{backtest.trades} object contains the stylized facts of the observed
+series, and consists of a list with one slot per instrument in the input
 portfolio.  Each slot in that list contains a \code{data.frame} of
 \itemize{
   \item{\code{Start}:}{timestamp of the start of the round turn, discarded later}
@@ -76,22 +76,22 @@ overfitting.
 }
 \details{
 Statisticians talk about the 'stylized facts' of a data set.  If you consider
-the stylized facts of a series of transactions that are the output of a 
-discretionary or systematic trading strategy, it should be clear that there 
-is a lot of information available to work with.  Initial analysis such as 
-\code{\link{tradeStats}} and \code{\link{perTradeStats}} can describe the 
-results of the series of transactions which resulted from the trading 
-strategy.  What else can we learn from these transactions regarding trading 
+the stylized facts of a series of transactions that are the output of a
+discretionary or systematic trading strategy, it should be clear that there
+is a lot of information available to work with.  Initial analysis such as
+\code{\link{tradeStats}} and \code{\link{perTradeStats}} can describe the
+results of the series of transactions which resulted from the trading
+strategy.  What else can we learn from these transactions regarding trading
 style or the skill of the trader? \code{txnsim} seeks to conduct a simulation
 over the properties of sampled round turn trades to help evaluate this.
 
-With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging 
+With \code{tradeDef='flat.to.flat'}, the samples are simply rearranging
 quantity and duration of round turns.  This may be enough for a strategy that
 only puts on a single level per round turn.
 
-With \code{tradeDef='increased.to.reduced'}, typically used for more complex 
+With \code{tradeDef='increased.to.reduced'}, typically used for more complex
 strategies, the simulation is also significantly more complicated, especially
-with \code{replacement=TRUE}.  In this latter case, the simulation must try 
+with \code{replacement=TRUE}.  In this latter case, the simulation must try
 to retain stylized factos of the observed strategy, specifically:
 
 \itemize{
@@ -101,24 +101,24 @@ to retain stylized factos of the observed strategy, specifically:
   \item{number of levels or layered trades observed}
 }
 
-In order to do this, samples are taken and randomized for flat periods, 
-short periods, and long periods, and then these samples are interleaved and 
-layered to construct the random strategy.  The overall goal is to construct a 
+In order to do this, samples are taken and randomized for flat periods,
+short periods, and long periods, and then these samples are interleaved and
+layered to construct the random strategy.  The overall goal is to construct a
 random strategy that preserves as many of the stylized facts (or style) of
-the observed strategy as possible, while demonstrating no skill.  The round 
-turn trades of the random replicate strategies, while outwardly resembling 
-the original strategy in summary time series statistics, are the result of 
+the observed strategy as possible, while demonstrating no skill.  The round
+turn trades of the random replicate strategies, while outwardly resembling
+the original strategy in summary time series statistics, are the result of
 random combinations of observed features taking place at random times in the
 tested time period.
 
 It should be noted that the first opened trade of the observed series and the
 replicates will take place at the same time.  Quantity and duration may differ,
 but the trade will start at the same time, unless the first sampled period is
-a flat one.  We may choose to relax this in the future and add or subtract a 
+a flat one.  We may choose to relax this in the future and add or subtract a
 short amount of duration to the replicates to randomize the first entry more
-fully as well.  Inclusion of flat periods should provide a fair amount of 
+fully as well.  Inclusion of flat periods should provide a fair amount of
 variation, so this may not be an issue.
- 
+
 The user may wish to pass \code{Interval} in dots to mark the portfolio at a
 different frequency than the market data, especially for intraday market
 data.  Note that market data must be available to call
@@ -128,20 +128,20 @@ We are including p-values for some sample statistics in the output as well.
 Some notes are in order on how this is calculatated, and how it may be
 interpreted. With small \code{n}, these p-values are meaningless.  With large
 \code{n}, they should be fairly stable.  Per North et. al. (2002) who use
-Davison & Hinkley (1997) as their source, the correct unbiased p-value for a 
+Davison & Hinkley (1997) as their source, the correct unbiased p-value for a
 simulation sample statistic is:
 
 \deqn{ \frac{rank_bt+1}{n_samples+1} }{rank+1/n+1}
 
 where the rank of the observed statistic is compared against statistics
-calculated on the simulation. Interpretation of this result takes some care.   
-The skeptical analyst would prefer to see a low p-value (e.g. the customary 
+calculated on the simulation. Interpretation of this result takes some care.
+The skeptical analyst would prefer to see a low p-value (e.g. the customary
 0.05). The same analyst should be concerned about overfitting if an
 extraordinarily low p-value (e.g. 0.0001) is observed, or conclude that there
 may be room to improve the strategy is available if the p-value is low but not
-compelling (e.g. 0.15).  Issues of multiple testing bias should also be 
-considered.  Interpretation of the p-value of the mean is most easily fit into 
-the customary p<0.05 target.  Appropriate critical values for other statistics 
+compelling (e.g. 0.15).  Issues of multiple testing bias should also be
+considered.  Interpretation of the p-value of the mean is most easily fit into
+the customary p<0.05 target.  Appropriate critical values for other statistics
 may be lower or higher.
 }
 \examples{
@@ -154,7 +154,7 @@ may be lower or higher.
                         ,replacement=FALSE
                         , tradeDef='increased.to.reduced'
                         , chart=FALSE
-                        ) 
+                        )
  {
     out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
     if(isTRUE(chart)) {
