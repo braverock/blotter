@@ -184,7 +184,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                        #moved above for daily stats for now
                    },
                    trades = {
-                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef)
+                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef, envir=envir)
                        PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
                        PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
                        PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
