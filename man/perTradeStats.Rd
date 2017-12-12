@@ -5,7 +5,8 @@
 \title{calculate trade statistics for round turn trades.}
 \usage{
 perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
-  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE)
+  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE,
+  envir = .blotter)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}
@@ -19,6 +20,8 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 \item{\dots}{any other passthrough parameters}
 
 \item{includeFlatPeriods}{boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}}
+
+\item{envir}{Environment containing the portfolio (default \code{.blotter})}
 }
 \value{
 A \code{data.frame} containing:

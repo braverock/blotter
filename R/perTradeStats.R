@@ -74,6 +74,7 @@
 #' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.
 #' @param \dots any other passthrough parameters
 #' @param includeFlatPeriods boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}
+#' @param envir Environment containing the portfolio (default \code{.blotter})
 #' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return
