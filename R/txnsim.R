@@ -790,8 +790,8 @@ txnsim <- function(Portfolio,
   CI_sharpe <- cbind(CI_lower(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
 
-  CI_totalPL <- cbind(CI_lower(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
-                      CI_upper(mean(sampleoutput[,6]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
+  CI_totalPL <- cbind(CI_lower(mean(sampleoutput[,6]), StdDev(sampleoutput[,6])*qnorm((1+CI)/2)),
+                      CI_upper(mean(sampleoutput[,6]), StdDev(sampleoutput[,6])*qnorm((1+CI)/2)))
 
   # Build the Confidence Interval dataframes
   CIdf <- data.frame(matrix(nrow = 2, ncol = 6))
