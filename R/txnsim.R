@@ -583,7 +583,7 @@ txnsim <- function(Portfolio,
                   }
                 } else {
                   # truncate duration here
-                  longdf[li,'duration']<-ftend-test.ts
+                  longdf[li,'duration']<-difftime(ftend, test.ts, units = "secs")
                   # break the while loop
                   break()
                 }
@@ -626,7 +626,7 @@ txnsim <- function(Portfolio,
                   }
                 } else {
                   # truncate duration here
-                  shortdf[si,'duration']<-ftend-test.ts
+                  shortdf[si,'duration']<-difftime(ftend, test.ts, units = "secs")
                   # break the while loop
                   break()
                 }
