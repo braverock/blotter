@@ -934,7 +934,7 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         for (r in 1:nrow(df)) {
           # opening trade
           open  <- data.frame(
-            start = df[r, 1],
+            start = index(last(prices[paste0("/", df[r, 1])])),
             TxnQty = df[r, "quantity"],
             TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1])]))
           )
