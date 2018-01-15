@@ -574,12 +574,17 @@ txnsim <- function(Portfolio,
             if(flayer.trade$quantity>0){
               targetend <- test.ts + flayer.trade$duration
               ftend <- flayer.trade$start + flayer.trade$duration
-              while(targetend > ftend){
+              wlc <- 1 # while loop counter
+              while(targetend >= ftend){
                 # we've gone over the duration, check the next trade
-                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){
-                  ftend <- ftend + tdf[flayer.tn+1,'duration']
+                # if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){
+                if (!is.na(tdf[flayer.tn+wlc,'quantity']) && tdf[flayer.tn+wlc,'quantity']>0){
+                  # ftend <- ftend + tdf[flayer.tn+1,'duration']
+                  ftend <- ftend + tdf[flayer.tn+wlc,'duration']
                   if(targetend < ftend){
                     break() # we're good, move on
+                  } else {
+                    wlc <- wlc +1 # we're still over the duration, check the next trade
                   }
                 } else {
                   # truncate duration here
@@ -617,12 +622,17 @@ txnsim <- function(Portfolio,
             if(flayer.trade$quantity<0){
               targetend <- test.ts + flayer.trade$duration
               ftend <- flayer.trade$start + flayer.trade$duration
-              while(targetend > ftend){
+              wlc <- 1 # while loop counter
+              while(targetend >= ftend){
                 # we've gone over the duration, check the next trade
-                if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){
-                  ftend <- ftend + tdf[flayer.tn+1,'duration']
+                # if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){
+                if (!is.na(tdf[flayer.tn+wlc,'quantity']) && tdf[flayer.tn+wlc,'quantity']<0){
+                  # ftend <- ftend + tdf[flayer.tn+1,'duration']
+                  ftend <- ftend + tdf[flayer.tn+wlc,'duration']
                   if(targetend < ftend){
                     break() # we're good, move on
+                  } else {
+                    wlc <- wlc +1 # we're still over the duration, check the next trade
                   }
                 } else {
                   # truncate duration here
