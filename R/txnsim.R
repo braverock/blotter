@@ -240,12 +240,11 @@ txnsim <- function(Portfolio,
     attr(txnsimdf,"flat.stddev")       <- zerostddev
     attr(txnsimdf,"first.start")       <- pt$Start[1]
     attr(txnsimdf,"period")            <- attr(pt,'trade.periodicity')
-    if(!is.null(maxlongpos)){
-      attr(txnsimdf,"maxlongpos")      <- maxlongpos
-    }
-    if(!is.null(maxshortpos)){
-      attr(txnsimdf,"maxshortpos")      <- maxshortpos
-    }
+    
+    longcheck <- try(missing(maxlongpos), silent = TRUE)
+    shortcheck <- try(missing(maxshortpos), silent = TRUE)
+    if (class(longcheck) != "try-error") attr(txnsimdf,"maxlongpos") <- maxlongpos
+    if (class(shortcheck) != "try-error") attr(txnsimdf,"maxshortpos") <- maxshortpos
 
     txnsimdf
   }
