@@ -220,6 +220,14 @@ txnsim <- function(Portfolio,
 
     # calendar duration of the entire strategy
     stratduration <- difftime(last(pt$End[nonflat]), pt$Start[1], units = "secs")
+    
+    # get max long and short positions
+    if(any(pt$Max.Pos > 0) == TRUE){
+      maxlongpos <- max(pt$Max.Pos)
+    }
+    if(any(pt$Max.Pos < 0) == TRUE){
+      maxshortpos <- min(pt$Max.Pos) # maxshortpos implies maximum absolute short position
+    }
 
     # build dataframe of start dates and durations
     txnsimdf <- data.frame(start    = pt$Start,
@@ -232,6 +240,12 @@ txnsim <- function(Portfolio,
     attr(txnsimdf,"flat.stddev")       <- zerostddev
     attr(txnsimdf,"first.start")       <- pt$Start[1]
     attr(txnsimdf,"period")            <- attr(pt,'trade.periodicity')
+    if(!is.null(maxlongpos)){
+      attr(txnsimdf,"maxlongpos")      <- maxlongpos
+    }
+    if(!is.null(maxshortpos)){
+      attr(txnsimdf,"maxshortpos")      <- maxshortpos
+    }
 
     txnsimdf
   }
@@ -373,6 +387,12 @@ txnsim <- function(Portfolio,
       longdur     <- sum(trades[longrows,'duration'])
       shortdur    <- sum(trades[shortrows,'duration'])
       lsratio     <- as.numeric(longdur)/(as.numeric(longdur) + as.numeric(shortdur))
+      if(!is.null(attr(trades, 'maxlongpos'))){
+        maxlongpos <- attr(trades, 'maxlongpos')
+      }
+      if(!is.null(attr(trades, 'maxshortpos'))){
+        maxshortpos <- attr(trades, 'maxshortpos')
+      }
 
       subsample <- function(svector, targetdur, replacement=TRUE) {
         #`trades` already exists in function scope
@@ -555,7 +575,77 @@ txnsim <- function(Portfolio,
         #    - if on last layer, and we still have trades, find places to put them
         #
         # I think this can construct our layers using the randomized start times
-
+        
+        # another challenge:
+        #  - limiting layering to max long or short pos of the original strategy
+        #
+        # proposed process
+        #
+        # - copy the tdf dataframe to tmp_tdf which is simply every sampled txn in the first layer
+        # - this first layer dataframe includes 0-qty periods with their durations
+        # - the initial variables are start time, duration and quantity
+        # - for each of the long and short layering, we follow a fairly methodical approach to 
+        #    identifying the first trade in the respective long or short period
+        # - because we could end up sampling multiple sequential long or short trades which are all candidates
+        #    for layering, we need to keep track of their cumsum relative to the max pos of the long or short
+        #    position in the original strategy
+        # - we make use of the maxlongpos and maxshortpos stylized facts, stored earlier in our tradesample function
+        #    which is only called when tradeDef = "flat.to.reduced" || "increased.to.reduced"
+        # - this is because there is no layering in "flat.to.flat"
+        #
+        # back to tmp_tdf
+        # - we add some new columns to tmp_tdf in order to identify which row is the start of a long or short trade,
+        #    regardless of how many long or short trades there are in sequence
+        # - we use 'lqty' and 'sqty' to identify all long qty and short quantity trades respectively
+        # - we use 'ltrade' and 'strade' to assign integer "1" to all long and short trades respectively
+        # - we use 'f.ltrade' and 'f.strade' to identify the first long trade and the first short trade in the sequence respectively
+        # - when sampling a timestamp for layering, we will make sure that adding the respective quantity does
+        #    not take our cumsum position over (under) that of the maxlongpos (maxshortpos) by tracking the cumsum
+        #    in the same row as the first long or short trade in the sequence. If adding the new layered quantity takes
+        #    us over (under), do nothing. Move on. If we will still be inside, add the sampled row with relevant start
+        #    timestamp, duration and quantity. Later on (in the txnsim.txns helper function) we use this data to build
+        #    transactions which we add to a portfolio.
+        # - we use 'lcumsum' and 'scumsum' to store the cumsum of each long and short trade quantity respectively
+        # - we only add to the layer if doing so does not take our cumsum over the maxpos observed in the original strategy
+        
+        tmp_tdf <- tdf # set up a temp dataframe based on tdf
+        
+        # cumsum sequential longs on firstlayer
+        tmp_tdf$lqty <- tmp_tdf$quantity
+        tmp_tdf$lqty[which(tmp_tdf$quantity < 0)] <- 0
+        tmp_tdf$ltrade <- 0
+        tmp_tdf$ltrade[-1] <- ifelse(diff(cumsum(tmp_tdf$lqty)) > 0, tmp_tdf$ltrade[-1] <- 1, 0)
+        if(tmp_tdf$lqty[1] > 0) tmp_tdf$ltrade[1] <- 1 else tmp_tdf$ltrade[1] <- 0
+        tmp_tdf$f.ltrade <- 0
+        tmp_tdf$f.ltrade[-1] <- ifelse(diff(tmp_tdf$ltrade) > 0, tmp_tdf$f.ltrade[-1] <- 1, 0)
+        if(tmp_tdf$ltrade[1] == 1) tmp_tdf$f.ltrade[1] <- 1 else tmp_tdf$f.ltrade[1] <- 0
+        tmp_tdf$lcumsum <- 0 # tmp_tdf$cumsum for monitoring the cumsum of layered quantity
+        lfirstindex <- which(tmp_tdf$f.ltrade == 1) # index of the first long trade in the sequence
+        lindex <- which(tmp_tdf$ltrade == 1) # index of all long trades
+        interval <- findInterval(lindex,lfirstindex) # count of all duplicates equates to long trades in sequence
+        for(cs in 1:(length(lfirstindex)-1)){
+          tmp_tdf$lcumsum[lfirstindex[cs]] <- sum(tmp_tdf$lqty[lfirstindex[cs]:lindex[(first(which(interval > cs))-1)]])
+        }
+        tmp_tdf$lcumsum[lfirstindex[length(lfirstindex)]] <- sum(tmp_tdf$lqty[lfirstindex[cs+1]:last(lindex)])
+        
+        # cumsum sequential shorts on firstlayer
+        tmp_tdf$sqty <- tmp_tdf$quantity
+        tmp_tdf$sqty[which(tmp_tdf$quantity > 0)] <- 0
+        tmp_tdf$strade <- 0
+        tmp_tdf$strade[-1] <- ifelse(diff(cumsum(tmp_tdf$sqty)) < 0, tmp_tdf$strade[-1] <- 1, 0)
+        if(tmp_tdf$sqty[1] < 0) tmp_tdf$strade[1] <- 1 else tmp_tdf$strade[1] <- 0
+        tmp_tdf$f.strade <- 0
+        tmp_tdf$f.strade[-1] <- ifelse(diff(tmp_tdf$strade) > 0, tmp_tdf$f.strade[-1] <- 1, 0)
+        if(tmp_tdf$strade[1] == 1) tmp_tdf$f.strade[1] <- 1 else tmp_tdf$f.strade[1] <- 0
+        tmp_tdf$scumsum <- 0 # tmp_tdf$cumsum for monitoring the cumsum of layered quantity
+        sfirstindex <- which(tmp_tdf$f.strade == 1) # index of the first short trade in the sequence
+        sindex <- which(tmp_tdf$strade == 1) # index of all short trades
+        interval <- findInterval(sindex,sfirstindex) # count of all duplicates equates to short trades in sequence
+        for(cs in 1:(length(sfirstindex)-1)){
+          tmp_tdf$scumsum[sfirstindex[cs]] <- sum(tmp_tdf$sqty[sfirstindex[cs]:sindex[(first(which(interval > cs))-1)]])
+        }
+        tmp_tdf$scumsum[sfirstindex[length(sfirstindex)]] <- sum(tmp_tdf$sqty[sfirstindex[cs+1]:last(sindex)])
+        
         # now loop over the layers and construct a target data frame for each
         for(laynum in names(ln.samples)){
           ln.ts <- ln.samples[[laynum]]
@@ -565,13 +655,21 @@ txnsim <- function(Portfolio,
 
           # loop over the long/short timestamps
           if(length(ln.ts) != 0) { # ie. there are long round turn trades, proceed
-          for(lts in 1:length(ln.ts)){
+            # tmp_tdf <- tdf # set up a temp dataframe based on tdf
+            # tmp_tdf$cumsum <- 0 # tmp_tdf_cumsum for monitoring the cumsum of layered quantity
+            for(lts in 1:length(ln.ts)){
             if(li>max(longrange)) break() # no more trades to process
             test.ts <- ln.ts[lts]
+            # if(test.ts == "2009-11-14 02:00:00"){
+            #   browser()
+            # }
             # get the closest trade from the first layer
             flayer.tn <- last(which(tdf$start<=test.ts))
             flayer.trade <- tdf[flayer.tn,]
-            if(flayer.trade$quantity>0){
+            # if(flayer.trade$start == "2013-10-29 02:00:00"){
+            #   browser()
+            # }
+            if(flayer.trade$quantity>0){ # we are going to layer
               targetend <- test.ts + flayer.trade$duration
               ftend <- flayer.trade$start + flayer.trade$duration
               wlc <- 1 # while loop counter
@@ -594,6 +692,14 @@ txnsim <- function(Portfolio,
                 }
               }
               # now we can build the target trade
+              # but first check to make sure the new layered trade will not take our quantity
+              # above the maximum observed in the original strategy. If it does, do nothing. If it does
+              # take us over, build the trade.
+              idx <- last(which(tmp_tdf$start<=test.ts & tmp_tdf$f.ltrade == 1))
+              if(length(idx) == 0){ # idx is "an argument of length zero"
+                  idx <- flayer.tn # set idx = flayer.tn so we have a valid value with which to subset
+              }
+              if ((tmp_tdf$lcumsum[idx] + longdf[li,'quantity']) <= maxlongpos){ # build target trade
               if(is.null(layer.trades)){
                 layer.trades <- data.frame(start=test.ts,
                                            duration = longdf[li,'duration'],
@@ -607,8 +713,10 @@ txnsim <- function(Portfolio,
                                                  )
                                       )
               }
-              li<-li+1 #increment long index
-            } else next() #next may be unecessary if we can avoid more code after this point in longs loop
+                tmp_tdf$lcumsum[idx] <- tmp_tdf$lcumsum[idx] + longdf[li,'quantity'] # add new layered quantity for comparison to maxlongpos in next applicable loop, if any
+                li<-li+1 #increment long index
+            }
+              } else next() #next may be unecessary if we can avoid more code after this point in longs loop
           }
             }# end long layering
           #repeat a similar approach for shorts
@@ -642,6 +750,14 @@ txnsim <- function(Portfolio,
                 }
               }
               # now we can build the target trade
+              # but first check to make sure the new layered trade will not take our quantity
+              # above the maximum observed in the original strategy. If it does, do nothing. If it does
+              # take us over, build the trade.
+              idx <- last(which(tmp_tdf$start<=test.ts & tmp_tdf$f.strade == 1))
+              if(length(idx) == 0){ # idx is "an argument of length zero"
+                idx <- flayer.tn # set idx = flayer.tn so we have a valid value with which to subset
+              }
+              if ((tmp_tdf$scumsum[idx] + shortdf[si,'quantity']) >= maxshortpos){ # build target trade
               if(is.null(layer.trades)){
                 layer.trades <- data.frame(start=test.ts,
                                            duration = shortdf[si,'duration'],
@@ -655,7 +771,9 @@ txnsim <- function(Portfolio,
                                       )
                 )
               }
-              si<-si+1 #increment short index
+                tmp_tdf$scumsum[idx] <- tmp_tdf$scumsum[idx] + shortdf[si,'quantity'] # add new layered quantity for comparison to maxshortpos in next applicable loop, if any
+                si<-si+1 #increment short index
+          }
             } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
           }
             }# end short layering
