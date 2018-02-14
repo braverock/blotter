@@ -513,7 +513,7 @@ txnsim <- function(Portfolio,
         )
 
         # get the range and number of rows remaining of long and short trades
-        if(targetshortrow != 0){ # ie. there are short round turn trades in the strategy
+        if(targetshortrow != 0 & targetshortrow > nrow(shortdf)){ # ie. there are short round turn trades in the strategy
           shortrange <- (targetshortrow+1):nrow(shortdf)
           nshort     <- length(shortrange)
         } else {
@@ -521,7 +521,7 @@ txnsim <- function(Portfolio,
           nshort <- 0
         }
         # nshort     <- length(shortrange)
-        if(targetlongrow != 0){ # ie. there are long round turn trades in the strategy
+        if(targetlongrow != 0 & targetlongrow > nrow(longdf)){ # ie. there are long round turn trades in the strategy
           longrange  <- (targetlongrow+1):nrow(longdf)
           nlong      <- length(longrange)
         } else {
