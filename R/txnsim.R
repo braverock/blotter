@@ -853,7 +853,9 @@ txnsim <- function(Portfolio,
   cumpl <- cbind(backtestpl,cumpl)
   perpl <- cbind(backtestperpl,perpl)
 
+  if(any(is.na(cumpl))){
   cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
+  }
 
   # compute sample stats
   sampleoutput <- data.frame(matrix(nrow = n+1, ncol = 6))
