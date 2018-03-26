@@ -54,18 +54,18 @@ Suggests:
 
 ## Authors, Creators and Contributors
 
-* **Peter Carl [aut]**
-* **Brian G. Peterson [aut, cre]**
-* **Joshua Ulrich [ctb]**
-* **Jasen Mackie [ctb]**
-* **Daniel Cegielka [ctb]**
-* **Dirk Eddelbuettel [ctb]**
-* **Jan Humme [ctb]**
-* **Lance Levenson [ctb]**
-* **Ben McCann [ctb]**
-* **Jeff Ryan [ctb]**
-* **Garrett See [ctb]**
-* **Wolfgang Wu [ctb]**
+* Peter Carl [aut]
+* Brian G. Peterson [aut, cre]
+* Joshua Ulrich [ctb]
+* Jasen Mackie [ctb]
+* Daniel Cegielka [ctb]
+* Dirk Eddelbuettel [ctb]
+* Jan Humme [ctb]
+* Lance Levenson [ctb]
+* Ben McCann [ctb]
+* Jeff Ryan [ctb]
+* Garrett See [ctb]
+* Wolfgang Wu [ctb]
 
 ## License
 
