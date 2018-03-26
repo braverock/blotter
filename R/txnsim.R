@@ -1050,25 +1050,22 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         df <- dflist[[li]]
         #df <- df[which(df$quantity != 0),] # remove zero quantity trades
         df <- df[which(df$duration != 0), ] # remove zero duration trades
-        for (r in 1:nrow(df)) {
-          # opening trade
-          open  <- data.frame(
-            start = index(last(prices[paste0("/", df[r, 1])])),
-            TxnQty = df[r, "quantity"],
-            TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1])]))
-          )
-          # closing trade
-          close <-
-            data.frame(
-              start = index(last(prices[paste0("/", df[r, 1] + df[r, "duration"])])),
-              TxnQty = -1 * df[r, "quantity"],
-              TxnPrice = as.numeric(last(prices[paste0("/", df[r, 1] + df[r, "duration"])]))
-            )
-          txns[[r]] <- rbind(open, close)
-        } # end loop over rows
-        # we now have a list of transactions, turn them into an xts object
-        txns <- do.call(rbind, txns)
-        txns <- xts(txns[, c("TxnQty", "TxnPrice")], order.by = txns[, 1])
+        # Build opening transaction dataframe
+        txns_open <- data.frame(matrix(nrow = nrow(df), ncol = 3))
+        idx_open <- findInterval(df[,1],index(prices))
+        txns_open[,1] <- index(prices)[idx_open]
+        txns_open[,2] <- df[, "quantity"]
+        txns_open[,3] <- as.numeric(prices[idx_open])
+        # Build closing transaction dataframe
+        txns_close <- data.frame(matrix(nrow = nrow(df), ncol = 3))
+        idx_close <- findInterval(df[,1]+df[, "duration"],index(prices))
+        txns_close[,1] <- index(prices)[idx_close]
+        txns_close[,2] <- -1 * df[, "quantity"]
+        txns_close[,3] <- as.numeric(prices[idx_close])
+        # Combine open and close dataframes, order, rename columns, remove zero quantity transactions
+        txns <- rbind(txns_open, txns_close)
+        txns <- xts(txns[,-1], order.by = txns[, 1])
+        colnames(txns) <- (c("TxnQty", "TxnPrice"))
         txns <- txns[which(txns$TxnQty != 0), ]
         txnlist[[li]] <- txns
       }
