@@ -304,11 +304,12 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
 #' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
 #' @param incl.total if TRUE, add a column with the daily portfolio total P&L, default FALSE
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param \dots any other passthrough params
 #' @author Brian G. Peterson
 #' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
-dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter)
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, ...)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
@@ -345,7 +346,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
 #' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE, ...)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
