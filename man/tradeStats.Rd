@@ -7,7 +7,8 @@
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
-  tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter)
+  tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter,
+  Dates = NULL)
 
 dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
   envir = .blotter, native = TRUE)
@@ -19,11 +20,13 @@ dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
 
 \item{use}{for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)}
 
-\item{tradeDef}{string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.}
+\item{tradeDef}{string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. see \code{\link{perTradeStats}}}
 
 \item{inclZeroDays}{TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.}
 
 \item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
+
+\item{Dates}{optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)}
 
 \item{perSymbol}{boolean, for \code{dailyStats}, whether to aggregate all daily P&L, default TRUE}
 

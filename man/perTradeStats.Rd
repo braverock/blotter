@@ -6,7 +6,7 @@
 \usage{
 perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
   tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE,
-  envir = .blotter)
+  envir = .blotter, Dates = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}
@@ -22,6 +22,8 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 \item{includeFlatPeriods}{boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}}
 
 \item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
+
+\item{Dates}{optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)}
 }
 \value{
 A \code{data.frame} containing:

@@ -44,9 +44,10 @@
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
 #' @param use for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)  
-#' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
+#' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. see \code{\link{perTradeStats}}
 #' @param inclZeroDays TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param Dates optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)
 #' @author Lance Levenson, Brian Peterson
 #' @export
 #' @return
@@ -101,7 +102,14 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat',inclZeroDays=FALSE,envir=.blotter)
+tradeStats <- function( Portfolios
+                      , Symbols 
+                      , use=c('txns','trades')
+                      , tradeDef='flat.to.flat'
+                      , inclZeroDays=FALSE
+                      , envir=.blotter
+                      , Dates=NULL
+                      )
 {
     # initialize the ret data.frame so column types are correct  
     ret <- data.frame(Portfolio          = character(), 

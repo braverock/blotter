@@ -75,6 +75,7 @@
 #' @param \dots any other passthrough parameters
 #' @param includeFlatPeriods boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param Dates optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)
 #' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return
@@ -106,19 +107,25 @@
 #' and \code{\link{tradeStats}} for a summary view of the performance, and
 #' \code{\link{tradeQuantiles}} for round turns classified by quantile.
 #' @export
-perTradeStats <- function(Portfolio
+perTradeStats <- function(  Portfolio
                           , Symbol
                           , includeOpenTrade=TRUE
                           , tradeDef="flat.to.flat"
                           , ...
                           , includeFlatPeriods=FALSE
-                          , envir=.blotter)
+                          , envir=.blotter
+                          , Dates=NULL
+                          )
 {
 
   portf <- .getPortfolio(Portfolio, envir = envir)
   if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
 
   posPL <- portf$symbols[[Symbol]]$posPL
+
+  if(!is.null(Dates)){
+    posPL <- posPL[Dates]
+  }
 
   instr <- getInstrument(Symbol)
   tick_value <- instr$multiplier*instr$tick_size
