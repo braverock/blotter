@@ -1063,7 +1063,7 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         txns_close[,2] <- -1 * df[, "quantity"]
         txns_close[,3] <- as.numeric(prices[idx_close])
         # Combine open and close dataframes, order, rename columns, remove zero quantity transactions
-        txns <- rbind(txns_open, txns_close)
+        txns <- rbind(txns_close, txns_open) # bind open txns below close txns so txns on same timestamp are in correct order
         txns <- xts(txns[,-1], order.by = txns[, 1])
         colnames(txns) <- (c("TxnQty", "TxnPrice"))
         txns <- txns[which(txns$TxnQty != 0), ]
