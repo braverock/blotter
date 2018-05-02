@@ -513,7 +513,7 @@ txnsim <- function(Portfolio,
         )
 
         # get the range and number of rows remaining of long and short trades
-        if(targetshortrow != 0 & targetshortrow > nrow(shortdf)){ # ie. there are short round turn trades in the strategy
+        if(targetshortrow != 0 & targetshortrow < nrow(shortdf)){ # ie. there are short round turn trades in the strategy
           shortrange <- (targetshortrow+1):nrow(shortdf)
           nshort     <- length(shortrange)
         } else {
@@ -521,7 +521,7 @@ txnsim <- function(Portfolio,
           nshort <- 0
         }
         # nshort     <- length(shortrange)
-        if(targetlongrow != 0 & targetlongrow > nrow(longdf)){ # ie. there are long round turn trades in the strategy
+        if(targetlongrow != 0 & targetlongrow < nrow(longdf)){ # ie. there are long round turn trades in the strategy
           longrange  <- (targetlongrow+1):nrow(longdf)
           nlong      <- length(longrange)
         } else {
@@ -1052,6 +1052,7 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         df <- df[which(df$duration != 0), ] # remove zero duration trades
         # Build opening transaction dataframe
         txns_open <- data.frame(matrix(nrow = nrow(df), ncol = 3))
+        df <- df[order(df[,1]),] # when layering, we have older order timestamps from layer 2+ after more recent timestamps from layer 1
         idx_open <- findInterval(df[,1],index(prices))
         txns_open[,1] <- index(prices)[idx_open]
         txns_open[,2] <- df[, "quantity"]
