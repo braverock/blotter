@@ -513,7 +513,7 @@ txnsim <- function(Portfolio,
         )
 
         # get the range and number of rows remaining of long and short trades
-        if(targetshortrow != 0 & targetshortrow < nrow(shortdf)){ # ie. there are short round turn trades in the strategy
+        if(targetshortrow != 0 && targetshortrow < nrow(shortdf)){ # ie. there are short round turn trades in the strategy
           shortrange <- (targetshortrow+1):nrow(shortdf)
           nshort     <- length(shortrange)
         } else {
@@ -521,7 +521,7 @@ txnsim <- function(Portfolio,
           nshort <- 0
         }
         # nshort     <- length(shortrange)
-        if(targetlongrow != 0 & targetlongrow < nrow(longdf)){ # ie. there are long round turn trades in the strategy
+        if(targetlongrow != 0 && targetlongrow < nrow(longdf)){ # ie. there are long round turn trades in the strategy
           longrange  <- (targetlongrow+1):nrow(longdf)
           nlong      <- length(longrange)
         } else {
@@ -610,6 +610,7 @@ txnsim <- function(Portfolio,
         tmp_tdf <- tdf # set up a temp dataframe based on tdf
         
         # cumsum sequential longs on firstlayer
+        if(targetlongrow > 0){ # ie. there are long trades in the strategy
         tmp_tdf$lqty <- tmp_tdf$quantity
         tmp_tdf$lqty[which(tmp_tdf$quantity < 0)] <- 0
         tmp_tdf$ltrade <- 0
@@ -626,8 +627,10 @@ txnsim <- function(Portfolio,
           tmp_tdf$lcumsum[lfirstindex[cs]] <- sum(tmp_tdf$lqty[lfirstindex[cs]:lindex[(first(which(interval > cs))-1)]])
         }
         tmp_tdf$lcumsum[lfirstindex[length(lfirstindex)]] <- sum(tmp_tdf$lqty[lfirstindex[cs+1]:last(lindex)])
+        }
         
         # cumsum sequential shorts on firstlayer
+        if(targetshortrow > 0){ #ie. there are short trades in the strategy
         tmp_tdf$sqty <- tmp_tdf$quantity
         tmp_tdf$sqty[which(tmp_tdf$quantity > 0)] <- 0
         tmp_tdf$strade <- 0
@@ -644,6 +647,7 @@ txnsim <- function(Portfolio,
           tmp_tdf$scumsum[sfirstindex[cs]] <- sum(tmp_tdf$sqty[sfirstindex[cs]:sindex[(first(which(interval > cs))-1)]])
         }
         tmp_tdf$scumsum[sfirstindex[length(sfirstindex)]] <- sum(tmp_tdf$sqty[sfirstindex[cs+1]:last(sindex)])
+        }
         
         # now loop over the layers and construct a target data frame for each
         for(laynum in names(ln.samples)){
