@@ -154,7 +154,7 @@ pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
 
 #' summary method for objects of type \code{pbo}
 #'
-#' @param object 
+#' @param object object of type 'pbo' to summarise
 #'
 #' @param ... 
 #'

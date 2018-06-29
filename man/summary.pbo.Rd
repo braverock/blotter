@@ -7,7 +7,7 @@
 summary.pbo(object, ...)
 }
 \arguments{
-\item{object}{}
+\item{object}{object of type 'pbo' to summarise}
 
 \item{...}{}
 }

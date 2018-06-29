@@ -187,9 +187,10 @@
 #'}
 #'
 #'@import FinancialInstrument PerformanceAnalytics quantmod xts zoo TTR
+#' @importfrom foreach foreach
 #'@importFrom graphics abline grid plot points
 #'@importFrom grDevices dev.new
 #'@importFrom methods hasArg
-#'@importFrom stats complete.cases lag median na.omit quantile qnorm sd start end
+#'@importFrom stats complete.cases lag median na.omit quantile qnorm sd start end lm
 #'@importFrom utils View head tail
 NULL
