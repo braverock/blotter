@@ -152,6 +152,12 @@ pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   rv
 }
 
+#' summary method for objects of type \code{pbo}
+#'
+#' @param object 
+#'
+#' @param ... 
+#'
 #' @export
 summary.pbo <- function(object,...) {
   writeLines(c(paste("Performance function",
