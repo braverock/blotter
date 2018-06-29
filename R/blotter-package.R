@@ -187,7 +187,7 @@
 #'}
 #'
 #'@import FinancialInstrument PerformanceAnalytics quantmod xts zoo TTR
-#' @importfrom foreach foreach
+#'@importFrom foreach foreach
 #'@importFrom graphics abline grid plot points
 #'@importFrom grDevices dev.new
 #'@importFrom methods hasArg

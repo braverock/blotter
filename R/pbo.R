@@ -90,7 +90,7 @@ pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   # for each partition combination
   cs_results <- NULL
   if ( allow_parallel ) {
-    require(foreach,quietly=TRUE)
+    # require(foreach,quietly=TRUE)
     cs_results <- foreach ( csi=1:ncol(cs),
                             .combine=rbind,
                             .multicombine=TRUE) %dopar%
@@ -156,8 +156,8 @@ pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
 #'
 #' @param object object of type 'pbo' to summarise
 #'
-#' @param ... 
-#'
+#' @param ... \dots any other passthrough parameters
+#' @method summary pbo
 #' @export
 summary.pbo <- function(object,...) {
   writeLines(c(paste("Performance function",

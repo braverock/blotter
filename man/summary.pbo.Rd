@@ -4,12 +4,12 @@
 \alias{summary.pbo}
 \title{summary method for objects of type \code{pbo}}
 \usage{
-summary.pbo(object, ...)
+\method{summary}{pbo}(object, ...)
 }
 \arguments{
 \item{object}{object of type 'pbo' to summarise}
 
-\item{...}{}
+\item{...}{\dots any other passthrough parameters}
 }
 \description{
 summary method for objects of type \code{pbo}
