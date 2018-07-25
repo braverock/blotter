@@ -1,9 +1,130 @@
+###############################################################################
+# R (http://r-project.org/) Quantitative Strategy Model Framework
+#
+# Copyright (c) 2009-2017
+# Peter Carl, Dirk Eddelbuettel, Brian G. Peterson, Jeffrey Ryan, and Joshua Ulrich 
+#
+# This library is distributed under the terms of the GNU Public License (GPL)
+# for full details see the file COPYING
+#
+# $Id$
+#
+###############################################################################
+
 #' @title Probability of backtest overfitting
 #' @description Performs the probability of backtest overfitting computations.
 #' @details
 #' This function performs the probability of backtest overfitting calculation
 #' using a combinatorially-symmetric cross validation (CSCV) approach. 
 #' 
+#' @param portfolios string name of portfolio, or optionally a vector of portfolios, see DETAILS
+#' @param ... any other passthrough parameters
+#' @param strategy optional strategy specification that would contain more information on the process, default NULL
+#' @param trials optional number of trials,default NULL
+#' @param audit optional audit environment containing the results of parameter optimization or walk forward, default NULL
+#' @param env optional environment to find market data in, if required.
+#'
+#' @author Jasen Mackie, Brian G. Peterson
+#' @return 
+#' 
+#' an object of type \code{pbo.cscv} containing:
+#' 
+#'
+pbo <- function( portfolios
+                 , ...
+                 , strategy=NULL
+                 , trials=NULL
+                 , audit=NULL
+                 , env=.GlobalEnv)
+{
+  #check inputs
+  if(length(portfolios==1)&&is.null(audit)){
+    stop("Not enough information to calculate.  \n",
+         "Need either \n",
+         "  - multiple portfolios \n",
+         "  - single portfolio plus audit environment \n")
+  }
+  
+  if(is.null(strategy)&&is.null(trials)){
+    stop("Not enough information to calculate.  \n",
+         "Need either \n",
+         "  - strategy object with trials slot \n",
+         "  - explicit number of trials \n")
+  }
+  
+  #initialize things we'll need:
+  if(!is.null(strategy)){
+    if(!is.strategy((strategy))){
+      s<-try(getStrategy(strategy))
+      if(inherits(s,"try-error"))
+        stop ("You must supply an object of type 'strategy'.")
+    } else {
+      s <- strategy
+    }
+    s_trials<-s$trials
+    if(!is.null(trials) && s_trials>trials){
+      trials <- s_trials
+    }
+    if(is.null(trials)) trials <- s_trials
+  }
+  if(trials==0 || !is.numeric(trials))
+    stop("You must supply a numeric number of trials or a strategy with trials included")
+  
+  #loop over portfolios
+  ret<-list()
+  for(portfolio in portfolios){
+    if(!is.null(audit)){
+      if(!is.environment(audit)){
+        stop("audit parameter should be an environment containing trial portfolios")
+      } else{
+        # run dailyStats on all (matching) portfolios if there
+        pvec <- ls(pattern = paste0('portfolio.',portfolio),name = audit)
+        if(length(pvec)){
+          if(length(pvec)>trials) trials <- trials + length(pvec)
+          # run dailyStats on all (matching) portfolios if there
+          # dailySt <- c(dailySt,lapply(pvec, function(x){ dailyStats(x,perSymbol = FALSE, method='moment', envir=audit) }))
+          ret <- c(ret, lapply(pvec, function(x){ ROC(cumsum(.getPortfolio(x, env = .audit)$summary$Net.Trading.PL)) }))
+          # dailySt <- do.call(rbind,dailySt)
+          ret <- do.call(cbind,ret)
+        }
+        # put target portfolio first
+        # ret <- cbind(portfolios[1],ret)
+        # colnames(ret) <- c(portfolios[1],pvec)
+        colnames(ret) <- c(pvec)
+        ret[is.na(ret)] <- 0
+        ret[!is.finite(ret)] <- 0
+      }
+    } else {
+      #if we don't have an audit environment, we just need stats on all the portfolios
+      ret <- c(ret, ROC(cumsum(.getPortfolio(portfolio)$summary$Net.Trading.PL)))
+      ret <- do.call(cbind,ret)
+      colnames(ret) <- portfolios
+    }
+  }
+  
+  # Number of tests assumed
+  num_test <- trials
+  
+  result <- pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
+  result$call <- match.call()
+  result
+} # end pbo wrapper
+
+
+
+##########################################################
+# Sharpe ratio function
+sharpe <- function(x,rf=0.03/252) {
+  sr <- apply(x,2,function(col) {
+    er = col - rf
+    return(mean(er)/sd(er))
+  })
+  return(sr)
+}
+
+#' The non-exported \code{pbo.cscv} function is the internal implementation of
+#' the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
+#'
 #' @param m a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies.
 #' @param s the number of subsets of \code{m} for CSCV combinations; 
 #' must evenly divide \code{m} 
@@ -32,10 +153,15 @@
 #'   check.names=FALSE)
 #' p <- pbo(m,s,f=Omega,threshold=1)
 #' }
-pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
+
+pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   stopifnot(is.function(f))
   
   t <- nrow(m)             # samples per study
+  if(t%%4 != 0){
+    m <- m[-(1:t%%4),]
+    t <- nrow(m)
+  }
   n <- ncol(m)             # studies
   cs <- combn(s,s/2)       # combinations
   sn <- t / s              # partition size
@@ -152,6 +278,8 @@ pbo <- function(m,s=4,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   rv
 }
 
+
+
 #' summary method for objects of type \code{pbo}
 #'
 #' @param object object of type 'pbo' to summarise
@@ -169,3 +297,6 @@ summary.pbo <- function(object,...) {
   names(results) <- c("p_bo","slope","ar^2","p_loss")
   results
 }
+
+# pbo  <- pbo('macd',strategy='macd',audit=.audit)
+# summary(pbo)

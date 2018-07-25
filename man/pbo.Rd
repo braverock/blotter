@@ -4,27 +4,24 @@
 \alias{pbo}
 \title{Probability of backtest overfitting}
 \usage{
-pbo(m, s = 4, f = NA, threshold = 0, inf_sub = 6,
-  allow_parallel = FALSE)
+pbo(portfolios, ..., strategy = NULL, trials = NULL, audit = NULL,
+  env = .GlobalEnv)
 }
 \arguments{
-\item{m}{a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies.}
+\item{portfolios}{string name of portfolio, or optionally a vector of portfolios, see DETAILS}
 
-\item{s}{the number of subsets of \code{m} for CSCV combinations; 
-must evenly divide \code{m}}
+\item{...}{any other passthrough parameters}
 
-\item{f}{the function to evaluate a study's performance; required}
+\item{strategy}{optional strategy specification that would contain more information on the process, default NULL}
 
-\item{threshold}{the performance metric threshold 
-(e.g. 0 for Sharpe, 1 for Omega)}
+\item{trials}{optional number of trials,default NULL}
 
-\item{inf_sub}{infinity substitution value for reasonable plotting}
+\item{audit}{optional audit environment containing the results of parameter optimization or walk forward, default NULL}
 
-\item{allow_parallel}{whether to enable parallel processing, default FALSE}
+\item{env}{optional environment to find market data in, if required.}
 }
 \value{
-object of class \code{pbo} containing list of PBO calculation results 
-and settings
+an object of type \code{pbo.cscv} containing:
 }
 \description{
 Performs the probability of backtest overfitting computations.
@@ -33,26 +30,6 @@ Performs the probability of backtest overfitting computations.
 This function performs the probability of backtest overfitting calculation
 using a combinatorially-symmetric cross validation (CSCV) approach.
 }
-\examples{
-\dontrun{
-require(pbo)
-require(PerformanceAnalytics)
-n <- 100
-t <- 1000
-s <- 8
-m <- data.frame(matrix(rnorm(n*t,mean=0,sd=1),
-  nrow=t,ncol=n,byrow=TRUE,
-  dimnames=list(1:t,1:n)),
-  check.names=FALSE)
-p <- pbo(m,s,f=Omega,threshold=1)
+\author{
+Jasen Mackie, Brian G. Peterson
 }
-}
-\references{
-Baily et al., "The Probability of Backtest Overfitting," 
-\url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
-}
-\keyword{CSCV}
-\keyword{PBO}
-\keyword{backtest}
-\keyword{overfitting}
-\keyword{probability}
