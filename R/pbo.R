@@ -27,7 +27,12 @@
 #' and settings
 #' @author Jasen Mackie, Brian G. Peterson
 #' @export
-#'
+#' @examples
+#' \dontrun{
+#' demo("macdParameters", ask=FALSE)
+#' pbo  <- pbo('macd',strategy='macd',audit=.audit)
+#' summary(pbo)
+
 pbo <- function( portfolios
                  , ...
                  , strategy=NULL
@@ -103,7 +108,7 @@ pbo <- function( portfolios
   # Number of tests assumed
   num_test <- trials
   
-  result <- pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
+  result <- .pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
   result$call <- match.call()
   result
 } # end pbo wrapper
@@ -136,19 +141,6 @@ sharpe <- function(x,rf=0.03/252) {
 #' @importFrom utils combn
 #' @references Baily et al., "The Probability of Backtest Overfitting," 
 #' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
-#' @examples
-#' \dontrun{
-#' require(pbo)
-#' require(PerformanceAnalytics)
-#' n <- 100
-#' t <- 1000
-#' s <- 8
-#' m <- data.frame(matrix(rnorm(n*t,mean=0,sd=1),
-#'   nrow=t,ncol=n,byrow=TRUE,
-#'   dimnames=list(1:t,1:n)),
-#'   check.names=FALSE)
-#' p <- pbo(m,s,f=Omega,threshold=1)
-#' }
 
 .pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   stopifnot(is.function(f))
@@ -293,7 +285,3 @@ summary.pbo <- function(object,...) {
   names(results) <- c("p_bo","slope","ar^2","p_loss")
   results
 }
-
-# demo("macdParameters", ask=FALSE)
-# pbo  <- pbo('macd',strategy='macd',audit=.audit)
-# summary(pbo)
