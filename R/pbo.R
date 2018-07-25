@@ -23,13 +23,10 @@
 #' @param trials optional number of trials,default NULL
 #' @param audit optional audit environment containing the results of parameter optimization or walk forward, default NULL
 #' @param env optional environment to find market data in, if required.
-#'
+#' @return object of class \code{pbo} containing list of PBO calculation results 
+#' and settings
 #' @author Jasen Mackie, Brian G. Peterson
-#' @return 
-#' @export pbo
-#' 
-#' an object of type \code{pbo.cscv} containing:
-#' 
+#' @export
 #'
 pbo <- function( portfolios
                  , ...
@@ -136,7 +133,6 @@ sharpe <- function(x,rf=0.03/252) {
 #' @keywords probability backtest overfitting PBO CSCV
 #' @return object of class \code{pbo} containing list of PBO calculation results 
 #' and settings
-#' @export
 #' @importFrom utils combn
 #' @references Baily et al., "The Probability of Backtest Overfitting," 
 #' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
@@ -154,7 +150,7 @@ sharpe <- function(x,rf=0.03/252) {
 #' p <- pbo(m,s,f=Omega,threshold=1)
 #' }
 
-pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
+.pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   stopifnot(is.function(f))
   
   t <- nrow(m)             # samples per study

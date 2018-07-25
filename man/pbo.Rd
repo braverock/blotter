@@ -20,6 +20,10 @@ pbo(portfolios, ..., strategy = NULL, trials = NULL, audit = NULL,
 
 \item{env}{optional environment to find market data in, if required.}
 }
+\value{
+object of class \code{pbo} containing list of PBO calculation results 
+and settings
+}
 \description{
 Performs the probability of backtest overfitting computations.
 }
