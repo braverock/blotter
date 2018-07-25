@@ -20,9 +20,6 @@ pbo(portfolios, ..., strategy = NULL, trials = NULL, audit = NULL,
 
 \item{env}{optional environment to find market data in, if required.}
 }
-\value{
-an object of type \code{pbo.cscv} containing:
-}
 \description{
 Performs the probability of backtest overfitting computations.
 }

@@ -26,6 +26,7 @@
 #'
 #' @author Jasen Mackie, Brian G. Peterson
 #' @return 
+#' @export pbo
 #' 
 #' an object of type \code{pbo.cscv} containing:
 #' 
@@ -122,8 +123,7 @@ sharpe <- function(x,rf=0.03/252) {
   return(sr)
 }
 
-#' The non-exported \code{pbo.cscv} function is the internal implementation of
-#' the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
+#' Internal implementation of the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
 #'
 #' @param m a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies.
 #' @param s the number of subsets of \code{m} for CSCV combinations; 
@@ -298,5 +298,6 @@ summary.pbo <- function(object,...) {
   results
 }
 
+# demo("macdParameters", ask=FALSE)
 # pbo  <- pbo('macd',strategy='macd',audit=.audit)
 # summary(pbo)

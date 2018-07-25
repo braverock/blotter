@@ -2,8 +2,7 @@
 % Please edit documentation in R/pbo.R
 \name{pbo.cscv}
 \alias{pbo.cscv}
-\title{The non-exported \code{pbo.cscv} function is the internal implementation of
-the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.}
+\title{Internal implementation of the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.}
 \usage{
 pbo.cscv(m = ret, s = 8, f = NA, threshold = 0, inf_sub = 6,
   allow_parallel = FALSE)
@@ -28,8 +27,7 @@ object of class \code{pbo} containing list of PBO calculation results
 and settings
 }
 \description{
-The non-exported \code{pbo.cscv} function is the internal implementation of
-the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
+Internal implementation of the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
 }
 \examples{
 \dontrun{
