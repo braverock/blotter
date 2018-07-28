@@ -13,9 +13,10 @@
 
 #' @title Probability of backtest overfitting
 #' @description Performs the probability of backtest overfitting computations.
-#' @details
-#' This function performs the probability of backtest overfitting calculation
-#' using a combinatorially-symmetric cross validation (CSCV) approach. 
+#' @details This function performs the probability of backtest overfitting calculation
+#' using a combinatorially-symmetric cross validation (CSCV) approach implemented in
+#' \code{\link{pbo.cscv}} and proposed by Marcos Lopez de Prado et al in the reference
+#' paper below.
 #' 
 #' @param portfolios string name of portfolio, or optionally a vector of portfolios, see DETAILS
 #' @param ... any other passthrough parameters
@@ -25,13 +26,24 @@
 #' @param env optional environment to find market data in, if required.
 #' @return object of class \code{pbo} containing list of PBO calculation results 
 #' and settings
+#' @seealso \code{\link{pbo.cscv}}
 #' @author Jasen Mackie, Brian G. Peterson
 #' @export
+#' @references 
+#' Baily et al., "The Probability of Backtest Overfitting,"
+#' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
+#'
+#' Baily et al., "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance,"
+#' \url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659}
+#'
+#' Matt Barry's Vignette for the original \code{pbo} package
+#' \url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
 #' @examples
 #' \dontrun{
 #' demo("macdParameters", ask=FALSE)
 #' pbo  <- pbo('macd',strategy='macd',audit=.audit)
 #' summary(pbo)
+#' }
 
 pbo <- function( portfolios
                  , ...
@@ -108,7 +120,7 @@ pbo <- function( portfolios
   # Number of tests assumed
   num_test <- trials
   
-  result <- .pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
+  result <- pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
   result$call <- match.call()
   result
 } # end pbo wrapper
@@ -125,8 +137,13 @@ sharpe <- function(x,rf=0.03/252) {
   return(sr)
 }
 
-#' Internal implementation of the Combinatorially Symmetric Cross Validation technique used by Marcos Lopez de Prado.
-#'
+#' @title Internal implementation of the Combinatorially Symmetric Cross Validation (CSCV) technique used by Marcos Lopez de Prado.
+#' @description Internal function used by \code{blotter:::pbo} for computing the Probability of Backtest Overfitting.
+#' @details This function performs the probability of backtest overfitting calculation
+#' using a combinatorially-symmetric cross validation (CSCV) approach. We have ported most of the source code
+#' from Matt Barry's implementation with his gracious consent. There will likely be a few extensions from Matt's
+#' version, with the first being to make the function compatible with the \code{portfolios}
+#' object in \code{blotter}.
 #' @param m a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies.
 #' @param s the number of subsets of \code{m} for CSCV combinations; 
 #' must evenly divide \code{m} 
@@ -138,16 +155,28 @@ sharpe <- function(x,rf=0.03/252) {
 #' @keywords probability backtest overfitting PBO CSCV
 #' @return object of class \code{pbo} containing list of PBO calculation results 
 #' and settings
+#' @seealso \code{\link{pbo}}
+#' @author Matt Barry, Jasen Mackie, Brian G. Peterson
+#' @export
 #' @importFrom utils combn
-#' @references Baily et al., "The Probability of Backtest Overfitting," 
+#' @references
+#' Baily et al., "The Probability of Backtest Overfitting,"
 #' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
-
-.pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
+#' 
+#' Baily et al., "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance,"
+#' \url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659}
+#' 
+#' Matt Barry's Vignette for the original \code{pbo} package
+#' \url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
+#' 
+pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
   stopifnot(is.function(f))
   
   t <- nrow(m)             # samples per study
-  if(t%%4 != 0){
-    m <- m[-(1:t%%4),]
+  # Trim m to make the combinations truly symmetric
+  # TODO: add the trimmed observations back
+  if(t%%s != 0){
+    m <- m[-(1:t%%s),]
     t <- nrow(m)
   }
   n <- ncol(m)             # studies

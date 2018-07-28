@@ -29,7 +29,29 @@ Performs the probability of backtest overfitting computations.
 }
 \details{
 This function performs the probability of backtest overfitting calculation
-using a combinatorially-symmetric cross validation (CSCV) approach.
+using a combinatorially-symmetric cross validation (CSCV) approach implemented in
+\code{\link{pbo.cscv}} and proposed by Marcos Lopez de Prado et al in the reference
+paper below.
+}
+\examples{
+\dontrun{
+demo("macdParameters", ask=FALSE)
+pbo  <- pbo('macd',strategy='macd',audit=.audit)
+summary(pbo)
+}
+}
+\references{
+Baily et al., "The Probability of Backtest Overfitting,"
+\url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
+
+Baily et al., "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance,"
+\url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659}
+
+Matt Barry's Vignette for the original \code{pbo} package
+\url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
+}
+\seealso{
+\code{\link{pbo.cscv}}
 }
 \author{
 Jasen Mackie, Brian G. Peterson
