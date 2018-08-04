@@ -4,17 +4,32 @@
 \alias{pbo}
 \title{Probability of backtest overfitting}
 \usage{
-pbo(portfolios, ..., strategy = NULL, trials = NULL, audit = NULL,
-  env = .GlobalEnv)
+pbo(retmatrix = NULL, portfolios = NULL, sm = 8, f = NA,
+  threshold = 0, inf_sub = 6, allow_parallel = FALSE, ...,
+  strategy = NULL, trials = NULL, audit = NULL, env = .GlobalEnv)
 }
 \arguments{
-\item{portfolios}{string name of portfolio, or optionally a vector of portfolios, see DETAILS}
+\item{retmatrix}{a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies}
+
+\item{portfolios}{string name of portfolio, or optionally a vector of portfolios, if not using the \code{retmatrix} param}
+
+\item{sm}{the number of subsets (ie. subset matrices) of \code{m} for CSCV combinations; 
+must evenly divide \code{m}}
+
+\item{f}{the function to evaluate a study's performance; required}
+
+\item{threshold}{the performance metric threshold 
+(e.g. 0 for Sharpe, 1 for Omega)}
+
+\item{inf_sub}{infinity substitution value for reasonable plotting}
+
+\item{allow_parallel}{whether to enable parallel processing, default FALSE}
 
 \item{...}{any other passthrough parameters}
 
 \item{strategy}{optional strategy specification that would contain more information on the process, default NULL}
 
-\item{trials}{optional number of trials,default NULL}
+\item{trials}{optional number of trials, default NULL}
 
 \item{audit}{optional audit environment containing the results of parameter optimization or walk forward, default NULL}
 
@@ -29,14 +44,30 @@ Performs the probability of backtest overfitting computations.
 }
 \details{
 This function performs the probability of backtest overfitting calculation
-using a combinatorially-symmetric cross validation (CSCV) approach implemented in
-\code{\link{pbo.cscv}} and proposed by Marcos Lopez de Prado et al in the reference
-paper below.
+using a combinatorially-symmetric cross validation (CSCV) approach proposed by Bailey et al in the
+paper \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}. We have ported most of the source code
+from Matt Barry's implementation with his gracious consent. There will likely be a few extensions from Matt's
+version, with the first being to make the function compatible with the \code{portfolios}
+object in \code{blotter}.
 }
 \examples{
 \dontrun{
+sharpe <- function(x,rf=0.03/252) {
+sr <- apply(x,2,function(col) {
+ er = col - rf
+ return(mean(er)/sd(er))
+})
+return(sr)
+}
 demo("macdParameters", ask=FALSE)
-pbo  <- pbo('macd',strategy='macd',audit=.audit)
+pbo  <- pbo(portfolios = 'macd'
+            ,s=8
+            ,f=sharpe
+            ,threshold=0
+            ,inf_sub=6
+            ,allow_parallel=FALSE
+            ,strategy='macd'
+            ,audit=.audit)
 summary(pbo)
 }
 }
@@ -50,9 +81,11 @@ Baily et al., "Pseudo-Mathematics and Financial Charlatanism: The Effects of Bac
 Matt Barry's Vignette for the original \code{pbo} package
 \url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
 }
-\seealso{
-\code{\link{pbo.cscv}}
-}
 \author{
-Jasen Mackie, Brian G. Peterson
+Matt Barry, Jasen Mackie, Brian G. Peterson
 }
+\keyword{CSCV}
+\keyword{PBO}
+\keyword{backtest}
+\keyword{overfitting}
+\keyword{probability}

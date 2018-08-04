@@ -1,0 +1,330 @@
+---
+title: "A replication of the Practical Application section in 'The Probability of Backtest Overfitting' - Bailey et al."
+author: "Jasen Mackie"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A replication of the Practical Application section in 'The Probability of Backtest Overfitting' - Bailey et al.}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In their paper "The Probability of Backtest
+Overfitting" [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253] Bailey et al. introduce a method for detecting overfitting. They refer to the method as CSCV or Combinatorially Symmetric Cross Validation. Bailey et al. proceed to show that CSCV produces reasonable estimates of PBO for several useful examples.
+
+To illustrate the ease with which a random series can produce an overfit trading rule, Bailey et al. in "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance" [http://www.ams.org/notices/201405/rnoti-p458.pdf] seek to identify an optimal **monthly** trading rule based on 4 parameters, namely: Entry day, Holding Period, Stop Loss and Side. Using the ranges C(1:22), c(1:20), c(0:10) and c(-1,1) respectively, their program iterates through each permutation (8800 in total) to determine the strategy with the highest Sharpe ratios (SR). Their example produces an optimal SR of 1.27. The authors extend the data mining example by applying a seasonal adjustment to the first 5 days of each month. Particularly, they scale the daily returns by a factor of a quarter of the sigma used to generate the original series. The python program for replicating this data mining process can be found here [http://www.quantresearch.info/CSCV_3.py.txt]. Using their CSCV method for computing the PBO of each series of trials the authors are able to illustrate examples of how CSCV diagnoses the probability of backtest overfitting for an overfit random strategy versus a strategy with a legitimate seasonal component.
+
+The below code and analysis is an R-ported version of the python program together with some PBO output derived using the new _blotter:::pbo_ function for the purposes of replicating the paper introducing the CSCV method.
+
+The main function is the dataMine() function, called backTest() in the original python program. We store the output as an S3 object, making possible the extension of additional analysis on the pbo output. There are a number of helper functions, namely:
+
+- numBusinessDays - for assigning an integer to the respective date, representing which business day in the month it is. This is used when applying the seasonality adjustement to the first 'nDays' of each month. Applicable when param 'nDays' is greater than 0.
+- getRefDates_MonthBusinessDate - for determining the respective nth business day in each month. Each month will have a 1st business day, so we assign dates for each 1st business day, then again for each 2nd business day of each month, etc.
+- getTrades - taking into consideration the constraints of the strategy (entry day, holding period {param name 'exit'}, stop loss and side), this function returns the trades.
+- attachTimeSeries - we keep a record of the daily returns for each trial (8800 in the paper) which we apply to the pbo() function. This function attaches each iterated trial.
+- evalPerf - used for recording various metrics for computing the psrStat as well as the Sharpe ratio, which is the performance metric used in the paper. Bailey et al. emphasise that other metrics can be used with their framework (eg. Sortino ratio, Jensen's Alpha, Probabilistic Sharpe Ratio, etc), and introducing a range of methods to the analyst and allowing them to rank the performance of each for the purposes of detecting pbo is an exciting piece of future work we will look to implement in quantstrat in due course.
+- computePSR - a helper function within evalPerf() for computing the psrStat and psr.
+
+We have kept the names of the helper functions identical to those used in the python program.
+
+When the dataMine() function is called, we print the SR along with other strategy charateristics to the console for the first strategy and every subsequent strategy which improves on the prior SR. The last iteration to print once the function has completed, will be the iteration which generated the max Sharpe ratio. Each line prints 8 different details, which are:
+
+  1. iteration number,
+  2. business day in month used for entry day,
+  3. holding period,
+  4. stop loss,
+  5. side (-1 for sell, 1 for buy),
+  6. Sharpe ratio,
+  7. Frequency (see calc in evalPerf function), 
+  8. psrStat or probabilistic Sharpe ratio statistic
+  
+```{r, include=FALSE}
+require(pbo)
+require(PerformanceAnalytics)
+```
+
+```{r}
+dataMine <- function(nDays=0, factor=0){
+  # 1) Input parameters --- to be changed by the user
+  holdingPeriod <- 20
+  sigma <- 1
+  stopLoss <- 10
+  length <- 1000
+  # 2) Prepare series
+  date <- as.Date("2000-01-01") # original python program uses 01/01/2000 start date
+  dates <- list()
+  
+  while(length(dates) < length){
+    if(as.POSIXlt(date)$wday != 0 & as.POSIXlt(date)$wday != 6 & length(dates) == 0){
+      dates <- date
+    } else if(as.POSIXlt(date)$wday != 0 & as.POSIXlt(date)$wday != 6 & length(dates) != 0){
+      dates <- append(dates, date)
+    }
+    date <- as.Date(date) + 1
+  }
+  
+  series <- matrix(0, nrow = length, ncol = 1)
+  for(i in 1:length(series)){
+    series[i] <- rnorm(1, mean = 0, sd = sigma)
+    pDay <- as.Date(paste(format(as.Date(dates[i], format="%d/%m/%Y"),"%Y"),
+                          format(as.Date(dates[i], format="%d/%m/%Y"),"%m"),
+                          1,
+                          sep = "-")
+    )
+    if(numBusinessDays(pDay, dates[i]) <= nDays){
+      series[i] <- series[i] + sigma * factor
+    }
+  }
+  series <- cumsum(series)
+  # 3) Optimize
+  # get the daily index in each month for each date in the series,
+  # so the 2nd BD in Jan 2000 is 03/01/2000 and in Feb 2000 is
+  # 02/02/2000. refDates[[2]] will be a list of elements with these dates.
+  refDates <- getRefDates_MonthBusinessDate(dates) 
+  psr <- sr <- trades <- sl <- freq <- pDay <- pnl <- NULL
+  count <- 0
+  # start of main loop - we loop over each date in the refDates list
+  sr <- NULL
+  for(pDay in 1:length(refDates)){
+    refDates_0 <- refDates[[pDay]]
+    if(length(refDates_0) == 0){
+      next
+    }
+    # 4) Get trades
+    iterdf <- expand.grid(z=c(-1,1), y=c(-10:0), x=c(1:20))
+    iterdf <- iterdf[c("x","y","z")]
+    for(prod in 1:nrow(iterdf)){
+      count = count + 1
+      trades_0 <- getTrades(series, dates, refDates_0, iterdf[prod,1], iterdf[prod,2], iterdf[prod,3])
+      dates_0 <- NULL
+      pnl_0 <- NULL
+      if(length(trades_0) == 0) { next }
+      for(j in 1:length(trades_0)) { dates_0 <- append(dates_0, trades_0[[j]][1]) }
+      for(j in 1:length(trades_0)) { pnl_0 <- append(pnl_0, as.numeric(trades_0[[j]][4])) }
+      # 5) Eval performance
+      if(length(pnl_0) > 2){
+        # 6) Reconcile PnL
+        pnl <- attachTimeSeries(pnl, pnl_0, dates_0, count)
+        # 7) Evaluate
+        eval_list <- list()
+        eval_list <- evalPerf(pnl_0, dates[1], dates[length(dates)])
+        names(eval_list) <- c("sr_0","psr_0","freq_0")
+        for(j in 2:length(pnl_0)){
+          pnl_0[j] <- pnl_0[j] + pnl_0[j - 1]
+        }
+        if(is.null(sr)){
+          sr <- 0 # give sr a numeric value
+        }
+        if(eval_list["sr_0"] > sr){ # if sr == None or sr_ > sr:
+          psr <- eval_list["psr_0"]
+          sr <- eval_list["sr_0"]
+          trades_df <- data.frame(matrix(unlist(trades_0), nrow=length(trades_0), byrow=T),stringsAsFactors=FALSE)
+          trades_df[,1] <- as.Date(trades_df[,1])
+          colnames(trades_df) <- c("txndate","num","side","daypl")
+          freq <- eval_list["freq_0"]
+          pDay <- pDay # freq, pDay, prod = freq_, pDay_, prod_
+          constraints <- c(iterdf[prod,1],iterdf[prod,2],iterdf[prod,3])
+          cat(count, pDay, constraints, round(sr,2), round(freq,2), round(psr,2), fill = TRUE, sep = ",")
+        }
+      }
+    }
+  }
+  ret <- list(Total_Iterations = count,
+              PL = pnl,
+              PSR = psr,
+              SR = sr,
+              trades = trades_df,
+              Freq = freq,
+              Business_Day = pDay,
+              HP_SL_Side = constraints, # HP = Holding Period, SL = Stop Loss, Side = Side
+              Dates = dates,
+              cumsum_Series = series) # series is a cumsum of the original return series
+  
+  class(ret) <- "dataMine"
+  ret
+}
+
+# ----------------------------------------------------------------------------------------
+evalPerf <- function(pnl, date0, date1, sr_ref=0){
+  freq <- (length(pnl) / as.numeric((difftime(date1, date0) + 1)) * 365.25)
+  m1 = mean(pnl)
+  m2 = sd(pnl)
+  m3 = skewness(pnl)
+  m4 = kurtosis(pnl, methods = "fisher") # fisher=False in original, but unsure what alternative to use
+  sr = m1 / m2 * freq ^ 0.5
+  psr = computePSR(c(m1, m2, m3, m4), length(pnl), sr_ref=sr_ref / freq ^ 0.5, moments=4)[1]
+  return(c(sr, psr, freq))
+}
+
+# ----------------------------------------------------------------------------------------
+computePSR <- function(stats, obs, sr_ref=0, moments=4){
+  # Compute PSR
+  stats_0 = c(0, 0, 0, 3)
+  stats_0 = stats[1:moments]
+  sr = stats_0[1] / stats_0[2]
+  psrStat = (sr - sr_ref) * (obs - 1) ^ 0.5 / (1 - sr * stats_0[3] + sr ^ 2 * (stats_0[4] - 1) / 4.) ^ 0.5
+  psr = pnorm((sr - sr_ref) * (obs - 1) ^ 0.5 / (1 - sr * stats_0[2] + sr ** 2 * (stats_0[3] - 1) / 4.) ^ 0.5)
+  return(c(psrStat, psr))
+}
+
+# ----------------------------------------------------------------------------------------
+attachTimeSeries <- function(series, series_0, index=None, label='', how='outer'){
+  if(is.null(series)){
+    series <- xts(series_0, as.Date(unlist(index)))
+  } else {
+    series_0 <- xts(series_0, as.Date(unlist(index)))
+    series <- merge(series, series_0)
+  }
+  return(series)
+}
+
+
+# ----------------------------------------------------------------------------------------
+getTrades <- function(series, dates, refDates, exit, stopLoss, side){
+  # Get trades
+  trades <- list()
+  pnl <- position_0 <- 0
+  j <- 1
+  num <- NULL
+  for(i in 2:length(dates)){
+    # Find next roll and how many trading dates to it
+    if(dates[i] >= refDates[j]){
+      if(dates[i - 1] < refDates[j]){ num <- pnl <- 0 }
+      if(j < length(refDates) - 1){
+        while(dates[i] > refDates[j]) { j = j + 1 }
+      }
+    }
+    if(is.null(num)){ next }
+    # Trading rule
+    position <- 0
+    if(num < exit & pnl > stopLoss){ position <- side }
+    if(position != 0 | position_0 != 0) {
+      trades <- append(trades, list(list(as.Date(dates[i]), as.numeric(num), 
+                                         as.numeric(position), 
+                                         as.numeric(position_0 * (series[i] - series[i - 1])))))
+      pnl <- pnl + as.numeric(trades[[length(trades)]][4])
+      position_0 <- position
+    }
+    num <- num + 1
+  }
+  return(trades)
+}
+
+# ----------------------------------------------------------------------------------------
+getRefDates_MonthBusinessDate <- function(dates){
+  refDates <- list() # python dict in de Prado program
+  pDay <- list()
+  first <- as.Date(paste(format(as.Date(dates[1], format="%d/%m/%Y"),"%Y"),
+                         format(as.Date(dates[1], format="%d/%m/%Y"),"%m"),
+                         1,
+                         sep = "-")
+  )
+  m <- as.numeric(format(dates[1],"%m"))
+  d <- numBusinessDays(first, dates[1]) + 1
+  # For all dates, get the day (int)...will be all business days, and assign to pDay
+  for(i in 1:length(dates)){
+    if(m != as.numeric(format(dates[i],"%m"))){ 
+      m <- as.numeric(format(as.Date(dates[i], format="%d/%m/%Y"),"%m"))
+      d <- 1
+    }
+    pDay <- append(pDay, d)
+    d <- d + 1
+  }
+  for(j in 1:30){ # python "range(1,30)"
+    lst <- list()
+    for(i in 1:length(dates)){
+      if(pDay[i] == j){
+        lst <- append(lst, dates[i])
+      }
+    }
+    refDates[[j]] = lst
+  }
+  return(refDates)
+}
+
+# ----------------------------------------------------------------------------------------
+numBusinessDays <- function(date0, date1){
+  m <- 1
+  date_0 <- date0
+  while(TRUE){
+    date_0 <- as.Date(date_0) + 1
+    if(date_0 >= date1){ break }
+    if(as.POSIXlt(date_0)$wday != 0 & as.POSIXlt(date_0)$wday != 6){
+      m <- m + 1 
+    }
+  }
+  return(m)
+}
+```
+
+We will implement the dataMine() function twice, as in the paper, once for a purely random series and again for a seasonally adjusted series. In the first case we leave the default values for parameters 'nDays' and 'factor', which are zero. In the second run, we use 'nDays' = 5 and 'factor' = 0.25.
+
+### Random
+
+```{r}
+# First build our Sharpe function - the performance metric used in the paper for determining PBO
+# which gets passed to pbo() as the performance metric used
+sharpe <- function(x,rf=0.03/252) {
+  sr <- apply(x,2,function(col) {
+    er = col - rf
+    return(mean(er)/sd(er))
+  })
+  return(sr)
+}
+
+# Run dataMine() for a random series
+set.seed(777)
+t1 <- Sys.time()
+dm_random <- dataMine(nDays = 0, factor = 0)
+t2 <- Sys.time()
+timediff <- difftime(t2,t1)
+timediff
+
+# blotter:::pbo
+dm_random$PL[!is.finite(dm_random$PL)] <- 0
+pbo_random  <- blotter:::pbo(dm_random$PL, f=sharpe)
+summary(pbo_random)
+# histogram(random_series,type="density")
+# xyplot(random_series,plotType="degradation")
+```
+
+### Seasonal
+
+```{r}
+# First build our Sharpe function - the performance metric used in the paper for determining PBO
+# which gets passed to pbo() as the performance metric used
+sharpe <- function(x,rf=0.03/252) {
+  sr <- apply(x,2,function(col) {
+    er = col - rf
+    return(mean(er)/sd(er))
+  })
+  return(sr)
+}
+# Run dataMine() for a seasonal series
+t3 <- Sys.time()
+set.seed(777)
+dm_season <- dataMine(nDays = 5, factor = 0.25)
+t4 <- Sys.time()
+print(t4-t3)
+dm_season$PL[!is.finite(dm_season$PL)] <- 0 # Replace NAs with zeros
+pbo_seasonal  <- blotter:::pbo(dm_season$PL, f=sharpe)
+summary(pbo_seasonal)
+# histogram(season_series,type="density")
+# xyplot(season_series,plotType="degradation")
+```
+
+The PBO results from both the random and seasonally adjusted series should be very similar to what is reported in the paper. Bailey et al. get an optimal SR of 1.27 from all their trials for the random series and a PBO of 55%. For the seasonal series they report an optimal SR of 1.54 and a PBO of only 13%. When we set the seed for both runs of dataMine() to be equivalent and equating to 777 (jackpot) for the purposes of comparison and replication, we get an optimal SR of 1.55 for the random series and a PBO of 50%. For the seasonal series we get an optimal SR of 2.9 and a PBO of 0%. The PBO scores using the results from our dataMine() program reflect similar results compared with Bailey et al. (55% and 13% respectively). The optimal iteration occurs at number 504 for both series', when the random seed is set to 777.
+
+### Future work
+
+- Adding different performance metrics as methods to a blotter:::pbo
+- Adding a function for comparing overfit statistics for the different performance metrics. Presumably using the Sharpe ratio as your metric will give diferent results compared to using max drawdown, or Sortino Ratio etc. Can this tell us anything about the relevance and/or applicability of the different performance metrics?
+- Apply output from txnsim to pbo(), since txnsim() attempts to evaluate overfitting in the context of randomised versions of the original strategy whilst honouring the outward resemblance of the original strategy.
+- Optimise dataMine() with vectorization.

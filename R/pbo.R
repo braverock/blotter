@@ -14,21 +14,31 @@
 #' @title Probability of backtest overfitting
 #' @description Performs the probability of backtest overfitting computations.
 #' @details This function performs the probability of backtest overfitting calculation
-#' using a combinatorially-symmetric cross validation (CSCV) approach implemented in
-#' \code{\link{pbo.cscv}} and proposed by Marcos Lopez de Prado et al in the reference
-#' paper below.
-#' 
-#' @param portfolios string name of portfolio, or optionally a vector of portfolios, see DETAILS
+#' using a combinatorially-symmetric cross validation (CSCV) approach proposed by Bailey et al in the
+#' paper \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}. We have ported most of the source code
+#' from Matt Barry's implementation with his gracious consent. There will likely be a few extensions from Matt's
+#' version, with the first being to make the function compatible with the \code{portfolios}
+#' object in \code{blotter}.
+#' @param retmatrix a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies
+#' @param portfolios string name of portfolio, or optionally a vector of portfolios, if not using the \code{retmatrix} param
+#' @param sm the number of subsets (ie. subset matrices) of \code{m} for CSCV combinations; 
+#' must evenly divide \code{m} 
+#' @param f the function to evaluate a study's performance; required
+#' @param threshold the performance metric threshold 
+#' (e.g. 0 for Sharpe, 1 for Omega)
+#' @param inf_sub infinity substitution value for reasonable plotting
+#' @param allow_parallel whether to enable parallel processing, default FALSE
 #' @param ... any other passthrough parameters
 #' @param strategy optional strategy specification that would contain more information on the process, default NULL
-#' @param trials optional number of trials,default NULL
+#' @param trials optional number of trials, default NULL
 #' @param audit optional audit environment containing the results of parameter optimization or walk forward, default NULL
 #' @param env optional environment to find market data in, if required.
+#' @keywords probability backtest overfitting PBO CSCV
 #' @return object of class \code{pbo} containing list of PBO calculation results 
 #' and settings
-#' @seealso \code{\link{pbo.cscv}}
-#' @author Jasen Mackie, Brian G. Peterson
+#' @author Matt Barry, Jasen Mackie, Brian G. Peterson
 #' @export
+#' @importFrom utils combn
 #' @references 
 #' Baily et al., "The Probability of Backtest Overfitting,"
 #' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
@@ -40,12 +50,32 @@
 #' \url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
 #' @examples
 #' \dontrun{
+#' sharpe <- function(x,rf=0.03/252) {
+#'sr <- apply(x,2,function(col) {
+#'  er = col - rf
+#'  return(mean(er)/sd(er))
+#'})
+#'return(sr)
+#'}
 #' demo("macdParameters", ask=FALSE)
-#' pbo  <- pbo('macd',strategy='macd',audit=.audit)
+#' pbo  <- pbo(portfolios = 'macd'
+#'             ,s=8
+#'             ,f=sharpe
+#'             ,threshold=0
+#'             ,inf_sub=6
+#'             ,allow_parallel=FALSE
+#'             ,strategy='macd'
+#'             ,audit=.audit)
 #' summary(pbo)
 #' }
 
-pbo <- function( portfolios
+pbo <- function( retmatrix=NULL
+                 , portfolios=NULL
+                 , sm=8
+                 , f=NA
+                 , threshold=0
+                 , inf_sub=6
+                 , allow_parallel=FALSE
                  , ...
                  , strategy=NULL
                  , trials=NULL
@@ -53,20 +83,19 @@ pbo <- function( portfolios
                  , env=.GlobalEnv)
 {
   #check inputs
-  if(length(portfolios==1)&&is.null(audit)){
+  if(is.null(retmatrix)&&length(portfolios==1)&&is.null(audit)){
     stop("Not enough information to calculate.  \n",
          "Need either \n",
          "  - multiple portfolios \n",
          "  - single portfolio plus audit environment \n")
   }
   
-  if(is.null(strategy)&&is.null(trials)){
+  if(is.null(retmatrix)&&is.null(strategy)&&is.null(trials)){
     stop("Not enough information to calculate.  \n",
          "Need either \n",
          "  - strategy object with trials slot \n",
          "  - explicit number of trials \n")
   }
-  
   #initialize things we'll need:
   if(!is.null(strategy)){
     if(!is.strategy((strategy))){
@@ -82,107 +111,64 @@ pbo <- function( portfolios
     }
     if(is.null(trials)) trials <- s_trials
   }
-  if(trials==0 || !is.numeric(trials))
-    stop("You must supply a numeric number of trials or a strategy with trials included")
-  
-  #loop over portfolios
-  ret<-list()
-  for(portfolio in portfolios){
-    if(!is.null(audit)){
-      if(!is.environment(audit)){
-        stop("audit parameter should be an environment containing trial portfolios")
-      } else{
-        # run dailyStats on all (matching) portfolios if there
-        pvec <- ls(pattern = paste0('portfolio.',portfolio),name = audit)
-        if(length(pvec)){
-          if(length(pvec)>trials) trials <- trials + length(pvec)
-          # run dailyStats on all (matching) portfolios if there
-          # dailySt <- c(dailySt,lapply(pvec, function(x){ dailyStats(x,perSymbol = FALSE, method='moment', envir=audit) }))
-          ret <- c(ret, lapply(pvec, function(x){ ROC(cumsum(.getPortfolio(x, env = .audit)$summary$Net.Trading.PL)) }))
-          # dailySt <- do.call(rbind,dailySt)
-          ret <- do.call(cbind,ret)
-        }
-        # put target portfolio first
-        # ret <- cbind(portfolios[1],ret)
-        # colnames(ret) <- c(portfolios[1],pvec)
-        colnames(ret) <- c(pvec)
-        ret[is.na(ret)] <- 0
-        ret[!is.finite(ret)] <- 0
-      }
-    } else {
-      #if we don't have an audit environment, we just need stats on all the portfolios
-      ret <- c(ret, ROC(cumsum(.getPortfolio(portfolio)$summary$Net.Trading.PL)))
-      ret <- do.call(cbind,ret)
-      colnames(ret) <- portfolios
+  if(!is.null(retmatrix)) {
+    trials <- ncol(retmatrix)
+  }
+  if(trials==0 || !is.numeric(trials)){
+      stop("You must supply a numeric number of trials or a strategy with trials included")
     }
+  #loop over portfolios
+  if(is.null(retmatrix)){
+    ret<-list()
+    for(portfolio in portfolios){
+      if(!is.null(audit)){
+        if(!is.environment(audit)){
+          stop("audit parameter should be an environment containing trial portfolios")
+        } else{
+          # run dailyStats on all (matching) portfolios if there
+          pvec <- ls(pattern = paste0('portfolio.',portfolio),name = audit)
+          if(length(pvec)){
+            if(length(pvec)>trials) trials <- trials + length(pvec)
+            # run dailyStats on all (matching) portfolios if there
+            # dailySt <- c(dailySt,lapply(pvec, function(x){ dailyStats(x,perSymbol = FALSE, method='moment', envir=audit) }))
+            ret <- c(ret, lapply(pvec, function(x){ ROC(cumsum(.getPortfolio(x, env = .audit)$summary$Net.Trading.PL)) }))
+            # dailySt <- do.call(rbind,dailySt)
+            ret <- do.call(cbind,ret)
+          }
+          # put target portfolio first
+          # ret <- cbind(portfolios[1],ret)
+          # colnames(ret) <- c(portfolios[1],pvec)
+          colnames(ret) <- c(pvec)
+          ret[is.na(ret)] <- 0
+          ret[!is.finite(ret)] <- 0
+        }
+      } else {
+        #if we don't have an audit environment, we just need stats on all the portfolios
+        ret <- c(ret, ROC(cumsum(.getPortfolio(portfolio)$summary$Net.Trading.PL)))
+        ret <- do.call(cbind,ret)
+        colnames(ret) <- portfolios
+      }
+    }
+  } else {
+    ret <- retmatrix
   }
   
   # Number of tests assumed
   num_test <- trials
   
-  result <- pbo.cscv(ret, s=8, f=sharpe, threshold=0, inf_sub=6, allow_parallel=FALSE)
-  result$call <- match.call()
-  result
-} # end pbo wrapper
-
-
-
-##########################################################
-# Sharpe ratio function
-sharpe <- function(x,rf=0.03/252) {
-  sr <- apply(x,2,function(col) {
-    er = col - rf
-    return(mean(er)/sd(er))
-  })
-  return(sr)
-}
-
-#' @title Internal implementation of the Combinatorially Symmetric Cross Validation (CSCV) technique used by Marcos Lopez de Prado.
-#' @description Internal function used by \code{blotter:::pbo} for computing the Probability of Backtest Overfitting.
-#' @details This function performs the probability of backtest overfitting calculation
-#' using a combinatorially-symmetric cross validation (CSCV) approach. We have ported most of the source code
-#' from Matt Barry's implementation with his gracious consent. There will likely be a few extensions from Matt's
-#' version, with the first being to make the function compatible with the \code{portfolios}
-#' object in \code{blotter}.
-#' @param m a \eqn{TxN} data frame of returns, where \eqn{T} is the samples per study and \eqn{N} is the number of studies.
-#' @param s the number of subsets of \code{m} for CSCV combinations; 
-#' must evenly divide \code{m} 
-#' @param f the function to evaluate a study's performance; required
-#' @param threshold the performance metric threshold 
-#' (e.g. 0 for Sharpe, 1 for Omega)
-#' @param inf_sub infinity substitution value for reasonable plotting
-#' @param allow_parallel whether to enable parallel processing, default FALSE
-#' @keywords probability backtest overfitting PBO CSCV
-#' @return object of class \code{pbo} containing list of PBO calculation results 
-#' and settings
-#' @seealso \code{\link{pbo}}
-#' @author Matt Barry, Jasen Mackie, Brian G. Peterson
-#' @export
-#' @importFrom utils combn
-#' @references
-#' Baily et al., "The Probability of Backtest Overfitting,"
-#' \url{http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253}
-#' 
-#' Baily et al., "Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance,"
-#' \url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659}
-#' 
-#' Matt Barry's Vignette for the original \code{pbo} package
-#' \url{https://cran.r-project.org/web/packages/pbo/vignettes/pbo.html}
-#' 
-pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) {
-  stopifnot(is.function(f))
-  
+  m <- ret
   t <- nrow(m)             # samples per study
   # Trim m to make the combinations truly symmetric
   # TODO: add the trimmed observations back
-  if(t%%s != 0){
-    m <- m[-(1:t%%s),]
+  if(t%%sm != 0){
+    xsrows <- t%%sm
+    m <- m[-(1:xsrows),]
     t <- nrow(m)
   }
   n <- ncol(m)             # studies
-  cs <- combn(s,s/2)       # combinations
-  sn <- t / s              # partition size
-  test_config <- bquote(N == .(n) ~~ T == .(t) ~~ S == .(s))
+  cs <- combn(sm,sm/2)       # combinations
+  sn <- t / sm              # partition size
+  test_config <- bquote(N == .(n) ~~ T == .(t) ~~ S == .(sm))
   
   # initialize results lists
   cs_results <- list()
@@ -293,9 +279,11 @@ pbo.cscv <- function(m=ret,s=8,f=NA,threshold=0,inf_sub=6,allow_parallel=FALSE) 
     inf_sub=inf_sub)
   class(rv) <- "pbo"
   rv
-}
-
-
+  
+  # result <- pbo.cscv(ret, s=8, f, threshold=0, inf_sub=6, allow_parallel=FALSE)
+  # result$call <- match.call()
+  # result
+} # end pbo wrapper
 
 #' summary method for objects of type \code{pbo}
 #'
