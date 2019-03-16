@@ -5,7 +5,7 @@
 \title{Chart Maximum Adverse/Favorable Excursion}
 \usage{
 chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"), scale = c("cash",
-  "percent", "tick"), ...)
+  "percent", "tick"), ..., legend.loc)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio to chart}
