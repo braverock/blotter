@@ -8,7 +8,7 @@
 #' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
 #' @param type string specifying MAE (Adverse) or MFE (Favourable) chart type
 #' @param scale string specifying 'cash', or 'percent' for percentage of investment, or 'tick'
-#' @param logend.loc string secifying chart legend position as in \pkg{xts}, default is \code{'bottomright'}
+#' @param legend.loc string secifying chart legend position as in \pkg{xts}, default is \code{'bottomright'}
 #' @param \dots any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
