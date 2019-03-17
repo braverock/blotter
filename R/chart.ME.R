@@ -93,7 +93,7 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
     abline(a=0, b=1, lty='dashed', col='darkgrey')
 
     legend(
-            x='legend.loc', inset=0.1,
+            x=legend.loc, inset=0.1,
             legend=c('Profitable Trade','Losing Trade'),
             pch=c(24,25),
             col=c('green','red'),
