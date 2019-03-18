@@ -7,7 +7,14 @@
 put.portfolio <- function(portfolio.st, portfolio, envir=.blotter)
 {
     blotter.portfolio.st <- paste('portfolio', portfolio.st, sep='.')
-
+    if (is.list(portfolio)) {
+        # convert list to environment, and attach attributes
+        p.arg <- portfolio
+        p.attr <- attributes(p.arg)
+        p.attr <- p.attr[!(names(p.attr) %in% "names")]
+        portfolio <- as.environment(p.arg)
+        attributes(portfolio) <- p.attr
+    }
     assign(blotter.portfolio.st, portfolio, envir=envir)
 }
 
