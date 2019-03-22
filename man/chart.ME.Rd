@@ -5,7 +5,7 @@
 \title{Chart Maximum Adverse/Favorable Excursion}
 \usage{
 chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"), scale = c("cash",
-  "percent", "tick"), ...)
+  "percent", "tick"), ..., legend.loc)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio to chart}
@@ -17,6 +17,8 @@ chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"), scale = c("cash",
 \item{scale}{string specifying 'cash', or 'percent' for percentage of investment, or 'tick'}
 
 \item{\dots}{any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())}
+
+\item{legend.loc}{string specifying the position of legend. If missing, "bottomright" will be used}  
 }
 \description{
 Produces a scatterplot with one point per trade, with x-axis: absolute 
