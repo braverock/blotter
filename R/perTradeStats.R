@@ -496,7 +496,13 @@ perTradeStats <- function(  Portfolio
       trades[[symbol]] <- perTradeStats(Portfolio, Symbol = symbol)
     }
     
-    if(combn.method == 'rbind') { 
+    if(combn.method == 'rbind') {
+      # add a 'Ticker' column 
+      for (symbol in Symbol) {
+        Ticker <- rep(toupper(symbol), nrow(trades[[symbol]]))
+        trades[[symbol]] <- cbind(Ticker, trades[[symbol]])
+      }
+      
       trades <- do.call(rbind, trades)
       trades <- trades[order(as.POSIXct(trades$Start)), ] # sort by trades starting date
     }
