@@ -497,10 +497,11 @@ perTradeStats <- function(  Portfolio
     }
     
     if(combn.method == 'rbind') {
-      # add a 'Ticker' column 
+      # add a 'Symbol' column 
       for (symbol in Symbol) {
-        Ticker <- rep(toupper(symbol), nrow(trades[[symbol]]))
-        trades[[symbol]] <- cbind(Ticker, trades[[symbol]])
+        symbolname <- rep(toupper(symbol), nrow(trades[[symbol]]))
+        trades[[symbol]] <- cbind(symbolname, trades[[symbol]])
+        colnames(trades[[symbol]])[1] <- 'Symbol'
       }
       
       trades <- do.call(rbind, trades)
