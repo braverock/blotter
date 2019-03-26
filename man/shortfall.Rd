@@ -56,7 +56,7 @@ Whereas, for Wagner's method, return is a \code{data.frame} containing:
 }
 }
 \description{
-The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio} (where all units are assumed to have transacted at the manager’s ideal prices)
+The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio} (where all units are assumed to have transacted at the manager's ideal prices)
 and the return of the \emph{actual portfolio}, which contemplates actual transaction prices of executed units net of fees incurred in these transactions.
 }
 \details{
@@ -81,7 +81,7 @@ Furthermore, Wagner's method allows for an additional decomposition of the "Dela
 \references{
 Kissell, R. \emph{The Science of Algorithmic Trading and Portfolio Management} (ISBN 978-0-12-401689-7)
 
-Perold, A. F. \emph{The implementation shortfall: Paper versus reality}. The Journal of Portfolio Managament, 1988
+Perold, A. F. \emph{The implementation shortfall: Paper versus reality}. The Journal of Portfolio Management, 1988
 }
 \author{
 Vito Lestingi
