@@ -101,7 +101,7 @@ shortfall <- function(Portfolio,
     uTxnQty <- PaQty - sum(txns$Txn.Qty)
     
     if (method == 'Perold') {
-      ExeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty) * PaPriceEnd # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - PaPriceStart)
+      ExeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*PaPriceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - PaPriceStart)
       OppCost <- uTxnQty * (PaPriceEnd - PaPriceStart)
       Shortfall <- ExeCost + OppCost + Fees
       
@@ -115,7 +115,7 @@ shortfall <- function(Portfolio,
       OppDelay <- uTxnQty * (ArrPrice - PaPriceStart)
       TradeDelay <- sum(txns$Txn.Qty) * (ArrPrice - PaPriceStart)
       DelayCost <- OppDelay + TradeDelay
-      TradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*PaPriceStart # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
+      TradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*ArrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
       OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
       
       Shortfall <- DelayCost + TradeCost + OppCost + Fees
