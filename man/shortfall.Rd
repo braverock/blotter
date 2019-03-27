@@ -4,7 +4,7 @@
 \alias{shortfall}
 \title{Implementation Shortfall (IS)}
 \usage{
-shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd,
+shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd, ArrPrice,
   method = "Complete execution")
 }
 \arguments{
@@ -14,9 +14,11 @@ shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd,
 
 \item{PaQty}{The total number of units (such as shares or contracts) intended to trade}
 
-\item{PaPriceStart}{Decision price at the beginning of trading}
+\item{PaPriceStart}{Paper price at the beginning of the investment decision}
 
-\item{PaPriceEnd}{Decision future price at the end of trading}
+\item{PaPriceEnd}{Paper price at the end of trading}
+
+\item{ArrPrice}{The mid-point of bid-ask spread when order first enters the market}
 
 \item{method}{String specifying which method to use for The Implementation Shortfall calculation. One of 'Perold' or 'Wagner'}
 }
@@ -37,7 +39,7 @@ For Perold's method, return is a \code{data.frame} containing:
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
      \item{Exe.Cost}{The execution cost component of the Shortfall}
-     \item{Opp.Cost}{The opportunity cost component of the Shortfall}
+     \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
      \item{Fees}{The total fees paid on transactions}
      \item{Shortfall}{The Shortfall measure}
 }
@@ -50,14 +52,14 @@ Whereas, for Wagner's method, return is a \code{data.frame} containing:
      \item{Trade.Delay}{The trading delay component of the Delay cost}
      \item{Delay.Cost}{The delay related component of the Shortfall}
      \item{Trade.Cost}{The trading related component of the Shortafll}
-     \item{Opp.Cost}{The opportunity cost component}
+     \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
      \item{Fees}{The total fees paid on transactions}
      \item{Shortfall}{The Shortfall measure}
 }
 }
 \description{
-The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio} (where all units are assumed to have transacted at the manager's ideal prices)
-and the return of the \emph{actual portfolio}, which contemplates actual transaction prices of executed units net of fees incurred in these transactions.
+The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio}, where all the \emph{paper units} are assumed to have transacted at the manager's \emph{paper price},
+and the return of the \emph{actual portfolio}, which contemplates actual transaction prices of executed units and is net of fees incurred in these transactions.
 }
 \details{
 There exist several methods proposed in the literature to calculate the Shortfall.
@@ -75,8 +77,9 @@ by separating the period of interest into an \emph{investment period} (time from
 and a \emph{trading period} (time from beginning of trading to end of trading). A \emph{price change} in between is obtained 
 and it becomes in turn an input to Perold's method, allowing us to reformulate the IS is terms of the two periods above and thus to identify 
 a \emph{delay related cost} and a \emph{trading related cost}, in addition to (a remainder of) Perold's opportunity cost and the transactions fees.
-A particular istance of Wagner's method is the so called \emph{Market Activity Implementation Shortfall}, which takes place when the trades paper prices are not provided (assumed to be unknown) and thus the corresponding arrival prices are used instead.
-Furthermore, Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component.
+Furthermore, Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component; 
+by default the function will provide this further decomposition when \code{method='Wagner'} is used.
+A particular istance of Wagner's method is the so called \emph{Market Activity Implementation Shortfall}, which takes place when paper prices are not provided (assumed to be unknown) and thus Wagner's delay cost cannot be calculated.
 }
 \references{
 Kissell, R. \emph{The Science of Algorithmic Trading and Portfolio Management} (ISBN 978-0-12-401689-7)

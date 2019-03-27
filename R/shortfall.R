@@ -1,7 +1,7 @@
 #' Implementation Shortfall (IS)
 #' 
-#' The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio} (where all units are assumed to have transacted at the manager's ideal prices)
-#' and the return of the \emph{actual portfolio}, which contemplates actual transaction prices of executed units net of fees incurred in these transactions.
+#' The Implementation Shortfall (IS, or simply Shortfall) is the difference between the return of the \emph{paper portfolio}, where all the \emph{paper units} are assumed to have transacted at the manager's \emph{paper price},
+#' and the return of the \emph{actual portfolio}, which contemplates actual transaction prices of executed units and is net of fees incurred in these transactions.
 #' 
 #' There exist several methods proposed in the literature to calculate the Shortfall.
 #' Each of them firstly considers the difference between the units quantity intended to be traded and the units that were traded, that is the quantity of units that was not traded;
@@ -18,15 +18,17 @@
 #' and a \emph{trading period} (time from beginning of trading to end of trading). A \emph{price change} in between is obtained 
 #' and it becomes in turn an input to Perold's method, allowing us to reformulate the IS is terms of the two periods above and thus to identify 
 #' a \emph{delay related cost} and a \emph{trading related cost}, in addition to (a remainder of) Perold's opportunity cost and the transactions fees.
-#' A particular istance of Wagner's method is the so called \emph{Market Activity Implementation Shortfall}, which takes place when the trades paper prices are not provided (assumed to be unknown) and thus the corresponding arrival prices are used instead.
-#' Furthermore, Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component.
+#' Furthermore, Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component; 
+#' by default the function will provide this further decomposition when \code{method='Wagner'} is used.
+#' A particular istance of Wagner's method is the so called \emph{Market Activity Implementation Shortfall}, which takes place when paper prices are not provided (assumed to be unknown) and thus Wagner's delay cost cannot be calculated.
 #' 
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol A string identifying the symbol to calculate the Shortfall for
 #' @param PaQty The total number of units (such as shares or contracts) intended to trade
-#' @param PaPriceStart Decision price at the beginning of trading
-#' @param PaPriceEnd Decision future price at the end of trading
+#' @param PaPriceStart Paper price at the beginning of the investment decision 
+#' @param PaPriceEnd Paper price at the end of trading
+#' @param ArrPrice The mid-point of bid-ask spread when order first enters the market
 #' @param method String specifying which method to use for The Implementation Shortfall calculation. One of 'Perold' or 'Wagner'
 #' @author Vito Lestingi
 #' 
@@ -50,7 +52,7 @@
 #' \describe{
 #'      \item{Symbol}{The traded symbol to calculate the shortfall for}
 #'      \item{Exe.Cost}{The execution cost component of the Shortfall}
-#'      \item{Opp.Cost}{The opportunity cost component of the Shortfall}
+#'      \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
 #'      \item{Fees}{The total fees paid on transactions}
 #'      \item{Shortfall}{The Shortfall measure}
 #' }
@@ -63,7 +65,7 @@
 #'      \item{Trade.Delay}{The trading delay component of the Delay cost}
 #'      \item{Delay.Cost}{The delay related component of the Shortfall}
 #'      \item{Trade.Cost}{The trading related component of the Shortafll}
-#'      \item{Opp.Cost}{The opportunity cost component}
+#'      \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
 #'      \item{Fees}{The total fees paid on transactions}
 #'      \item{Shortfall}{The Shortfall measure}
 #' }
@@ -74,19 +76,19 @@ shortfall <- function(Portfolio,
                       PaQty,
                       PaPriceStart,
                       PaPriceEnd,
+                      ArrPrice,
                       method = 'Complete execution')
 {
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio$symbols[[Symbol]]$txn
   
-  ArrPrice <- as.numeric(txns$Pos.Avg.Cost[min(which(txns != 0))]) 
-  p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
+  # ArrPrice <- as.numeric(txns$Pos.Avg.Cost[min(which(txns != 0))]) 
+  # if(missing(PaPriceStart)) PaPriceStart <- ArrPrice
+  # p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
   Fees <- sum(txns$Txn.Fees)
   
-  if(missing(PaPriceStart)) PaPriceStart <- ArrPrice
-  
-  # shortfall
+  # Shortfall in 'Complete execution' scenario
   PaRet <- PaQty * (PaPriceEnd - PaPriceStart)
   AcRet <- sum(txns$Txn.Qty) * PaPriceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - Fees
   Shortfall <- PaRet - AcRet # or Shortfall <- PaQty * (p_avg - PaPriceStart) + Fees
@@ -94,35 +96,45 @@ shortfall <- function(Portfolio,
   out <- as.data.frame(cbind(Symbol, PaRet, AcRet, Shortfall))
   colnames(out) <- c('Symbol', 'Paper.Ret', 'Actual.Ret', 'Shortfall')
   
-  # Methods shortfall decompositions
+  # Shortfall decompositions methods
   if (method != 'Complete execution') {
     
     # untraded units
     uTxnQty <- PaQty - sum(txns$Txn.Qty)
     
-    if (method == 'Perold') {
-      ExeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*PaPriceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - PaPriceStart)
-      OppCost <- uTxnQty * (PaPriceEnd - PaPriceStart)
-      Shortfall <- ExeCost + OppCost + Fees
-      
-      out <- as.data.frame(cbind(Symbol, sum(txns$Txn.Qty), uTxnQty, ExeCost, OppCost, Fees, Shortfall))
-      colnames(out) <- c('Symbol', 'Txn.Qty', 'u.Txn.Qty', 'Exe.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
-      
-    } else { # Wagner's method (already with delay cost decomposition)
-      
-      # note: when missing PaPriceStart, arrival price is used instead and thus Wagner method reduces to MktActIS
-      
-      OppDelay <- uTxnQty * (ArrPrice - PaPriceStart)
-      TradeDelay <- sum(txns$Txn.Qty) * (ArrPrice - PaPriceStart)
-      DelayCost <- OppDelay + TradeDelay
-      TradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*ArrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
-      OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
-      
-      Shortfall <- DelayCost + TradeCost + OppCost + Fees
-      
-      out <- as.data.frame(cbind(Symbol, sum(txns$Txn.Qty), uTxnQty, OppDelay, TradeDelay, DelayCost, TradeCost, OppCost, Fees, Shortfall))
-      colnames(out) <- c('Symbol', 'Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
-    }
+    method <- match.arg(method, c('Perold', 'Wagner', 'Market'))
+    
+    switch (method,
+      Perold = {
+        ExeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*PaPriceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - PaPriceStart)
+        OppCost <- uTxnQty * (PaPriceEnd - PaPriceStart)
+        Shortfall <- ExeCost + OppCost + Fees
+        
+        out <- as.data.frame(cbind(Symbol, sum(txns$Txn.Qty), uTxnQty, ExeCost, OppCost, Fees, Shortfall))
+        colnames(out) <- c('Symbol', 'Txn.Qty', 'u.Txn.Qty', 'Exe.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+      },
+      Wagner = { # already with delay cost decomposition
+        OppDelay <- uTxnQty * (ArrPrice - PaPriceStart)
+        TradeDelay <- sum(txns$Txn.Qty) * (ArrPrice - PaPriceStart)
+        DelayCost <- OppDelay + TradeDelay
+        TradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*ArrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
+        OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
+        
+        Shortfall <- DelayCost + TradeCost + OppCost + Fees
+        
+        out <- as.data.frame(cbind(Symbol, sum(txns$Txn.Qty), uTxnQty, OppDelay, TradeDelay, DelayCost, TradeCost, OppCost, Fees, Shortfall))
+        colnames(out) <- c('Symbol', 'Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+      },
+      Market = {
+        TradeCost <- sum(txns$Txn.Qty) * (sum(txns$Txn.Price * txns$Txn.Qty)/PaQty - ArrPrice) # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
+        OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
+        
+        Shortfall <- TradeCost + OppCost + Fees
+        
+        out <- as.data.frame(cbind(Symbol, sum(txns$Txn.Qty), uTxnQty, TradeCost, OppCost, Fees, Shortfall))
+        colnames(out) <- c('Symbol', 'Txn.Qty', 'u.Txn.Qty', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+      }
+    )
   }
   return(out)
 } 
