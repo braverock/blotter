@@ -54,7 +54,7 @@
 #' \describe{
 #'      \item{Symbol}{The traded symbol to calculate the shortfall for}
 #'      \item{Method}{The method used}
-#'      #\item{}{The total number of transacted units}
+#'      \item{t.Txn.Qty}{The total number of transacted units}
 #'      \item{u.Txn.Qty}{The number of untransacted units}
 #'      \item{Exe.Cost}{The execution cost component of the Shortfall}
 #'      \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
@@ -67,7 +67,7 @@
 #' \describe{
 #'      \item{Symbol}{The traded symbol to calculate the shortfall for}
 #'      \item{Method}{The method used}
-#'      #\item{}{The total number of transacted units}
+#'      \item{t.Txn.Qty}{The total number of transacted units}
 #'      \item{u.Txn.Qty}{The number of untransacted units}
 #'      \item{Opp.Delay}{The opportunity delay component of the Delay cost}
 #'      \item{Trade.Delay}{The trading delay component of the Delay cost}
@@ -83,7 +83,7 @@
 #' \describe{
 #'      \item{Symbol}{The traded symbol to calculate the shortfall for}
 #'      \item{Method}{The method used}
-#'      #\item{}{The total number of transacted units}
+#'      \item{t.Txn.Qty}{The total number of transacted units}
 #'      \item{u.Txn.Qty}{The number of untransacted units}
 #'      \item{Trade.Cost}{The trading related component of the Shortafll}
 #'      \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
@@ -104,29 +104,30 @@ shortfall <- function(Portfolio,
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio$symbols[[Symbol]]$txn
+  tTxnQty <- sum(txns$Txn.Qty)
   # p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
   fees <- -1 * sum(txns$Txn.Fees)
   
-  if(missing(paQty)) paQty <- sum(txns$Txn.Qty)
+  if(missing(paQty)) paQty <- tTxnQty
   if(missing(priceEnd)) priceEnd <- as.numeric(last(txns$Txn.Price))
   if(missing(arrPrice)) arrPrice <- as.numeric(first(txns$Txn.Price[min(which(txns$Txn.Price != 0))]))
   if(missing(priceStart)) priceStart <- arrPrice
   
   # Shortfall decomposition methods
-    uTxnQty <- paQty - sum(txns$Txn.Qty) # untraded units
+    uTxnQty <- paQty - tTxnQty # untraded units
     
     method <- match.arg(method, c('Complete', 'Perold', 'Wagner', 'Market'))
     
     switch (method,
       Complete = {
         
-        if (paQty != sum(txns$Txn.Qty)) {
-          paQty <- sum(txns$Txn.Qty)
+        if (paQty != tTxnQty) {
+          paQty <- tTxnQty
           warning(paste(method, "method called, but inconsistent paper quantity provided. Using total transactions quantity instead. See documentation."))
         }
         
         paRet <- paQty * (priceEnd - priceStart)
-        acRet <- sum(txns$Txn.Qty) * priceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - fees
+        acRet <- tTxnQty * priceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - fees
         
         shortfall <- paRet - acRet # or Shortfall <- paQty * (p_avg - priceStart) + fees
         
@@ -134,33 +135,33 @@ shortfall <- function(Portfolio,
         colnames(out) <- c('Symbol', 'Method', 'Paper.Ret', 'Actual.Ret', 'Shortfall')
       },
       Perold = {
-        exeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*priceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - priceStart)
+        exeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*priceStart # or ExeCost <- tTxnQty * (p_avg - priceStart)
         oppCost <- uTxnQty * (priceEnd - priceStart)
         shortfall <- exeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, exeCost, oppCost, fees, shortfall))
-        colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Exe.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+        out <- as.data.frame(cbind(Symbol, method, tTxnQty, uTxnQty, exeCost, oppCost, fees, shortfall))
+        colnames(out) <- c('Symbol', 'Method', 't.Txn.Qty', 'u.Txn.Qty', 'Exe.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       },
       Wagner = { # already with delay cost decomposition
         oppDelay <- uTxnQty * (arrPrice - priceStart)
-        tradeDelay <- sum(txns$Txn.Qty) * (arrPrice - priceStart)
+        tradeDelay <- tTxnQty * (arrPrice - priceStart)
         delayCost <- oppDelay + tradeDelay
-        tradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*arrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - arrPrice)
+        tradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*arrPrice # or TradeCost <- tTxnQty * (p_avg - arrPrice)
         oppCost <- uTxnQty * (priceEnd - arrPrice)
         
         shortfall <- delayCost + tradeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, oppDelay, tradeDelay, delayCost, tradeCost, oppCost, fees, shortfall))
-        colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+        out <- as.data.frame(cbind(Symbol, method, tTxnQty, uTxnQty, oppDelay, tradeDelay, delayCost, tradeCost, oppCost, fees, shortfall))
+        colnames(out) <- c('Symbol', 'Method', 't.Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       },
       Market = {
-        tradeCost <- sum(txns$Txn.Qty) * (sum(txns$Txn.Price * txns$Txn.Qty)/paQty - arrPrice) # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - arrPrice)
+        tradeCost <- tTxnQty * (sum(txns$Txn.Price * txns$Txn.Qty)/paQty - arrPrice) # or TradeCost <- tTxnQty * (p_avg - arrPrice)
         oppCost <- uTxnQty * (priceEnd - arrPrice)
         
         shortfall <- tradeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, tradeCost, oppCost, fees, shortfall))
-        colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
+        out <- as.data.frame(cbind(Symbol, method, tTxnQty, uTxnQty, tradeCost, oppCost, fees, shortfall))
+        colnames(out) <- c('Symbol', 'Method', 't.Txn.Qty', 'u.Txn.Qty', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       }
     )
   return(out)

@@ -40,7 +40,7 @@ For Perold's method, return is a \code{data.frame} containing:
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
      \item{Method}{The method used}
-     #\item{}{The total number of transacted units}
+     \item{t.Txn.Qty}{The total number of transacted units}
      \item{u.Txn.Qty}{The number of untransacted units}
      \item{Exe.Cost}{The execution cost component of the Shortfall}
      \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
@@ -53,7 +53,7 @@ For Wagner's method, return is a \code{data.frame} containing:
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
      \item{Method}{The method used}
-     #\item{}{The total number of transacted units}
+     \item{t.Txn.Qty}{The total number of transacted units}
      \item{u.Txn.Qty}{The number of untransacted units}
      \item{Opp.Delay}{The opportunity delay component of the Delay cost}
      \item{Trade.Delay}{The trading delay component of the Delay cost}
@@ -69,7 +69,7 @@ For the 'Market' method, return is a \code{data.frame} containing:
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
      \item{Method}{The method used}
-     #\item{}{The total number of transacted units}
+     \item{t.Txn.Qty}{The total number of transacted units}
      \item{u.Txn.Qty}{The number of untransacted units}
      \item{Trade.Cost}{The trading related component of the Shortafll}
      \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
