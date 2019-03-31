@@ -26,10 +26,10 @@
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol A string identifying the symbol to calculate the Shortfall for
-#' @param PaQty The total number of units (such as shares or contracts) intended to trade
+#' @param PaQty Paper quantity, the total number of units (such as shares or contracts) intended to trade. If missing, total transactions quantity will be used
 #' @param PaPriceStart Paper price at the beginning of the investment decision 
-#' @param PaPriceEnd Paper price at the end of trading
-#' @param ArrPrice The mid-point of bid-ask spread when order first enters the market
+#' @param PaPriceEnd Paper price at the end of trading. If missing, last transaction price will be used
+#' @param ArrPrice The mid-point of bid-ask spread when order first enters the market. If missing, first transaction price will be used
 #' @param method String specifying which method to use for The Implementation Shortfall calculation. One of 'Complete' (default), 'Perold', 'Wagner' or 'Market'
 #' @author Vito Lestingi
 #' 
@@ -104,23 +104,27 @@ shortfall <- function(Portfolio,
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio$symbols[[Symbol]]$txn
-  
-  # ArrPrice <- as.numeric(txns$Pos.Avg.Cost[min(which(txns != 0))]) 
-  # if(missing(PaPriceStart)) PaPriceStart <- ArrPrice
   # p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
-  
   Fees <- -1 * sum(txns$Txn.Fees)
   
-
+  if(missing(PaQty)) PaQty <- sum(txns$Txn.Qty)
+  if(missing(PaPriceEnd)) PaPriceEnd <- as.numeric(last(txns$Txn.Price))
+  if(missing(ArrPrice)) ArrPrice <- as.numeric(first(txns$Txn.Price[min(which(txns$Txn.Price != 0))]))
+  if(missing(PaPriceStart)) PaPriceStart <- ArrPrice
+  
   # Shortfall decomposition methods
-    
-    # untraded units
-    uTxnQty <- PaQty - sum(txns$Txn.Qty)
+    uTxnQty <- PaQty - sum(txns$Txn.Qty) # untraded units
     
     method <- match.arg(method, c('Complete', 'Perold', 'Wagner', 'Market'))
     
     switch (method,
       Complete = {
+        
+        if (PaQty != sum(txns$Txn.Qty)) {
+          PaQty <- sum(txns$Txn.Qty)
+          warning(paste(method, "method called, but inconsistent paper quantity provided. Using total transactions quantity instead. See documentation."))
+        }
+        
         PaRet <- PaQty * (PaPriceEnd - PaPriceStart)
         AcRet <- sum(txns$Txn.Qty) * PaPriceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - Fees
         
