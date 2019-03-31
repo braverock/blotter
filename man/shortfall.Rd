@@ -71,8 +71,9 @@ For the 'Market' method, return is a \code{data.frame} containing:
      \item{Method}{The method used}
      #\item{}{The total number of transacted units}
      \item{u.Txn.Qty}{The number of untransacted units}
-     \item{Paper.Ret}{The paper portfolio return}
-     \item{Actual.Ret}{The actual portfolio return}
+     \item{Trade.Cost}{The trading related component of the Shortafll}
+     \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
+     \item{Fees}{The total fees paid on transactions}
      \item{Shortfall}{The Shortfall measure}
 }
 }
