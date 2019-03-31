@@ -26,10 +26,10 @@
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol A string identifying the symbol to calculate the Shortfall for
-#' @param PaQty Paper quantity, the total number of units (such as shares or contracts) intended to trade. If missing, total transactions quantity will be used
-#' @param PaPriceStart Paper price at the beginning of the investment decision 
-#' @param PaPriceEnd Paper price at the end of trading. If missing, last transaction price will be used
-#' @param ArrPrice The mid-point of bid-ask spread when order first enters the market. If missing, first transaction price will be used
+#' @param paQty Paper quantity, the total number of units (such as shares or contracts) intended to trade. If missing, total transactions quantity will be used
+#' @param priceStart Paper price at the beginning of the investment decision 
+#' @param priceEnd Paper price at the end of trading. If missing, last transaction price will be used
+#' @param arrPrice The mid-point of bid-ask spread when order first enters the market. If missing, first transaction price will be used
 #' @param method String specifying which method to use for The Implementation Shortfall calculation. One of 'Complete' (default), 'Perold', 'Wagner' or 'Market'
 #' @author Vito Lestingi
 #' 
@@ -95,71 +95,71 @@
 #' 
 shortfall <- function(Portfolio, 
                       Symbol,
-                      PaQty,
-                      PaPriceStart,
-                      PaPriceEnd,
-                      ArrPrice,
+                      paQty,
+                      priceStart,
+                      priceEnd,
+                      arrPrice,
                       method = c('Complete', 'Perold', 'Wagner', 'Market'))
 {
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio$symbols[[Symbol]]$txn
   # p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
-  Fees <- -1 * sum(txns$Txn.Fees)
+  fees <- -1 * sum(txns$Txn.Fees)
   
-  if(missing(PaQty)) PaQty <- sum(txns$Txn.Qty)
-  if(missing(PaPriceEnd)) PaPriceEnd <- as.numeric(last(txns$Txn.Price))
-  if(missing(ArrPrice)) ArrPrice <- as.numeric(first(txns$Txn.Price[min(which(txns$Txn.Price != 0))]))
-  if(missing(PaPriceStart)) PaPriceStart <- ArrPrice
+  if(missing(paQty)) paQty <- sum(txns$Txn.Qty)
+  if(missing(priceEnd)) priceEnd <- as.numeric(last(txns$Txn.Price))
+  if(missing(arrPrice)) arrPrice <- as.numeric(first(txns$Txn.Price[min(which(txns$Txn.Price != 0))]))
+  if(missing(priceStart)) priceStart <- arrPrice
   
   # Shortfall decomposition methods
-    uTxnQty <- PaQty - sum(txns$Txn.Qty) # untraded units
+    uTxnQty <- paQty - sum(txns$Txn.Qty) # untraded units
     
     method <- match.arg(method, c('Complete', 'Perold', 'Wagner', 'Market'))
     
     switch (method,
       Complete = {
         
-        if (PaQty != sum(txns$Txn.Qty)) {
-          PaQty <- sum(txns$Txn.Qty)
+        if (paQty != sum(txns$Txn.Qty)) {
+          paQty <- sum(txns$Txn.Qty)
           warning(paste(method, "method called, but inconsistent paper quantity provided. Using total transactions quantity instead. See documentation."))
         }
         
-        PaRet <- PaQty * (PaPriceEnd - PaPriceStart)
-        AcRet <- sum(txns$Txn.Qty) * PaPriceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - Fees
+        paRet <- paQty * (priceEnd - priceStart)
+        acRet <- sum(txns$Txn.Qty) * priceEnd - sum(txns$Txn.Qty * txns$Txn.Price) - fees
         
-        Shortfall <- PaRet - AcRet # or Shortfall <- PaQty * (p_avg - PaPriceStart) + Fees
+        shortfall <- paRet - acRet # or Shortfall <- paQty * (p_avg - priceStart) + fees
         
-        out <- as.data.frame(cbind(Symbol, method, PaRet, AcRet, Shortfall))
+        out <- as.data.frame(cbind(Symbol, method, paRet, acRet, shortfall))
         colnames(out) <- c('Symbol', 'Method', 'Paper.Ret', 'Actual.Ret', 'Shortfall')
       },
       Perold = {
-        ExeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*PaPriceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - PaPriceStart)
-        OppCost <- uTxnQty * (PaPriceEnd - PaPriceStart)
-        Shortfall <- ExeCost + OppCost + Fees
+        exeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*priceStart # or ExeCost <- sum(txns$Txn.Qty) * (p_avg - priceStart)
+        oppCost <- uTxnQty * (priceEnd - priceStart)
+        shortfall <- exeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, ExeCost, OppCost, Fees, Shortfall))
+        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, exeCost, oppCost, fees, shortfall))
         colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Exe.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       },
       Wagner = { # already with delay cost decomposition
-        OppDelay <- uTxnQty * (ArrPrice - PaPriceStart)
-        TradeDelay <- sum(txns$Txn.Qty) * (ArrPrice - PaPriceStart)
-        DelayCost <- OppDelay + TradeDelay
-        TradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*ArrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
-        OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
+        oppDelay <- uTxnQty * (arrPrice - priceStart)
+        tradeDelay <- sum(txns$Txn.Qty) * (arrPrice - priceStart)
+        delayCost <- oppDelay + tradeDelay
+        tradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - sum(txns$Txn.Qty)*arrPrice # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - arrPrice)
+        oppCost <- uTxnQty * (priceEnd - arrPrice)
         
-        Shortfall <- DelayCost + TradeCost + OppCost + Fees
+        shortfall <- delayCost + tradeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, OppDelay, TradeDelay, DelayCost, TradeCost, OppCost, Fees, Shortfall))
+        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, oppDelay, tradeDelay, delayCost, tradeCost, oppCost, fees, shortfall))
         colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       },
       Market = {
-        TradeCost <- sum(txns$Txn.Qty) * (sum(txns$Txn.Price * txns$Txn.Qty)/PaQty - ArrPrice) # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - ArrPrice)
-        OppCost <- uTxnQty * (PaPriceEnd - ArrPrice)
+        tradeCost <- sum(txns$Txn.Qty) * (sum(txns$Txn.Price * txns$Txn.Qty)/paQty - arrPrice) # or TradeCost <- sum(txns$Txn.Qty) * (p_avg - arrPrice)
+        oppCost <- uTxnQty * (priceEnd - arrPrice)
         
-        Shortfall <- TradeCost + OppCost + Fees
+        shortfall <- tradeCost + oppCost + fees
         
-        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, TradeCost, OppCost, Fees, Shortfall))
+        out <- as.data.frame(cbind(Symbol, method, sum(txns$Txn.Qty), uTxnQty, tradeCost, oppCost, fees, shortfall))
         colnames(out) <- c('Symbol', 'Method', 'Txn.Qty', 'u.Txn.Qty', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       }
     )

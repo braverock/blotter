@@ -4,7 +4,7 @@
 \alias{shortfall}
 \title{Implementation Shortfall (IS)}
 \usage{
-shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd, ArrPrice,
+shortfall(Portfolio, Symbol, paQty, priceStart, priceEnd, arrPrice,
   method = c("Complete", "Perold", "Wagner", "Market"))
 }
 \arguments{
@@ -12,13 +12,13 @@ shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd, ArrPrice,
 
 \item{Symbol}{A string identifying the symbol to calculate the Shortfall for}
 
-\item{PaQty}{Paper quantity, the total number of units (such as shares or contracts) intended to trade. If missing, total transactions quantity will be used}
+\item{paQty}{Paper quantity, the total number of units (such as shares or contracts) intended to trade. If missing, total transactions quantity will be used}
 
-\item{PaPriceStart}{Paper price at the beginning of the investment decision}
+\item{priceStart}{Paper price at the beginning of the investment decision}
 
-\item{PaPriceEnd}{Paper price at the end of trading. If missing, last transaction price will be used}
+\item{priceEnd}{Paper price at the end of trading. If missing, last transaction price will be used}
 
-\item{ArrPrice}{The mid-point of bid-ask spread when order first enters the market. If missing, first transaction price will be used}
+\item{arrPrice}{The mid-point of bid-ask spread when order first enters the market. If missing, first transaction price will be used}
 
 \item{method}{String specifying which method to use for The Implementation Shortfall calculation. One of 'Complete' (default), 'Perold', 'Wagner' or 'Market'}
 }
