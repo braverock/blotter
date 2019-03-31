@@ -5,7 +5,7 @@
 \title{Implementation Shortfall (IS)}
 \usage{
 shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd, ArrPrice,
-  method = "Complete execution")
+  method = c("Complete", "Perold", "Wagner", "Market"))
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
@@ -20,15 +20,16 @@ shortfall(Portfolio, Symbol, PaQty, PaPriceStart, PaPriceEnd, ArrPrice,
 
 \item{ArrPrice}{The mid-point of bid-ask spread when order first enters the market}
 
-\item{method}{String specifying which method to use for The Implementation Shortfall calculation. One of 'Perold' or 'Wagner'}
+\item{method}{String specifying which method to use for The Implementation Shortfall calculation. One of 'Complete' (default), 'Perold', 'Wagner' or 'Market'}
 }
 \value{
 Return depends on the method used.
 
-If no method is explicitly provided, complete execution is assumed and it returns a \code{data.frame} containing:
+For 'Complete' method (default), return is a \code{data.frame} containing:
 
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
+     \item{Method}{The method used}
      \item{Paper.Ret}{The paper portfolio return}
      \item{Actual.Ret}{The actual portfolio return}
      \item{Shortfall}{The Shortfall measure}
@@ -38,22 +39,40 @@ For Perold's method, return is a \code{data.frame} containing:
 
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
+     \item{Method}{The method used}
+     #\item{}{The total number of transacted units}
+     \item{u.Txn.Qty}{The number of untransacted units}
      \item{Exe.Cost}{The execution cost component of the Shortfall}
      \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
      \item{Fees}{The total fees paid on transactions}
      \item{Shortfall}{The Shortfall measure}
 }
 
-Whereas, for Wagner's method, return is a \code{data.frame} containing:
+For Wagner's method, return is a \code{data.frame} containing:
 
 \describe{
      \item{Symbol}{The traded symbol to calculate the shortfall for}
+     \item{Method}{The method used}
+     #\item{}{The total number of transacted units}
+     \item{u.Txn.Qty}{The number of untransacted units}
      \item{Opp.Delay}{The opportunity delay component of the Delay cost}
      \item{Trade.Delay}{The trading delay component of the Delay cost}
      \item{Delay.Cost}{The delay related component of the Shortfall}
      \item{Trade.Cost}{The trading related component of the Shortafll}
      \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
      \item{Fees}{The total fees paid on transactions}
+     \item{Shortfall}{The Shortfall measure}
+}
+
+For the 'Market' method, return is a \code{data.frame} containing:
+
+\describe{
+     \item{Symbol}{The traded symbol to calculate the shortfall for}
+     \item{Method}{The method used}
+     #\item{}{The total number of transacted units}
+     \item{u.Txn.Qty}{The number of untransacted units}
+     \item{Paper.Ret}{The paper portfolio return}
+     \item{Actual.Ret}{The actual portfolio return}
      \item{Shortfall}{The Shortfall measure}
 }
 }
@@ -67,7 +86,7 @@ Each of them firstly considers the difference between the units quantity intende
 then it further decomposes the above-mentioned portfolios in order to introduce new metrics that provide further post-trade analysis of the trades.
 
 The \emph{Complete execution} is the most generic case in which the IS can be calculated, here it is assumed that all the units in the paper portfolio have been executed.
-This is the default behaviour of the present function, when no \code{method} argument is provided. See details below.
+It is accounted as a \code{method} and represents its default.
 
 The \emph{Perold's method} allows to express the IS as the sum of an \emph{execution cost} (before-trade), which is the difference between actual and paper prices of the transactions,
 and an \emph{opportunity cost}, i.e. the cost of not transacting part of the paper portfolio.
@@ -79,6 +98,7 @@ and it becomes in turn an input to Perold's method, allowing us to reformulate t
 a \emph{delay related cost} and a \emph{trading related cost}, in addition to (a remainder of) Perold's opportunity cost and the transactions fees.
 Furthermore, Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component; 
 by default the function will provide this further decomposition when \code{method='Wagner'} is used.
+
 A particular istance of Wagner's method is the so called \emph{Market Activity Implementation Shortfall}, which takes place when paper prices are not provided (assumed to be unknown) and thus Wagner's delay cost cannot be calculated.
 }
 \references{
