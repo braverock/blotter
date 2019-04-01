@@ -538,6 +538,7 @@ plot.mcsim <- function(x, y, ..., normalize=TRUE) {
                 , col = "lightgray"
                 , main = paste(ret$num, "replicates", ret$w, "and block length", ret$length)
                 , grid.ticks.on = 'years'
+                , major.ticks = 'years' 
   )
   p   <- lines(x2, col = "red")
   p

@@ -44,9 +44,10 @@
 #' @param Portfolios portfolio string 
 #' @param Symbols character vector of symbol strings, default NULL
 #' @param use for determines whether numbers are calculated from transactions or round-trip trades (for tradeStats) or equity curve (for dailyStats)  
-#' @param tradeDef string to determine which definition of 'trade' to use. Currently "flat.to.flat" (the default) and "flat.to.reduced" are implemented.
+#' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. see \code{\link{perTradeStats}}
 #' @param inclZeroDays TRUE/FALSE, whether to include zero P&L days in daily calcs, default FALSE for backwards compatibility.
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param Dates optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)
 #' @author Lance Levenson, Brian Peterson
 #' @export
 #' @return
@@ -101,7 +102,14 @@
 #' Buy and hold return
 #' 
 #' Josh has suggested adding \%-return based stats too
-tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='flat.to.flat',inclZeroDays=FALSE,envir=.blotter)
+tradeStats <- function( Portfolios
+                      , Symbols 
+                      , use=c('txns','trades')
+                      , tradeDef='flat.to.flat'
+                      , inclZeroDays=FALSE
+                      , envir=.blotter
+                      , Dates=NULL
+                      )
 {
     # initialize the ret data.frame so column types are correct  
     ret <- data.frame(Portfolio          = character(), 
@@ -184,7 +192,7 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
                        #moved above for daily stats for now
                    },
                    trades = {
-                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef)
+                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef, envir=envir)
                        PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
                        PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
                        PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
@@ -304,11 +312,12 @@ tradeStats <- function(Portfolios, Symbols ,use=c('txns','trades'), tradeDef='fl
 #' @param drop.time remove time component of POSIX datestamp (if any), default TRUE 
 #' @param incl.total if TRUE, add a column with the daily portfolio total P&L, default FALSE
 #' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param \dots any other passthrough params
 #' @author Brian G. Peterson
 #' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
-dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter)
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, ...)
 {
     ret <- NULL
     for (Portfolio in Portfolios){
@@ -345,7 +354,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
 #' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE, ...)
 {
     ret <- NULL
     for (Portfolio in Portfolios){

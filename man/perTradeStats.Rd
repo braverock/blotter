@@ -5,7 +5,8 @@
 \title{calculate trade statistics for round turn trades.}
 \usage{
 perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
-  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE)
+  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE,
+  combn.method = c("rbind", "list"), envir = .blotter, Dates = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}
@@ -19,6 +20,12 @@ perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
 \item{\dots}{any other passthrough parameters}
 
 \item{includeFlatPeriods}{boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}}
+
+\item{combn.method}{string, either 'rbind' or 'list'. If missing, 'rbind' will be used}
+
+\item{envir}{the environment to retrieve the portfolio from, defaults to .blotter}
+
+\item{Dates}{optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)}
 }
 \value{
 A \code{data.frame} containing:
@@ -44,6 +51,9 @@ A \code{data.frame} containing:
      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
      \item{duration}{ \code{difftime} describing the duration of the round turn, in seconds }
 }
+
+If \code{Symbol} is a vector with more than a symbol, return is either a \code{data.frame} containing the above statistics for all the symbol specified (default) 
+or a \code{list} containing the above statistics for each symbol specified, depending on the \code{combn.method} chosen.
 }
 \description{
 One 'trade' is defined as a series of transactions which make up a 'round turn'.

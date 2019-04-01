@@ -22,7 +22,7 @@ txnsim.portfs(Portfolio, replacement, n, symbols, initDate, currency, initEq)
 \item{initEq}{initial equity to use for replicate portfolios}
 }
 \description{
-If you have a txnsim object and market data, you should be able to rebuild 
+If you have a txnsim object and market data, you should be able to rebuild
 the replicate portfolios. This function creates all those portfolios.
 }
 \seealso{

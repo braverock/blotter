@@ -74,6 +74,9 @@
 #' @param tradeDef string, one of 'flat.to.flat', 'flat.to.reduced', 'increased.to.reduced' or 'acfifo'. See Details.
 #' @param \dots any other passthrough parameters
 #' @param includeFlatPeriods boolean, default FALSE, whether to include flat periods in output, mostly useful for Monte Carlo simulation as in \code{\link{txnsim}}
+#' @param combn.method string, either 'rbind' or 'list'. If missing, 'rbind' will be used
+#' @param envir the environment to retrieve the portfolio from, defaults to .blotter
+#' @param Dates optional xts-style ISO-8601 time range to run trade stats over, default NULL (will use all timestamps)
 #' @author Brian G. Peterson, Jasen Mackie, Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6)
 #' @return
@@ -100,23 +103,39 @@
 #'      \item{tick.MFE}{ Maximum Favorable Excursion (MFE) in ticks}
 #'      \item{duration}{ \code{difftime} describing the duration of the round turn, in seconds }
 #' }
+#' 
+#' If \code{Symbol} is a vector with more than a symbol, return is either a \code{data.frame} containing the above statistics for all the symbol specified (default) 
+#' or a \code{list} containing the above statistics for each symbol specified, depending on the \code{combn.method} chosen.
 #'
 #' @seealso \code{\link{chart.ME}} for a chart of MAE and MFE derived from this function,
 #' and \code{\link{tradeStats}} for a summary view of the performance, and
 #' \code{\link{tradeQuantiles}} for round turns classified by quantile.
 #' @export
-perTradeStats <- function(Portfolio
+perTradeStats <- function(  Portfolio
                           , Symbol
                           , includeOpenTrade=TRUE
                           , tradeDef="flat.to.flat"
                           , ...
-                          , includeFlatPeriods=FALSE)
+                          , includeFlatPeriods=FALSE
+                          , combn.method=c('rbind','list')
+                          , envir=.blotter
+                          , Dates=NULL
+                          )
 {
 
-  portf <- .getPortfolio(Portfolio)
+  portf <- .getPortfolio(Portfolio, envir = envir)
   if(missing(Symbol)) Symbol <- ls(portf$symbols)[[1]]
-
+  if(missing(combn.method)) combn.method <- 'rbind'
+  
+  # inizialize main object
+  trades <- list()
+  
+  if(length(Symbol) == 1) {
   posPL <- portf$symbols[[Symbol]]$posPL
+
+  if(!is.null(Dates)){
+    posPL <- posPL[Dates]
+  }
 
   instr <- getInstrument(Symbol)
   tick_value <- instr$multiplier*instr$tick_size
@@ -124,7 +143,6 @@ perTradeStats <- function(Portfolio
   tradeDef <- match.arg(tradeDef, c("flat.to.flat","flat.to.reduced","increased.to.reduced","acfifo"))
   if(tradeDef=='acfifo') tradeDef<-'increased.to.reduced'
 
-  trades <- list()
   switch(tradeDef,
          flat.to.flat = {
            # identify start and end for each trade, where end means flat position
@@ -202,7 +220,7 @@ perTradeStats <- function(Portfolio
 
            # add extra 'trade start' if there's an open trade, so 'includeOpenTrade' logic will work
            if(any(is.na(testdf$end_ts))){
-             trades$Start <- c(trades$Start,which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))]))
+             trades$Start <- c(trades$Start,last(which(index(incrPos) == testdf$start_ts[first(which(is.na(testdf$end_ts)))])))
            }
          }
   ) # end round turn trade separation by tradeDef
@@ -472,6 +490,24 @@ perTradeStats <- function(Portfolio
   #add periodicity
   attr(trades, 'trade.periodicity') <- periodicity(posPL)
   
+  } else { # length(Symbol)>1, obtain stats for all the symbols specified
+    
+    for (symbol in Symbol) {
+      trades[[symbol]] <- perTradeStats(Portfolio, Symbol = symbol)
+    }
+    
+    if(combn.method == 'rbind') {
+      # add a 'Symbol' column 
+      for (symbol in Symbol) {
+        symbolname <- rep(symbol, nrow(trades[[symbol]]))
+        trades[[symbol]] <- cbind(symbolname, trades[[symbol]])
+        colnames(trades[[symbol]])[1] <- 'Symbol'
+      }
+      
+      trades <- do.call(rbind, trades)
+      trades <- trades[order(as.POSIXct(trades$Start)), ] # sort by trades starting date
+    }
+  }  
   return(trades)
 } # end fn perTradeStats
 

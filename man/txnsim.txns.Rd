@@ -21,7 +21,7 @@ txnsim.txns(reps, Portfolio, replacement, n, ...)
 a list by symbol of txns suitable for calling \code{\link{addTxns}}
 }
 \description{
-If you have a txnsim object and market data, you should be able to rebuild 
+If you have a txnsim object and market data, you should be able to rebuild
 the replicate portfolios.
 }
 \seealso{
