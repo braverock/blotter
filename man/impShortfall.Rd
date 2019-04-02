@@ -25,56 +25,59 @@ impShortfall(Portfolio, Symbol, paQty, priceStart, priceEnd, arrPrice,
 \value{
 Return depends on the method used.
 
-For 'Complete' method (default), return is a \code{data.frame} containing:
+'Complete' - default, return is a \code{data.frame} containing:
 
-\describe{
-     \item{Symbol}{The traded symbol to calculate the shortfall for}
-     \item{Method}{The method used}
-     \item{Paper.Ret}{The paper portfolio return}
-     \item{Actual.Ret}{The actual portfolio return}
-     \item{Shortfall}{The Shortfall measure}
+\itemize{
+  \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
+  \item{\code{Method}: }{The method used}
+  \item{\code{Paper.Ret}: }{The paper portfolio return}
+  \item{\code{Actual.Ret}: }{The actual portfolio return}
+  \item{\code{IS}: }{The Implementation Shortfall measure}
 }
 
-For Perold's method, return is a \code{data.frame} containing:
 
-\describe{
-     \item{Symbol}{The traded symbol to calculate the shortfall for}
-     \item{Method}{The method used}
-     \item{t.Txn.Qty}{The total number of transacted units}
-     \item{u.Txn.Qty}{The number of untransacted units}
-     \item{Exe.Cost}{The execution cost component of the Shortfall}
-     \item{Opp.Cost}{The Perold's opportunity cost component of the Shortfall}
-     \item{Fees}{The total fees paid on transactions}
-     \item{Shortfall}{The Shortfall measure}
+'Perold' - return is a \code{data.frame} containing:
+
+\itemize{
+  \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
+  \item{\code{Method}: }{The method used}
+  \item{\code{t.Txn.Qty}: }{The total number of transacted units}
+  \item{\code{u.Txn.Qty}: }{The number of untransacted units}
+  \item{\code{Exe.Cost}: }{The execution cost component of the IS}
+  \item{\code{Opp.Cost}: }{The Perold's opportunity cost component of the IS}
+  \item{\code{Fees}: }{The total fees paid on transactions}
+  \item{\code{Shortfall}: }{The Implementation Shortfall measure}
 }
 
-For Wagner's method, return is a \code{data.frame} containing:
 
-\describe{
-     \item{Symbol}{The traded symbol to calculate the shortfall for}
-     \item{Method}{The method used}
-     \item{t.Txn.Qty}{The total number of transacted units}
-     \item{u.Txn.Qty}{The number of untransacted units}
-     \item{Opp.Delay}{The opportunity delay component of the Delay cost}
-     \item{Trade.Delay}{The trading delay component of the Delay cost}
-     \item{Delay.Cost}{The delay related component of the Shortfall}
-     \item{Trade.Cost}{The trading related component of the Shortafll}
-     \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
-     \item{Fees}{The total fees paid on transactions}
-     \item{Shortfall}{The Shortfall measure}
+'Wagner' - return is a \code{data.frame} containing:
+
+\itemize{
+  \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
+  \item{\code{Method}: }{The method used}
+  \item{\code{t.Txn.Qty}: }{The total number of transacted units}
+  \item{\code{u.Txn.Qty}: }{The number of untransacted units}
+  \item{\code{Opp.Delay}: }{The opportunity delay component of the Delay cost}
+  \item{\code{Trade.Delay}: }{The trading delay component of the Delay cost}
+  \item{\code{Delay.Cost}: }{The delay related component of the IS}
+  \item{\code{Trade.Cost}: }{The trading related component of the IS}
+  \item{\code{Opp.Cost}: }{The Wagner's opportunity cost component of the IS}
+  \item{\code{Fees}: }{The total fees paid on transactions}
+  \item{\code{Shortfall}: }{The Implementation Shortfall measure}
 }
 
-For the 'Market' method, return is a \code{data.frame} containing:
 
-\describe{
-     \item{Symbol}{The traded symbol to calculate the shortfall for}
-     \item{Method}{The method used}
-     \item{t.Txn.Qty}{The total number of transacted units}
-     \item{u.Txn.Qty}{The number of untransacted units}
-     \item{Trade.Cost}{The trading related component of the Shortafll}
-     \item{Opp.Cost}{The Wagner's opportunity cost component of the Shortfall}
-     \item{Fees}{The total fees paid on transactions}
-     \item{Shortfall}{The Shortfall measure}
+'Market' - return is a \code{data.frame} containing:
+
+\itemize{
+  \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
+  \item{\code{Method}: }{The method used}
+  \item{\code{t.Txn.Qty}: }{The total number of transacted units}
+  \item{\code{u.Txn.Qty}: }{The number of untransacted units}
+  \item{\code{Trade.Cost}: }{The trading related component of the Shortafll}
+  \item{\code{Opp.Cost}: }{The Wagner's opportunity cost component of the Shortfall}
+  \item{\code{Fees}: }{The total fees paid on transactions}
+  \item{\code{Shortfall}: }{The Shortfall measure}
 }
 }
 \description{
