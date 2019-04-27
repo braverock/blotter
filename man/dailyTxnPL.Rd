@@ -3,7 +3,6 @@
 \name{dailyTxnPL}
 \alias{dailyTxnPL}
 \alias{dailyEqPL}
-\alias{dailyEqPL}
 \title{generate daily Transaction Realized or Equity Curve P&L by instrument}
 \usage{
 dailyTxnPL(Portfolios, Symbols, drop.time = TRUE, incl.total = FALSE,

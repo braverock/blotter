@@ -4,9 +4,10 @@
 \alias{mcsim}
 \title{Monte Carlo simulate strategy results}
 \usage{
-mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
-  ..., use = c("equity", "txns", "returns", "cash"), l = 1,
-  varblock = FALSE, gap = 1, CI = 0.95, cashPL = NULL)
+mcsim(Portfolio = NULL, Account = NULL, n = 1000,
+  replacement = TRUE, ..., use = c("equity", "txns", "returns",
+  "cash"), l = 1, varblock = FALSE, gap = 1, CI = 0.95,
+  cashPL = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -78,7 +79,7 @@ period is longer than one day, on average, the samples will increase
 variability in the overall path.  If your average holding period is shorter
 than a day, the \code{\link{mcsim}} function will still provide a useful
 benchmark for comparing to other strategies, but you may additionally wish to
-sample round turn trades, as provided in (TODO: add link once function exists).
+sample round turn trades, as provided in \code{\link{txnsim}}.
 
 A few of the arguments and methods probably deserve more discussion as well.
 
@@ -146,6 +147,7 @@ hist(varsim)
 \code{\link{boot}}
   \code{\link{plot.mcsim}}
   \code{\link{hist.mcsim}}
+  \code{\link{txnsim}}
 }
 \author{
 Jasen Mackie, Brian G. Peterson

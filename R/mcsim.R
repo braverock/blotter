@@ -12,7 +12,7 @@
 #' variability in the overall path.  If your average holding period is shorter
 #' than a day, the \code{\link{mcsim}} function will still provide a useful
 #' benchmark for comparing to other strategies, but you may additionally wish to
-#' sample round turn trades, as provided in (TODO: add link once function exists).
+#' sample round turn trades, as provided in \code{\link{txnsim}}.
 #'
 #' A few of the arguments and methods probably deserve more discussion as well.
 #'
@@ -95,6 +95,7 @@
 #'   \code{\link{boot}}
 #'   \code{\link{plot.mcsim}}
 #'   \code{\link{hist.mcsim}}
+#'   \code{\link{txnsim}}
 #' @examples
 #' \dontrun{
 #'
