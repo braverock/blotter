@@ -156,8 +156,12 @@ mcsim <- function(  Portfolio = NULL
           }
   )
   # trim out training period defined by 'gap' argument
-  dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
-  
+  if(use == 'cash') { # then we need to account for the possibility that the series is multivariate
+    dailyPL <- dailyPL[gap:nrow(dailyPL), ]
+    } else { # get dailyPL column from dailyEqPL or dailyTxnPL depending on whether use='equity' or 'txns'
+      dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
+    }
+
   ##################### confidence interval formulae ###########################
   CI_lower <- function(samplemean, merr) {
     #out <- original - bias - merr #based on boot package implementation in norm.ci
@@ -192,11 +196,9 @@ mcsim <- function(  Portfolio = NULL
     fnames <- function(x, indices) {
       Mean <- mean(x)
       Median <- median(x)
-      sd <- StdDev(xts(x, index(dailyPL))) # need to use xts for StdDev to work
+      sd <- sd(x)
+      # sd <- StdDev(xts(x, index(dailyPL))) # need to use xts for StdDev to work
       maxdd <- -max(cummax(cumsum(x))-cumsum(x))
-      #     sharpedata <- xts(ROC(cumsum(x + initEq)),index(dailyPL))
-      #     sharpedata[is.na(sharpedata)] <- 0
-      #     sharpe <- SharpeRatio(sharpedata, FUN = "StdDev")
       sharpe <- Mean/sd # this is a rough version of sharpe using 'cash' mean & stddev as opposed to 'returns'
       fnames <- c(Mean, Median, sd, maxdd, sharpe)
       #fnames <- c(Mean)
