@@ -54,6 +54,7 @@
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's
 #' @param CI numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95
 #' @param cashPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
+#' @param aggregateFUN if \code{cashPL} is multi-column, and \code{aggregateFUN} is not NULL, this will be used to aggregate the multi-column bootstrap samples into a single time series for summary statistics, default \code{\link[PerformanceAnalytics]{Return.portfolio}}
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
@@ -137,6 +138,7 @@ mcsim <- function(  Portfolio = NULL
                     , gap = 1
                     , CI = 0.95
                     , cashPL = NULL
+                    , aggregateFUN = Return.portfolio
                     
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
@@ -156,11 +158,11 @@ mcsim <- function(  Portfolio = NULL
           }
   )
   # trim out training period defined by 'gap' argument
-  if(use == 'cash') { # then we need to account for the possibility that the series is multivariate
+  if(use == 'cash'  || use == 'cashPL') { # then we need to account for the possibility that the series is multivariate
     dailyPL <- dailyPL[gap:nrow(dailyPL), ]
-    } else { # get dailyPL column from dailyEqPL or dailyTxnPL depending on whether use='equity' or 'txns'
-      dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
-    }
+  } else { # get dailyPL column from dailyEqPL or dailyTxnPL depending on whether use='equity' or 'txns'
+    dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
+  }
 
   ##################### confidence interval formulae ###########################
   CI_lower <- function(samplemean, merr) {
@@ -207,14 +209,33 @@ mcsim <- function(  Portfolio = NULL
     tsb <- tsboot(coredata(dailyPL), statistic = fnames, n, l, sim = sim, ...)
     # For a boot tutprial see http://people.tamu.edu/~alawing/materials/ESSM689/Btutorial.pdf
     colnames(tsb$t) <- c("mean","median","stddev","maxDD","sharpe")
-    #tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
-    inds <- t(boot.array(tsb))
-    #k <- NULL
+
+    inds <- t(boot.array(tsb)) #indices of the samples
+
     tsbootARR <- NULL
     tsbootxts <- NULL
     EndEqdf[is.na(EndEqdf)] <- 0
+    
+    if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+      if(exists(aggregateFUN, mode="function")) {
+        fn <- get(aggregateFUN, mode="function")
+      } else {
+        stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+      }
+    } else {
+      fn <- aggregateFUN
+    }
+    
     for(k in 1:ncol(inds)){
-      tmp <- cbind(tmp, EndEqdf[inds[,k],])
+      if(ncol(dailyPL)==1){
+        tmp <- cbind(tmp, EndEqdf[inds[,k],])
+      } else {
+        if(!is.null(aggregateFUN)){
+          tmpseries <- xts(coredata(dailyPL)[inds[,k],],index(dailyPL))
+          tmpseries <- coredata(fn(tmpseries,...))
+          tmp <- cbind(tmp,tmpseries)
+        }
+      }
     }
     tsbootxts <- xts(tmp, index(dailyPL))
     sampleoutput <- as.data.frame(tsb$t)
@@ -279,8 +300,15 @@ mcsim <- function(  Portfolio = NULL
     withorwithout <- "without replacement"
   }
   
-  percdailyPL <- ROC(cumsum(dailyPL)+initEq, type = "discrete")
-  percdailyPL[is.na(percdailyPL)] <- 0
+  if(ncol(dailyPL)==1){
+    percdailyPL <- ROC(cumsum(dailyPL)+initEq, type = "discrete")
+    percdailyPL[is.na(percdailyPL)] <- 0
+    origDailyPL <- dailyPL
+  } else if(!is.null(aggregateFUN)){
+    origDailyPL <- dailyPL
+    dailyPL <- fn(dailyPL,...)
+    percdailyPL <- dailyPL  #assumes aggregator fn retuns % returns, may need to adjust this
+  }
   
   # browser()
   # store stats for use later in hist.mcsim and summary.mcsim
@@ -495,6 +523,7 @@ mcsim <- function(  Portfolio = NULL
   ret <- list(replicates=tsbootxts
               , percreplicates=roctsbootxts
               , dailypl=dailyPL
+              , origDailyPL=origDailyPL
               , percdailypl=percdailyPL
               , initeq=initEq
               , num=n, length=l

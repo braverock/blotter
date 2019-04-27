@@ -18,7 +18,7 @@ chart.ME(Portfolio, Symbol, type = c("MAE", "MFE"), scale = c("cash",
 
 \item{\dots}{any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())}
 
-\item{legend.loc}{string specifying the position of legend. If missing, "bottomright" will be used}  
+\item{legend.loc}{string specifying the position of legend. If missing, "bottomright" will be used}
 }
 \description{
 Produces a scatterplot with one point per trade, with x-axis: absolute 
