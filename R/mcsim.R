@@ -618,7 +618,7 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
     text(u, hhh, u.label, offset = 0.4, pos = 2, cex = 0.8, srt = 90, col="blue")
     hhh
   }
-  if(isTRUE(normalize) && ret$initeq>1) {
+  if(isTRUE(normalize)) {
     xname <- paste(ret$num, "replicates", ret$w, "using block length", ret$length, "and", ret$CI, "confidence interval")
     h <- NULL
     for (method in methods) {
