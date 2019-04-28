@@ -798,9 +798,9 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
   }
   
   if(isTRUE(normalize)) {
-    q   <- quantile(na.omit(x1))
+    q   <- quantile(na.omit(x1),...)
   } else {
-    q   <- quantile(na.omit(x1))
+    q   <- quantile(na.omit(x1),...)
   }
   q
 }
