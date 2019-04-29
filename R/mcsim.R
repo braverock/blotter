@@ -55,6 +55,7 @@
 #' @param CI numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95
 #' @param cashPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
 #' @param aggregateFUN if \code{cashPL} is multi-column, and \code{aggregateFUN} is not NULL, this will be used to aggregate the multi-column bootstrap samples into a single time series for summary statistics, default \code{\link[PerformanceAnalytics]{Return.portfolio}}
+#' @param aggregateArgs named \code{list} of additional args to be passed to \code{aggregateFUN} (e.g. \code{weights})
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
@@ -139,7 +140,7 @@ mcsim <- function(  Portfolio = NULL
                     , CI = 0.95
                     , cashPL = NULL
                     , aggregateFUN = Return.portfolio
-                    
+                    , aggregateArgs = list()
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
   use=use[1] #take the first value if the user didn't specify
@@ -232,7 +233,7 @@ mcsim <- function(  Portfolio = NULL
       } else {
         if(!is.null(aggregateFUN)){
           tmpseries <- xts(coredata(dailyPL)[inds[,k],],index(dailyPL))
-          tmpseries <- coredata(fn(tmpseries,...))
+          tmpseries <- coredata(fn(tmpseries,...=aggregateArgs))
           tmp <- cbind(tmp,tmpseries)
         }
       }
@@ -306,7 +307,7 @@ mcsim <- function(  Portfolio = NULL
     origDailyPL <- dailyPL
   } else if(!is.null(aggregateFUN)){
     origDailyPL <- dailyPL
-    dailyPL <- fn(dailyPL,...)
+    dailyPL <- fn(dailyPL,...=aggregateArgs)
     percdailyPL <- dailyPL  #assumes aggregator fn retuns % returns, may need to adjust this
   }
   
