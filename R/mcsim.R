@@ -269,13 +269,54 @@ mcsim <- function(  Portfolio = NULL
           s <- seq(sample.int(l,1),length(x),by=l)
         }
         blocks<-split(x, findInterval(x,s))
+        
+        if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+          if(exists(aggregateFUN, mode="function")) {
+            fn <- get(aggregateFUN, mode="function")
+          } else {
+            stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+          }
+        } else {
+          fn <- aggregateFUN
+        }
+        
         # now reassemble the target index order
         idx <- unlist(blocks[sample(names(blocks),size = length(blocks),replace = FALSE)]) ; names(idx)<-NULL
-        tmp <- as.vector(dailyPL)[idx]
+          if(ncol(dailyPL)==1){
+            tmp <- cbind(tmp, EndEqdf[idx,])
+          } else {
+            if(!is.null(aggregateFUN)){
+              tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
+              tmp <- coredata(fn(tmp,...))
+              # tmp <- cbind(tmp,tmpseries)
+            }
+          }
+        # tmp <- as.vector(dailyPL)[idx]
         
       } else {
         # block length is 1, just sample with or without replacement
-        tmp <- sample(as.vector(dailyPL), replace = replacement)
+        idx <- sample(nrow(dailyPL), replace = replacement) ; names(idx)<-NULL
+        
+        if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+          if(exists(aggregateFUN, mode="function")) {
+            fn <- get(aggregateFUN, mode="function")
+          } else {
+            stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+          }
+        } else {
+          fn <- aggregateFUN
+        }
+        
+          if(ncol(dailyPL)==1){
+            tmp <- cbind(tmp, EndEqdf[idx,])
+          } else {
+            if(!is.null(aggregateFUN)){
+              tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
+              tmp <- coredata(fn(tmp,...))
+              # tmp <- cbind(tmp,tmpseries)
+            }
+          }
+        # tmp <- sample(as.vector(dailyPL), replace = replacement)
       }
       tsbootxts <- xts(tmp, index(dailyPL))
     }
