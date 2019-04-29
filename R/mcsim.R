@@ -257,7 +257,8 @@ mcsim <- function(  Portfolio = NULL
       if(isTRUE(l>1)) {
         # do a block resample, without replacement
         # first, resample the index
-        x <- 1:length(dailyPL)
+        # x <- 1:length(dailyPL)
+        x <- 1:nrow(dailyPL)
         # now sample blocks
         if (isTRUE(varblock)){
           # this method creates variable length blocks with a uniform random
@@ -284,7 +285,7 @@ mcsim <- function(  Portfolio = NULL
         # now reassemble the target index order
         idx <- unlist(blocks[sample(names(blocks),size = length(blocks),replace = FALSE)]) ; names(idx)<-NULL
           if(ncol(dailyPL)==1){
-            tmp <- cbind(tmp, EndEqdf[idx,])
+            tmp <- EndEqdf[idx,]
           } else {
             if(!is.null(aggregateFUN)){
               tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
@@ -309,7 +310,7 @@ mcsim <- function(  Portfolio = NULL
         }
         
           if(ncol(dailyPL)==1){
-            tmp <- cbind(tmp, EndEqdf[idx,])
+            tmp <- EndEqdf[idx,]
           } else {
             if(!is.null(aggregateFUN)){
               tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
