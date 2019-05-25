@@ -41,7 +41,10 @@ Imports:
 Suggests:
     Hmisc,
     RUnit,
+    knitr,
+    rmarkdown
 URL: https://github.com/braverock/blotter
 Copyright: (c) 2008-2019
 ByteCompile: TRUE
 RoxygenNote: 6.1.1.9000
+VignetteBuilder: knitr
