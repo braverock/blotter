@@ -4,11 +4,9 @@
 \alias{mcsim}
 \title{Monte Carlo simulate strategy results}
 \usage{
-mcsim(Portfolio = NULL, Account = NULL, n = 1000,
-  replacement = TRUE, ..., use = c("equity", "txns", "returns",
-  "cash"), l = 1, varblock = FALSE, gap = 1, CI = 0.95,
-  cashPL = NULL, aggregateFUN = Return.portfolio,
-  aggregateArgs = list())
+mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
+  ..., use = c("equity", "txns", "returns", "cash"), l = 1,
+  varblock = FALSE, gap = 1, CI = 0.95, cashPL = NULL)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}
@@ -32,10 +30,6 @@ mcsim(Portfolio = NULL, Account = NULL, n = 1000,
 \item{CI}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
 
 \item{cashPL}{optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.}
-
-\item{aggregateFUN}{if \code{cashPL} is multi-column, and \code{aggregateFUN} is not NULL, this will be used to aggregate the multi-column bootstrap samples into a single time series for summary statistics, default \code{\link[PerformanceAnalytics]{Return.portfolio}}}
-
-\item{aggregateArgs}{named \code{list} of additional args to be passed to \code{aggregateFUN} (e.g. \code{weights})}
 }
 \value{
 a list object of class 'mcsim' containing:
@@ -84,7 +78,7 @@ period is longer than one day, on average, the samples will increase
 variability in the overall path.  If your average holding period is shorter
 than a day, the \code{\link{mcsim}} function will still provide a useful
 benchmark for comparing to other strategies, but you may additionally wish to
-sample round turn trades, as provided in \code{\link{txnsim}}.
+sample round turn trades, as provided in (TODO: add link once function exists).
 
 A few of the arguments and methods probably deserve more discussion as well.
 
@@ -152,7 +146,6 @@ hist(varsim)
 \code{\link{boot}}
   \code{\link{plot.mcsim}}
   \code{\link{hist.mcsim}}
-  \code{\link{txnsim}}
 }
 \author{
 Jasen Mackie, Brian G. Peterson
