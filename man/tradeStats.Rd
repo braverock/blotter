@@ -3,15 +3,14 @@
 \name{tradeStats}
 \alias{tradeStats}
 \alias{dailyStats}
-\alias{dailyStats}
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
 tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
   tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter,
   Dates = NULL)
 
-dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
-  envir = .blotter, native = TRUE)
+dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE,
+  ..., envir = .blotter, native = TRUE)
 }
 \arguments{
 \item{Portfolios}{portfolio string}

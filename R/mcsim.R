@@ -12,7 +12,7 @@
 #' variability in the overall path.  If your average holding period is shorter
 #' than a day, the \code{\link{mcsim}} function will still provide a useful
 #' benchmark for comparing to other strategies, but you may additionally wish to
-#' sample round turn trades, as provided in (TODO: add link once function exists).
+#' sample round turn trades, as provided in \code{\link{txnsim}}.
 #'
 #' A few of the arguments and methods probably deserve more discussion as well.
 #'
@@ -54,6 +54,8 @@
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's
 #' @param CI numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95
 #' @param cashPL optional regular xts object of cash P&L if \code{use='cash'} and you don't want to use a blotter Portfolio to get P&L.
+#' @param aggregateFUN if \code{cashPL} is multi-column, and \code{aggregateFUN} is not NULL, this will be used to aggregate the multi-column bootstrap samples into a single time series for summary statistics, default \code{\link[PerformanceAnalytics]{Return.portfolio}}
+#' @param aggregateArgs named \code{list} of additional args to be passed to \code{aggregateFUN} (e.g. \code{weights})
 #' @return a list object of class 'mcsim' containing:
 #' \itemize{
 #'   \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
@@ -95,6 +97,7 @@
 #'   \code{\link{boot}}
 #'   \code{\link{plot.mcsim}}
 #'   \code{\link{hist.mcsim}}
+#'   \code{\link{txnsim}}
 #' @examples
 #' \dontrun{
 #'
@@ -136,7 +139,8 @@ mcsim <- function(  Portfolio = NULL
                     , gap = 1
                     , CI = 0.95
                     , cashPL = NULL
-                    
+                    , aggregateFUN = Return.portfolio
+                    , aggregateArgs = list()
 ){
   seed = .GlobalEnv$.Random.seed # store the random seed for replication, if needed
   use=use[1] #take the first value if the user didn't specify
@@ -155,8 +159,12 @@ mcsim <- function(  Portfolio = NULL
           }
   )
   # trim out training period defined by 'gap' argument
-  dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
-  
+  if(use == 'cash'  || use == 'cashPL') { # then we need to account for the possibility that the series is multivariate
+    dailyPL <- dailyPL[gap:nrow(dailyPL), ]
+  } else { # get dailyPL column from dailyEqPL or dailyTxnPL depending on whether use='equity' or 'txns'
+    dailyPL <- dailyPL[gap:nrow(dailyPL), ncol(dailyPL)]
+  }
+
   ##################### confidence interval formulae ###########################
   CI_lower <- function(samplemean, merr) {
     #out <- original - bias - merr #based on boot package implementation in norm.ci
@@ -191,11 +199,9 @@ mcsim <- function(  Portfolio = NULL
     fnames <- function(x, indices) {
       Mean <- mean(x)
       Median <- median(x)
-      sd <- StdDev(xts(x, index(dailyPL))) # need to use xts for StdDev to work
+      sd <- sd(x)
+      # sd <- StdDev(xts(x, index(dailyPL))) # need to use xts for StdDev to work
       maxdd <- -max(cummax(cumsum(x))-cumsum(x))
-      #     sharpedata <- xts(ROC(cumsum(x + initEq)),index(dailyPL))
-      #     sharpedata[is.na(sharpedata)] <- 0
-      #     sharpe <- SharpeRatio(sharpedata, FUN = "StdDev")
       sharpe <- Mean/sd # this is a rough version of sharpe using 'cash' mean & stddev as opposed to 'returns'
       fnames <- c(Mean, Median, sd, maxdd, sharpe)
       #fnames <- c(Mean)
@@ -204,14 +210,33 @@ mcsim <- function(  Portfolio = NULL
     tsb <- tsboot(coredata(dailyPL), statistic = fnames, n, l, sim = sim, ...)
     # For a boot tutprial see http://people.tamu.edu/~alawing/materials/ESSM689/Btutorial.pdf
     colnames(tsb$t) <- c("mean","median","stddev","maxDD","sharpe")
-    #tsb <- tsboot(coredata(dailyPL), function(x) { -max(cummax(cumsum(x))-cumsum(x)) }, n, l, sim = sim, ...)
-    inds <- t(boot.array(tsb))
-    #k <- NULL
+
+    inds <- t(boot.array(tsb)) #indices of the samples
+
     tsbootARR <- NULL
     tsbootxts <- NULL
     EndEqdf[is.na(EndEqdf)] <- 0
+    
+    if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+      if(exists(aggregateFUN, mode="function")) {
+        fn <- get(aggregateFUN, mode="function")
+      } else {
+        stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+      }
+    } else {
+      fn <- aggregateFUN
+    }
+    
     for(k in 1:ncol(inds)){
-      tmp <- cbind(tmp, EndEqdf[inds[,k],])
+      if(ncol(dailyPL)==1){
+        tmp <- cbind(tmp, EndEqdf[inds[,k],])
+      } else {
+        if(!is.null(aggregateFUN)){
+          tmpseries <- xts(coredata(dailyPL)[inds[,k],],index(dailyPL))
+          tmpseries <- coredata(fn(tmpseries,...=aggregateArgs))
+          tmp <- cbind(tmp,tmpseries)
+        }
+      }
     }
     tsbootxts <- xts(tmp, index(dailyPL))
     sampleoutput <- as.data.frame(tsb$t)
@@ -232,7 +257,8 @@ mcsim <- function(  Portfolio = NULL
       if(isTRUE(l>1)) {
         # do a block resample, without replacement
         # first, resample the index
-        x <- 1:length(dailyPL)
+        # x <- 1:length(dailyPL)
+        x <- 1:nrow(dailyPL)
         # now sample blocks
         if (isTRUE(varblock)){
           # this method creates variable length blocks with a uniform random
@@ -245,13 +271,54 @@ mcsim <- function(  Portfolio = NULL
           s <- seq(sample.int(l,1),length(x),by=l)
         }
         blocks<-split(x, findInterval(x,s))
+        
+        if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+          if(exists(aggregateFUN, mode="function")) {
+            fn <- get(aggregateFUN, mode="function")
+          } else {
+            stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+          }
+        } else {
+          fn <- aggregateFUN
+        }
+        
         # now reassemble the target index order
         idx <- unlist(blocks[sample(names(blocks),size = length(blocks),replace = FALSE)]) ; names(idx)<-NULL
-        tmp <- as.vector(dailyPL)[idx]
+          if(ncol(dailyPL)==1){
+            tmp <- EndEqdf[idx,]
+          } else {
+            if(!is.null(aggregateFUN)){
+              tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
+              tmp <- coredata(fn(tmp,...))
+              # tmp <- cbind(tmp,tmpseries)
+            }
+          }
+        # tmp <- as.vector(dailyPL)[idx]
         
       } else {
         # block length is 1, just sample with or without replacement
-        tmp <- sample(as.vector(dailyPL), replace = replacement)
+        idx <- sample(nrow(dailyPL), replace = replacement) ; names(idx)<-NULL
+        
+        if(!is.null(aggregateFUN) && !is.function(aggregateFUN)) {
+          if(exists(aggregateFUN, mode="function")) {
+            fn <- get(aggregateFUN, mode="function")
+          } else {
+            stop("Cannot aggregate with ", aggregateFUN," because there is no function by that name to call")
+          }
+        } else {
+          fn <- aggregateFUN
+        }
+        
+          if(ncol(dailyPL)==1){
+            tmp <- EndEqdf[idx,]
+          } else {
+            if(!is.null(aggregateFUN)){
+              tmp <- xts(coredata(dailyPL)[idx],index(dailyPL))
+              tmp <- coredata(fn(tmp,...))
+              # tmp <- cbind(tmp,tmpseries)
+            }
+          }
+        # tmp <- sample(as.vector(dailyPL), replace = replacement)
       }
       tsbootxts <- xts(tmp, index(dailyPL))
     }
@@ -276,8 +343,15 @@ mcsim <- function(  Portfolio = NULL
     withorwithout <- "without replacement"
   }
   
-  percdailyPL <- ROC(cumsum(dailyPL)+initEq, type = "discrete")
-  percdailyPL[is.na(percdailyPL)] <- 0
+  if(ncol(dailyPL)==1){
+    percdailyPL <- ROC(cumsum(dailyPL)+initEq, type = "discrete")
+    percdailyPL[is.na(percdailyPL)] <- 0
+    origDailyPL <- dailyPL
+  } else if(!is.null(aggregateFUN)){
+    origDailyPL <- dailyPL
+    dailyPL <- fn(dailyPL,...=aggregateArgs)
+    percdailyPL <- dailyPL  #assumes aggregator fn retuns % returns, may need to adjust this
+  }
   
   # browser()
   # store stats for use later in hist.mcsim and summary.mcsim
@@ -492,6 +566,7 @@ mcsim <- function(  Portfolio = NULL
   ret <- list(replicates=tsbootxts
               , percreplicates=roctsbootxts
               , dailypl=dailyPL
+              , origDailyPL=origDailyPL
               , percdailypl=percdailyPL
               , initeq=initEq
               , num=n, length=l
@@ -586,7 +661,7 @@ hist.mcsim <- function(x, ..., normalize=TRUE,
     text(u, hhh, u.label, offset = 0.4, pos = 2, cex = 0.8, srt = 90, col="blue")
     hhh
   }
-  if(isTRUE(normalize) && ret$initeq>1) {
+  if(isTRUE(normalize)) {
     xname <- paste(ret$num, "replicates", ret$w, "using block length", ret$length, "and", ret$CI, "confidence interval")
     h <- NULL
     for (method in methods) {
@@ -766,9 +841,9 @@ quantile.mcsim <- function(x, ..., normalize=TRUE) {
   }
   
   if(isTRUE(normalize)) {
-    q   <- quantile(na.omit(x1))
+    q   <- quantile(na.omit(x1),...)
   } else {
-    q   <- quantile(na.omit(x1))
+    q   <- quantile(na.omit(x1),...)
   }
   q
 }

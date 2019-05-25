@@ -34,7 +34,7 @@
 #' Gross.Realized will be calculated as (Net) Realized.PL + Txn.Fees
 #' 
 #' @param name Account name, as string
-#' @param portfolios character vector of strigs naming portfolios included in this account
+#' @param portfolios character vector of strings naming portfolios included in this account
 #' @param initDate A date prior to the first close price given, used to contain initial account equity and initial position
 #' @param currency ISO currency identifier used to locate the portfolio currency
 #' @param initEq initial account equity in the currency of the portfolio, as a floating point number.
