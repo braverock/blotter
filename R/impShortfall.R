@@ -277,8 +277,9 @@ impShortfall <- function(Portfolio,
         colnames(out) <- c('Symbol', 'Method', 'Paper.Ret', 'Actual.Ret', 'Shortfall')
       },
       Perold = {
-        exeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*priceStart # or ExeCost <- tTxnQty * (p_avg - priceStart)
+        exeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*priceStart # or exeCost <- tTxnQty * (p_avg - priceStart)
         oppCost <- uTxnQty * (priceEnd - priceStart)
+        
         shortfall <- exeCost + oppCost + fees
         
         out <- as.data.frame(cbind(Symbol, method, tTxnQty, uTxnQty, exeCost, oppCost, fees, shortfall))
@@ -288,7 +289,7 @@ impShortfall <- function(Portfolio,
         oppDelay <- uTxnQty * (arrPrice - priceStart)
         tradeDelay <- tTxnQty * (arrPrice - priceStart)
         delayCost <- oppDelay + tradeDelay
-        tradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*arrPrice # or TradeCost <- tTxnQty * (p_avg - arrPrice)
+        tradeCost <- sum(txns$Txn.Qty * txns$Txn.Price) - tTxnQty*arrPrice # or tradeCost <- tTxnQty * (p_avg - arrPrice)
         oppCost <- uTxnQty * (priceEnd - arrPrice)
         
         shortfall <- delayCost + tradeCost + oppCost + fees
@@ -297,7 +298,7 @@ impShortfall <- function(Portfolio,
         colnames(out) <- c('Symbol', 'Method', 't.Txn.Qty', 'u.Txn.Qty', 'Opp.Delay', 'Trade.Delay', 'Delay.Cost', 'Trade.Cost', 'Opp.Cost', 'Fees', 'Shortfall')
       },
       Market = {
-        tradeCost <- tTxnQty * (sum(txns$Txn.Price * txns$Txn.Qty)/paQty - arrPrice) # or TradeCost <- tTxnQty * (p_avg - arrPrice)
+        tradeCost <- tTxnQty * (sum(txns$Txn.Price * txns$Txn.Qty)/paQty - arrPrice) # or tradeCost <- tTxnQty * (p_avg - arrPrice)
         oppCost <- uTxnQty * (priceEnd - arrPrice)
         
         shortfall <- tradeCost + oppCost + fees
