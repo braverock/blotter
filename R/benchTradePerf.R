@@ -10,7 +10,6 @@
 #' 
 #' By and large, PnL metrics are computed as:
 #' 
-#' \deqn{PnL_{bp} = -1 . \text{side} . \frac{P_{avg} - P_{B}}{P_{B}} . 10^{4}}
 #' 
 #' where \eqn{P_{avg}} is the average execution price and \eqn{P_{B}} is a given benchmark price that can be a single next/present open/close price.
 #' It is worth stressing that they are expressed in basis points (bps) units.
@@ -19,11 +18,9 @@
 #' 
 #' A variation of the VWAP benchmark is given by the \emph{Participation Weighted Price (PWP) benchmark}.
 #' 
-#' \deqn{}
 #' 
 #' Lastly the \emph{Relative Performance Measure}, which differs from the PnL metrics above. It is expressed as:
 #' 
-#' \deqn{}
 #' 
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
