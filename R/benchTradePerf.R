@@ -10,9 +10,9 @@
 #' 
 #' By and large, PnL metrics are computed as:
 #' 
-#' \deqn{PnL_{bp} = -1 . \text{side} . \frac{\bar{P} - P_{B}}{P_{B}} . 10^{4}}
+#' \deqn{PnL_{bp} = -1 . \text{side} . \frac{P_{avg} - P_{B}}{P_{B}} . 10^{4}}
 #' 
-#' where \eqn{\bar{P}} is the average execution price and \eqn{P_{B}} is a given benchmark price that can be a single next/present open/close price.
+#' where \eqn{P_{avg}} is the average execution price and \eqn{P_{B}} is a given benchmark price that can be a single next/present open/close price.
 #' It is worth stressing that they are expressed in basis points (bps) units.
 #' 
 #' A widely used one is the \emph{Volume Weighted Average Price (VWAP) benchamark}... 
