@@ -187,8 +187,7 @@ benchTradePerf <- function(Portfolio,
     
     # PnL performance for 'MktBench', 'VWAP' (all types) and 'PWP' 
     if (benchmark[i] != 'RPM') {
-      perf <- (-1) * side * (p_avg - benchPrice)/benchPrice * 10000
-      out[, 'Performance'] <- perf <- (-1) * side * (p_avg - benchPrice)/benchPrice * 10000
+      out[, 'Performance'] <- (-1) * side * (p_avg - benchPrice)/benchPrice * 10000
     }
     
     # Store and preserve data types
