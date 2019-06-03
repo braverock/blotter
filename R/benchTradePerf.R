@@ -194,7 +194,7 @@ benchTradePerf <- function(Portfolio,
     # Store and preserve data types
     tradesPerf[[i]] <- out
     names(tradesPerf)[i] <- paste('Trades', benchmark[i], 'Perf', sep = '.')
-    tradesPerf[[i]][] <- lapply(tradesPerf[[i]], type.convert, as.is = TRUE)
+    tradesPerf[[i]][] <- lapply(tradesPerf[[i]], utils::type.convert, as.is = TRUE)
     row.names(tradesPerf[[i]]) <- NULL
   }
   return(tradesPerf)
