@@ -65,7 +65,7 @@ For \code{benchmark = 'RPM'} it contains:
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell".}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
      \item{\code{t.Mkt.Volmn}: }{Total market volume over the order timespan.}
-     \item{\code{t.Fav.Volmn}: }{Total market volume over the order timespan for which the average execution price of a buy (sell) side order was lower (greater) then a market price.}
+     \item{\code{t.Fav.Volmn}: }{Total market volume over the order timespan for which the average execution price of a 'Buy' ('Sell') order was lower (greater) then market prices.}
      \item{\code{t.Unfav.Volmn}: }{The opposite of \code{t.Fav.Volmn}.}
      \item{\code{RPM}: }{The \emph{relative performance measure}. Decimal in the 0 to 1 range.}
      \item{\code{Quality}: }{A qualitiative score of the RPM over over quintiles, bottom-up one of 'Poor', 'Fair', 'Average', 'Good', 'Excellent'. Present if \code{verbose = TRUE}.}

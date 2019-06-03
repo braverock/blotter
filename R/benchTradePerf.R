@@ -73,7 +73,7 @@
 #'      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell".}
 #'      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
 #'      \item{\code{t.Mkt.Volmn}: }{Total market volume over the order timespan.}
-#'      \item{\code{t.Fav.Volmn}: }{Total market volume over the order timespan for which the average execution price of a buy (sell) side order was lower (greater) then a market price.}
+#'      \item{\code{t.Fav.Volmn}: }{Total market volume over the order timespan for which the average execution price of a 'Buy' ('Sell') order was lower (greater) then market prices.}
 #'      \item{\code{t.Unfav.Volmn}: }{The opposite of \code{t.Fav.Volmn}.}
 #'      \item{\code{RPM}: }{The \emph{relative performance measure}. Decimal in the 0 to 1 range.}
 #'      \item{\code{Quality}: }{A qualitiative score of the RPM over over quintiles, bottom-up one of 'Poor', 'Fair', 'Average', 'Good', 'Excellent'. Present if \code{verbose = TRUE}.}
@@ -98,13 +98,12 @@ benchTradePerf <- function(Portfolio,
                            POV = NULL,
                            verbose = FALSE
                            )
-{
+{ 
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio[["symbols"]][[Symbol]][["txn"]]
   p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
   tTxnQty <- sum(txns$Txn.Qty)
-  tMktVolmn <- sum(MktData[, "MktVolmn"])
   
   # Benchmark metrics
   benchmark <- match.arg(benchmark, c("MktBench", "VWAP", "PWP", "RPM"), several.ok = TRUE)
@@ -127,8 +126,8 @@ benchTradePerf <- function(Portfolio,
               if (type == 'Txns') {
                 vwapPrice <- crossprod(txns$Txn.Price, txns$Txn.Qty)/tTxnQty
               } else if (type == 'Mkt') {
-                if (!("MktVolmn" %in% colnames(MktData))) stop("No MktVolmn column found, what did you call it?")
-                vwapPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/tMktVolmn
+                if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
+                vwapPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
               }
               benchPrice <- vwapPrice
               
@@ -137,7 +136,7 @@ benchTradePerf <- function(Portfolio,
             },
             PWP = {
               if (is.null(POV)) stop(paste("POV rate needed to compute", benchmark))
-              if (!("MktVolmn" %in% colnames(MktData))) stop("No MktVolmn column found, what did you call it?")
+              # if (!("MktVolmn" %in% colnames(MktData))) stop("No MktVolmn column found, what did you call it?")
               # if (missing(arrTime)) arrTime <- first(index(txns))
               
               pwpShares <- rep(tTxnQty/POV, length(txns$Txn.Price))
@@ -151,18 +150,19 @@ benchTradePerf <- function(Portfolio,
             RPM = {
               if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
               
-              tFavVolmn    <- sum(MktData$MktVolmn[MktData$MktPrice > p_avg])
-              tUnfavVolmn  <- sum(MktData$MktVolmn[MktData$MktPrice < p_avg])
+              tMktVolmn <- sum(MktData[, "MktVolmn"])
               
               if (side == 1) {
-                tUnfavVolmn <- (-1)*tUnfavVolmn
+                tFavVolm     <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
+                tUnfavVolmn  <- (-1)*sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
               } else {
-                tFavVolmn <- (-1)*tFavVolmn
+                tFavVolm     <- (-1)*sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
+                tUnfavVolmn  <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
               }
               
-              rpm <- 0.5*(tMktVolmn + tFavVolmn + tUnfavVolmn)/tMktVolmn
+              rpm <- 0.5*(tMktVolmn + tFavVolm + tUnfavVolmn)/tMktVolmn
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, tFavVolmn, tUnfavVolmn, rpm), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, abs(tFavVolm), abs(tUnfavVolm), rpm), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Volmn', 't.Fav.Volmn', 't.Unfav.Volmn', benchmark[i])
               
               # Append a RPM qualitative score
