@@ -153,16 +153,16 @@ benchTradePerf <- function(Portfolio,
               tMktVolmn <- sum(MktData[, "MktVolmn"])
               
               if (side == 1) {
-                tFavVolm     <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
-                tUnfavVolmn  <- (-1)*sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
+                tFavVolmn   <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
+                tUnfavVolmn <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
               } else {
-                tFavVolm     <- (-1)*sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
-                tUnfavVolmn  <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
+                tFavVolmn   <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
+                tUnfavVolmn <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
               }
               
-              rpm <- 0.5*(tMktVolmn + tFavVolm + tUnfavVolmn)/tMktVolmn
+              rpm <- 0.5*(tMktVolmn + tFavVolmn - tUnfavVolmn)/tMktVolmn
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, abs(tFavVolm), abs(tUnfavVolmn), rpm), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, tFavVolmn, tUnfavVolmn, rpm), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Volmn', 't.Fav.Volmn', 't.Unfav.Volmn', benchmark[i])
               
               # Append a RPM qualitative score
