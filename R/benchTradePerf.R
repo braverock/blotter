@@ -162,7 +162,7 @@ benchTradePerf <- function(Portfolio,
               
               rpm <- 0.5*(tMktVolmn + tFavVolm + tUnfavVolmn)/tMktVolmn
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, abs(tFavVolm), abs(tUnfavVolm), rpm), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, abs(tFavVolm), abs(tUnfavVolmn), rpm), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Volmn', 't.Fav.Volmn', 't.Unfav.Volmn', benchmark[i])
               
               # Append a RPM qualitative score
