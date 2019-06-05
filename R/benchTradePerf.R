@@ -128,8 +128,7 @@ benchTradePerf <- function(Portfolio,
     switch (benchmark[i],
             MktBench = {
               if (!("MktPrice" %in% colnames(MktData))) stop("No MktPrice column found, what did you call it?")
-              mktBenchPrice <- as.numeric(MktData[1, "MktPrice"])
-              benchPrice <- mktBenchPrice
+              benchPrice <- as.numeric(MktData[1, "MktPrice"])
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
@@ -137,13 +136,12 @@ benchTradePerf <- function(Portfolio,
             VWAP = {# full VWAP
               if (missing(type)) type <- 'Txns'
               
-              if (type == 'Txns') {
-                vwapPrice <- crossprod(txns$Txn.Price, txns$Txn.Qty)/tTxnQty
-              } else if (type == 'Mkt') {
+              if (type == 'Txns') { # VWAP price
+                benchPrice <- crossprod(txns$Txn.Price, txns$Txn.Qty)/tTxnQty
+              } else if (type == 'Mkt') { # VWAP price
                 if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
-                vwapPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
+                benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
               }
-              benchPrice <- vwapPrice
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
@@ -154,9 +152,7 @@ benchTradePerf <- function(Portfolio,
               # if (missing(arrTime)) arrTime <- first(index(txns))
               
               pwpShares <- rep(tTxnQty/POV, length(txns$Txn.Price))
-              pwpPrice  <- crossprod(txns$Txn.Price, pwpShares)/sum(pwpShares)
-              
-              benchPrice <- pwpPrice
+              benchPrice  <- crossprod(txns$Txn.Price, pwpShares)/sum(pwpShares) # PWP price
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, sum(pwpShares), benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 'POV', 'PWP.Shares', 'PWP.Price')
@@ -179,7 +175,7 @@ benchTradePerf <- function(Portfolio,
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, tFavVolmn, tUnfavVolmn, rpm), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Volmn', 't.Fav.Volmn', 't.Unfav.Volmn', benchmark[i])
               
-              # Append a RPM qualitative score
+              # Append RPM qualitative score
               if (verbose) { 
                 if (rpm >= 0.4 & rpm <= 0.6) {
                   quality <- "Average"
@@ -201,13 +197,13 @@ benchTradePerf <- function(Portfolio,
     
     # PnL performance for 'MktBench', 'VWAP' (all types) and 'PWP' 
     if (benchmark[i] != 'RPM') {
+      benchPrice <- as.numeric(benchPrice)
       out[, 'Performance'] <- (-1) * side * (p_avg - benchPrice)/benchPrice * 10000
     }
     
     # Store and preserve data types
-    tradesPerf[[i]] <- out
+    tradesPerf[[i]] <- utils::type.convert(out, as.is = TRUE)
     names(tradesPerf)[i] <- paste('Trades', benchmark[i], 'Perf', sep = '.')
-    tradesPerf[[i]][] <- lapply(tradesPerf[[i]], utils::type.convert, as.is = TRUE)
     row.names(tradesPerf[[i]]) <- NULL
   }
   return(tradesPerf)
