@@ -128,6 +128,8 @@ benchTradePerf <- function(Portfolio,
     switch (benchmark[i],
             MktBench = {
               if (!("MktPrice" %in% colnames(MktData))) stop("No MktPrice column found, what did you call it?")
+              if (missing(type)) type <- NULL
+              
               benchPrice <- as.numeric(MktData[1, "MktPrice"])
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
