@@ -1,7 +1,7 @@
 #' Trade Execution Performance Benchmarks
 #' 
 #' This function gathers different benchmarking methods used to evaluate the 
-#' average execution price \eqn{\bar{P}} of a given trading strategy.
+#' average execution price \eqn{P_{avg}} of a given trading strategy.
 #' The \eqn{\bar{P}} is compared against a number of benchmark metrics, in order
 #' to assess its performance in terms of profit or loss relative to a given benchmark.
 #' These benchmarks are not mutually exclusive, each of them provides different insights
@@ -13,39 +13,61 @@
 #' 
 #' By and large, PnL metrics are computed as:
 #' 
-#' #TODO
+#' \deqn{PnL = -1 . side . \frac{\bar{P} - P_{B}}{P_{B}} . 10^{4}}
 #' 
-#' where \eqn{P_{avg}} is the average execution price and \eqn{P_{B}} is a given 
-#' benchmark price that can be a single next/present open/close price.
-#' It is worth stressing that they are expressed in basis points (bps) units.
+#' where \eqn{\bar{P}} is the average execution price and \eqn{P_{B}} is a given 
+#' benchmark price. It is worth stressing that they are expressed in basis points (bps) units.
+#' 
+#' One first common and simple benchmark used is the \emph{benchmark price}, in 
+#' this case \eqn{P_{B}} can be a single current open/close price, future ones 
+#' such as next day prices, or any other benchmark price specified.
 #' 
 #' A widely used one is the \emph{Volume Weighted Average Price (VWAP) benchamark}.
 #' Where the VWAP benchmark is:
 #' 
 #' #TODO
 #' 
-#' It may vary by timespan considered and data vendors.
+#' The VWAP benchmark may vary by timespan considered and data vendors.
 #' 
-#' A variation of the VWAP benchmark is given by the \emph{Participation Weighted Price (PWP) benchmark}.
-#' Where the weighting is with respect to the \emph{PWP shares}:
+#' A variation of the VWAP benchmark is given by the \emph{Participation Weighted Price (PWP) benchmark},
+#' where the weighting is with respect to the \emph{PWP shares}:
 #'   
+#' \deqn{PWP shares = \frac{Traded shares}{POV}}
+#' 
+#' being \eqn{POV} the \emph{percentage of volume}. The PWP benchwark is:
+#'
 #' #TODO
 #' 
-#' Lastly the \emph{Relative Performance Measure}, which differs from the PnL metrics above. 
-#' It is expressed as:
+#' Lastly the \emph{Relative Performance Measure} (RPM), which differs from the PnL metrics above,
+#' is a percentile ranking of trading activity, preferable to the VWAP benchmark 
+#' as it can be used to compare performance across stocks, days and different volatilities. 
+#' Its expression depends on the side of the trade:
 #' 
-#' #TODO
+#' \deqn{RPM_{buy} = 0.5 * \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{Total volume}}
+#' \deqn{RPM_{sell} = 0.5 * \frac{Total volume + Volume at P < P_{avg} - Volume at P > P_{avg}}{Total volume}}
 #' 
+#' where \eqn{P} is the market price specified. 
+#' The an RPM over 50\% is considered as an indication of superior trades, more 
+#' precisely the RPM can be mapped to a qualitative score of the trades:
+#' 
+#' \tabular{cc}{
+#'    0 <= RPM < 20   \tab Fair\cr
+#'   20 <= RPM < 40   \tab Poor\cr
+#'   40 <= RPM <= 60  \tab Average\cr
+#'   60 <  RPM <= 80  \tab Good\cr
+#'   80 <  RPM <= 100 \tab Excellent\cr
+#' }
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol A string identifying the traded symbol to benchmark
 #' @param side A numeric value, that indicates the side of the trade. Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"
 #' @param benchmark A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO
 #' @param type A string specifying the type of the benchmark used. Relevant only for \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}
-#'             In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used. If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}
+#'             In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used.
+#'             If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}. See details.
 #' @param MktData An xts object containing a 'MktPrice' and 'MktVolmn' required columns
 #' @param POV A numeric value between 0 and 1, specifying the POV rate
-#' @param verbose A logical value. It allows a RPM qualitative score appended. Default is \code{FALSE}
+#' @param verbose A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}
 #'
 #' 
 #' @return 
@@ -94,6 +116,9 @@
 #' }
 #' 
 #' @seealso \code{\link{initPortf}}, \code{\link{addTxn}}
+#' 
+#' @details 
+#' #TODO: specify the usage of 'type' for benchmark='MktBench'
 #' 
 #' @examples 
 #' 
@@ -183,7 +208,7 @@ benchTradePerf <- function(Portfolio,
                   quality <- "Average"
                 } else if (rpm > 0.6) {
                   quality <- "Good"
-                  if (rpm >= 0.8) {
+                  if (rpm > 0.8) {
                     quality <- "Excellent" 
                   }
                 } else {
