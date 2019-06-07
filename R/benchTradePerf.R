@@ -54,9 +54,7 @@
 #' for the same stock. Also, the benchmark may be biased by temporary impact dissipation.
 #' 
 #' Lastly, the \emph{Relative Performance Measure} (RPM), which differs from the 
-#' PnL metrics above, is a percentile ranking of trading activity, preferable to 
-#' the VWAP benchmark as it can be used to compare performance across stocks, 
-#' days and different volatilities. 
+#' PnL metrics above, is a percentile ranking of trading activity.
 #' Its expression depends on the side of the trade:
 #' 
 #' \deqn{RPM_{buy} = 0.5 * \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{Total volume}}
@@ -74,8 +72,8 @@
 #'   80 <  RPM <= 100 \tab Excellent\cr
 #' }
 #' 
-#' This measure is considered as preferred to the VWAP metric because it surpasses 
-#' some of its shortcomings: it can be used to compare performance across different 
+#' This measure is considered as preferred to the VWAP metric because it overcomes 
+#' some of its drawbacks: it can be used to compare performance across different 
 #' stocks, days, and volatility; it is not less influenced by large blocks trade 
 #' at extreme prices.
 #' 
