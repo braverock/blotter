@@ -2,10 +2,11 @@
 #' 
 #' This function gathers different benchmarking methods used to evaluate the 
 #' average execution price \eqn{P_{avg}} of a given trading strategy.
-#' The \eqn{\bar{P}} is compared against a number of benchmark metrics, in order
+#' The \eqn{P_{avg}} is compared against a number of benchmark metrics, in order
 #' to assess its performance in terms of profit or loss relative to a given benchmark.
-#' These benchmarks are not mutually exclusive, each of them provides different insights
-#' and may have shortcomings. They can be used in conjuction to account for this aspects.
+#' These benchmarks are not mutually exclusive, each of them provides different 
+#' insights and may have shortcomings. They can be used in conjuction to account 
+#' for this aspects.
 #' 
 #' The performance is quantified by means of a \emph{Profit and Loss (PnL) metric}. 
 #' A positive PnL metric indicates that the trading strategy outperformed a chosen 
@@ -15,19 +16,27 @@
 #' 
 #' \deqn{PnL = -1 . side . \frac{\bar{P} - P_{B}}{P_{B}} . 10^{4}}
 #' 
-#' where \eqn{\bar{P}} is the average execution price and \eqn{P_{B}} is a given 
-#' benchmark price. It is worth stressing that they are expressed in basis points (bps) units.
+#' where \eqn{P_{avg}} is the average execution price and \eqn{P_{B}} is a given 
+#' benchmark price. It is worth stressing that they are expressed in basis points 
+#' (bps) units.
 #' 
 #' One first common and simple benchmark used is the \emph{benchmark price}, in 
 #' this case \eqn{P_{B}} can be a single current open/close price, future ones 
 #' such as next day prices, or any other benchmark price specified.
 #' 
 #' A widely used one is the \emph{Volume Weighted Average Price (VWAP) benchamark}.
-#' Where the VWAP benchmark is:
+#' The benchmark is defined as:
 #' 
-#' #TODO
+#' \deqn{VWAP = \frac{\sum{P_{j}Q_{j}}}{\sum{Q_{j}}}}
 #' 
-#' The VWAP benchmark may vary by timespan considered and data vendors.
+#' \eqn{P_{j}} is the market price and \eqn{Q_{j}} the market volume, during \eqn{j}
+#' trading periods. 
+#' The VWAP benchmark varies by timespan considered and is commonly used as a proxy 
+#' for fair market price. It can differ by data vendors specific market data filtering.
+#' There are recognized drawbacks of this benchamrk. First of all, the larger the 
+#' order the closer the execution will be to VWAP. Second, where large block trades 
+#' occur these could skew the benchmark. Lastly, it is not an indicated comparison 
+#' across stocks or different days for the same stock.
 #' 
 #' A variation of the VWAP benchmark is given by the \emph{Participation Weighted Price (PWP) benchmark},
 #' where the weighting is with respect to the \emph{PWP shares}:
@@ -36,11 +45,18 @@
 #' 
 #' being \eqn{POV} the \emph{percentage of volume}. The PWP benchwark is:
 #'
-#' #TODO
+#' \deqn{PWP price = } #TODO
 #' 
-#' Lastly the \emph{Relative Performance Measure} (RPM), which differs from the PnL metrics above,
-#' is a percentile ranking of trading activity, preferable to the VWAP benchmark 
-#' as it can be used to compare performance across stocks, days and different volatilities. 
+#' As the VWAP, the PWP benchmark provides a glimpe into market fair prices.
+#' However this benchmark have limitations similar to the VWAP. It is subject to 
+#' manipulation in that the market price can be kept inflated by larger orders. 
+#' Furthermore, as the VWAP, it is not comparable between stocks or across days 
+#' for the same stock. Also, the benchmark may be biased by temporary impact dissipation.
+#' 
+#' Lastly, the \emph{Relative Performance Measure} (RPM), which differs from the 
+#' PnL metrics above, is a percentile ranking of trading activity, preferable to 
+#' the VWAP benchmark as it can be used to compare performance across stocks, 
+#' days and different volatilities. 
 #' Its expression depends on the side of the trade:
 #' 
 #' \deqn{RPM_{buy} = 0.5 * \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{Total volume}}
@@ -57,6 +73,11 @@
 #'   60 <  RPM <= 80  \tab Good\cr
 #'   80 <  RPM <= 100 \tab Excellent\cr
 #' }
+#' 
+#' This measure is considered as preferred to the VWAP metric because it surpasses 
+#' some of its shortcomings: it can be used to compare performance across different 
+#' stocks, days, and volatility; it is not less influenced by large blocks trade 
+#' at extreme prices.
 #' 
 #' @param Portfolio A portfolio name that points to a portfolio object structured with initPortf()
 #' @param Symbol A string identifying the traded symbol to benchmark
