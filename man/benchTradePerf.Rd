@@ -17,9 +17,9 @@ benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
 
 \item{benchmark}{A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO}
 
-\item{type}{A string specifying the type of the benchmark used. Relevant only for \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}
-In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used.
-If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}. See details.}
+\item{type}{A list with named characters elements \code{price} or \code{vwap}. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
+When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
+When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark default is \code{type = list(vwap = 'interval')}. See details.}
 
 \item{MktData}{An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details}
 
@@ -156,6 +156,9 @@ at extreme prices.
 
 TODO: specify the usage of 'type' for benchmark='MktBench'
 TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
+TODO: specify that for example type=list(price='<yourChoice>', vwap='interval') is fine. 
+      But if multiple characters are passed, eg. type=list(price=c('<yourChoice1>', '<yourChoice2>'), vwap=c('interval', 'full')), 
+      then only the first ones will be used respectively
 }
 \examples{
 

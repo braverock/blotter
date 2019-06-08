@@ -81,9 +81,9 @@
 #' @param Symbol A string identifying the traded symbol to benchmark
 #' @param side A numeric value, that indicates the side of the trade. Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"
 #' @param benchmark A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO
-#' @param type A string specifying the type of the benchmark used. Relevant only for \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}
-#'             In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used.
-#'             If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}. See details.
+#' @param type A list with named characters elements \code{price} or \code{vwap}. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
+#'             When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
+#'             When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark default is \code{type = list(vwap = 'interval')}. See details.
 #' @param MktData An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details
 #' @param POV A numeric value between 0 and 1, specifying the POV rate
 #' @param priceToBench A numeric value. The \code{MktData} row position of the market price to use as a benchmark price (default is 1) 
@@ -140,6 +140,9 @@
 #' @details 
 #' TODO: specify the usage of 'type' for benchmark='MktBench'
 #' TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
+#' TODO: specify that for example type=list(price='<yourChoice>', vwap='interval') is fine. 
+#'       But if multiple characters are passed, eg. type=list(price=c('<yourChoice1>', '<yourChoice2>'), vwap=c('interval', 'full')), 
+#'       then only the first ones will be used respectively 
 #' 
 #' 
 #' @examples 
@@ -187,18 +190,19 @@ benchTradePerf <- function(Portfolio,
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
             },
-            VWAP = {# full VWAP
-              if (missing(type)) type <- 'Txns'
+            VWAP = {
+              if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
+              if (is.null(type[['vwap']])) type[['vwap']] <- 'interval'
               
-              if (type == 'Txns') { # VWAP price
-                benchPrice <- crossprod(txns$Txn.Price, txns$Txn.Qty)/tTxnQty
+              if (type[['vwap']][1] == 'interval') {
+                MktDataIn <- MktData[index(MktData)[MATCH.times(index(txns), index(MktData))]]
+                benchPrice <- crossprod(MktDataIn[, "MktPrice"], MktDataIn[, "MktVolmn"])/sum(MktDataIn[, "MktVolmn"])
               } else if (type == 'Mkt') { # VWAP price
-                if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
                 benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
               }
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
-              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
+              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['vwap']][1], sep = '.'))
             },
             PWP = {
               if (is.null(POV)) stop(paste("POV rate needed to compute", benchmark))
