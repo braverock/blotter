@@ -84,8 +84,9 @@
 #' @param type A string specifying the type of the benchmark used. Relevant only for \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}
 #'             In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used.
 #'             If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}. See details.
-#' @param MktData An xts object containing a 'MktPrice' and 'MktVolmn' required columns
+#' @param MktData An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details
 #' @param POV A numeric value between 0 and 1, specifying the POV rate
+#' @param priceToBench A numeric value. The \code{MktData} row position of the market price to use as a benchmark price (default is 1) 
 #' @param verbose A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}
 #'
 #' 
@@ -137,7 +138,9 @@
 #' @seealso \code{\link{initPortf}}, \code{\link{addTxn}}
 #' 
 #' @details 
-#' #TODO: specify the usage of 'type' for benchmark='MktBench'
+#' TODO: specify the usage of 'type' for benchmark='MktBench'
+#' TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
+#' 
 #' 
 #' @examples 
 #' 
@@ -154,6 +157,7 @@ benchTradePerf <- function(Portfolio,
                            type = c("Txns", "Mkt"),
                            MktData,
                            POV = NULL,
+                           priceToBench,
                            verbose = FALSE
                            )
 { 
@@ -171,10 +175,14 @@ benchTradePerf <- function(Portfolio,
   for (i in 1:length(benchmark)) {
     switch (benchmark[i],
             MktBench = {
-              if (!("MktPrice" %in% colnames(MktData))) stop("No MktPrice column found, what did you call it?")
-              if (missing(type)) type <- NULL
               
-              benchPrice <- as.numeric(MktData[1, "MktPrice"])
+              if (is.xts(MktData)) {
+                if (!("MktPrice" %in% colnames(MktData))) stop("No MktPrice column found, what did you call it?")
+                if (missing(priceToBench)) priceToBench <- 1
+                benchPrice <- as.numeric(MktData[priceToBench, "MktPrice"])
+              } else {
+                benchPrice <- MktData
+              }
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
@@ -197,7 +205,7 @@ benchTradePerf <- function(Portfolio,
               # if (!("MktVolmn" %in% colnames(MktData))) stop("No MktVolmn column found, what did you call it?")
               # if (missing(arrTime)) arrTime <- first(index(txns))
               
-              pwpShares <- rep(tTxnQty/POV, length(txns$Txn.Price))
+              pwpShares <- tTxnQty/POV # rep(tTxnQty/POV, length(txns$Txn.Price))
               benchPrice  <- crossprod(txns$Txn.Price, pwpShares)/sum(pwpShares) # PWP price
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, sum(pwpShares), benchPrice), stringsAsFactors = FALSE)

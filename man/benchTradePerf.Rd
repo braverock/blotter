@@ -6,7 +6,7 @@
 \usage{
 benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
   "VWAP", "PWP", "RPM"), type = c("Txns", "Mkt"), MktData, POV = NULL,
-  verbose = FALSE)
+  priceToBench, verbose = FALSE)
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
@@ -21,9 +21,11 @@ benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
 In the former case it only changes the output format, while in the latter it also specifies the VWAP to be used.
 If \code{benchmark = 'VWAP'}, default is \code{type = 'Txns'}. See details.}
 
-\item{MktData}{An xts object containing a 'MktPrice' and 'MktVolmn' required columns}
+\item{MktData}{An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details}
 
 \item{POV}{A numeric value between 0 and 1, specifying the POV rate}
+
+\item{priceToBench}{A numeric value. The \code{MktData} row position of the market price to use as a benchmark price (default is 1)}
 
 \item{verbose}{A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}}
 }
@@ -152,7 +154,8 @@ stocks, days, and volatility; it is not less influenced by large blocks trade
 at extreme prices.
 
 
-#TODO: specify the usage of 'type' for benchmark='MktBench'
+TODO: specify the usage of 'type' for benchmark='MktBench'
+TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
 }
 \examples{
 
