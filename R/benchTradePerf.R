@@ -83,12 +83,12 @@
 #' @param Symbol A string identifying the traded symbol to benchmark
 #' @param side A numeric value, that indicates the side of the trade. Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"
 #' @param benchmark A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO
-#' @param type A list with named characters elements \code{price} or \code{vwap}. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
+#' @param type A list with named elements, \code{price} or \code{vwap}, of strings. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
 #'             When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
-#'             When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark default is \code{type = list(vwap = 'interval')}. See details.
+#'             When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark and defaults to \code{type = list(vwap = 'interval')}. See details.
 #' @param MktData An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details
 #' @param POV A numeric value between 0 and 1, specifying the POV rate
-#' @param priceToBench A numeric value. The \code{MktData} row position of the market price to use as a benchmark price (default is 1) 
+#' @param priceToBench A numeric value. The \code{MktData} row position of the 'MktPrice' to use as benchmark price (default is 1) 
 #' @param verbose A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}
 #'
 #' 
@@ -101,7 +101,7 @@
 #'      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
 #'      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
 #'      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
-#'      \item{\code{MktBench.*}: }{The benchmark and an arbitrary \code{type} provided as input (e.g. 'Open', 'Close')}
+#'      \item{\code{MktBench.*}: }{The benchmark and an arbitrary \code{type=list(price)} provided as input (e.g. 'Open', 'Close')}
 #'      \item{\code{Performance}: }{The \emph{Benchmark PnL} performance, in bps}
 #' }
 #' 
@@ -110,7 +110,7 @@
 #'      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
 #'      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
 #'      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
-#'      \item{\code{VWAP.*}: }{The benchmark and depending on \code{type} parameter either 'Txns' 'Mkt'}
+#'      \item{\code{VWAP.*}: }{The benchmark and depending on \code{type=list(vwap)} parameter either 'interval' or 'full'}
 #'      \item{\code{Performance}: }{The \emph{VWAP PnL} metric, in bps}
 #' }
 #' 
@@ -159,7 +159,7 @@ benchTradePerf <- function(Portfolio,
                            Symbol,
                            side = 1,
                            benchmark = c("MktBench", "VWAP", "PWP", "RPM"),
-                           type = c("Txns", "Mkt"),
+                           type = list(price = c(), vwap = c("interval", "full")),
                            MktData,
                            POV = NULL,
                            priceToBench,
@@ -199,7 +199,7 @@ benchTradePerf <- function(Portfolio,
               if (type[['vwap']][1] == 'interval') {
                 MktDataIn <- MktData[index(MktData)[MATCH.times(index(txns), index(MktData))]]
                 benchPrice <- crossprod(MktDataIn[, "MktPrice"], MktDataIn[, "MktVolmn"])/sum(MktDataIn[, "MktVolmn"])
-              } else if (type == 'Mkt') { # VWAP price
+              } else if (type[['vwap']][1] == 'full') {
                 benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
               }
               

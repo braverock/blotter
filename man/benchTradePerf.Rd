@@ -5,8 +5,8 @@
 \title{Trade Execution Performance Benchmarks}
 \usage{
 benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
-  "VWAP", "PWP", "RPM"), type = c("Txns", "Mkt"), MktData, POV = NULL,
-  priceToBench, verbose = FALSE)
+  "VWAP", "PWP", "RPM"), type = list(price = c(), vwap = c("interval",
+  "full")), MktData, POV = NULL, priceToBench, verbose = FALSE)
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
@@ -17,15 +17,15 @@ benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
 
 \item{benchmark}{A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO}
 
-\item{type}{A list with named characters elements \code{price} or \code{vwap}. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
+\item{type}{A list with named elements, \code{price} or \code{vwap}, of strings. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
 When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
-When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark default is \code{type = list(vwap = 'interval')}. See details.}
+When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark and defaults to \code{type = list(vwap = 'interval')}. See details.}
 
 \item{MktData}{An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details}
 
 \item{POV}{A numeric value between 0 and 1, specifying the POV rate}
 
-\item{priceToBench}{A numeric value. The \code{MktData} row position of the market price to use as a benchmark price (default is 1)}
+\item{priceToBench}{A numeric value. The \code{MktData} row position of the 'MktPrice' to use as benchmark price (default is 1)}
 
 \item{verbose}{A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}}
 }
@@ -38,7 +38,7 @@ For \code{benchmark = 'MktBench'} it contains:
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
-     \item{\code{MktBench.*}: }{The benchmark and an arbitrary \code{type} provided as input (e.g. 'Open', 'Close')}
+     \item{\code{MktBench.*}: }{The benchmark and an arbitrary \code{type=list(price)} provided as input (e.g. 'Open', 'Close')}
      \item{\code{Performance}: }{The \emph{Benchmark PnL} performance, in bps}
 }
 
@@ -47,7 +47,7 @@ For \code{benchmark = 'VWAP'} it contains:
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
-     \item{\code{VWAP.*}: }{The benchmark and depending on \code{type} parameter either 'Txns' 'Mkt'}
+     \item{\code{VWAP.*}: }{The benchmark and depending on \code{type=list(vwap)} parameter either 'interval' or 'full'}
      \item{\code{Performance}: }{The \emph{VWAP PnL} metric, in bps}
 }
 
