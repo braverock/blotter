@@ -45,8 +45,10 @@
 #' 
 #' being \eqn{POV} the \emph{percentage of volume}. The PWP benchwark is:
 #'
-#' \deqn{PWP price = } #TODO
+#' \deqn{PWP price = \frac{\sum{P_{h}Q_{h}}}{\sum{Q_{h}}}}
 #' 
+#' where \eqn{h} are the periods from the arrival time of the order into the market 
+#' until when the PWP shares are completely executed.
 #' As the VWAP, the PWP benchmark provides a glimpe into market fair prices.
 #' However this benchmark have limitations similar to the VWAP. It is subject to 
 #' manipulation in that the market price can be kept inflated by larger orders. 
@@ -143,7 +145,7 @@
 #' TODO: specify that for example type=list(price='<yourChoice>', vwap='interval') is fine. 
 #'       But if multiple characters are passed, eg. type=list(price=c('<yourChoice1>', '<yourChoice2>'), vwap=c('interval', 'full')), 
 #'       then only the first ones will be used respectively 
-#' 
+#' TODO: specify PWP shares approximation
 #' 
 #' @examples 
 #' 
@@ -205,14 +207,19 @@ benchTradePerf <- function(Portfolio,
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['vwap']][1], sep = '.'))
             },
             PWP = {
+              if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
               if (is.null(POV)) stop(paste("POV rate needed to compute", benchmark))
-              # if (!("MktVolmn" %in% colnames(MktData))) stop("No MktVolmn column found, what did you call it?")
-              # if (missing(arrTime)) arrTime <- first(index(txns))
               
-              pwpShares <- tTxnQty/POV # rep(tTxnQty/POV, length(txns$Txn.Price))
-              benchPrice  <- crossprod(txns$Txn.Price, pwpShares)/sum(pwpShares) # PWP price
+              pwpShares <- tTxnQty/POV
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, sum(pwpShares), benchPrice), stringsAsFactors = FALSE)
+              # arrival time proxy and market volume traded approx ends
+              pwpStart <- suppressWarnings((first(which(strftime(index(txns), format = "%H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%H:%M:%S", tz = "UTC")))))
+              pwpStop <- which.min(abs(pwpShares - cumsum(MktData[pwpStart:nrow(MktData), "MktVolmn"])))
+              MktDataPart <- MktData[pwpStart:pwpStop]
+              
+              benchPrice <- crossprod(MktDataPart[, "MktPrice"], MktDataPart[, "MktVolmn"])/sum(MktDataPart[, "MktVolmn"]) # PWP price
+              
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, pwpShares, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 'POV', 'PWP.Shares', 'PWP.Price')
             },
             RPM = {

@@ -121,8 +121,10 @@ where the weighting is with respect to the \emph{PWP shares}:
 
 being \eqn{POV} the \emph{percentage of volume}. The PWP benchwark is:
 
-\deqn{PWP price = } #TODO
+\deqn{PWP price = \frac{\sum{P_{h}Q_{h}}}{\sum{Q_{h}}}}
 
+where \eqn{h} are the periods from the arrival time of the order into the market 
+until when the PWP shares are completely executed.
 As the VWAP, the PWP benchmark provides a glimpe into market fair prices.
 However this benchmark have limitations similar to the VWAP. It is subject to 
 manipulation in that the market price can be kept inflated by larger orders. 
@@ -158,7 +160,8 @@ TODO: specify the usage of 'type' for benchmark='MktBench'
 TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
 TODO: specify that for example type=list(price='<yourChoice>', vwap='interval') is fine. 
       But if multiple characters are passed, eg. type=list(price=c('<yourChoice1>', '<yourChoice2>'), vwap=c('interval', 'full')), 
-      then only the first ones will be used respectively
+      then only the first ones will be used respectively 
+TODO: specify PWP shares approximation
 }
 \examples{
 
