@@ -30,7 +30,12 @@
 #' \deqn{VWAP = \frac{\sum{P_{j}Q_{j}}}{\sum{Q_{j}}}}
 #' 
 #' \eqn{P_{j}} is the market price and \eqn{Q_{j}} the market volume, during \eqn{j}
-#' trading periods. 
+#' trading periods activity of the market.
+#' Two different types of VWAP benchmarks are included in the present function,
+#' the \emph{Interval VWAP} and the \emph{Full VWAP}. Referring to the former as
+#' the VWAP where the \eqn{j} market trading periods considered are the ones during
+#' which the order is being executed, whereas the latter includes all the \eqn{j}
+#' market periods from order execution beginning to last transaction.
 #' The VWAP benchmark varies by timespan considered and is commonly used as a proxy 
 #' for fair market price. It can differ by data vendors specific market data filtering.
 #' There are recognized drawbacks of this benchamrk. First of all, the larger the 
@@ -49,7 +54,7 @@
 #' 
 #' where \eqn{h} are the periods from the arrival time of the order into the market 
 #' until when the PWP shares are completely executed.
-#' As the VWAP, the PWP benchmark provides a glimpe into market fair prices.
+#' As the VWAP, the PWP benchmark provides a glimpse into market fair prices.
 #' However this benchmark have limitations similar to the VWAP. It is subject to 
 #' manipulation in that the market price can be kept inflated by larger orders. 
 #' Furthermore, as the VWAP, it is not comparable between stocks or across days 
@@ -139,13 +144,36 @@
 #' 
 #' @seealso \code{\link{initPortf}}, \code{\link{addTxn}}
 #' 
-#' @details 
-#' TODO: specify the usage of 'type' for benchmark='MktBench'
-#' TODO: specify the usage of 'MktData' and 'priceToBench'for benchmark='MktBench'
-#' TODO: specify that for example type=list(price='<yourChoice>', vwap='interval') is fine. 
-#'       But if multiple characters are passed, eg. type=list(price=c('<yourChoice1>', '<yourChoice2>'), vwap=c('interval', 'full')), 
-#'       then only the first ones will be used respectively 
+#' @details
+#' The \code{priceToBench} parameter, relevant only when \code{benchmark='MktBench'}, 
+#' is provided as a convenience parameter, to be used when the benchmark price to 
+#' compare the average execution price of the transactions belongs to the \code{MktData} 
+#' xts input. This allows to use the function having other benchmarks computations.
+#' A different usage of the function is available, giving two ways to use an arbitrary 
+#' benchmark price: input this single price as an \code{xts} object through the 
+#' \code{MktData} parameter (note that of an object with length greater than one 
+#' only the first element will be used and the 'MktPrice' column requirement), 
+#' or alternatively input a single numeric value in \code{MktData}. Expect poor 
+#' results or breaks if you use the function in this way while calling other invoking
+#' other benchmarks at the same time.
+#' 
+#' The \code{type} parameter allows different usages of the function. 
+#' In the \code{benchmark='MktBench'}, the kind of market price used as a benchmark 
+#' is up to the analyst and his research. The string provided through \code{type=list(price='')} 
+#' is completely arbitrary and does not influence the corresponding PnL metric computation,
+#' it is available only for customization purposes. In other words, tohave a way 
+#' to distinguish the elements of the return object in case different benchmarking 
+#' analyses are being carried, e.g. benchmarking against both 'Open' prices and 'Close' 
+#' prices (separately, providing each of these prices with a function call).
+#' Whereas, when \code{benchmark='VWAP'}, then \code{type} is used to select
+#' the VWAP benchmark to use in the PnL metric computation, namely the Interval VWAP
+#' (\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'interval')}).
+#' Other conditions being met, \code{benchmark=c('MktBench', 'VWAP')} will use 
+#' only the first items of the respective list elements.
+#' 
+#' 
 #' TODO: specify PWP shares approximation
+#' 
 #' 
 #' @examples 
 #' 
