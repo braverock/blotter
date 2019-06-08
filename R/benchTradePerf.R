@@ -167,7 +167,7 @@
 #' prices (separately, providing each of these prices with a function call).
 #' Whereas, when \code{benchmark='VWAP'}, then \code{type} is used to select
 #' the VWAP benchmark to use in the PnL metric computation, namely the Interval VWAP
-#' (\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'interval')}).
+#' (\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'full')}).
 #' Other conditions being met, \code{benchmark=c('MktBench', 'VWAP')} will use 
 #' only the first items of the respective list elements.
 #' 
@@ -218,7 +218,7 @@ benchTradePerf <- function(Portfolio,
               }
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
-              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type, sep = '.'))
+              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['price']][1], sep = '.'))
             },
             VWAP = {
               if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")

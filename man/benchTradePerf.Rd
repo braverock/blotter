@@ -183,7 +183,7 @@ analyses are being carried, e.g. benchmarking against both 'Open' prices and 'Cl
 prices (separately, providing each of these prices with a function call).
 Whereas, when \code{benchmark='VWAP'}, then \code{type} is used to select
 the VWAP benchmark to use in the PnL metric computation, namely the Interval VWAP
-(\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'interval')}).
+(\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'full')}).
 Other conditions being met, \code{benchmark=c('MktBench', 'VWAP')} will use 
 only the first items of the respective list elements.
 
