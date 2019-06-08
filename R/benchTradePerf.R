@@ -91,7 +91,7 @@
 #' @param type A list with named elements, \code{price} or \code{vwap}, of strings. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
 #'             When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
 #'             When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark and defaults to \code{type = list(vwap = 'interval')}. See details.
-#' @param MktData An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details
+#' @param MktData An xts object containing 'MktPrice' and 'MktQty' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details
 #' @param POV A numeric value between 0 and 1, specifying the POV rate
 #' @param priceToBench A numeric value. The \code{MktData} row position of the 'MktPrice' to use as benchmark price (default is 1) 
 #' @param verbose A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}
@@ -221,52 +221,52 @@ benchTradePerf <- function(Portfolio,
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['price']][1], sep = '.'))
             },
             VWAP = {
-              if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
+              if (!(("MktPrice" %in% colnames(MktData)) & ("MktQty" %in% colnames(MktData)))) stop("No MktPrice or MktQty column found, what did you call them?")
               if (is.null(type[['vwap']])) type[['vwap']] <- 'interval'
               
               if (type[['vwap']][1] == 'interval') {
                 MktDataIn <- MktData[index(MktData)[MATCH.times(index(txns), index(MktData))]]
-                benchPrice <- crossprod(MktDataIn[, "MktPrice"], MktDataIn[, "MktVolmn"])/sum(MktDataIn[, "MktVolmn"])
+                benchPrice <- crossprod(MktDataIn[, "MktPrice"], MktDataIn[, "MktQty"])/sum(MktDataIn[, "MktQty"])
               } else if (type[['vwap']][1] == 'full') {
-                benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktVolmn"])/sum(MktData[, "MktVolmn"])
+                benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktQty"])/sum(MktData[, "MktQty"])
               }
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['vwap']][1], sep = '.'))
             },
             PWP = {
-              if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
+              if (!(("MktPrice" %in% colnames(MktData)) & ("MktQty" %in% colnames(MktData)))) stop("No MktPrice or MktQty column found, what did you call them?")
               if (is.null(POV)) stop(paste("POV rate needed to compute", benchmark))
               
               pwpShares <- tTxnQty/POV
               
               # arrival time proxy and market volume traded approx ends
               pwpStart <- suppressWarnings((first(which(strftime(index(txns), format = "%H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%H:%M:%S", tz = "UTC")))))
-              pwpStop <- which.min(abs(pwpShares - cumsum(MktData[pwpStart:nrow(MktData), "MktVolmn"])))
+              pwpStop <- which.min(abs(pwpShares - cumsum(MktData[pwpStart:nrow(MktData), "MktQty"])))
               MktDataPart <- MktData[pwpStart:pwpStop]
               
-              benchPrice <- crossprod(MktDataPart[, "MktPrice"], MktDataPart[, "MktVolmn"])/sum(MktDataPart[, "MktVolmn"]) # PWP price
+              benchPrice <- crossprod(MktDataPart[, "MktPrice"], MktDataPart[, "MktQty"])/sum(MktDataPart[, "MktQty"]) # PWP price
               
               out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, pwpShares, benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 'POV', 'PWP.Shares', 'PWP.Price')
             },
             RPM = {
-              if (!(("MktPrice" %in% colnames(MktData)) & ("MktVolmn" %in% colnames(MktData)))) stop("No MktPrice or MktVolmn column found, what did you call them?")
+              if (!(("MktPrice" %in% colnames(MktData)) & ("MktQty" %in% colnames(MktData)))) stop("No MktPrice or MktQty column found, what did you call them?")
               
-              tMktVolmn <- sum(MktData[, "MktVolmn"])
+              tMktQty <- sum(MktData[, "MktQty"])
               
               if (side == 1) {
-                tFavVolmn   <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
-                tUnfavVolmn <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
+                tFavQty   <- sum(MktData[, "MktQty"][MktData[, "MktPrice"] > p_avg])
+                tUnfavQty <- sum(MktData[, "MktQty"][MktData[, "MktPrice"] < p_avg])
               } else {
-                tFavVolmn   <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] < p_avg])
-                tUnfavVolmn <- sum(MktData[, "MktVolmn"][MktData[, "MktPrice"] > p_avg])
+                tFavQty   <- sum(MktData[, "MktQty"][MktData[, "MktPrice"] < p_avg])
+                tUnfavQty <- sum(MktData[, "MktQty"][MktData[, "MktPrice"] > p_avg])
               }
               
-              rpm <- 0.5*(tMktVolmn + tFavVolmn - tUnfavVolmn)/tMktVolmn
+              rpm <- 0.5*(tMktQty + tFavQty - tUnfavQty)/tMktQty
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktVolmn, tFavVolmn, tUnfavVolmn, rpm), stringsAsFactors = FALSE)
-              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Volmn', 't.Fav.Volmn', 't.Unfav.Volmn', benchmark[i])
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktQty, tFavQty, tUnfavQty, rpm), stringsAsFactors = FALSE)
+              colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Qty', 't.Fav.Qty', 't.Unfav.Qty', benchmark[i])
               
               # Append RPM qualitative score
               if (verbose) { 

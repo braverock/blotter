@@ -21,7 +21,7 @@ benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
 When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
 When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark and defaults to \code{type = list(vwap = 'interval')}. See details.}
 
-\item{MktData}{An xts object containing 'MktPrice' and 'MktVolmn' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details}
+\item{MktData}{An xts object containing 'MktPrice' and 'MktQty' required columns. Or a numeric value when \code{benchmark = 'MktBench'}. See details}
 
 \item{POV}{A numeric value between 0 and 1, specifying the POV rate}
 
