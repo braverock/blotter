@@ -197,8 +197,8 @@ benchTradePerf <- function(Portfolio,
   pname <- Portfolio
   Portfolio <- .getPortfolio(pname)
   txns <- Portfolio[["symbols"]][[Symbol]][["txn"]]
-  p_avg <- as.numeric(last(txns$Pos.Avg.Cost))
-  tTxnQty <- sum(txns$Txn.Qty)
+  p_avg <-  last(txns[, 'Pos.Avg.Cost'])
+  tTxnQty <- sum(txns[, 'Txn.Qty'])
   
   # Benchmark metrics
   benchmark <- match.arg(benchmark, c("MktBench", "VWAP", "PWP", "RPM"), several.ok = TRUE)
@@ -217,7 +217,7 @@ benchTradePerf <- function(Portfolio,
                 benchPrice <- MktData
               }
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], coredata(p_avg), benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['price']][1], sep = '.'))
             },
             VWAP = {
@@ -225,13 +225,18 @@ benchTradePerf <- function(Portfolio,
               if (is.null(type[['vwap']])) type[['vwap']] <- 'interval'
               
               if (type[['vwap']][1] == 'interval') {
-                MktDataIn <- MktData[index(MktData)[MATCH.times(index(txns), index(MktData))]]
+                enterMkt <- suppressWarnings((which(strftime(first(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
+                exitMkt <- suppressWarnings((which(strftime(last(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
+                enterMkt <- first(enterMkt)
+                exitMkt <- last(exitMkt)
+                
+                MktDataIn <- MktData[enterMkt:exitMkt]
                 benchPrice <- crossprod(MktDataIn[, "MktPrice"], MktDataIn[, "MktQty"])/sum(MktDataIn[, "MktQty"])
               } else if (type[['vwap']][1] == 'full') {
                 benchPrice <- crossprod(MktData[, "MktPrice"], MktData[, "MktQty"])/sum(MktData[, "MktQty"])
               }
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, benchPrice), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], coredata(p_avg), benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', paste(benchmark[i], type[['vwap']][1], sep = '.'))
             },
             PWP = {
@@ -241,13 +246,22 @@ benchTradePerf <- function(Portfolio,
               pwpShares <- tTxnQty/POV
               
               # arrival time proxy and market volume traded approx ends
-              pwpStart <- suppressWarnings((first(which(strftime(index(txns), format = "%H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%H:%M:%S", tz = "UTC")))))
-              pwpStop <- which.min(abs(pwpShares - cumsum(MktData[pwpStart:nrow(MktData), "MktQty"])))
-              MktDataPart <- MktData[pwpStart:pwpStop]
+              pwpStart <- suppressWarnings((first(which(strftime(first(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")))))
+              pwpSteps <- findInterval(pwpShares, cumsum(MktData[pwpStart:nrow(MktData), "MktQty"]))
+              pwpStop <- pwpStart + pwpSteps
+              MktDataPart <- MktData[pwpStart:(pwpStop - 1)] # at pwpStop likely exceded pwpShares
+              
+              # market data that completes pwpShares
+              if (pwpShares - last(cumsum(MktDataPart[, "MktQty"])) > 0) {
+                pwpRemainder <- pwpShares - last(cumsum(MktDataPart[, "MktQty"]))
+                pwpRemainder <- xts(pwpRemainder, index(MktData)[pwpStop])
+                pwpComplete <- cbind.xts(MktData[pwpStop, "MktPrice"], pwpRemainder)
+                MktDataPart <- rbind.xts(MktDataPart, pwpComplete)
+              }
               
               benchPrice <- crossprod(MktDataPart[, "MktPrice"], MktDataPart[, "MktQty"])/sum(MktDataPart[, "MktQty"]) # PWP price
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, POV, pwpShares, benchPrice), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], coredata(p_avg), POV, coredata(pwpShares), benchPrice), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 'POV', 'PWP.Shares', 'PWP.Price')
             },
             RPM = {
@@ -265,7 +279,7 @@ benchTradePerf <- function(Portfolio,
               
               rpm <- 0.5*(tMktQty + tFavQty - tUnfavQty)/tMktQty
               
-              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], p_avg, tMktQty, tFavQty, tUnfavQty, rpm), stringsAsFactors = FALSE)
+              out <- as.data.frame(cbind(Symbol, c("Buy", "Sell")[side], coredata(p_avg), tMktQty, tFavQty, tUnfavQty, rpm), stringsAsFactors = FALSE)
               colnames(out) <- c('Symbol', 'Side', 'Avg.Exec.Price', 't.Mkt.Qty', 't.Fav.Qty', 't.Unfav.Qty', benchmark[i])
               
               # Append RPM qualitative score
@@ -290,7 +304,7 @@ benchTradePerf <- function(Portfolio,
     
     # PnL performance for 'MktBench', 'VWAP' (all types) and 'PWP' 
     if (benchmark[i] != 'RPM') {
-      benchPrice <- as.numeric(benchPrice)
+      # benchPrice <- as.numeric(benchPrice)
       out[, 'Performance'] <- (-1) * side * (p_avg - benchPrice)/benchPrice * 10000
     }
     
