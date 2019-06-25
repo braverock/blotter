@@ -20,13 +20,6 @@ Plot method for object of type \code{txnsPerf}
 }
 \examples{
 
-plot(benchTradeBench, benchmark = 'TradeBench')
-plot(benchMktBenchOpen, benchmark = 'MktBench')
-plot(benchMktBenchClose, benchmark = 'MktBench')
-plot(benchVWAPfull, benchmark = 'VWAP')
-plot(benchPWP, benchmark = 'PWP')
-plot(benchRPM, benchmark = 'RPM')
-
 }
 \seealso{
 \code{\link[xts]{plot.xts}}

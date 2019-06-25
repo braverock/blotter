@@ -4,10 +4,12 @@
 \alias{summary.txnsPerf}
 \title{Summary method for object of type \code{txnsPerf}}
 \usage{
-summary.txnsPerf(object, ...)
+\method{summary}{txnsPerf}(object, ...)
 }
 \arguments{
 \item{object}{Object of type \code{txnsPerf} to plot}
+
+\item{...}{Any other passthrough parameters}
 }
 \description{
 Summary method for object of type \code{txnsPerf}

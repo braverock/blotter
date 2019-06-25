@@ -230,6 +230,13 @@ benchVWAPfull <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VW
 benchPWP <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'PWP', POV = 0.3, MktData = ABC.day)
 benchRPM <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'RPM', MktData = ABC.day)
 
+plot(benchTradeBench, benchmark = 'TradeBench')
+plot(benchMktBenchOpen, benchmark = 'MktBench')
+plot(benchMktBenchClose, benchmark = 'MktBench')
+plot(benchVWAPfull, benchmark = 'VWAP')
+plot(benchPWP, benchmark = 'PWP')
+plot(benchRPM, benchmark = 'RPM')
+
 }
 \references{
 Kissell, R. \emph{The Science of Algorithmic Trading and Portfolio Management} (ISBN 978-0-12-401689-7)

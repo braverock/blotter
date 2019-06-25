@@ -219,6 +219,13 @@
 #' benchPWP <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'PWP', POV = 0.3, MktData = ABC.day)
 #' benchRPM <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'RPM', MktData = ABC.day)
 #' 
+#' plot(benchTradeBench, benchmark = 'TradeBench')
+#' plot(benchMktBenchOpen, benchmark = 'MktBench')
+#' plot(benchMktBenchClose, benchmark = 'MktBench')
+#' plot(benchVWAPfull, benchmark = 'VWAP')
+#' plot(benchPWP, benchmark = 'PWP')
+#' plot(benchRPM, benchmark = 'RPM')
+#' 
 #' @export
 #' 
 benchTradePerf <- function(Portfolio,
@@ -430,6 +437,8 @@ benchTradePerf <- function(Portfolio,
 #' @param object Object of type \code{txnsPerf} to plot
 #' @param ... Any other passthrough parameters
 #' 
+#' @method summary txnsPerf
+#' 
 #' @export
 #' 
 summary.txnsPerf <- function(object, ...) {
@@ -458,13 +467,6 @@ summary.txnsPerf <- function(object, ...) {
 #' @seealso \code{\link[xts]{plot.xts}}
 #' 
 #' @examples 
-#' 
-#' plot(benchTradeBench, benchmark = 'TradeBench')
-#' plot(benchMktBenchOpen, benchmark = 'MktBench')
-#' plot(benchMktBenchClose, benchmark = 'MktBench')
-#' plot(benchVWAPfull, benchmark = 'VWAP')
-#' plot(benchPWP, benchmark = 'PWP')
-#' plot(benchRPM, benchmark = 'RPM')
 #' 
 #' @author Vito Lestingi
 #' 
