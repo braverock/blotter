@@ -194,8 +194,8 @@
 #' 
 #' @examples 
 #'
-#' examples consider daily data, perhaps the most common use case for the practitioners of the field
-#' library(blotter)
+#' # examples consider daily data, perhaps the most common use case for the practitioners of the field
+#' 
 #' set.seed(333)
 #' .blotter <- new.env()
 #' data(ABC)
@@ -428,6 +428,7 @@ benchTradePerf <- function(Portfolio,
 #' Summary method for object of type \code{txnsPerf}
 #' 
 #' @param object Object of type \code{txnsPerf} to plot
+#' @param ... Any other passthrough parameters
 #' 
 #' @export
 #' 

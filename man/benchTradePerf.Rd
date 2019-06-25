@@ -205,8 +205,8 @@ the VWAP benchmark to use in the PnL metric computation, namely the Interval VWA
 }
 \examples{
 
-examples consider daily data, perhaps the most common use case for the practitioners of the field
-library(blotter)
+# examples consider daily data, perhaps the most common use case for the practitioners of the field
+
 set.seed(333)
 .blotter <- new.env()
 data(ABC)
