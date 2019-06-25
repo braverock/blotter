@@ -299,10 +299,11 @@ benchTradePerf <- function(Portfolio,
              for (t in 1:nrow(MktData)) {
                benchPrice[t] <- crossprod(MktData[1:t, "MktPrice"], MktData[1:t, "MktQty"])/sum(MktData[1:t, "MktQty"])
              }
-             tmp <- cbind.xts(p_avg, benchPrice)
-             p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
-             # p_avg <- rbind.xts(na.locf(tmp[1:intervalStop, 'Pos.Avg.Cost']), tmp[(intervalStop + 1):nrow(tmp), 'Pos.Avg.Cost'])
            }
+           
+           tmp <- cbind.xts(p_avg, benchPrice)
+           p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
+           # p_avg <- rbind.xts(na.locf(tmp[1:intervalStop, 'Pos.Avg.Cost']), tmp[(intervalStop + 1):nrow(tmp), 'Pos.Avg.Cost'])
            
            dates <- strftime(index(tmp))
            benchPrice <- tmp[, 'benchPrice']
