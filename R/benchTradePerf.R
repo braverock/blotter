@@ -534,7 +534,7 @@ plot.txnsPerf <- function(object, benchmark, legend.loc, ...) {
     
     # Zero performance horizontal line
     thresholdPerf <- xts(rep(0, length(dates)), dates)
-    lines(thresholdPerf, lty = "dashed", lwd = 2, col = "grey23")
+    lines(thresholdPerf, lty = "dashed", lwd = 1.5, col = "grey23")
     
     if (colnames(benchPrice) == 'VWAP.full') {
       # addEventLines(rbind.xts(perf[first(which(!is.na(perf)))], perf[last(which(!is.na(perf)))]), c("enter", "exit"), on = 1, col = "red") # pos = 0, str = 0
