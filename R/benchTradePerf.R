@@ -192,8 +192,8 @@
 #' (\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'full')}).
 #' 
 #' 
-#' @examples 
-#'
+#' @examples
+#' 
 #' # examples consider daily data, perhaps the most common use case for the practitioners of the field
 #' 
 #' set.seed(333)
@@ -459,7 +459,7 @@ summary.txnsPerf <- function(object, ...) {
 
 #' Plot method for object of type \code{txnsPerf}
 #' 
-#' @param object Object of type \code{txnsPerf} to plot
+#' @param x Object of type \code{txnsPerf} to plot
 #' @param benchmark String identifying the benchmark used to produce the \code{txnsPerf} object
 #' @param legend.loc String specifying the position of second panel legend
 #' @param ... Any other passthrough parameters
@@ -472,12 +472,12 @@ summary.txnsPerf <- function(object, ...) {
 #' 
 #' @export
 #' 
-plot.txnsPerf <- function(object, benchmark, legend.loc, ...) {
+plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
   
   if (missing(legend.loc)) legend.loc <- 'topright'
   
-  x <- object[[1]]
-  # MktData <- object[["MktData"]]
+  x <- x[[1]]
+  # MktData <- x[["MktData"]]
   
   symName <- x[1, 'Symbol']
   side <- x[1, 'Side']

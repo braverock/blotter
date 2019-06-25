@@ -4,10 +4,10 @@
 \alias{plot.txnsPerf}
 \title{Plot method for object of type \code{txnsPerf}}
 \usage{
-\method{plot}{txnsPerf}(object, benchmark, legend.loc, ...)
+\method{plot}{txnsPerf}(x, benchmark, legend.loc, ...)
 }
 \arguments{
-\item{object}{Object of type \code{txnsPerf} to plot}
+\item{x}{Object of type \code{txnsPerf} to plot}
 
 \item{benchmark}{String identifying the benchmark used to produce the \code{txnsPerf} object}
 
