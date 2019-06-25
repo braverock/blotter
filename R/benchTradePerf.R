@@ -510,7 +510,7 @@ plot.txnsPerf <- function(object, benchmark, legend.loc, ...) {
     ylims = c(yinf, ysup)
     ylab <- "bps"
   } else {
-    ylims <- c(-0.05, 1.05)
+    ylims <- c(-0.1, 1.2)
     ylab <- NULL
   }
   
@@ -592,20 +592,3 @@ plot.txnsPerf <- function(object, benchmark, legend.loc, ...) {
   }
   return(p)
 }
-
-library(blotter)
-set.seed(333)
-.blotter <- new.env()
-data(ABC)
-ABC.day <- ABC[which(as.Date(index(ABC)) == "2019-02-01"), ]
-colnames(ABC.day) <- c('MktPrice', 'MktQty')
-inds <- sample(nrow(ABC.day), 50)
-abc.trades.day <- ABC.day[inds]
-colnames(abc.trades.day) <- c('TxnPrice', 'TxnQty')
-currency('USD')
-stock('ABC', currency = 'USD', multiplier = 1, tick_size = 0.01)
-initPortf('abc.port.day', symbols = 'ABC')
-addTxns('abc.port.day', 'ABC', TxnData = abc.trades.day)
-updatePortf('abc.port.day', 'ABC')
-benchVWAPfull <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'full'), MktData = ABC.day)
-plot(benchVWAPfull, benchmark = "VWAP")
