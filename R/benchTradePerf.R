@@ -377,8 +377,8 @@ benchTradePerf <- function(Portfolio,
              }
            } else {
              for (t in 1:nrow(p_avg)) {
-               tFavQty[t]   <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktData[1:t, "MktPrice"]) < as.numeric(p_avg[t])])
-               tUnfavQty[t] <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktData[1:t, "MktPrice"]) > as.numeric(p_avg[t])])
+               tFavQty[t]   <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) < as.numeric(p_avg[t])])
+               tUnfavQty[t] <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) > as.numeric(p_avg[t])])
              }
            }
            
