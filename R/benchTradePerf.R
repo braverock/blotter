@@ -211,8 +211,8 @@
 #' updatePortf('abc.port.day', 'ABC')
 #' 
 #' benchTradeBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'TradeBench', MktData = ABC.day)
-#' benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against the daily open price
-#' benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against the daily closing price
+#' benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against daily open price
+#' benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against daily closing price
 #' benchMktBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'price-of-choice'), MktData = 5000)
 #' benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'interval'), MktData = ABC.day)
 #' benchVWAPfull <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'full'), MktData = ABC.day)
@@ -578,7 +578,7 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     
     # The middle 'Average' qualitative score of RPM 
     avgRPM <- xts(rep(0.5, length(dates)), dates)
-    lines(avgRPM, lty = "longdash", col = "grey23")
+    lines(avgRPM, lty = "dashed", lwd = 1.5, col = "grey23")
     
     # relative volume panel
     lines(tFavQty, on = NA, type = "b", pch = 24, col = 3)
