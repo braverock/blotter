@@ -370,27 +370,30 @@ benchTradePerf <- function(Portfolio,
          RPM = {
            if (!(("MktPrice" %in% colnames(MktData)) & ("MktQty" %in% colnames(MktData)))) stop("No MktPrice or MktQty column found, what did you call them?")
            
-           enterMkt <- suppressWarnings((which(strftime(first(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
-           exitMkt <- suppressWarnings((which(strftime(last(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
-           MktDataIn <- MktData[first(enterMkt):last(exitMkt)]
+           intervalStart <- suppressWarnings((which(strftime(first(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
+           intervalStop <- suppressWarnings((which(strftime(last(index(p_avg)), format = "%Y-%m-%d %H:%M:%S", tz = "UTC") == strftime(index(MktData), format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))))
+           intervalStart <- first(intervalStart)
+           intervalStop <- last(intervalStop)
+           MktDataIn <- MktData[intervalStart:intervalStop]
+           intervals <- findInterval(index(p_avg), index(MktDataIn))
            
            tFavQty <- tUnfavQty <- xts(rep(NA, nrow(p_avg)), index(p_avg))
            if (side == 1) {
              for (t in 1:nrow(p_avg)) {
-               tFavQty[t]   <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) > as.numeric(p_avg[t])])
-               tUnfavQty[t] <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) < as.numeric(p_avg[t])])
+               tFavQty[t]   <- sum(MktDataIn[1:intervals[t], "MktQty"][as.numeric(MktDataIn[1:intervals[t], "MktPrice"]) > as.numeric(p_avg[t])])
+               tUnfavQty[t] <- sum(MktDataIn[1:intervals[t], "MktQty"][as.numeric(MktDataIn[1:intervals[t], "MktPrice"]) < as.numeric(p_avg[t])])
              }
            } else {
              for (t in 1:nrow(p_avg)) {
-               tFavQty[t]   <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) < as.numeric(p_avg[t])])
-               tUnfavQty[t] <- sum(MktDataIn[1:t, "MktQty"][as.numeric(MktDataIn[1:t, "MktPrice"]) > as.numeric(p_avg[t])])
+               tFavQty[t]   <- sum(MktDataIn[1:intervals[t], "MktQty"][as.numeric(MktDataIn[1:intervals[t], "MktPrice"]) < as.numeric(p_avg[t])])
+               tUnfavQty[t] <- sum(MktDataIn[1:intervals[t], "MktQty"][as.numeric(MktDataIn[1:intervals[t], "MktPrice"]) > as.numeric(p_avg[t])])
              }
            }
            
            rpm <- tMktQty <- quality <- xts(rep(NA, nrow(p_avg)), index(p_avg))
            tMktQty <- xts(rep(NA, nrow(p_avg)), index(p_avg))
            for (t in 1:nrow(p_avg)) {
-             tMktQty[t] <- sum(MktDataIn[1:t, "MktQty"])
+             tMktQty[t] <- sum(MktDataIn[1:intervals[t], "MktQty"])
              rpm[t] <- 0.5*(tMktQty[t] + tFavQty[t] - tUnfavQty[t])/tMktQty[t]
              
              # Append RPM qualitative score
