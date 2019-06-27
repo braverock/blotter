@@ -300,21 +300,26 @@ benchTradePerf <- function(Portfolio,
              for (t in 1:nrow(MktDataIn)) {
                benchPrice[t] <- crossprod(MktDataIn[1:t, "MktPrice"], MktDataIn[1:t, "MktQty"])/sum(MktDataIn[1:t, "MktQty"])
              }
-             
            } else if (type[['vwap']][1] == 'full') {
              benchPrice <- xts(rep(NA, nrow(MktData)), index(MktData))
              for (t in 1:nrow(MktData)) {
                benchPrice[t] <- crossprod(MktData[1:t, "MktPrice"], MktData[1:t, "MktQty"])/sum(MktData[1:t, "MktQty"])
              }
            }
-           
            tmp <- cbind.xts(p_avg, benchPrice)
            p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
-           # p_avg <- rbind.xts(na.locf(tmp[1:intervalStop, 'Pos.Avg.Cost']), tmp[(intervalStop + 1):nrow(tmp), 'Pos.Avg.Cost'])
-           
-           dates <- strftime(index(tmp))
            benchPrice <- tmp[, 'benchPrice']
-           
+           if (last(which(!is.na(tmp[, 'Pos.Avg.Cost'] != last(which(!is.na(tmp[, 'benchPrice']))))))) { # expanded p_avg timestamps later than last MktData
+             trueLastIdx <- last(which(!is.na(tmp[, 'benchPrice'])))
+             tmp <- tmp[1:trueLastIdx, ]
+             p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
+             benchPrice <- tmp[, 'benchPrice']
+             if (last(index(txns)) > last(index(MktData))) {
+               unBenchTxns <-  length(which(last(index(txns)) > last(index(MktData))))
+               warning(paste("Insufficient market data to benchmark your last", unBenchTxns, "txns. Ignoring them."))
+             }
+           }
+           dates <- strftime(index(tmp))
            symName <- rep(Symbol, nrow(tmp))
            sideChr <- rep(c("Buy", "Sell")[side], nrow(tmp))
            
