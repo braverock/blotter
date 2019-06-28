@@ -516,7 +516,7 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     ylims = c(yinf, ysup)
     ylab <- "bps"
   } else {
-    ylims <- c(-0.1, 1.2)
+    ylims <- c(-0.1, 1.1)
     ylab <- NULL
   }
   
@@ -577,10 +577,13 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     }
     
   } else {
-    
-    # The middle 'Average' qualitative score of RPM 
+    # RPM bounds and mid-line
+    maxRPM <- xts(rep(1, length(dates)), dates)
     avgRPM <- xts(rep(0.5, length(dates)), dates)
-    lines(avgRPM, lty = "dashed", lwd = 1.5, col = "grey23")
+    minRPM <- xts(rep(0, length(dates)), dates)
+    lines(maxRPM, lty = "dashed", lwd = 1.5, col = "grey23")
+    lines(avgRPM, lty = "dashed", lwd = 1.5, col = "grey46")
+    lines(minRPM, lty = "dashed", lwd = 1.5, col = "grey23")
     
     # relative volume panel
     lines(tFavQty, on = NA, type = "b", pch = 24, col = 3)
