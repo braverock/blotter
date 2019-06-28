@@ -243,9 +243,13 @@ benchTradePerf <- function(Portfolio,
   txns <- Portfolio[["symbols"]][[Symbol]][["txn"]]
   # indexTZ(txns) <- indexTZ(MktData)
   
-  # remove 1950 init date
-  p_avg <- txns[2:nrow(txns), 'Pos.Avg.Cost']
-  txnQty <- txns[2:nrow(txns), 'Txn.Qty']
+  if (index(first(txns)) == "1950-01-01") {# remove initPortf() default initDate
+    p_avg <- txns[2:nrow(txns), 'Pos.Avg.Cost']
+    txnQty <- txns[2:nrow(txns), 'Txn.Qty']
+  } else {
+    p_avg <- txns[, 'Pos.Avg.Cost']
+    txnQty <- txns[, 'Txn.Qty']
+  }
   tTxnQty <- sum(txnQty)
   
   # Benchmark metrics
