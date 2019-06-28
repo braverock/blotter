@@ -4,9 +4,9 @@
 \alias{benchTradePerf}
 \title{Trade Execution Performance Benchmarks}
 \usage{
-benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
-  "VWAP", "PWP", "RPM"), type = list(price = c(), vwap = c("interval",
-  "full")), MktData, POV = NULL, priceToBench, verbose = FALSE)
+benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("TradeBench",
+  "MktBench", "VWAP", "PWP", "RPM"), type = list(price = c(), vwap =
+  c("interval", "full")), MktData, POV = NULL, priceToBench)
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with initPortf()}
@@ -15,7 +15,7 @@ benchTradePerf(Portfolio, Symbol, side = 1, benchmark = c("MktBench",
 
 \item{side}{A numeric value, that indicates the side of the trade. Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"}
 
-\item{benchmark}{A string or vector of strings providing the one or several of the 'MktBench', 'VWAP', 'PWP' or 'RPM' benchmark metrics. Default is #TODO}
+\item{benchmark}{A string providing one of the benchmarks metrics 'TradeBench', 'MktBench', 'VWAP', 'PWP' or 'RPM'}
 
 \item{type}{A list with named elements, \code{price} or \code{vwap}, of strings. Relevant only for the corresponding \code{benchmark = 'MktBench'} and \code{benchmark = 'VWAP'}.
 When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding console output column. It does not influence the PnL metric computation.
@@ -26,15 +26,24 @@ When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark and defaults to 
 \item{POV}{A numeric value between 0 and 1, specifying the POV rate}
 
 \item{priceToBench}{A numeric value. The \code{MktData} row position of the 'MktPrice' to use as benchmark price (default is 1)}
-
-\item{verbose}{A logical value. It allows a RPM qualitative score to be appended. Default is \code{FALSE}}
 }
 \value{
-A list whose elements correspond in number to the length of the \code{benchmark} provided.
-Each element is a \code{data.frame} that can be one of the ones described below.
+A list whose unique element is a \code{data.frame} that can be one of the ones described below,
+Depending on the \code{benchmark} of choice.
+
+For \code{benchmark = 'TradeBench'} it contains:
+\describe{
+     \item{\code{Dates}: }{Dates of reference, the longer period between the trading period and a subset of \code{MktData}}
+     \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
+     \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
+     \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
+     \item{\code{TradeBench}: }{The arrival price of transactions}
+     \item{\code{Performance}: }{The \emph{Trading PnL} performance, in bps}
+}
 
 For \code{benchmark = 'MktBench'} it contains:
 \describe{
+     \item{\code{Dates}: }{Dates of reference, the longer period between the trading period and a subset of \code{MktData}}
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
@@ -44,6 +53,7 @@ For \code{benchmark = 'MktBench'} it contains:
 
 For \code{benchmark = 'VWAP'} it contains:
 \describe{
+     \item{\code{Dates}: }{Dates of reference, the longer period between the trading period and a subset of \code{MktData}}
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
@@ -53,20 +63,24 @@ For \code{benchmark = 'VWAP'} it contains:
 
 For \code{benchmark = 'PWP'} it contains:
 \describe{
+     \item{\code{Dates}: }{Dates of reference, the longer period between the trading period and a subset of \code{MktData}}
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell"}
-     \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
+     \item{\code{Cum.Txn.Qty}: }{The cumulative units quantity traded}
      \item{\code{POV}: }{The POV rate of the order}
      \item{\code{PWP.Shares}: }{The ratio between the total unit traded and the POV rate}
+     \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
      \item{\code{PWP.Price}: }{Volume weighted price of the first \code{PWP.Shares} traded}
      \item{\code{Performance}: }{The \emph{PWP PnL} metric, in bps}
 }
 
 For \code{benchmark = 'RPM'} it contains:
 \describe{
+     \item{\code{Dates}: }{Dates of reference, the longer period between the trading period and a subset of \code{MktData}}
      \item{\code{Symbol}: }{A string identifying the traded symbol to benchmark}
      \item{\code{Side}: }{The \code{side} of the trades, as "Buy" or "Sell".}
      \item{\code{Avg.Exec.Price}: }{Symbol transactions average execution price}
+     \item{\code{Mkt.Price}: }{The market price in \code{MktData}, retrived for console comparison}
      \item{\code{t.Mkt.Volmn}: }{Total market volume over the order timespan}
      \item{\code{t.Fav.Volmn}: }{Total market volume over the order timespan for which the average execution price of a 'Buy' ('Sell') order was lower (greater) than market prices}
      \item{\code{t.Unfav.Volmn}: }{The opposite of \code{t.Fav.Volmn}}
@@ -77,6 +91,8 @@ For \code{benchmark = 'RPM'} it contains:
 \description{
 This function gathers different benchmarking methods used to evaluate the 
 average execution price \eqn{P_{avg}} of a given trading strategy.
+When sensical the relavant quantities are compoted in a period-by-period 
+cumulative fashion.
 The \eqn{P_{avg}} is compared against a number of benchmark metrics, in order
 to assess its performance in terms of profit or loss relative to a given benchmark.
 These benchmarks are not mutually exclusive, each of them provides different 
@@ -96,7 +112,11 @@ where \eqn{P_{avg}} is the average execution price and \eqn{P_{B}} is a given
 benchmark price. It is worth stressing that they are expressed in basis points 
 (bps) units.
 
-One first common and simple benchmark used is the \emph{benchmark price}, in 
+A common instance is given by the \emph{trading PnL}, where we consider the
+arrival price of the transactions, \eqn{P_{B} = P_{0}}, in which case is of 
+interest the timing in entering the market.
+
+Another common and simple benchmark used is the \emph{benchmark price}, in 
 this case \eqn{P_{B}} can be a single current open/close price, future ones 
 such as next day prices, or any other benchmark price specified.
 
@@ -169,9 +189,7 @@ A different usage of the function is available, giving two ways to use an arbitr
 benchmark price: input this single price as an \code{xts} object through the 
 \code{MktData} parameter (note that of an object with length greater than one 
 only the first element will be used and the 'MktPrice' column requirement), 
-or alternatively input a single numeric value in \code{MktData}. Expect poor 
-results or breaks if you use the function in this way while calling other invoking
-other benchmarks at the same time.
+or alternatively input a single numeric value in \code{MktData}.
 
 The \code{type} parameter allows different usages of the function. 
 In the \code{benchmark='MktBench'}, the kind of market price used as a benchmark 
@@ -184,13 +202,40 @@ prices (separately, providing each of these prices with a function call).
 Whereas, when \code{benchmark='VWAP'}, then \code{type} is used to select
 the VWAP benchmark to use in the PnL metric computation, namely the Interval VWAP
 (\code{type=list(vwap = 'interval')}) or the "Full VWAP" (\code{type=list(vwap = 'full')}).
-Other conditions being met, \code{benchmark=c('MktBench', 'VWAP')} will use 
-only the first items of the respective list elements.
-
-
-TODO: specify PWP shares approximation
 }
 \examples{
+
+# examples consider daily data, perhaps the most common use case for the practitioners of the field
+
+set.seed(333)
+.blotter <- new.env()
+data(ABC)
+ABC.day <- ABC[which(as.Date(index(ABC)) == "2019-02-01"), ]
+colnames(ABC.day) <- c('MktPrice', 'MktQty')
+inds <- sample(nrow(ABC.day), 50)
+abc.trades.day <- ABC.day[inds]
+colnames(abc.trades.day) <- c('TxnPrice', 'TxnQty')
+currency('USD')
+stock('ABC', currency = 'USD', multiplier = 1, tick_size = 0.01)
+initPortf('abc.port.day', symbols = 'ABC')
+addTxns('abc.port.day', 'ABC', TxnData = abc.trades.day)
+updatePortf('abc.port.day', 'ABC')
+
+benchTradeBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'TradeBench', MktData = ABC.day)
+benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against the daily open price
+benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against the daily closing price
+benchMktBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'price-of-choice'), MktData = 5000)
+benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'interval'), MktData = ABC.day)
+benchVWAPfull <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'full'), MktData = ABC.day)
+benchPWP <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'PWP', POV = 0.3, MktData = ABC.day)
+benchRPM <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'RPM', MktData = ABC.day)
+
+plot(benchTradeBench, benchmark = 'TradeBench')
+plot(benchMktBenchOpen, benchmark = 'MktBench')
+plot(benchMktBenchClose, benchmark = 'MktBench')
+plot(benchVWAPfull, benchmark = 'VWAP')
+plot(benchPWP, benchmark = 'PWP')
+plot(benchRPM, benchmark = 'RPM')
 
 }
 \references{
