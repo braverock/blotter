@@ -312,17 +312,7 @@ benchTradePerf <- function(Portfolio,
            }
            tmp <- cbind.xts(p_avg, benchPrice)
            p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
-           benchPrice <- tmp[, 'benchPrice']
-           if (last(which(!is.na(tmp[, 'Pos.Avg.Cost'] != last(which(!is.na(tmp[, 'benchPrice']))))))) { # expanded p_avg timestamps later than last MktData
-             trueLastIdx <- last(which(!is.na(tmp[, 'benchPrice'])))
-             tmp <- tmp[1:trueLastIdx, ]
-             p_avg <- na.locf(tmp[, 'Pos.Avg.Cost'])
-             benchPrice <- tmp[, 'benchPrice']
-             if (last(index(txns)) > last(index(MktData))) {
-               unBenchTxns <-  length(which(last(index(txns)) > last(index(MktData))))
-               warning(paste("Insufficient market data to benchmark your last", unBenchTxns, "txns. Ignoring them."))
-             }
-           }
+           benchPrice <- na.locf(tmp[, 'benchPrice'])
            dates <- strftime(index(tmp))
            symName <- rep(Symbol, nrow(tmp))
            sideChr <- rep(c("Buy", "Sell")[side], nrow(tmp))
