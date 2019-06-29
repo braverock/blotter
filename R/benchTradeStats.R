@@ -197,7 +197,7 @@ benchTradeStats <- function(Portfolio,
       if (length(symNames) < 2) {
         stop(paste("Tests requires at least two symbols in portfolio", portNames[p]))
       } else if (length(symNames) > 2) {
-        warning(paste(test, "test requires two symbols, but more are passed. Only the first two will be used."))
+        warning(paste(test, "test requires two symbols per portfolio, but more are passed. Only the first two symbols in portfolio", portNames[p], "will be used."))
         symNames <- symNames[1:2]
       }
       for (s in 1:length(symNames)) {
@@ -210,14 +210,14 @@ benchTradeStats <- function(Portfolio,
       }
     }
     out <- cbind(perfs, diffPerf, rank(abs(diffPerf)))
-    colnames(out) <- c(paste(symNames[1], 'Perf', sep = "."), paste(symNames[2], 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Rank') 
+    colnames(out) <- c(paste(symNames[1], 'Perf', sep = "."), paste(symNames[2], 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
     
     test <- match.arg(test, c('Sign', 'Wilcoxon'))
     switch(test,
            Sign = {
              nsuccesses <- length(diffPerf[diffPerf > 0])
              testout <- binom.test(nsuccesses, n = length(diffPerf), p = 0.5, alternative = alternative, conf.level = conf.level)
-             testout$data.name <- paste("Diff.Perf positive outcomes and Diff.Perf number of trials")
+             testout$data.name <- paste("Diff.Perf 'success' outcomes and Diff.Perf number of trials")
            },
            Wilcoxon = {
              testout <- wilcox.test(diffPerf, alternative = alternative, conf.level = conf.level, conf.int = TRUE)
@@ -237,7 +237,7 @@ benchTradeStats <- function(Portfolio,
       if (length(symNames) < 2) {
         stop(paste("Tests requires at least two symbols in portfolio", portNames[p]))
       } else if (length(symNames) > 2) {
-        warning(paste(test, "test requires two symbols, but more are passed. Only the first two will be used."))
+        warning(paste(test, "test requires two symbols per portfolio, but more are passed. Only the first two symbols in portfolio", portNames[p], "will be used."))
         symNames <- symNames[1:2]
       }
       for (s in 1:length(symNames)) {
