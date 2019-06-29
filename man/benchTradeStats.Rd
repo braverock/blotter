@@ -67,8 +67,9 @@ some assumptions in order for their results to be meaningful.
 There exists a wide range of algorithmic trading strategies and even whithin 
 the same category of strategies many sligthly different versions may exist 
 (they often differ by brokerage firm). In a post-trade analysis framework, 
-starting from trading strategies transactions prices we compare performance
-to test whether data supports a difference in median terms.
+starting from trading strategies transactions prices we compare the overall
+performance of multiple orders, each executed under two different categories, 
+to ultimately test whether data supports a difference in their median.
 
 Two statistical testing approach are contemplated, the suitability of the 
 approach ultimately relies on analysts' specific research questions. In turn, 

@@ -13,8 +13,9 @@
 #' There exists a wide range of algorithmic trading strategies and even whithin 
 #' the same category of strategies many sligthly different versions may exist 
 #' (they often differ by brokerage firm). In a post-trade analysis framework, 
-#' starting from trading strategies transactions prices we compare performance
-#' to test whether data supports a difference in median terms.
+#' starting from trading strategies transactions prices we compare the overall
+#' performance of multiple orders, each executed under two different categories, 
+#' to ultimately test whether data supports a difference in their median.
 #' 
 #' Two statistical testing approach are contemplated, the suitability of the 
 #' approach ultimately relies on analysts' specific research questions. In turn, 
@@ -209,8 +210,8 @@ benchTradeStats <- function(Portfolio,
         }
       }
     }
-    out <- cbind(perfs, diffPerf, rank(abs(diffPerf)))
-    colnames(out) <- c(paste(symNames[1], 'Perf', sep = "."), paste(symNames[2], 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
+    out <- cbind(portNames, perfs, diffPerf, rank(abs(diffPerf)))
+    colnames(out) <- c('Orders', paste(symNames, 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
     
     test <- match.arg(test, c('Sign', 'Wilcoxon'))
     switch(test,
@@ -252,8 +253,8 @@ benchTradeStats <- function(Portfolio,
         }
       }
     }
-    out <- costs
-    colnames(out) <- c(paste(symNames[1], 'Cost', sep = "."), paste(symNames[2], 'Cost', sep = ".")) 
+    out <- cbind(portNames, costs)
+    colnames(out) <- c('Orders', paste(symNames, 'Cost', sep = '.')) 
     
     test <- match.arg(test, c('Median', 'WMW'))
     switch(test,
@@ -273,9 +274,9 @@ benchTradeStats <- function(Portfolio,
              chiCritical <- qchisq(conf.level, df = 1)
              testout <- data.frame("Conf.level" = conf.level, "ChiSq.Obs" = chiObs, "ChiSq.Critical" = chiCritical)
              if (chiObs < chiCritical) {
-               report <- paste(colnames(out)[1], "significantly differs from", colnames(out)[2], "in median, with", conf.level, "confidence.")
+               report <- paste(symNames[1], "significantly differs from", symNames[2], "in median, with", conf.level, "confidence.")
              } else {# accept H0: stat significance of same median
-               report <- paste("No significant difference between", colnames(out)[1], "and", colnames(out)[2], "medians with", conf.level, "confidence.")
+               report <- paste("No significant difference between", symNames[1], "and", symNames[2], "medians, with", conf.level, "confidence.")
              }
            },
            WMW = {# Wilcoxon-Mann-Withney test
