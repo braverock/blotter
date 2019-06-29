@@ -184,8 +184,7 @@ benchTradeStats <- function(Portfolio,
   if (missing(alternative)) alternative <- "two.sided" # common naming in stats package
   
   portNames <- Portfolio
-  benchtestout <- benchout <- list()
-  out <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
+  benchTestOut <- benchout <- list()
   
   if (approach == 'paired') {
     if (missing(benchmark)) benchmark <- "VWAP"
@@ -210,8 +209,8 @@ benchTradeStats <- function(Portfolio,
         }
       }
     }
-    out <- cbind(portNames, perfs, diffPerf, rank(abs(diffPerf)))
-    colnames(out) <- c('Orders', paste(symNames, 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
+    benchtotest <- cbind(portNames, perfs, diffPerf, rank(abs(diffPerf)))
+    colnames(benchtotest) <- c('Orders', paste(symNames, 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
     
     test <- match.arg(test, c('Sign', 'Wilcoxon'))
     switch(test,
@@ -253,8 +252,8 @@ benchTradeStats <- function(Portfolio,
         }
       }
     }
-    out <- cbind(portNames, costs)
-    colnames(out) <- c('Orders', paste(symNames, 'Cost', sep = '.')) 
+    benchtotest <- cbind(portNames, costs)
+    colnames(benchtotest) <- c('Orders', paste(symNames, 'Cost', sep = '.')) 
     
     test <- match.arg(test, c('Median', 'WMW'))
     switch(test,
@@ -286,12 +285,12 @@ benchTradeStats <- function(Portfolio,
     )
   } # end approach == 'independent'
   
-  benchtestout[['benchData']] <- benchout
-  benchtestout[['benchTestData']] <- out
-  benchtestout[[paste(test, "test.output", sep = ".")]] <- testout
+  benchTestOut[['Bench.Data']] <- benchout
+  benchTestOut[['Bench.Test.Data']] <- benchtotest
+  benchTestOut[[paste(test, "Test.Output", sep = ".")]] <- testout
   if (exists('report')) {# for test == 'Median' only at the moment
-    benchtestout[['Report']] <- report
+    benchTestOut[['Report']] <- report
   }
-  class(benchtestout) <- "txnsStats"
-  return(benchtestout)
+  class(benchTestOut) <- "txnsStats"
+  return(benchTestOut)
 }
