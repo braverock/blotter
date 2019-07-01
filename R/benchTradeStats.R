@@ -265,7 +265,7 @@ benchTradeStats <- function(Portfolio,
                  costs[, s] <- na.trim(costs[, s])
                }
                nobs[s] <- nrow(costs[s])
-               gMedian[s]  <- length(costs[, s][costs[, s] > overallMedian])
+               gMedian[s]  <- length(which(costs[, s] > overallMedian))
                leMedian[s] <- length(costs[, s]) - gMedian[s]
              }  
              # Lane's chi-square statistic (with continuity correction)
@@ -280,7 +280,7 @@ benchTradeStats <- function(Portfolio,
            },
            WMW = {# Wilcoxon-Mann-Withney test
              testout <- wilcox.test(costs[, 1], costs[, 2], paired = FALSE, conf.level = conf.level, conf.int = TRUE)
-             testout$data.name <- paste(paste(symNames[1], 'Cost', sep = "."), "and", paste(symNames[2], 'Cost', sep = "."))
+             testout$data.name <- paste(symNames, 'Cost', sep = ".", collapse = " and ")
            }
     )
   } # end approach == 'independent'
