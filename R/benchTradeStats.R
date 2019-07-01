@@ -31,7 +31,15 @@
 #' frequency; here Kissell suggests to use the Arrival Cost as the benchmark metric 
 #' to benchmark these trades. In this context, tests included are the \emph{Median test} 
 #' and the \emph{Wicolxon-Mann-Withney test}.
-#'
+#' 
+#' In addition to the statistical tests above, one may be interested in studying 
+#' the distribution of the overall performance/cost across the orders in order to 
+#' assess whether they come from the same distribution or not. Such analysis is 
+#' said a \emph{distribution analysis}, which for our purposes reduces to a
+#' \emph{data generating process (DGP)} comparison.
+#' Statistical tests implemented in this framework are the \emph{Chi-Square goodness-of-fit} 
+#' test and the \emph{Kolmogorov-Smirnoff goodness-of-fit} test.
+#' 
 #' @param Portfolio A vector of character strings idenfifying initilized Portfolio 
 #'                  objects with the Symbol(s) to test. See 'Details'
 #' @param benchmark A character string indentifying one of the benchmarks in 
@@ -53,6 +61,7 @@
 #' @param test A character string indentifying the statistical test to run. 
 #'             If \code{apprach=='paired'} either 'Sign' or 'Wilcoxon', 
 #'             when \code{apprach=='independent'} either 'Median' or 'WMW'
+#' @param dgptest A string identifying the distribution analysis test to run. Either 'ChiSq' or 'KS'
 #' @param alternative A string identifying the statistical test tail (see \code{stats} documentation). 
 #'                    Not used for \code{test=='Median'}
 #' @param conf.level  A numeric value, the confidence level of the interval (see \code{stats} documentation)
@@ -60,17 +69,20 @@
 #' @return
 #' A \code{list} whose elements depend on specified parameters.
 #' \describe{
-#'      \item{\code{benchData}: }{A list whose elements are \code{data.frame}s of \code{benchTradePerf} outputs, one for each Portfolio-Symbol combination, all under the specified parameters}
-#'      \item{\code{benchTestData}: }{A \code{data.frame} with statistical testing input data}
-#'      \item{\code{*.test.output}: }{A \code{"htest"} output object of the selected statistical \code{test}, except for the 'Median' test}
-#'      \item{\code{Report}: }{A string with a comment only for 'Median' \code{test}}
+#'      \item{\code{Bench.Data}: }{A list whose elements are \code{data.frame}s of \code{benchTradePerf} outputs, one for each Portfolio-Symbol combination, all under the specified parameters}
+#'      \item{\code{Bench.Test.Data}: }{A \code{data.frame} with statistical testing input data}
+#'      \item{\code{*.Test.Output}: }{A \code{"htest"} output object of the selected statistical \code{test}, except for the 'Median' test}
+#'      \item{\code{*.Report}: }{A string with a comment, only for 'Median' \code{test}}
+#'      \item{\code{*.DGP.Report}: }{A string with a comment, only for 'ChiSq' \code{dgptest}}
 #' }
 #' 
-#' @importFrom stats binom.test qchisq wilcox.test
+#' @importFrom stats binom.test qchisq wilcox.test ks.test
+#' 
 #' @seealso 
 #'    \code{\link{benchTradePerf}}, 
 #'    \code{\link[stats]{binom.test}}, 
-#'    \code{\link[stats]{wilcox.test}}
+#'    \code{\link[stats]{wilcox.test}},
+#'    \code{\link[stats]{ks.test}}
 #'
 #' @details
 #' In the paired samples approach we seek to test different trading strategies 
@@ -91,11 +103,20 @@
 #' conditions met, one must simply build the nested list components with lists 
 #' of two equal items of the target \code{MktData}.
 #' 
-#' Lastly, in the independet testing approach cost metrics are used in spite of
-#' performance metrics (used in \code{benchTradePerf}). The difference is in sign 
-#' and thus in values interpretation: positive values of a cost metric entail 
+#' Lastly, in the independet testing approach, cost metrics are used in spite of
+#' performance metrics (used in \code{benchTradePerf}). The difference is in their 
+#' sign and thus in values interpretation: positive values of a cost metric entail 
 #' underperformance of the execution with respect to the benchmark, vice versa 
 #' negative values indicate overperformance.
+#' 
+#' @note 
+#' For both tests categories, \code{test} and \code{dgptest}, the same \code{conf.level} 
+#' and \code{alternative} are almost always used, if relevant for the use case.
+#' Please also note that, as it should be clear from reports, tests 'Median' and 
+#' 'ChiSq' only allow for a two-sided alternative at the moment, regardless of 
+#' the \code{alternative} input used for the other test.
+#' In the specific case \code{test='Median'} and \code{dgptest='ChiSq'}, the function 
+#' will perform a two-sided test in both cases, regardless of \code{alternative}. 
 #' 
 #' @references \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), ISBN 978-0-12-401689-7.
 #'             \emph{Statistical Methods to Compare Algorithmic Performance} (Kissell, 2007), The Journal of Trading.
@@ -137,6 +158,7 @@
 #' initPortf(ordNames[3], symbols = symNames) # Order 3
 #' addTxns(ordNames[3], symNames[1], TxnData = txns.5)
 #' addTxns(ordNames[3], symNames[2], TxnData = txns.6)
+#' 
 #' ## Paired observations approach tests 
 #' # Sign test, VWAP full and VWAP interval
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
@@ -148,6 +170,15 @@
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
+#' # Sign test, ChiSq test on VWAP interval
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+#'                 OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
+#'                 conf.level = 0.95, alternative = "two.sided")
+#' # Sign test and KS test on VWAP interval
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+#'                 OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'KS', 
+#'                 conf.level = 0.95, alternative = "two.sided")
+#' 
 #' ## Independent observations approach tests
 #' # silly multiplications to make them differ
 #' OrdersMktDataIndp <- list(list(OrdersMktData$OrdersMktData1, OrdersMktData$OrdersMktData2), 
@@ -160,7 +191,15 @@
 #' # Wilcoxon-Mann-Whitney test, ArrCost
 #' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
 #'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
-#'                 test = 'WMW', conf.level = 0.95, alternative = "two.sided") 
+#'                 test = 'WMW', conf.level = 0.95, alternative = "two.sided")
+#' # Median test, ChiSq test on ArrCost (two reports produced)
+#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+#'                 OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
+#'                 conf.level = 0.95, alternative = "two.sided")
+#' # WMW test and KS test on ArrCost 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+#'                 OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
+#'                 conf.level = 0.95, alternative = "two.sided")
 #' }
 #' 
 #' @export
@@ -173,6 +212,7 @@ benchTradeStats <- function(Portfolio,
                             OrdersMktData,
                             approach = c('paired', 'independent'),
                             test = c('Sign', 'Wilcoxon', 'Median', 'WMW'),
+                            dgptest = c('ChiSq', 'KS'),
                             conf.level,
                             alternative) 
 { 
@@ -285,11 +325,57 @@ benchTradeStats <- function(Portfolio,
     )
   } # end approach == 'independent'
   
+  if (!missing(dgptest)) {
+    
+    ifelse(approach == 'paired', metrics <- perfs, metrics <- costs)
+    colnames(metrics) <- colnames(benchtotest)[2:3] # 'perfs' or 'costs' approach-based output colnames
+    
+    if (dgptest == 'ChiSq') {# categorizing data in std.dev-based buckets  
+      bucketsValues <- c(-Inf, seq(-3, 3, 0.5) * sd(as.matrix(metrics)), Inf)
+      bucketsBounds <- c("(-Inf, -3]*sd", paste(paste("(", seq(-3, 3, 0.5), ",", sep = ""), paste(seq(-3, 3, 0.5) + 0.5, "]*sd", sep = ""), sep = " ")[1:12], "(3, Inf)*sd")
+      # bucketsBounds <- paste(as.character(cut(seq(-3.1, 3.4, 0.5), c(-Inf, seq(-3, 3, 0.5), Inf), right = TRUE)), "*sd", sep = "")
+      
+      binnedMetrics <- matrix(NA, nrow = length(bucketsBounds), ncol = ncol(metrics))
+      chiBinStats <- vector("numeric", length = length(bucketsBounds))
+      for (k in 1:length(bucketsBounds)) {
+        for (h in 1:ncol(metrics)) {
+          bucketsIdxs <- findInterval(sort(metrics[, h]), bucketsValues, left.open = TRUE, rightmost.closed = TRUE)
+          binnedMetrics[k, h] <- length(metrics[, h][which(bucketsIdxs == k)])
+        }
+        chiBinStats[k] <- ((binnedMetrics[k, 1] - binnedMetrics[k, 2])^2)/sum(binnedMetrics[k, 2])
+        chiBinStats[k] <- ifelse(is.finite(chiBinStats[k]) & !is.nan(chiBinStats[k]), chiBinStats[k], NA)
+      }
+      chiStat <- sum(chiBinStats, na.rm = TRUE)
+      dgptestout <- cbind(binnedMetrics, chiBinStats)
+      summaries <- c(colSums(binnedMetrics), chiStat)
+      dgptestout <- rbind(dgptestout, summaries)
+      rownames(dgptestout) <- c(bucketsBounds, "Totals")
+      colnames(dgptestout) <- c(paste(colnames(metrics), "Bins", sep = '.'), 'Chi.Sq')
+      
+      chiCritical <- qchisq(conf.level, df = length(bucketsValues) - 1)
+      if (chiStat < chiCritical) {
+        dgpreport <- paste(colnames(metrics)[1], "and", colnames(metrics)[2], "have same distribution, with", conf.level, "confidence.")
+      } else {
+        dgpreport <- paste(colnames(metrics)[1], "and", colnames(metrics)[2], "have different distribution, with", conf.level, "confidence.")
+      }
+      
+    } else if (dgptest == 'KS') {
+      dgptestout <- ks.test(metrics[, 1], metrics[, 2], alternative = alternative)
+      dgptestout$data.name <- paste(colnames(metrics), collapse = " and ")
+    }
+  } # end DGP analysis
+  
   benchTestOut[['Bench.Data']] <- benchout
   benchTestOut[['Bench.Test.Data']] <- benchtotest
   benchTestOut[[paste(test, "Test.Output", sep = ".")]] <- testout
   if (exists('report')) {# for test == 'Median' only at the moment
-    benchTestOut[['Report']] <- report
+    benchTestOut[[paste(test, 'Report', sep = ".")]] <- report
+  }
+  if (exists('dgptestout')) {
+    benchTestOut[[paste(dgptest, "DGP.Test.Output", sep = ".")]] <- dgptestout
+  }
+  if (exists('dgpreport')) {# for dpg == 'ChiSq' only at the moment
+    benchTestOut[[paste(dgptest, 'DGP.Report', sep = ".")]] <- dgpreport
   }
   class(benchTestOut) <- "txnsStats"
   return(benchTestOut)

@@ -6,7 +6,7 @@
 \usage{
 benchTradeStats(Portfolio, benchmark, side, type, POV, OrdersMktData,
   approach = c("paired", "independent"), test = c("Sign", "Wilcoxon",
-  "Median", "WMW"), conf.level, alternative)
+  "Median", "WMW"), dgptest = c("ChiSq", "KS"), conf.level, alternative)
 }
 \arguments{
 \item{Portfolio}{A vector of character strings idenfifying initilized Portfolio 
@@ -38,6 +38,8 @@ and defaults to \code{type = list(vwap = 'interval')}. See \code{benchTradePerf}
 If \code{apprach=='paired'} either 'Sign' or 'Wilcoxon', 
 when \code{apprach=='independent'} either 'Median' or 'WMW'}
 
+\item{dgptest}{A string identifying the distribution analysis test to run. Either 'ChiSq' or 'KS'}
+
 \item{conf.level}{A numeric value, the confidence level of the interval (see \code{stats} documentation)}
 
 \item{alternative}{A string identifying the statistical test tail (see \code{stats} documentation). 
@@ -46,10 +48,11 @@ Not used for \code{test=='Median'}}
 \value{
 A \code{list} whose elements depend on specified parameters.
 \describe{
-     \item{\code{benchData}: }{A list whose elements are \code{data.frame}s of \code{benchTradePerf} outputs, one for each Portfolio-Symbol combination, all under the specified parameters}
-     \item{\code{benchTestData}: }{A \code{data.frame} with statistical testing input data}
-     \item{\code{*.test.output}: }{A \code{"htest"} output object of the selected statistical \code{test}, except for the 'Median' test}
-     \item{\code{Report}: }{A string with a comment only for 'Median' \code{test}}
+     \item{\code{Bench.Data}: }{A list whose elements are \code{data.frame}s of \code{benchTradePerf} outputs, one for each Portfolio-Symbol combination, all under the specified parameters}
+     \item{\code{Bench.Test.Data}: }{A \code{data.frame} with statistical testing input data}
+     \item{\code{*.Test.Output}: }{A \code{"htest"} output object of the selected statistical \code{test}, except for the 'Median' test}
+     \item{\code{*.Report}: }{A string with a comment, only for 'Median' \code{test}}
+     \item{\code{*.DGP.Report}: }{A string with a comment, only for 'ChiSq' \code{dgptest}}
 }
 }
 \description{
@@ -86,6 +89,14 @@ frequency; here Kissell suggests to use the Arrival Cost as the benchmark metric
 to benchmark these trades. In this context, tests included are the \emph{Median test} 
 and the \emph{Wicolxon-Mann-Withney test}.
 
+In addition to the statistical tests above, one may be interested in studying 
+the distribution of the overall performance/cost across the orders in order to 
+assess whether they come from the same distribution or not. Such analysis is 
+said a \emph{distribution analysis}, which for our purposes reduces to a
+\emph{data generating process (DGP)} comparison.
+Statistical tests implemented in this framework are the \emph{Chi-Square goodness-of-fit} 
+test and the \emph{Kolmogorov-Smirnoff goodness-of-fit} test.
+
 
 In the paired samples approach we seek to test different trading strategies 
 (or brokers) on the same symbol, whereas in the indepented samples approach this 
@@ -105,11 +116,20 @@ general nested list \code{OrdersMktData} data structure is required. Other
 conditions met, one must simply build the nested list components with lists 
 of two equal items of the target \code{MktData}.
 
-Lastly, in the independet testing approach cost metrics are used in spite of
-performance metrics (used in \code{benchTradePerf}). The difference is in sign 
-and thus in values interpretation: positive values of a cost metric entail 
+Lastly, in the independet testing approach, cost metrics are used in spite of
+performance metrics (used in \code{benchTradePerf}). The difference is in their 
+sign and thus in values interpretation: positive values of a cost metric entail 
 underperformance of the execution with respect to the benchmark, vice versa 
 negative values indicate overperformance.
+}
+\note{
+For both tests categories, \code{test} and \code{dgptest}, the same \code{conf.level} 
+and \code{alternative} are almost always used, if relevant for the use case.
+Please also note that, as it should be clear from reports, tests 'Median' and 
+'ChiSq' only allow for a two-sided alternative at the moment, regardless of 
+the \code{alternative} input used for the other test.
+In the specific case \code{test='Median'} and \code{dgptest='ChiSq'}, the function 
+will perform a two-sided test in both cases, regardless of \code{alternative}.
 }
 \examples{
 \dontrun{
@@ -146,6 +166,7 @@ addTxns('order.2', symNames[2], TxnData = txns.4)
 initPortf(ordNames[3], symbols = symNames) # Order 3
 addTxns(ordNames[3], symNames[1], TxnData = txns.5)
 addTxns(ordNames[3], symNames[2], TxnData = txns.6)
+
 ## Paired observations approach tests 
 # Sign test, VWAP full and VWAP interval
 benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
@@ -157,6 +178,15 @@ benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
+# Sign test, ChiSq test on VWAP interval
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+                OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
+                conf.level = 0.95, alternative = "two.sided")
+# Sign test and KS test on VWAP interval
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+                OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'KS', 
+                conf.level = 0.95, alternative = "two.sided")
+
 ## Independent observations approach tests
 # silly multiplications to make them differ
 OrdersMktDataIndp <- list(list(OrdersMktData$OrdersMktData1, OrdersMktData$OrdersMktData2), 
@@ -169,7 +199,15 @@ benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1,
 # Wilcoxon-Mann-Whitney test, ArrCost
 benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
-                test = 'WMW', conf.level = 0.95, alternative = "two.sided") 
+                test = 'WMW', conf.level = 0.95, alternative = "two.sided")
+# Median test, ChiSq test on ArrCost (two reports produced)
+benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+                OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
+                conf.level = 0.95, alternative = "two.sided")
+# WMW test and KS test on ArrCost 
+benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+                OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
+                conf.level = 0.95, alternative = "two.sided")
 }
 
 }
@@ -180,7 +218,8 @@ benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1,
 \seealso{
 \code{\link{benchTradePerf}}, 
    \code{\link[stats]{binom.test}}, 
-   \code{\link[stats]{wilcox.test}}
+   \code{\link[stats]{wilcox.test}},
+   \code{\link[stats]{ks.test}}
 }
 \author{
 Vito Lestingi
