@@ -196,6 +196,7 @@
 #' 
 #' # examples consider daily data, perhaps the most common use case for the practitioners of the field
 #' 
+#' \donttest{
 #' set.seed(333)
 #' .blotter <- new.env()
 #' data(ABC)
@@ -225,6 +226,7 @@
 #' plot(benchVWAPfull, benchmark = 'VWAP')
 #' plot(benchPWP, benchmark = 'PWP')
 #' plot(benchRPM, benchmark = 'RPM')
+#' }
 #' 
 #' @export
 #' 
