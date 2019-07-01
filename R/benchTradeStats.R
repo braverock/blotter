@@ -124,7 +124,7 @@
 #' @author Vito Lestingi
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(blotter)
 #' set.seed(333)
 #' .blotter <- new.env()

@@ -132,6 +132,7 @@ In the specific case \code{test='Median'} and \code{dgptest='ChiSq'}, the functi
 will perform a two-sided test in both cases, regardless of \code{alternative}.
 }
 \examples{
+\donttest{
 \dontrun{
 library(blotter)
 set.seed(333)
@@ -208,6 +209,7 @@ benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1,
 benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
                 OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
                 conf.level = 0.95, alternative = "two.sided")
+}
 }
 
 }
