@@ -380,3 +380,20 @@ benchTradeStats <- function(Portfolio,
   class(benchTestOut) <- "txnsStats"
   return(benchTestOut)
 }
+
+#' Print method for object of type \code{txnsStats}
+#' 
+#' To prevent cluttering the console with \code{benchTradeStats()} output other
+#' than statistical testing and reporting main purposes.
+#' 
+#' @param x Object of type \code{txnsStats} to print
+#' @param ... Any other passthrough parameters
+#' 
+#' @return 
+#' The \code{txnsStats} input object without its first element.
+#' 
+#' @export
+#'
+print.txnsStats <- function(x, ...) {
+  print(x[2:length(x)])
+} 
