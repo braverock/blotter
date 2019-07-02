@@ -248,34 +248,33 @@ benchTradeStats <- function(Portfolio,
   
   benchTestOut <- benchoutstore <- list()
   
-  if (approach == 'paired') {
-    if (missing(benchmark)) benchmark <- "VWAP"
-    
-    metrics <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
-    diffMetric <- vector("numeric", length = length(portNames))
-    for (p in 1:length(portNames)) {
-      symNames <- names(getPortfolio(portNames[p])[["symbols"]])
-      iter <- matrix(1:(length(portNames)*length(symNames)), nrow = length(portNames), byrow = TRUE)
-      if (length(symNames) < 2) {
-        stop(paste("Tests requires at least two symbols in portfolio", portNames[p]))
-      } else if (length(symNames) > 2) {
-        warning(paste(test, "test requires two symbols per portfolio, but more are passed. Only the first two symbols in portfolio", portNames[p], "will be used."))
-        symNames <- symNames[1:2]
-      }
-      for (s in 1:length(symNames)) {
-        MktData <- OrdersMktData[[p]]
-        benchout <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = MktData)[[1]]
-        benchout[, ncol(benchout)] <- metric * benchout[, ncol(benchout)]
-        colnames(benchout)[ncol(benchout)] <- metricFullName
-        metrics[p, s] <- as.numeric(benchout[nrow(benchout), ncol(benchout)])
-        
-        benchoutstore[[iter[p, s]]] <- benchout
-        names(benchoutstore)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
-        if (s == 2) {# "overkilling", may be useful for future extensions
-          diffMetric[p] <- metrics[p, s - 1] - metrics[p, s]
-        }
+  metrics <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
+  diffMetric <- vector("numeric", length = length(portNames))
+  for (p in 1:length(portNames)) {
+    symNames <- names(getPortfolio(portNames[p])[["symbols"]])
+    iter <- matrix(1:(length(portNames)*length(symNames)), nrow = length(portNames), byrow = TRUE)
+    if (length(symNames) < 2) {
+      stop(paste("Tests requires at least two symbols in portfolio", portNames[p]))
+    } else if (length(symNames) > 2) {
+      warning(paste(test, "test requires two symbols per portfolio, but more are passed. Only the first two symbols in portfolio", portNames[p], "will be used."))
+      symNames <- symNames[1:2]
+    }
+    for (s in 1:length(symNames)) {
+      ifelse(approach == 'paired', MktData <- OrdersMktData[[p]], MktData <- OrdersMktData[[p]][[s]])
+      benchout <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = MktData)[[1]]
+      benchout[, ncol(benchout)] <- metric * benchout[, ncol(benchout)]
+      colnames(benchout)[ncol(benchout)] <- metricFullName
+      metrics[p, s] <- as.numeric(benchout[nrow(benchout), ncol(benchout)])
+      
+      benchoutstore[[iter[p, s]]] <- benchout
+      names(benchoutstore)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
+      if (s == 2) {# "overkilling", may be useful for future extensions
+        diffMetric[p] <- metrics[p, s - 1] - metrics[p, s]
       }
     }
+  }
+  
+  if (approach == 'paired') {
     benchtotest <- cbind(portNames, metrics, diffMetric, abs(diffMetric), rank(abs(diffMetric)))
     colnames(benchtotest) <- c('Orders', paste(symNames, metricAbbrName, sep = '.'), paste('Diff', metricAbbrName, sep = '.'), paste('Abs.Diff', metricAbbrName, sep = '.'), 'Abs.Diff.Rank') 
     
@@ -295,29 +294,6 @@ benchTradeStats <- function(Portfolio,
   } # end approach == 'paired'
   
   if (approach == 'independent') {
-    
-    metrics <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
-    for (p in 1:length(portNames)) {
-      symNames <- names(getPortfolio(portNames[p])[["symbols"]])
-      iter <- matrix(1:(length(portNames)*length(symNames)), nrow = length(portNames), byrow = TRUE)
-      if (length(symNames) < 2) {
-        stop(paste("Tests requires at least two symbols in portfolio", portNames[p]))
-      } else if (length(symNames) > 2) {
-        warning(paste(test, "test requires two symbols per portfolio, but more are passed. Only the first two symbols in portfolio", portNames[p], "will be used."))
-        symNames <- symNames[1:2]
-      }
-      for (s in 1:length(symNames)) {
-        MktData <- OrdersMktData[[p]][[s]]
-        benchout <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = MktData)[[1]]
-        # benchout[, ncol(benchout) - 1] <- metric * benchout[, ncol(benchout) - 1]
-        benchout[, ncol(benchout)] <- metric * benchout[, ncol(benchout)]
-        colnames(benchout)[ncol(benchout)] <- metricFullName
-        metrics[p, s] <- as.numeric(benchout[nrow(benchout), ncol(benchout)])
-        
-        benchoutstore[[iter[p, s]]] <- benchout
-        names(benchoutstore)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
-      }
-    }
     benchtotest <- cbind(portNames, metrics)
     colnames(benchtotest) <- c('Orders', paste(symNames, metricAbbrName, sep = '.')) 
     
@@ -353,7 +329,7 @@ benchTradeStats <- function(Portfolio,
   
   if (!missing(dgptest)) {
     
-    colnames(metrics) <- colnames(benchtotest)[2:3] # 'perfs' or 'costs' approach-based output colnames
+    colnames(metrics) <- paste(symNames, metricAbbrName, sep = '.')
     
     if (dgptest == 'ChiSq') {# categorizing data in std.dev-based buckets  
       bucketsValues <- c(-Inf, seq(-3, 3, 0.5) * sd(as.matrix(metrics)), Inf)
@@ -379,9 +355,9 @@ benchTradeStats <- function(Portfolio,
       
       chiCritical <- qchisq(conf.level, df = length(bucketsValues) - 1)
       if (chiStat < chiCritical) {
-        dgpreport <- paste(colnames(metrics)[1], "and", colnames(metrics)[2], "have same distribution, with", conf.level, "confidence.")
+        dgpreport <- paste(paste(colnames(metrics), collapse = " and "), "have same distribution, with", conf.level, "confidence.")
       } else {
-        dgpreport <- paste(colnames(metrics)[1], "and", colnames(metrics)[2], "have different distribution, with", conf.level, "confidence.")
+        dgpreport <- paste(paste(colnames(metrics), collapse = " and "), "have different distribution, with", conf.level, "confidence.")
       }
       
     } else if (dgptest == 'KS') {
@@ -390,7 +366,7 @@ benchTradeStats <- function(Portfolio,
     }
   } # end DGP analysis
   
-  benchTestOut[['Bench.Data']] <- benchout
+  benchTestOut[['Bench.Data']] <- benchoutstore
   benchTestOut[['Bench.Test.Data']] <- benchtotest
   benchTestOut[[paste(test, "Test.Output", sep = ".")]] <- testout
   if (exists('report')) {# for test == 'Median' only at the moment
