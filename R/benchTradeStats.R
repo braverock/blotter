@@ -31,8 +31,8 @@
 #' tests included are the \emph{Wicolxon Signed Rank test} and the \emph{Sign test}.
 #' Second, the \emph{independent samples approach}, where trades can be on different
 #' Symbols, that may have occured over different periods and possibly with different
-#' frequency; here Kissell suggests to use the Arrival Cost as the benchmark metric 
-#' to benchmark these trades. In this context, tests included are the \emph{Median test} 
+#' frequency; here Kissell suggests the Arrival Cost as the preferred trades
+#' benchmark metric. In this context, tests included are the \emph{Median test} 
 #' and the \emph{Wicolxon-Mann-Withney test}.
 #' 
 #' In addition to the statistical tests above, one may be interested in studying 
@@ -49,7 +49,7 @@
 #'                  \code{\link{benchTradePerf}} (unless 'RPM') and in addition 
 #'                  to them 'ArrCost' when \code{approach == 'independent'}. 
 #'                  Default depends on specified \code{approach}. See 'Details' 
-#' @param side A numeric value, that indicates the side of the trade. 
+#' @param side A numeric value which indicates the side of the trade
 #'             Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"
 #' @param type A list with named element \code{price} or \code{vwap}, of a character string. 
 #'             Relevant only for the corresponding \code{benchmark = 'MktBench'} 
@@ -58,6 +58,7 @@
 #'             console output column. It does not influence the PnL metric computation.
 #'             When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark 
 #'             and defaults to \code{type = list(vwap = 'interval')}. See \code{benchTradePerf} 'Details'
+#' @param metric A numeric value, either 1 or -1 meaning "performance metric" or "cost metric", respectively. See 'Notes'
 #' @param POV A numeric value between 0 and 1, specifying the POV rate for the 'PWP' benchmark
 #' @param OrdersMktData A list or nested list of \code{benchTradePerf} compliant \code{MktData} objects. See 'Details'
 #' @param approach A character string indentifying the statistical testing approach. Either 'paired' or 'independent'
@@ -97,22 +98,33 @@
 #' first place, by initializing the Symbol with fictitious different names. 
 #' 
 #' Also, note that the market data needed in the number of possible scenarios one 
-#' may be interested in analyzing in binded with the statistical testing approach.
+#' may be interested in analyzing is binded to the statistical testing approach.
 #' Because of its assumptions, in the paired approach each couple of fictitious 
-#' symbols share the same market data. Hence, a list of length equal to the number 
-#' of orders is needed in \code{OrdersMktData}.
-#' This is not necessarily true in the independent approach, where therefore a more
-#' general nested list \code{OrdersMktData} data structure is required. Other 
-#' conditions met, one must simply build the nested list components with lists 
-#' of two equal items of the target \code{MktData}.
+#' symbols share the same market data. Hence, \code{OrdersMktData} represents a 
+#' list with length equal to the number of orders.
+#' This is not necessarily true in the independent approach, where there could be
+#' cross-sectional analyses purposes over different assets that may have been traded 
+#' over different periods. In all these cases, the \code{OrdersMktData} needed would 
+#' be much richer in variety as the reference \code{MktData} can be completely
+#' different in kind and in periods. Other conditions met, one must simply build 
+#' the input \code{OrdersMktData} with copies of the target \code{MktData} as needed.
 #' 
-#' Lastly, in the independet testing approach, cost metrics are used in spite of
-#' performance metrics (used in \code{benchTradePerf}). The difference is in their 
-#' sign and thus in values interpretation: positive values of a cost metric entail 
-#' underperformance of the execution with respect to the benchmark, vice versa 
-#' negative values indicate overperformance.
+#' @note
+#' In the independet testing approach, cost metrics are suggested in spite of 
+#' performance metrics (used in \code{benchTradePerf}).
+#' The only difference among these kinds of metrics in their sign and thus in values 
+#' interpretation: positive values of a cost metric entail underperformance of the 
+#' execution with respect to the benchmark, vice versa negative values indicate 
+#' overperformance.
+#' All the benchmarks can be expressed in cost or perfomance terms and this is what
+#' the parameter \code{metric} allows to do.
+#' More often than not the \emph{Arrival Cost} is suggested as the preferred metric for 
+#' benchmarking purposes of transactions under testing. It is, however, nothing
+#' else than the \emph{Trading PnL} performance metric expressed as a cost metric.
+#' Hence, using \code{benchmark="TradeBench"} and \code{metric = -1} means selecting 
+#' the arrival cost benchmark. This will happen by default if these parameter are 
+#' not provided.
 #' 
-#' @note 
 #' For both tests categories, \code{test} and \code{dgptest}, the same \code{conf.level} 
 #' and \code{alternative} are almost always used, if relevant for the use case.
 #' Please also note that, as it should be clear from reports, tests 'Median' and 
@@ -121,8 +133,9 @@
 #' In the specific case \code{test='Median'} and \code{dgptest='ChiSq'}, the function 
 #' will perform a two-sided test in both cases, regardless of \code{alternative}. 
 #' 
-#' @references \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), ISBN 978-0-12-401689-7.
-#'             \emph{Statistical Methods to Compare Algorithmic Performance} (Kissell, 2007), The Journal of Trading.
+#' @references 
+#' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), ISBN 978-0-12-401689-7.
+#' \emph{Statistical Methods to Compare Algorithmic Performance} (Kissell, 2007), The Journal of Trading.
 #'             
 #' @author Vito Lestingi
 #'
@@ -164,21 +177,21 @@
 #' 
 #' ## Paired observations approach tests 
 #' # Sign test, VWAP full and VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
 #' # Wilcoxon test, VWAP full and VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 #' # Sign test, ChiSq test on VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' # Sign test and KS test on VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'KS', 
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' 
@@ -187,21 +200,21 @@
 #' OrdersMktDataIndp <- list(list(OrdersMktData$OrdersMktData1, OrdersMktData$OrdersMktData2), 
 #'                           list(OrdersMktData$OrdersMktData1 * 2, OrdersMktData$OrdersMktData2 * 3),
 #'                           list(OrdersMktData$OrdersMktData1 * 4, OrdersMktData$OrdersMktData2 * 5)) 
-#' # Median test, ArrCost
-#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+#' # Median test, TradeBench
+#' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1, 
 #'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
 #'                 test = 'Median', conf.level = 0.95, alternative = "two.sided")
-#' # Wilcoxon-Mann-Whitney test, ArrCost
-#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+#' # Wilcoxon-Mann-Whitney test, TradeBench
+#' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
 #'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
 #'                 test = 'WMW', conf.level = 0.95, alternative = "two.sided")
-#' # Median test, ChiSq test on ArrCost (two reports produced)
-#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
-#'                 OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
+#' # Median test, ChiSq test on TradeBench (two reports produced)
+#' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
+#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
 #'                 conf.level = 0.95, alternative = "two.sided")
-#' # WMW test and KS test on ArrCost 
-#' benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
-#'                 OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
+#' # WMW test and KS test on TradeBench 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
+#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' }
 #' 
@@ -210,7 +223,8 @@
 benchTradeStats <- function(Portfolio,
                             benchmark,
                             side,
-                            type, 
+                            type,
+                            metric,
                             POV,
                             OrdersMktData,
                             approach = c('paired', 'independent'),
@@ -222,18 +236,23 @@ benchTradeStats <- function(Portfolio,
   if (benchmark == 'RPM') stop("RPM benchmark cannot be tested. Choose another benchmark.")
   if (length(Portfolio) < 20) warning("Statistical significance may not be be guaranteed. A 'Portfolio' with a minimum length of 20 is recommended.")
   
+  if (missing(benchmark)) benchmark <- "TradeBench" # (benchmark = 'TradeBench' & metric = -1) == Arrival Cost 
+  if (missing(metric)) metric <- (-1) # cost metric
   if (missing(side)) side <- 1
   if (missing(conf.level)) conf.level <- 0.95
   if (missing(alternative)) alternative <- "two.sided" # common naming in stats package
   
   portNames <- Portfolio
-  benchTestOut <- benchout <- list()
+  metricFullName <- ifelse(metric == 1, 'Performance', 'Cost') # consistency with benchTradePerf() naming style
+  metricAbbrName <- ifelse(metric == 1, 'Perf', 'Cost')
+  
+  benchTestOut <- benchoutstore <- list()
   
   if (approach == 'paired') {
     if (missing(benchmark)) benchmark <- "VWAP"
     
-    perfs <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
-    diffPerf <- vector("numeric", length = length(portNames))
+    metrics <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
+    diffMetric <- vector("numeric", length = length(portNames))
     for (p in 1:length(portNames)) {
       symNames <- names(getPortfolio(portNames[p])[["symbols"]])
       iter <- matrix(1:(length(portNames)*length(symNames)), nrow = length(portNames), byrow = TRUE)
@@ -244,36 +263,40 @@ benchTradeStats <- function(Portfolio,
         symNames <- symNames[1:2]
       }
       for (s in 1:length(symNames)) {
-        benchout[[iter[p, s]]] <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = OrdersMktData[[p]])[[1]]
-        names(benchout)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
-        perfs[p, s] <- as.numeric(benchout[[iter[p, s]]][nrow(benchout[[iter[p, s]]]), 'Performance'])
+        MktData <- OrdersMktData[[p]]
+        benchout <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = MktData)[[1]]
+        benchout[, ncol(benchout)] <- metric * benchout[, ncol(benchout)]
+        colnames(benchout)[ncol(benchout)] <- metricFullName
+        metrics[p, s] <- as.numeric(benchout[nrow(benchout), ncol(benchout)])
+        
+        benchoutstore[[iter[p, s]]] <- benchout
+        names(benchoutstore)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
         if (s == 2) {# "overkilling", may be useful for future extensions
-          diffPerf[p] <- perfs[p, s - 1] - perfs[p, s]
+          diffMetric[p] <- metrics[p, s - 1] - metrics[p, s]
         }
       }
     }
-    benchtotest <- cbind(portNames, perfs, diffPerf, rank(abs(diffPerf)))
-    colnames(benchtotest) <- c('Orders', paste(symNames, 'Perf', sep = "."), 'Diff.Perf', 'Diff.Perf.Abs.Rank') 
+    benchtotest <- cbind(portNames, metrics, diffMetric, abs(diffMetric), rank(abs(diffMetric)))
+    colnames(benchtotest) <- c('Orders', paste(symNames, metricAbbrName, sep = '.'), paste('Diff', metricAbbrName, sep = '.'), paste('Abs.Diff', metricAbbrName, sep = '.'), 'Abs.Diff.Rank') 
     
     test <- match.arg(test, c('Sign', 'Wilcoxon'))
     switch(test,
            Sign = {
-             nsuccesses <- length(diffPerf[diffPerf > 0])
-             testout <- binom.test(nsuccesses, n = length(diffPerf), p = 0.5, alternative = alternative, conf.level = conf.level)
-             testout$data.name <- paste("Diff.Perf 'success' outcomes and Diff.Perf number of trials")
+             nsuccesses <- ifelse(metric == 1, length(diffMetric[diffMetric > 0]), length(diffMetric[diffMetric < 0]))
+             testout <- binom.test(nsuccesses, n = length(diffMetric), p = 0.5, alternative = alternative, conf.level = conf.level)
+             testout$data.name <- paste(paste('Diff', metricAbbrName, sep = '.'), "'success' outcomes and", paste('Diff', metricAbbrName, sep = '.'), "number of trials")
            },
            Wilcoxon = {
-             testout <- wilcox.test(diffPerf, alternative = alternative, conf.level = conf.level, conf.int = TRUE)
-             # or wilcox.test(perfs[, 1], perfs[, 2], paired = TRUE, alternative = alternative, conf.level = conf.level, conf.int = TRUE)
-             testout$data.name <- paste('Diff.Perf')
+             testout <- wilcox.test(diffMetric, alternative = alternative, conf.level = conf.level, conf.int = TRUE)
+             # or wilcox.test(metrics[, 1], metrics[, 2], paired = TRUE, alternative = alternative, conf.level = conf.level, conf.int = TRUE)
+             testout$data.name <- paste('Diff', metricAbbrName, sep = '.')
            }
     )
   } # end approach == 'paired'
   
   if (approach == 'independent') {
-    if (missing(benchmark)) benchmark <- "ArrCost"
     
-    costs <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
+    metrics <- data.frame(matrix(NA, nrow = length(portNames), ncol = length(symNames)))
     for (p in 1:length(portNames)) {
       symNames <- names(getPortfolio(portNames[p])[["symbols"]])
       iter <- matrix(1:(length(portNames)*length(symNames)), nrow = length(portNames), byrow = TRUE)
@@ -284,32 +307,32 @@ benchTradeStats <- function(Portfolio,
         symNames <- symNames[1:2]
       }
       for (s in 1:length(symNames)) {
-        if (benchmark == "ArrCost") {# Arrival Cost (Kissell's suggested metric) workaround as kept out from benchTradePerf()
-          benchout[[iter[p, s]]] <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = "TradeBench", MktData = OrdersMktData[[p]][[s]])[[1]]
-          names(benchout)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
-          costs[p, s] <- (-1) * as.numeric(benchout[[iter[p, s]]][nrow(benchout[[iter[p, s]]]), 'Performance'])
-        } else {
-          benchout[[iter[p, s]]] <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, MktData = OrdersMktData[[p]][[s]])[[1]]
-          names(benchout)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
-          costs[p, s] <- (-1) * as.numeric(benchout[[iter[p, s]]][nrow(benchout[[iter[p, s]]]), 'Performance'])
-        }
+        MktData <- OrdersMktData[[p]][[s]]
+        benchout <- benchTradePerf(Portfolio = portNames[p], Symbol = symNames[s], side = side, benchmark = benchmark, type = type, POV = POV, MktData = MktData)[[1]]
+        # benchout[, ncol(benchout) - 1] <- metric * benchout[, ncol(benchout) - 1]
+        benchout[, ncol(benchout)] <- metric * benchout[, ncol(benchout)]
+        colnames(benchout)[ncol(benchout)] <- metricFullName
+        metrics[p, s] <- as.numeric(benchout[nrow(benchout), ncol(benchout)])
+        
+        benchoutstore[[iter[p, s]]] <- benchout
+        names(benchoutstore)[iter[p, s]] <- paste(portNames[p], symNames[s], sep = "_")
       }
     }
-    benchtotest <- cbind(portNames, costs)
-    colnames(benchtotest) <- c('Orders', paste(symNames, 'Cost', sep = '.')) 
+    benchtotest <- cbind(portNames, metrics)
+    colnames(benchtotest) <- c('Orders', paste(symNames, metricAbbrName, sep = '.')) 
     
     test <- match.arg(test, c('Median', 'WMW'))
     switch(test,
            Median = {
-             overallMedian <- median(as.matrix(costs), na.rm = TRUE)
+             overallMedian <- median(as.matrix(metrics), na.rm = TRUE)
              nobs <- gMedian <- leMedian <- vector(mode = "numeric", length(symNames))
              for (s in 1:length(symNames)) {
-               if (anyNA(costs[, s])) {
-                 costs[, s] <- na.trim(costs[, s])
+               if (anyNA(metrics[, s])) {
+                 metrics[, s] <- na.trim(metrics[, s])
                }
-               nobs[s] <- nrow(costs[s])
-               gMedian[s]  <- length(which(costs[, s] > overallMedian))
-               leMedian[s] <- length(costs[, s]) - gMedian[s]
+               nobs[s] <- nrow(metrics[s])
+               gMedian[s]  <- length(which(metrics[, s] > overallMedian))
+               leMedian[s] <- length(metrics[, s]) - gMedian[s]
              }  
              # Lane's chi-square statistic (with continuity correction)
              chiObs <- sum(nobs)*((abs(leMedian[1]*gMedian[2] - leMedian[2]*gMedian[1]) - 0.5*sum(nobs))^2)/(sum(gMedian) * sum(leMedian) * prod(nobs))
@@ -322,15 +345,14 @@ benchTradeStats <- function(Portfolio,
              }
            },
            WMW = {# Wilcoxon-Mann-Withney test
-             testout <- wilcox.test(costs[, 1], costs[, 2], paired = FALSE, conf.level = conf.level, conf.int = TRUE)
-             testout$data.name <- paste(symNames, 'Cost', sep = ".", collapse = " and ")
+             testout <- wilcox.test(metrics[, 1], metrics[, 2], paired = FALSE, conf.level = conf.level, conf.int = TRUE)
+             testout$data.name <- paste(symNames, metricAbbrName, sep = ".", collapse = " and ")
            }
     )
   } # end approach == 'independent'
   
   if (!missing(dgptest)) {
     
-    ifelse(approach == 'paired', metrics <- perfs, metrics <- costs)
     colnames(metrics) <- colnames(benchtotest)[2:3] # 'perfs' or 'costs' approach-based output colnames
     
     if (dgptest == 'ChiSq') {# categorizing data in std.dev-based buckets  

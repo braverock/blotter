@@ -4,9 +4,10 @@
 \alias{benchTradeStats}
 \title{Trade Execution Performance Benchmarks Statistical Testing}
 \usage{
-benchTradeStats(Portfolio, benchmark, side, type, POV, OrdersMktData,
-  approach = c("paired", "independent"), test = c("Sign", "Wilcoxon",
-  "Median", "WMW"), dgptest = c("ChiSq", "KS"), conf.level, alternative)
+benchTradeStats(Portfolio, benchmark, side, type, metric, POV,
+  OrdersMktData, approach = c("paired", "independent"),
+  test = c("Sign", "Wilcoxon", "Median", "WMW"), dgptest = c("ChiSq",
+  "KS"), conf.level, alternative)
 }
 \arguments{
 \item{Portfolio}{A vector of character strings idenfifying initilized Portfolio 
@@ -17,7 +18,7 @@ objects with the Symbol(s) to test. See 'Details'}
 to them 'ArrCost' when \code{approach == 'independent'}. 
 Default depends on specified \code{approach}. See 'Details'}
 
-\item{side}{A numeric value, that indicates the side of the trade. 
+\item{side}{A numeric value which indicates the side of the trade
 Either 1 or -1, \code{side = 1} (default) means "Buy" and \code{side = -1} is "Sell"}
 
 \item{type}{A list with named element \code{price} or \code{vwap}, of a character string. 
@@ -27,6 +28,8 @@ When \code{benchmark = 'MktBench'}, it is only pasted to the corresponding
 console output column. It does not influence the PnL metric computation.
 When \code{benchmark = 'VWAP'}, it specifies the VWAP benchmark 
 and defaults to \code{type = list(vwap = 'interval')}. See \code{benchTradePerf} 'Details'}
+
+\item{metric}{A numeric value, either 1 or -1 meaning "performance metric" or "cost metric", respectively. See 'Notes'}
 
 \item{POV}{A numeric value between 0 and 1, specifying the POV rate for the 'PWP' benchmark}
 
@@ -88,8 +91,8 @@ against which trades have to be benchmarked is the VWAP benchmark. In this conte
 tests included are the \emph{Wicolxon Signed Rank test} and the \emph{Sign test}.
 Second, the \emph{independent samples approach}, where trades can be on different
 Symbols, that may have occured over different periods and possibly with different
-frequency; here Kissell suggests to use the Arrival Cost as the benchmark metric 
-to benchmark these trades. In this context, tests included are the \emph{Median test} 
+frequency; here Kissell suggests the Arrival Cost as the preferred trades
+benchmark metric. In this context, tests included are the \emph{Median test} 
 and the \emph{Wicolxon-Mann-Withney test}.
 
 In addition to the statistical tests above, one may be interested in studying 
@@ -110,22 +113,33 @@ strategies on the same symbol, one must nonetheless make the distinction in the
 first place, by initializing the Symbol with fictitious different names. 
 
 Also, note that the market data needed in the number of possible scenarios one 
-may be interested in analyzing in binded with the statistical testing approach.
+may be interested in analyzing is binded to the statistical testing approach.
 Because of its assumptions, in the paired approach each couple of fictitious 
-symbols share the same market data. Hence, a list of length equal to the number 
-of orders is needed in \code{OrdersMktData}.
-This is not necessarily true in the independent approach, where therefore a more
-general nested list \code{OrdersMktData} data structure is required. Other 
-conditions met, one must simply build the nested list components with lists 
-of two equal items of the target \code{MktData}.
-
-Lastly, in the independet testing approach, cost metrics are used in spite of
-performance metrics (used in \code{benchTradePerf}). The difference is in their 
-sign and thus in values interpretation: positive values of a cost metric entail 
-underperformance of the execution with respect to the benchmark, vice versa 
-negative values indicate overperformance.
+symbols share the same market data. Hence, \code{OrdersMktData} represents a 
+list with length equal to the number of orders.
+This is not necessarily true in the independent approach, where there could be
+cross-sectional analyses purposes over different assets that may have been traded 
+over different periods. In all these cases, the \code{OrdersMktData} needed would 
+be much richer in variety as the reference \code{MktData} can be completely
+different in kind and in periods. Other conditions met, one must simply build 
+the input \code{OrdersMktData} with copies of the target \code{MktData} as needed.
 }
 \note{
+In the independet testing approach, cost metrics are suggested in spite of 
+performance metrics (used in \code{benchTradePerf}).
+The only difference among these kinds of metrics in their sign and thus in values 
+interpretation: positive values of a cost metric entail underperformance of the 
+execution with respect to the benchmark, vice versa negative values indicate 
+overperformance.
+All the benchmarks can be expressed in cost or perfomance terms and this is what
+the parameter \code{metric} allows to do.
+More often than not the \emph{Arrival Cost} is suggested as the preferred metric for 
+benchmarking purposes of transactions under testing. It is, however, nothing
+else than the \emph{Trading PnL} performance metric expressed as a cost metric.
+Hence, using \code{benchmark="TradeBench"} and \code{metric = -1} means selecting 
+the arrival cost benchmark. This will happen by default if these parameter are 
+not provided.
+
 For both tests categories, \code{test} and \code{dgptest}, the same \code{conf.level} 
 and \code{alternative} are almost always used, if relevant for the use case.
 Please also note that, as it should be clear from reports, tests 'Median' and 
@@ -172,21 +186,21 @@ addTxns(ordNames[3], symNames[2], TxnData = txns.6)
 
 ## Paired observations approach tests 
 # Sign test, VWAP full and VWAP interval
-benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
 benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
 # Wilcoxon test, VWAP full and VWAP interval
-benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), 
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 # Sign test, ChiSq test on VWAP interval
-benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
                 conf.level = 0.95, alternative = "two.sided")
 # Sign test and KS test on VWAP interval
-benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
+benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'KS', 
                 conf.level = 0.95, alternative = "two.sided")
 
@@ -195,28 +209,28 @@ benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(
 OrdersMktDataIndp <- list(list(OrdersMktData$OrdersMktData1, OrdersMktData$OrdersMktData2), 
                           list(OrdersMktData$OrdersMktData1 * 2, OrdersMktData$OrdersMktData2 * 3),
                           list(OrdersMktData$OrdersMktData1 * 4, OrdersMktData$OrdersMktData2 * 5)) 
-# Median test, ArrCost
-benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+# Median test, TradeBench
+benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1, 
                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
                 test = 'Median', conf.level = 0.95, alternative = "two.sided")
-# Wilcoxon-Mann-Whitney test, ArrCost
-benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
+# Wilcoxon-Mann-Whitney test, TradeBench
+benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
                 test = 'WMW', conf.level = 0.95, alternative = "two.sided")
-# Median test, ChiSq test on ArrCost (two reports produced)
-benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
-                OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
+# Median test, ChiSq test on TradeBench (two reports produced)
+benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
+                OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
                 conf.level = 0.95, alternative = "two.sided")
-# WMW test and KS test on ArrCost 
-benchTradeStats(Portfolio = ordNames, benchmark = "ArrCost", side = 1, 
-                OrdersMktData = MktDataOrdersIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
+# WMW test and KS test on TradeBench 
+benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
+                OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
                 conf.level = 0.95, alternative = "two.sided")
 }
 
 }
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), ISBN 978-0-12-401689-7.
-            \emph{Statistical Methods to Compare Algorithmic Performance} (Kissell, 2007), The Journal of Trading.
+\emph{Statistical Methods to Compare Algorithmic Performance} (Kissell, 2007), The Journal of Trading.
 }
 \seealso{
 \code{\link{benchTradePerf}}, 
