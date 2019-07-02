@@ -2,12 +2,12 @@
 % Please edit documentation in R/benchTradeStats.R
 \name{print.txnsStats}
 \alias{print.txnsStats}
-\title{Print method for object of type \code{txnsStats}}
+\title{Print method for object of class \code{txnsStats}}
 \usage{
 \method{print}{txnsStats}(x, ...)
 }
 \arguments{
-\item{x}{Object of type \code{txnsStats} to print}
+\item{x}{Object of class \code{txnsStats} to print}
 
 \item{...}{Any other passthrough parameters}
 }

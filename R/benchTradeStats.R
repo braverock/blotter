@@ -16,15 +16,18 @@
 #' starting from trading strategies transactions prices we compare the overall
 #' performance of multiple orders, each executed under two different categories, 
 #' to ultimately test whether data supports a difference in their median.
+#' In other words, the basic statistical hypothesis test setting is to test the
+#' null hypothesis of a same median against the alternative hypothesis of a 
+#' different median.
 #' 
 #' Two statistical testing approach are contemplated, the suitability of the 
 #' approach ultimately relies on analysts' specific research questions. In turn, 
-#' each of them critically depend on how transactional data was obtained in the 
-#' first place and the characteristics it has.
+#' each of them critically depends on how transactional data was obtained in the 
+#' first place and on its distributional properties.
 #' First, the \emph{paired samples approach}, where: trades are two equal-length 
 #' child orders belonging to the same parent order on a Symbol and each occurred 
-#' in the same period. Following Kissell, the preferred comparison metric against 
-#' which trades have to be benchmarked is the VWAP benchmark. In this context, 
+#' in the same exact timeframe. Following Kissell, the preferred comparison metric 
+#' against which trades have to be benchmarked is the VWAP benchmark. In this context, 
 #' tests included are the \emph{Wicolxon Signed Rank test} and the \emph{Sign test}.
 #' Second, the \emph{independent samples approach}, where trades can be on different
 #' Symbols, that may have occured over different periods and possibly with different
@@ -172,11 +175,11 @@
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
 #' # Sign test, ChiSq test on VWAP interval
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
-#'                 OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
+#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' # Sign test and KS test on VWAP interval
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
-#'                 OrdersMktData = MktDataOrders, approach = 'paired', test = 'Sign', dgptest = 'KS', 
+#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'KS', 
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' 
 #' ## Independent observations approach tests
@@ -381,12 +384,12 @@ benchTradeStats <- function(Portfolio,
   return(benchTestOut)
 }
 
-#' Print method for object of type \code{txnsStats}
+#' Print method for object of class \code{txnsStats}
 #' 
 #' To prevent cluttering the console with \code{benchTradeStats()} output other
 #' than statistical testing and reporting main purposes.
 #' 
-#' @param x Object of type \code{txnsStats} to print
+#' @param x Object of class \code{txnsStats} to print
 #' @param ... Any other passthrough parameters
 #' 
 #' @return 
