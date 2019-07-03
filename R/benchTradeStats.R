@@ -314,10 +314,10 @@ benchTradeStats <- function(Portfolio,
              chiObs <- sum(nobs)*((abs(leMedian[1]*gMedian[2] - leMedian[2]*gMedian[1]) - 0.5*sum(nobs))^2)/(sum(gMedian) * sum(leMedian) * prod(nobs))
              chiCritical <- qchisq(conf.level, df = 1)
              testout <- data.frame("Conf.level" = conf.level, "ChiSq.Obs" = chiObs, "ChiSq.Critical" = chiCritical)
-             if (chiObs < chiCritical) {
-               report <- paste(symNames[1], "significantly differs from", symNames[2], "in median, with", conf.level, "confidence.")
-             } else {# accept H0: stat significance of same median
-               report <- paste("No significant difference between", symNames[1], "and", symNames[2], "medians, with", conf.level, "confidence.")
+             if (chiObs < chiCritical) {# accept H0: stat significance of same median
+               report <- paste(paste(symNames, collapse = " does not significantly differs from "), "in median, with", conf.level, "confidence.")
+             } else {
+               report <- paste(paste(symNames, collapse = " significantly differs from "), "in median, with", conf.level, "confidence.")
              }
            },
            WMW = {# Wilcoxon-Mann-Withney test
@@ -354,7 +354,7 @@ benchTradeStats <- function(Portfolio,
       colnames(dgptestout) <- c(paste(colnames(metrics), "Bins", sep = '.'), 'Chi.Sq')
       
       chiCritical <- qchisq(conf.level, df = length(bucketsValues) - 1)
-      if (chiStat < chiCritical) {
+      if (chiStat < chiCritical) {# accept H0
         dgpreport <- paste(paste(colnames(metrics), collapse = " and "), "have same distribution, with", conf.level, "confidence.")
       } else {
         dgpreport <- paste(paste(colnames(metrics), collapse = " and "), "have different distribution, with", conf.level, "confidence.")
