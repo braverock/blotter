@@ -315,7 +315,7 @@ benchTradeStats <- function(Portfolio,
              chiCritical <- qchisq(conf.level, df = 1)
              testout <- data.frame("Conf.level" = conf.level, "ChiSq.Obs" = chiObs, "ChiSq.Critical" = chiCritical)
              if (chiObs < chiCritical) {# accept H0: stat significance of same median
-               report <- paste(paste(symNames, collapse = " does not significantly differs from "), "in median, with", conf.level, "confidence.")
+               report <- paste(paste(symNames, collapse = " does not significantly differ from "), "in median, with", conf.level, "confidence.")
              } else {
                report <- paste(paste(symNames, collapse = " significantly differs from "), "in median, with", conf.level, "confidence.")
              }
