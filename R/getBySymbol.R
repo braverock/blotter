@@ -37,11 +37,13 @@
     else
         symbols = Symbols
     
-    for (symbol in symbols) {
-        tmp_col = Portfolio$symbols[[symbol]][[namePosPL]][Dates,Attribute,drop=FALSE]
-        if(is.null(table)) table = tmp_col
-        else table = merge(table, tmp_col)
+    getAttrCol <- function(x, namePosPL, Dates, Attribute) {
+        x[[namePosPL]][Dates, Attribute, drop = FALSE]
     }
+    table <- lapply(mget(symbols, Portfolio$symbols),
+                    getAttrCol, namePosPL, Dates, Attribute)
+    table <- do.call(merge, table)
+    
     if(length(table) > 0) colnames(table) = symbols
     class(table)<-class(xts())
     return(table)
