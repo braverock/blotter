@@ -40,7 +40,7 @@
         Dates = index(prices)
         # Covert to POSIXct w/same TZ as portfolio object
         if(any(indexClass(prices) %in% c("Date","yearmon","yearqtr"))) {
-            portfTZ <- indexTZ(Portfolio$symbols[[Symbol]]$txn)
+            portfTZ <- tzone(Portfolio$symbols[[Symbol]]$txn)
             Dates <- as.POSIXct(as.character(as.Date(Dates)), tz=portfTZ)
         }
     } else if(!is.timeBased(Dates)) {
