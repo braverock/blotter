@@ -5,7 +5,7 @@
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
 iStarPostTrade(MktData, yrBizdays = 250, horizon = 30, xtsfy = FALSE,
-  targetGrid, minDataPoints, paramsBounds, ...)
+  targetGrid, minDataPoints, paramsBounds, TxnData, side, ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects each representing a security market data. See 'Details'}
@@ -21,6 +21,10 @@ iStarPostTrade(MktData, yrBizdays = 250, horizon = 30, xtsfy = FALSE,
 \item{minDataPoints}{A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'}
 
 \item{paramsBounds}{A matrix to provide model parameters bounds to pass to \code{nls()}. Parameters are considered by row and columns represents lower and upper bounds, respectively}
+
+\item{TxnData}{An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'}
+
+\item{side}{A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'}
 
 \item{...}{Passthrough parameters}
 }
@@ -60,11 +64,11 @@ are on constistent dates across the full data set.
 Our best suggestion is to use a data set within the same period and including 
 the same number of days for each security involved in the analysis.
 
-
 TODO: specify data grouping process
 TODO: add \code{targetGrid} default values
-
 TODO: add \code{paramsBounds} default values
+
+TODO: discuss stock specific analysis (after review in main docs body)
 }
 \examples{
 

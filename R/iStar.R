@@ -123,6 +123,8 @@
 #' @param targetGrid A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details' 
 #' @param minDataPoints A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'
 #' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls()}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
+#' @param TxnData An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'
+#' @param side A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'
 #' @param ... Passthrough parameters
 #' 
 #' @return
@@ -158,12 +160,11 @@
 #' Our best suggestion is to use a data set within the same period and including 
 #' the same number of days for each security involved in the analysis.
 #' 
-#' 
 #' TODO: specify data grouping process
 #' TODO: add \code{targetGrid} default values
-#' 
 #' TODO: add \code{paramsBounds} default values
 #' 
+#' TODO: discuss stock specific analysis (after review in main docs body)
 #' 
 #' @notes
 #' To run the model in a security specific analysis framework, transactional data is needed.
@@ -179,11 +180,11 @@ iStarPostTrade <- function(MktData
                            , yrBizdays = 250
                            , horizon = 30
                            , xtsfy = FALSE
-                           , TxnData 
-                           , side
                            , targetGrid
                            , minDataPoints
                            , paramsBounds 
+                           , TxnData 
+                           , side
                            , ...) # TODO: can ellipses pass params to nls() ? 
 
 { 
