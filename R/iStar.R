@@ -179,8 +179,8 @@ iStarPostTrade <- function(MktData
                            , yrBizdays = 250
                            , horizon = 30
                            , xtsfy = FALSE
-                           # , TxnData
-                           # , side
+                           , TxnData 
+                           , side
                            , targetGrid
                            , minDataPoints
                            , paramsBounds 
@@ -274,7 +274,7 @@ iStarPostTrade <- function(MktData
     
     secMktDataDaily <- secMktData[endpoints(secMktData, 'days')]
     secMktDataDaily[, 'MktQty']   <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
-    secMktDataDaily[, 'MktValue'] <- secMktDataDaily[, 'MktPrice'] * secMktDataDaily[, 'MktQty']
+    secMktDataDaily$MktValue <- secMktDataDaily[, 'MktPrice'] * secMktDataDaily[, 'MktQty']
 
     # Arrival Price
     if (any(colnames(secMktDataDaily) == 'Bid') & any(colnames(secMktDataDaily) == 'Ask')) {# first bid-ask spreads midpoint
