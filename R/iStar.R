@@ -182,7 +182,7 @@ iStarPostTrade <- function(MktData
                            , xtsfy = FALSE
                            , targetGrid
                            , minDataPoints
-                           , paramsBounds 
+                           , paramsBounds
                            , TxnData 
                            , side
                            , ...) # TODO: can ellipses pass params to nls() ? 
@@ -275,48 +275,50 @@ iStarPostTrade <- function(MktData
     }
     
     secMktDataDaily <- secMktData[endpoints(secMktData, 'days')]
-    secMktDataDaily[, 'MktQty']   <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
+    secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
     secMktDataDaily$MktValue <- secMktDataDaily[, 'MktPrice'] * secMktDataDaily[, 'MktQty']
-
-    # Arrival Price
-    if (any(colnames(secMktDataDaily) == 'Bid') & any(colnames(secMktDataDaily) == 'Ask')) {# first bid-ask spreads midpoint
-      arrPrice <- 0.5 * (secMktDataDaily[1, 'Ask'] + secMktDataDaily[1, 'Bid'])
-    } else {# proxy
-      arrPrice <- secMktDataDaily[1, 'MktPrice']
-    }
     
     cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n")
     
-    for (t in 1:(nrow(secMktDataDaily) - horizon + 1)) {
+    # Arrival Price
+    arrPriceIdx <- endpoints(secMktData, 'days') + 1L
+    arrPriceIdx <- arrPriceIdx[-length(arrPriceIdx)]
+    if (any(colnames(secMktDataDaily) == 'Bid') & any(colnames(secMktDataDaily) == 'Ask')) {# first bid-ask spreads midpoint
+      arrPrice <- 0.5 * (secMktData[arrPriceIdx, 'Ask'] + secMktData[arrPriceIdx, 'Bid'])
+    } else {# proxy
+      arrPrice <- secMktData[arrPriceIdx, 'MktPrice']
+    }
+    
+    for (t in 1:(nrow(secMktDataDaily) - horizon + 1L)) {
       # Rolling periods and dates (with consistent timestamps, if needed)
-      hStop <- t + horizon - 1
-      refIdx <- hStop + 1
-      periodIdxs[[s]] <- (horizon + 1):(nrow(secMktDataDaily) + 1)
-      nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1 # last "next day" may be a non-business day!
+      hStop <- t + horizon - 1L
+      # refIdx <- hStop + 1L
+      periodIdxs[[s]] <- (horizon + 1L):(nrow(secMktDataDaily) + 1L)
+      nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
       nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
       
       # Volatility (on close-to-close prices, annualized)
       secCloseReturns <- Return.calculate(secMktDataDaily[t:hStop, 'MktPrice'], 'log')
-      secAnnualVol[refIdx, s] <- as.numeric(sd.annualized(secCloseReturns, scale = yrBizdays))
+      secAnnualVol[hStop, s] <- as.numeric(sd.annualized(secCloseReturns, scale = yrBizdays))
       
       # Average Market Volume
-      ADV[refIdx, s] <- mean(sum(secMktDataDaily[t:hStop, 'MktQty']))
+      ADV[hStop, s] <- mean(sum(secMktDataDaily[t:hStop, 'MktQty']))
       
-      # Market Imbalance, Imbalance Side and Imbalance Size (from intraday data)
-      buyInitTrades  <- sum(secMktData[which(reason[t:hStop] == 'BID'), 'MktQty'])
-      sellInitTrades <- sum(secMktData[which(reason[t:hStop] == 'ASK'), 'MktQty'])
-      secImb[refIdx, s] <- abs(buyInitTrades - sellInitTrades)
-      secImbSide[refIdx, s] <- sign(buyInitTrades - sellInitTrades) # [buyInitTrades != sellInitTrades]
-      secImbSize[refIdx, s] <- secImb[refIdx, s]/ADV[refIdx, s]
+      # Market Imbalance, Imbalance Side and Imbalance Size (from intraday data, for whole days)
+      buyInitTrades <- sum(secMktData[which(reason[arrPriceIdx[t]:(arrPriceIdx[t + 1] - 1L)] == 'BID'), 'MktQty'])
+      sellInitTrades <- sum(secMktData[which(reason[arrPriceIdx[t]:(arrPriceIdx[t + 1] - 1L)] == 'ASK'), 'MktQty'])
+      secImb[hStop, s] <- abs(buyInitTrades - sellInitTrades)
+      secImbSide[hStop, s] <- sign(buyInitTrades - sellInitTrades) # [buyInitTrades != sellInitTrades]
+      secImbSize[hStop, s] <- secImb[hStop, s]/ADV[hStop, s]
       
       # Percentage of Volume
-      POV[refIdx, s] <- secImb[refIdx, s]/secMktDataDaily[hStop, 'MktQty']
+      POV[hStop, s] <- secImb[hStop, s]/secMktDataDaily[hStop, 'MktQty']
       
       # Cost metric
       if (length(MktData) > 1) {# Arrival Cost, VWAP as proxy of average execution price
-        VWAP[refIdx, s] <- sum(secMktDataDaily[t:hStop, 'MktValue'])/sum(secMktDataDaily[t:hStop, 'MktQty'])
-        # VWAP[refIdx, s] <- crossprod(secMktDataDaily[t:hStop, 'MktPrice'], secMktDataDaily[t:hStop, 'MktQty'])/sum(secMktDataDaily[t:hStop, 'MktQty'])
-        arrCost[refIdx, s] <- (log(VWAP[refIdx, s]) - log(arrPrice)) * secImbSide[refIdx, s] * 10000L
+        VWAP[hStop, s] <- sum(secMktDataDaily[t, 'MktValue'])/sum(secMktDataDaily[t, 'MktQty'])
+        # VWAP[hStop, s] <- crossprod(secMktDataDaily[t:hStop, 'MktPrice'], secMktDataDaily[t:hStop, 'MktQty'])/sum(secMktDataDaily[t:hStop, 'MktQty'])
+        arrCost[hStop, s] <- (log(VWAP[hStop, s]) - log(arrPrice[hStop])) * secImbSide[hStop, s] * 10000L
       }
       # progress bar console feedback
       progbar <- txtProgressBar(min = 0, max = (nrow(secMktDataDaily) - horizon + 1), style = 3)
@@ -391,10 +393,11 @@ iStarPostTrade <- function(MktData
   povSample <- as.vector(unlist(rollingVariables[['POV']]))
   
   # Instantaneous impact
-  if (missing(paramsBounds)) {# a_1, a_2, a_3, a_4, b_1 by row
+  # if (missing(paramsBounds)) {# a_1, a_2, a_3, a_4, b_1 by row
+    paramsBounds <- matrix(NA, nrow = 5, ncol = 2)
     paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7) # 0 <= b_1 <= 1, 0.7 is an empirical value 
     paramsBounds[1:5, 2] <- c(1000, 1, 1, 1, 1)
-  }
+  # }
   nlsFitInstImpact <- nls(arrCostSample ~ a_1 * (imbSizeSample)^(a_2) * annualVolSample^(a_3),
                           start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1),
                           lower = paramsBounds[1:3, 1], upper = paramsBounds[1:3, 2],
