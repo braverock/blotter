@@ -285,7 +285,7 @@ iStarPostTrade <- function(MktData
       arrPrice <- secMktDataDaily[1, 'MktPrice']
     }
     
-    cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n") 
+    cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n")
     
     for (t in 1:(nrow(secMktDataDaily) - horizon + 1)) {
       # Rolling periods and dates (with consistent timestamps, if needed)
@@ -294,8 +294,6 @@ iStarPostTrade <- function(MktData
       periodIdxs[[s]] <- (horizon + 1):(nrow(secMktDataDaily) + 1)
       nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1 # last "next day" may be a non-business day!
       nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
-      
-      cat("t =", paste0(t, ','), "hStop =", hStop, "\n") # rep("\t", 4), 
       
       # Volatility (on close-to-close prices, annualized)
       secCloseReturns <- Return.calculate(secMktDataDaily[t:hStop, 'MktPrice'], 'log')
@@ -320,7 +318,11 @@ iStarPostTrade <- function(MktData
         # VWAP[refIdx, s] <- crossprod(secMktDataDaily[t:hStop, 'MktPrice'], secMktDataDaily[t:hStop, 'MktQty'])/sum(secMktDataDaily[t:hStop, 'MktQty'])
         arrCost[refIdx, s] <- (log(VWAP[refIdx, s]) - log(arrPrice)) * secImbSide[refIdx, s] * 10000L
       }
+      # progress bar console feedback
+      progbar <- txtProgressBar(min = 0, max = (nrow(secMktDataDaily) - horizon + 1), style = 3)
+      setTxtProgressBar(progbar, t)
     }
+    close(progbar)
   }
   
   rollingVariables <- list(Annual.Vol = secAnnualVol, ADV = ADV, Imb = secImb, Imb.Size = secImbSize, Imb.Side = secImbSide, POV = POV, VWAP = VWAP, Arr.Cost = arrCost)
