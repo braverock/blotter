@@ -210,8 +210,9 @@ iStarPostTrade <- function(MktData
     secWithMissingDays <- which(apply(uniqueDaysDatesMatch, 2, anyNA) == TRUE)
     warning(paste0("Days mismatch in ", paste(names(MktData)[secWithMissingDays], collapse = ", "), ". Securities with mismatches have rolling quantities inconstistencies."))
   }
-  minUniqueDays <- min(unlist(lapply(lapply(MktData, endpoints, 'days'), length)))
-  maxUniqueDays <- which.max(unlist(sapply(MktData, endpoints, 'days'))) # unlist() allows tolerating potentially different securities num of obs 
+  numUniqueDays <- unlist(lapply(lapply(MktData, endpoints, 'days'), length))
+  minUniqueDays <- min(numUniqueDays)
+  maxUniqueDays <- max(numUniqueDays)
   maxUniqueDaysAhead <- maxUniqueDays + 1L # one ahead
   if (horizon > minUniqueDays) {
     warning(paste("Horizon greater than minimum daily obs across MktData. Setting horizon =", minUniqueDays))
