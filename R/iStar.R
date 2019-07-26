@@ -303,7 +303,7 @@ iStarPostTrade <- function(MktData
       secAnnualVol[hStop, s] <- as.numeric(sd.annualized(secCloseReturns, scale = yrBizdays))
       
       # Average Market Volume
-      ADV[hStop, s] <- mean(sum(secMktDataDaily[t:hStop, 'MktQty']))
+      ADV[hStop, s] <- mean(secMktDataDaily[t:hStop, 'MktQty'])
       
       # Market Imbalance, Imbalance Side and Imbalance Size (from intraday data, for whole days)
       buyInitTrades <- sum(secMktData[which(reason[arrPriceIdx[t]:(arrPriceIdx[t + 1] - 1L)] == 'BID'), 'MktQty'])
@@ -317,8 +317,7 @@ iStarPostTrade <- function(MktData
       
       # Cost metric
       if (length(MktData) > 1) {# Arrival Cost, VWAP as proxy of average execution price
-        VWAP[hStop, s] <- sum(secMktDataDaily[t, 'MktValue'])/sum(secMktDataDaily[t, 'MktQty'])
-        # VWAP[hStop, s] <- crossprod(secMktDataDaily[t:hStop, 'MktPrice'], secMktDataDaily[t:hStop, 'MktQty'])/sum(secMktDataDaily[t:hStop, 'MktQty'])
+        VWAP[hStop, s] <- secMktDataDaily[hStop, 'MktValue']/secMktDataDaily[hStop, 'MktQty']
         arrCost[hStop, s] <- (log(VWAP[hStop, s]) - log(arrPrice[hStop])) * secImbSide[hStop, s] * 10000L
       }
       # progress bar console feedback
