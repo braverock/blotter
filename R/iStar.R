@@ -213,7 +213,7 @@ iStarPostTrade <- function(MktData
   numUniqueDays <- unlist(lapply(lapply(MktData, endpoints, 'days'), length))
   minUniqueDays <- min(numUniqueDays)
   maxUniqueDays <- max(numUniqueDays)
-  maxUniqueDaysAhead <- maxUniqueDays + 1L # one ahead
+  # maxUniqueDaysAhead <- maxUniqueDays + 1L # one ahead
   if (horizon > minUniqueDays) {
     warning(paste("Horizon greater than minimum daily obs across MktData. Setting horizon =", minUniqueDays))
     horizon <- minUniqueDays
@@ -249,16 +249,16 @@ iStarPostTrade <- function(MktData
   }
   
   outstore <- list()
-  nextDayDates <- nextDayLastDate <- periodIdxs <- list()
+  periodIdxs <- periodDayDates <- list() # nextDayDates <- nextDayLastDate
   
-  secAnnualVol <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  ADV          <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  secImb       <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  secImbSize   <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  secImbSide   <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  POV          <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  VWAP         <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
-  arrCost      <- matrix(NA, nrow = maxUniqueDaysAhead, ncol = length(MktData))
+  secAnnualVol <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  ADV          <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  secImb       <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  secImbSize   <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  secImbSide   <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  POV          <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  VWAP         <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  arrCost      <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
   
   for (s in 1:length(MktData)) {
     
@@ -293,9 +293,10 @@ iStarPostTrade <- function(MktData
       # Rolling periods and dates (with consistent timestamps, if needed)
       hStop <- t + horizon - 1L
       # refIdx <- hStop + 1L
-      periodIdxs[[s]] <- (horizon + 1L):(nrow(secMktDataDaily) + 1L)
-      nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
-      nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
+      periodIdxs[[s]] <- horizon:nrow(secMktDataDaily) # (horizon + 1L):(nrow(secMktDataDaily) + 1L)
+      periodDayDates[[s]] <- as.Date(index(secMktDataDaily)[periodIdxs[[s]]])
+      # nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
+      # nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
       
       # Volatility (on close-to-close prices, annualized)
       secCloseReturns <- Return.calculate(secMktDataDaily[t:hStop, 'MktPrice'], 'log')
@@ -334,7 +335,7 @@ iStarPostTrade <- function(MktData
     x <- lapply(x, function(x) na.trim(x))
     # x <- lapply(x, function(x) na.locf(x)) # current structure won't produce middle NAs to fill, rather fill first positions available leaving NAs in the end
     if (xtsfy) {# mainly useful for plotting purposes and potentially grouping operations
-      x <- lapply(1:length(MktData), function(s, x) xts(x[[s]], nextDayDates[[s]]), x)
+      x <- lapply(1:length(MktData), function(s, x) xts(x[[s]], periodDayDates[[s]]), x)
     }
     names(x) <- paste(names(MktData), names(rollingVariables)[item], sep = '.')
     rollingVariables[[item]] <- x
