@@ -278,6 +278,11 @@ iStarPostTrade <- function(MktData
     secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
     secMktDataDaily$MktValue <- as.numeric(secMktDataDaily[, 'MktPrice']) * as.numeric(secMktDataDaily[, 'MktQty'])
     
+    periodIdxs[[s]] <- horizon:nrow(secMktDataDaily) # (horizon + 1L):(nrow(secMktDataDaily) + 1L)
+    periodDayDates[[s]] <- as.Date(index(secMktDataDaily)[periodIdxs[[s]]])
+    # nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
+    # nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
+    
     cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n")
     
     # Arrival Price
@@ -293,10 +298,6 @@ iStarPostTrade <- function(MktData
       # Rolling periods and dates (with consistent timestamps, if needed)
       hStop <- t + horizon - 1L
       # refIdx <- hStop + 1L
-      periodIdxs[[s]] <- horizon:nrow(secMktDataDaily) # (horizon + 1L):(nrow(secMktDataDaily) + 1L)
-      periodDayDates[[s]] <- as.Date(index(secMktDataDaily)[periodIdxs[[s]]])
-      # nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
-      # nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
       
       # Volatility (on close-to-close prices, annualized)
       secCloseReturns <- Return.calculate(secMktDataDaily[t:hStop, 'MktPrice'], 'log')
