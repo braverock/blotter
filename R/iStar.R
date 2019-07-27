@@ -399,16 +399,16 @@ iStarPostTrade <- function(MktData
     paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7) # 0 <= b_1 <= 1, 0.7 is an empirical value 
     paramsBounds[1:5, 2] <- c(1000, 1, 1, 1, 1)
   # }
-  nlsFitInstImpact <- nls(arrCost ~ a_1 * (imbSize)^(a_2) * annualVol^(a_3),
+  nlsFitInstImpact <- nls(arrCost ~ a_1 * (imbSize)^(a_2) * (annualVol)^(a_3),
                           start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1),
                           lower = paramsBounds[1:3, 1], upper = paramsBounds[1:3, 2],
                           algorithm = 'port')
   
   estParam <- coef(nlsFitInstImpact)
-  instImpact <- estParam['a_1'] * (imbSize)^(estParam['a_2']) * annualVol^(estParam['a_3'])
+  instImpact <- estParam['a_1'] * (imbSize)^(estParam['a_2']) * (annualVol)^(estParam['a_3'])
   
   # Market impact
-  nlsFitMktImpact <- nls(arrCostSample ~ b_1 * instImpact * imbSize^(a_4) + (1L - b_1) * instImpact,
+  nlsFitMktImpact <- nls(arrCost ~ b_1 * instImpact * (POV)^(a_4) + (1L - b_1) * instImpact,
                          start = list(a_4 = 0.1, b_1 = 0.7),
                          lower = paramsBounds[4:5, 1], upper = paramsBounds[4:5, 2],
                          algorithm = 'port')
