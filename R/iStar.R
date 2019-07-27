@@ -385,13 +385,13 @@ iStarPostTrade <- function(MktData
   outstore[[2]] <- rollingVariablesSample
   names(outstore)[2] <- 'Rolling.Variables.Samples'
   
-  # TODO: code below will be extended to account for the samples above.
+  # TODO: code below needs to be re-evaluated to eventually account for samples constructed similarly as above. 
   #       At the moment the full data set is used to give a sense of how it will work.
   #       Note that outuput produced this way is meaningless with respect to our modeling context
-  arrCostSample <- as.vector(unlist(rollingVariables[['Arr.Cost']]))
-  imbSizeSample <- as.vector(unlist(rollingVariables[['Imb.Size']]))
-  annualVolSample <- as.vector(unlist(rollingVariables[['Annual.Vol']]))
-  povSample <- as.vector(unlist(rollingVariables[['POV']]))
+  arrCost <- as.vector(unlist(rollingVariables[['Arr.Cost']]))
+  imbSize <- as.vector(unlist(rollingVariables[['Imb.Size']]))
+  annualVol <- as.vector(unlist(rollingVariables[['Annual.Vol']]))
+  POV <- as.vector(unlist(rollingVariables[['POV']]))
   
   # Instantaneous impact
   # if (missing(paramsBounds)) {# a_1, a_2, a_3, a_4, b_1 by row
@@ -399,22 +399,22 @@ iStarPostTrade <- function(MktData
     paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7) # 0 <= b_1 <= 1, 0.7 is an empirical value 
     paramsBounds[1:5, 2] <- c(1000, 1, 1, 1, 1)
   # }
-  nlsFitInstImpact <- nls(arrCostSample ~ a_1 * (imbSizeSample)^(a_2) * annualVolSample^(a_3),
+  nlsFitInstImpact <- nls(arrCost ~ a_1 * (imbSize)^(a_2) * annualVol^(a_3),
                           start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1),
                           lower = paramsBounds[1:3, 1], upper = paramsBounds[1:3, 2],
                           algorithm = 'port')
   
   estParam <- coef(nlsFitInstImpact)
-  instImpact <- estParam['a_1'] * (imbSizeSample)^(estParam['a_2']) * annualVolSample^(estParam['a_3'])
+  instImpact <- estParam['a_1'] * (imbSize)^(estParam['a_2']) * annualVol^(estParam['a_3'])
   
   # Market impact
-  nlsFitMktImpact <- nls(arrCostSample ~ b_1 * instImpact * povSample^(a_4) + (1L - b_1) * instImpact,
+  nlsFitMktImpact <- nls(arrCostSample ~ b_1 * instImpact * imbSize^(a_4) + (1L - b_1) * instImpact,
                          start = list(a_4 = 0.1, b_1 = 0.7),
                          lower = paramsBounds[4:5, 1], upper = paramsBounds[4:5, 2],
                          algorithm = 'port')
   
   estParam[c('a_4', 'b_1')] <- coef(nlsFitMktImpact)
-  tempImpact <- estParam['b_1'] * instImpact * povSample^(estParam['a_4'])
+  tempImpact <- estParam['b_1'] * instImpact * POV^(estParam['a_4'])
   permImpact <- (1L - estParam['b_1']) * instImpact
   mktImpact <- tempImpact + permImpact
   
