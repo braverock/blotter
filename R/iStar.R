@@ -378,12 +378,8 @@ iStarPostTrade <- function(MktData
     }
   }
   
-  outstore[[1]] <- rollingVariables
-  names(outstore)[1] <- 'Rolling.Variables'
-  # rollingVariablesSample <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
-  rollingVariablesSample <- list(Imb.Sample = imbSample, Annual.Vol.Sample = volSample, POV.Sample = POVSample)
-  outstore[[2]] <- rollingVariablesSample
-  names(outstore)[2] <- 'Rolling.Variables.Samples'
+  rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
+  rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, Annual.Vol.Samples = volSamples, POV.Samples = povSamples)
   
   # TODO: code below needs to be re-evaluated to eventually account for samples constructed similarly as above. 
   #       At the moment the full data set is used to give a sense of how it will work.
@@ -418,12 +414,15 @@ iStarPostTrade <- function(MktData
   permImpact <- (1L - estParam['b_1']) * instImpact
   mktImpact <- tempImpact + permImpact
   
-  outstore[[3]] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
-  names(outstore)[3] <- 'nls.impact.fits'
-  iStartImpactsEst <- as.data.frame(cbind(instImpact, tempImpact, permImpact, mktImpact))
-  colnames(iStartImpactsEst) <- c('Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact')
-  outstore[[4]] <- iStartImpactsEst
-  names(outstore)[4] <- 'iStar.Impact.Estimates'
+  iStarImpactsEst <- as.data.frame(cbind(instImpact, tempImpact, permImpact, mktImpact))
+  colnames(iStarImpactsEst) <- c('Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact')
+  
+  # Output handling
+  outstore[['Rolling.Variables']] <- rollingVariables
+  outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
+  outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
+  outstore[['nls.impact.fits']] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
+  outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
   
   return(outstore)
 }
