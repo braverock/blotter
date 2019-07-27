@@ -276,7 +276,7 @@ iStarPostTrade <- function(MktData
     
     secMktDataDaily <- secMktData[endpoints(secMktData, 'days')]
     secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
-    secMktDataDaily$MktValue <- secMktDataDaily[, 'MktPrice'] * secMktDataDaily[, 'MktQty']
+    secMktDataDaily$MktValue <- as.numeric(secMktDataDaily[, 'MktPrice']) * as.numeric(secMktDataDaily[, 'MktQty'])
     
     cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n")
     
@@ -426,3 +426,4 @@ iStarPostTrade <- function(MktData
   
   return(outstore)
 }
+
