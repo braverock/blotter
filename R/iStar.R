@@ -8,7 +8,7 @@
 #' scenarios that take place into the market in response to imbalances.
 #' 
 #'
-#' @section Market "tick data" and variables   
+#' @section Market "tic data" and variables   
 #' In its most genearl setting, the model is based on market tic data only. 
 #' It is difficult to relate Kissell's provided notion of "tic data" with respect 
 #' to current data provision standards, which in turn may also vary by data vendors. 
@@ -23,15 +23,21 @@
 #' market data and most of them are "rolling end-of-day quantities", meaning that 
 #' they are based on previous variables over a specified \emph{horizon} (\eqn{t = 1,...,T})
 #' that rolls one step ahead until data available allows.
+#' Some variables are annualized and hence need the total number of business days 
+#' in a given market and within a given year (typically a factor of 252 days, in 
+#' the US markets, or of 250 days), we denote it \eqn{T_{m}}.
 #' These and other quantities involved are defined below: 
 #' 
 #' \describe{
-#'   \item{\emph{Arrival Price}. }{ideally is the first bid-ask spreads midpoint. When missing
-#' spread data, the first market price is used as a proxy;}
+#'   \item{\emph{Arrival Price}. }{Ideally is the first bid-ask spreads midpoint. 
+#'   When missing spread data, the first daily market price is used as a proxy.}
 #' 
 #'   \item{\emph{Annualized volatility}. }{Is the standard deviation of the 
 #'   close-to-close security returns, scaled on the number of business days in a 
-#'   given year (typically a factor of 252 days, in the US markets, or of 250 days).} 
+#'   given year:
+#'   \deqn{\sigma = \sqrt{\frac{T_{m}}{T - 1} . \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}}}
+#'   It is expressed in decimal units.
+#'   } 
 #' 
 #'   \item{\emph{Average Daily Volume} (ADV). }{Over the specified horizon
 #'   \deqn{ADV = \frac{1}{T} . \sum_{t}^{T} V_{t}}}
@@ -40,16 +46,25 @@
 #'   and "sell initiated trades". When trade 'Reason' is already available there 
 #'   is no need to explicitly infere trades direction. In cases such a 'Reason' 
 #'   is missing, the Lee-Ready \emph{tick test} will be used to infere trading 
-#'   direction. In essence, the test is based on determining the sign of price 
+#'   direction. In its essence, the test is based on determining the sign of price 
 #'   changes: uptick or zero-uptick trades are considered "buy initiated", whereas 
 #'   downtick or zero-downtick tradesare counted as "sell initiated". We express 
 #'   it as:
 #'   \deqn{Q = |\sum{Buy initiated trades volume} - \sum{Sell initiated trades volume}|}
+#'   To note is that, as the "reason" refers to each trade, "buy initiated trades" 
+#'   and "sell initiated trades" can only be deduced from intraday data and then
+#'   taken to a daily scale.
 #'   }
 #' 
-#'   \item{\emph{Imbalance size}. }{\eqn{\frac{Q_{t}}{ADV}}}
+#'   \item{\emph{Imbalance size}. }{It is defined as the ratio:
+#'   \deqn{\frac{Q_{t}}{ADV}}
+#'   It is expressed on a daily basis and the values are in decimal units.
+#'   In the I-Star modeling context it represents a proxy of a private agent order size. 
+#'   }
 #' 
-#'   \item{\emph{Imbalance side}. }{}
+#'   \item{\emph{Imbalance side}. }{It is the signed imbalance and it indicates
+#'   which side of the market is prevailing. Either +1 or -1 indicating respectively
+#'   prevailing buy or sell initiated trades.}
 #' 
 #'   \item{\emph{Percentage of volume} (POV).}{The ratio between market imbalance 
 #'   and the market daily volume traded over a given day:
@@ -67,7 +82,7 @@
 #'   order transactions, whereas with respect to the full model with market tic 
 #'   data only is an analogous metric based on the VWAP as proxy of a fair average 
 #'   execution price:   
-#'   
+#'   \deqn{Arrival Cost = ln(\frac{VWAP}{P_{0}}) . Imbalance Side . 10^{4}}
 #'   }
 #' }
 #' 
@@ -99,12 +114,16 @@
 #'   \item \emph{Timing risk measure}
 #'   It is a proxy for the uncertainty surrounding the cost estimate
 #'   \deqn{TR = \sigma . \sqrt{\frac{S . (1 - POV)}{3 . T_{m} . ADV . POV}} * 10^{4}}
-#'   where \eqn{T_{m}} is the total number of business days in a given market and 
-#'   within a given year, and \eqn{S} is the private order size. 
+#'   where \eqn{S} is the private order size. 
 #' }
 #' 
+#' @section Data-points grouping process and outliers analysis
+#' TODO: add outliers criteria and rolling variables considered thereafter (consistency still under discussion)
+#' TODO: add \code{targetGrid} default bounds values of the grouping process 
+#' 
+#' 
 #' @section Parameters estimation
-#' TODO: discuss model parameters estimation techniques
+#' TODO: discuss model parameters estimation techniques included in the function
 #' 
 #' @section Impact estimates
 #' TODO: cost curves, etc.
@@ -160,17 +179,16 @@
 #' Our best suggestion is to use a data set within the same period and including 
 #' the same number of days for each security involved in the analysis.
 #' 
-#' TODO: specify data grouping process
-#' TODO: add \code{targetGrid} default values
-#' TODO: add \code{paramsBounds} default values
-#' 
 #' TODO: discuss stock specific analysis (after review in main docs body)
 #' 
+#' TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
+#' TODO: add \code{paramsBounds} default values
+#' 
 #' @notes
-#' To run the model in a security specific analysis framework, transactional data is needed.
-#' Input are therefore \code{TxnData} with a specified \code{side} and a single \code{MktData}
-#' item to represent traded security market data.
-#' TODO: this aspect is a WIP 
+#' TODO: this aspect is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of fhurter analyses such as error analysis)
+#' To run the model in a security specific analysis framework, transactional data 
+#' is needed. Input are therefore \code{TxnData} with a specified \code{side} and 
+#' a single \code{MktData} item to represent traded security market data.
 #' 
 #' @examples 
 #' 

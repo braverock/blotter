@@ -64,11 +64,10 @@ are on constistent dates across the full data set.
 Our best suggestion is to use a data set within the same period and including 
 the same number of days for each security involved in the analysis.
 
-TODO: specify data grouping process
-TODO: add \code{targetGrid} default values
-TODO: add \code{paramsBounds} default values
-
 TODO: discuss stock specific analysis (after review in main docs body)
+
+TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
+TODO: add \code{paramsBounds} default values
 }
 \examples{
 
