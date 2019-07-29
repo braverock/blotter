@@ -364,36 +364,38 @@ iStarPostTrade <- function(MktData
   if (missing(minDataPoints)) minDataPoints <- 25L
   
   obsTargetVol <- obsTargetImb <- obsTargetPOV <- targetObs <- list()
-  volSample <- imbSample <- POVSample <- list()
+  volSamples <- imbSamples <- povSamples <- arrCostSamples <- list()
   obsTargetVol[[1]] <- 1L; obsTargetVol[[1]] <- as.list(obsTargetVol[[1]])
   obsTargetImb[[1]] <- 1L; obsTargetImb[[1]] <- as.list(obsTargetImb[[1]])
   obsTargetPOV[[1]] <- 1L; obsTargetPOV[[1]] <- as.list(obsTargetPOV[[1]])
   targetObs[[1]] <- 1L; targetObs[[1]] <- as.list(targetObs[[1]])
   names(obsTargetVol)[1] <- names(obsTargetImb)[1] <- names(obsTargetPOV)[1] <- names(targetObs)[1] <- 'groups'
-  volSample[[1]] <- 1L; volSample[[1]] <- as.list(volSample[[1]])
-  imbSample[[1]] <- 1L; imbSample[[1]] <- as.list(imbSample[[1]])
-  POVSample[[1]] <- 1L; POVSample[[1]] <- as.list(POVSample[[1]])
-  names(volSample)[1] <- names(imbSample)[1] <- names(POVSample)[1] <- 'samples'
+  volSamples[[1]] <- 1L; volSamples[[1]] <- as.list(volSamples[[1]])
+  imbSamples[[1]] <- 1L; imbSamples[[1]] <- as.list(imbSamples[[1]])
+  povSamples[[1]] <- 1L; povSamples[[1]] <- as.list(povSamples[[1]])
+  arrCostSamples[[1]] <- 1L; arrCostSamples[[1]] <- as.list(arrCostSamples[[1]])
+  names(volSamples)[1] <- names(imbSamples)[1] <- names(povSamples)[1] <- names(arrCostSamples)[1] <- 'samples'
   
   for (g in 1:nrow(targetGrid)) {
     target <- targetGrid[g, ]
     obsTargetVol[[1]][[g]] <- sapply(1:length(MktData), function(s, secAnnualVol) which(secAnnualVol[, s] == target[, 'Volatility']), secAnnualVol)
     obsTargetImb[[1]][[g]] <- sapply(1:length(MktData), function(s, secImbSize) which(secImbSize[, s] == target[, 'ImbSize']), secImbSize)
     obsTargetPOV[[1]][[g]] <- sapply(1:length(MktData), function(s, POV) which(POV[, s] == target[, 'POV']), POV)
-    names(obsTargetVol[[1]])[g] <- names(obsTargetImb[[1]])[g] <- names(obsTargetPOV[[1]])[g] <- paste0('group.', g)
-    names(obsTargetVol[[1]][[g]]) <- names(obsTargetImb[[1]][[g]]) <- names(obsTargetPOV[[1]][[g]]) <- paste0(names(MktData), '.datapoints')
     
     targetObs[[1]][[g]] <- Reduce(intersect, list(unlist(obsTargetVol[[1]][[g]]), unlist(obsTargetImb[[1]][[g]]), unlist(obsTargetPOV[[1]][[g]])))
-    names(targetObs[[1]])[g] <- paste0('group.', g, '.datapoints')
-    message(paste(length(na.omit(as.vector(unlist(targetObs[[1]][[g]])))), "data-point(s) in group", g)) # paste0('(ImbSize = ', target[, 'ImbSize'], ', Volatility = ', target[, 'Volatility'], ', POV = ', target[, 'POV'], ')'), "group."))
+    # message(paste(length(na.omit(as.vector(unlist(targetObs[[1]][[g]])))), "data-point(s) in group", g)) # paste0('(ImbSize = ', target[, 'ImbSize'], ', Volatility = ', target[, 'Volatility'], ', POV = ', target[, 'POV'], ')'), "group."))
     
     if (length(na.omit(as.vector(unlist(targetObs[[1]][[g]])))) >= minDataPoints) {
-      volSample[[1]][[g]] <- sapply(1:length(MktData), function(s, secAnnualVol) secAnnualVol[targetObs[[1]][[g]], s], secAnnualVol)
-      imbSample[[1]][[g]] <- sapply(1:length(MktData), function(s, secImb) secImb[targetObs[[1]][[g]], s], secImb)
-      POVSample[[1]][[g]] <- sapply(1:length(MktData), function(s, POV) POV[targetObs[[1]][[g]], s] , POV)
-      names(volSample[[1]])[g] <- names(imbSample[[1]])[g] <- names(POVSample[[1]])[g] <- paste0('group.', g, '.sample')
-      names(volSample[[1]][[g]]) <- names(imbSample[[1]][[g]]) <- names(POVSample[[1]][[g]]) <- paste0(names(MktData), '.sample.datapoints')
+      volSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, secAnnualVol) secAnnualVol[targetObs[[1]][[g]], s], secAnnualVol)
+      imbSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, secImb) secImb[targetObs[[1]][[g]], s], secImb)
+      povSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, POV) POV[targetObs[[1]][[g]], s] , POV)
+      arrCostSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, arrCost) arrCost[[s]][targetObs[[1]][[g]]], arrCost)
     }
+    
+    names(obsTargetVol[[1]])[g] <- names(obsTargetImb[[1]])[g] <- names(obsTargetPOV[[1]])[g] <- paste0('group.', g)
+    names(obsTargetVol[[1]][[g]]) <- names(obsTargetImb[[1]][[g]]) <- names(obsTargetPOV[[1]][[g]]) <- paste0(names(MktData), '.datapoints')
+    names(targetObs[[1]])[g] <- paste0('group.', g, '.datapoints')
+    names(volSamples[[1]])[g] <- names(imbSamples[[1]])[g] <- names(povSamples[[1]])[g] <- names(arrCostSamples[[1]])[g] <- paste0('group.', g, '.sample')
   }
   
   rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
