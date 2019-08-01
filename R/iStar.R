@@ -293,8 +293,8 @@ iStarPostTrade <- function(MktData
     }
     
     secMktDataDaily <- secMktData[endpoints(secMktData, 'days')]
-    secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData[, 'MktQty'], 'days'), sum)
-    secMktDataDaily$MktValue <- as.numeric(secMktDataDaily[, 'MktPrice']) * as.numeric(secMktDataDaily[, 'MktQty'])
+    secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData, 'days'), sum)
+    secMktDataDaily$MktValue <- period.apply(as.numeric(secMktData[, 'MktPrice']) * as.numeric(secMktData[, 'MktQty']), endpoints(secMktData, 'days'), sum)
     
     periodIdxs[[s]] <- horizon:nrow(secMktDataDaily) # (horizon + 1L):(nrow(secMktDataDaily) + 1L)
     periodDayDates[[s]] <- as.Date(index(secMktDataDaily)[periodIdxs[[s]]])
