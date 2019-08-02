@@ -136,8 +136,9 @@
 #' @author Vito Lestingi
 #' 
 #' @param MktData A list of \code{xts} objects each representing a security market data. See 'Details'
+#' @param sessions A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis  
 #' @param yrBizdays A numeric value, the number of business days in a given year data refers to. Default is 250 days
-#' @param horizon A numeric value, the number of days to compute the rolling variables over. Default is 30 days
+#' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
 #' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates   
 #' @param targetGrid A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details' 
 #' @param minDataPoints A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'
@@ -179,13 +180,14 @@
 #' Our best suggestion is to use a data set within the same period and including 
 #' the same number of days for each security involved in the analysis.
 #' 
-#' TODO: discuss stock specific analysis (after review in main docs body)
+#' The \code{horizon} should be chosen according to the number of \code{sessions}
+#' a trading day is splitted in.
 #' 
 #' TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
 #' TODO: add \code{paramsBounds} default values
 #' 
 #' @notes
-#' TODO: this aspect is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of fhurter analyses such as error analysis)
+#' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
 #' To run the model in a security specific analysis framework, transactional data 
 #' is needed. Input are therefore \code{TxnData} with a specified \code{side} and 
 #' a single \code{MktData} item to represent traded security market data.
@@ -195,6 +197,7 @@
 #' @export
 #'
 iStarPostTrade <- function(MktData
+                           , sessions
                            , yrBizdays = 250
                            , horizon = 30
                            , xtsfy = FALSE
@@ -236,6 +239,11 @@ iStarPostTrade <- function(MktData
     warning(paste("Horizon greater than minimum daily obs across MktData. Setting horizon =", minUniqueDays))
     horizon <- minUniqueDays
   }
+  if (missing(sessions)) {
+    earliestHour <- min(unlist(lapply(1:length(MktData), function(s, MktData) format(round(index(MktData[[s]]), 'hours'), 'T%H:%M:%S'), MktData)))
+    latestHour <- max(unlist(lapply(1:length(MktData), function(s, MktData) format(round(index(MktData[[s]]), 'hours'), '/T%H:%M:%S'), MktData)))
+    sessions <- paste0(earliestHour, latestHour)
+  }
   
   # Stock specific analysis order data
   # TODO: mostly ignored so far, it will be considered in light of the testing function (estimated vs. actual costs, etc.) 
@@ -269,14 +277,14 @@ iStarPostTrade <- function(MktData
   outstore <- list()
   periodIdxs <- periodDayDates <- list() # nextDayDates <- nextDayLastDate
   
-  secAnnualVol <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  ADV          <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  secImb       <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  secImbSize   <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  secImbSide   <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  POV          <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  VWAP         <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
-  arrCost      <- matrix(NA, nrow = maxUniqueDays, ncol = length(MktData))
+  secAnnualVol <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  ADV          <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  secImb       <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  secImbSize   <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  secImbSide   <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  POV          <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  VWAP         <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
+  arrCost      <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
   
   for (s in 1:length(MktData)) {
     
@@ -292,55 +300,66 @@ iStarPostTrade <- function(MktData
       reason[2:length(reason)] <- ifelse(secPriceDiff > 0, 'BID', 'ASK') # secPriceDiff[2:length(secPriceDiff)] > 0
     }
     
-    secMktDataDaily <- secMktData[endpoints(secMktData, 'days')]
-    secMktDataDaily[, 'MktQty'] <- period.apply(secMktData[, 'MktQty'], endpoints(secMktData, 'days'), sum)
-    secMktDataDaily$MktValue <- period.apply(as.numeric(secMktData[, 'MktPrice']) * as.numeric(secMktData[, 'MktQty']), endpoints(secMktData, 'days'), sum)
-    
-    periodIdxs[[s]] <- horizon:nrow(secMktDataDaily) # (horizon + 1L):(nrow(secMktDataDaily) + 1L)
-    periodDayDates[[s]] <- as.Date(index(secMktDataDaily)[periodIdxs[[s]]])
-    # nextDayLastDate[[s]] <- as.Date(last(index(secMktDataDaily))) + 1L # last "next day" may be a non-business day!
-    # nextDayDates[[s]] <- c(as.Date(index(secMktDataDaily)[periodIdxs[[s]][1:(nrow(secMktDataDaily) - horizon)]]), nextDayLastDate[[s]])
-    
-    cat(names(MktData)[s], "(days =", paste0(nrow(secMktDataDaily), "):"), "\n")
-    
-    # Arrival Price
-    arrPriceIdx <- endpoints(secMktData, 'days') + 1L
-    arrPriceIdx <- arrPriceIdx[-length(arrPriceIdx)]
-    if (any(colnames(secMktDataDaily) == 'Bid') & any(colnames(secMktDataDaily) == 'Ask')) {# first bid-ask spreads midpoint
-      arrPrice <- 0.5 * (secMktData[arrPriceIdx, 'Ask'] + secMktData[arrPriceIdx, 'Bid'])
-    } else {# proxy
-      arrPrice <- secMktData[arrPriceIdx, 'MktPrice']
+    ### DATA-SPLITTING ###
+    # TODO: check on midnight crossing times
+    sessionStartsIdxs <- sessionEndsIdxs <- secMktDataSessions <- list()
+    arrPrice <- list()
+    for (k in 1:length(sessions)) {
+      # Market data on intraday sessions close-to-close basis
+      sessionEndsIdxs[[k]] <- endpoints(secMktData[sessions[k]], 'days')
+      secMktDataSessions[[k]] <- secMktData[sessions[k]][sessionEndsIdxs[[k]]]
+      secMktDataSessions[[k]][, 'MktQty'] <- period.apply(secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum)
+      secMktDataSessions[[k]]$MktValue <- period.apply(secMktData[sessions[k], 'MktPrice'] * secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum)
+      
+      # Arrival Price
+      sessionStartsIdxs[[k]] <- sessionEndsIdxs[[k]] + 1L
+      sessionStartsIdxs[[k]] <- sessionStartsIdxs[[k]][-length(sessionStartsIdxs[[k]])]
+      if (any(colnames(secMktDataSessions) == 'Bid') & any(colnames(secMktDataSessions) == 'Ask')) {# first bid-ask spreads midpoint
+        arrPrice[[k]] <- 0.5 * (secMktData[sessions[k], 'Ask'][sessionStartsIdxs[[k]]] + secMktData[sessions[k], 'Bid'][sessionStartsIdxs[[k]]])
+      } else {# proxy
+        arrPrice[[k]] <- secMktData[sessions[k], 'MktPrice'][sessionStartsIdxs[[k]]]
+      }
     }
+    secMktDataSessions <- do.call(rbind, secMktDataSessions)
+    arrPriceIdxs <- do.call(rbind, sessionStartsIdxs)
+    arrPrice <- do.call(rbind, arrPrice)
     
-    for (t in 1:(nrow(secMktDataDaily) - horizon + 1L)) {
+    periodIdxs[[s]] <- horizon:nrow(secMktDataSessions) # (horizon + 1L):(nrow(secMktDataSessions) + 1L)
+    periodDayDates[[s]] <- as.Date(index(secMktDataSessions)[periodIdxs[[s]]])
+    # nextDayLastDate[[s]] <- as.Date(last(index(secMktDataSessions))) + 1L # last "next day" may be a non-business day!
+    # nextDayDates[[s]] <- c(as.Date(index(secMktDataSessions)[periodIdxs[[s]][1:(nrow(secMktDataSessions) - horizon)]]), nextDayLastDate[[s]])
+    
+    cat("Processing", names(MktData)[s], paste0("(on ", nrow(secMktDataSessions), " sessions closings)..."), "\n")
+    
+    for (t in 1:(nrow(secMktDataSessions) - horizon + 1L)) {
       # Rolling periods and dates (with consistent timestamps, if needed)
       hStop <- t + horizon - 1L
       # refIdx <- hStop + 1L
       
       # Volatility (on close-to-close prices, annualized)
-      secCloseReturns <- Return.calculate(secMktDataDaily[t:hStop, 'MktPrice'], 'log')
-      secAnnualVol[hStop, s] <- as.numeric(sd.annualized(secCloseReturns, scale = yrBizdays))
+      secCloseReturns <- Return.calculate(secMktDataSessions[t:hStop, 'MktPrice'], 'log')
+      secAnnualVol[hStop, s] <- as.numeric(sd.annualized(secCloseReturns, scale = yrBizdays * length(sessions)))
       
       # Average Market Volume
-      ADV[hStop, s] <- mean(secMktDataDaily[t:hStop, 'MktQty'])
+      ADV[hStop, s] <- mean(secMktDataSessions[t:hStop, 'MktQty'])
       
-      # Market Imbalance, Imbalance Side and Imbalance Size (from intraday data, for whole days)
-      buyInitTrades <- sum(secMktData[which(reason[arrPriceIdx[t]:(arrPriceIdx[t + 1] - 1L)] == 'BID'), 'MktQty'])
-      sellInitTrades <- sum(secMktData[which(reason[arrPriceIdx[t]:(arrPriceIdx[t + 1] - 1L)] == 'ASK'), 'MktQty'])
+      # Market Imbalance, Imbalance Side and Imbalance Size (from intraday data, for whole sessions)
+      buyInitTrades <- sum(secMktData[which(reason[arrPriceIdxs[t]:(arrPriceIdxs[t + 1] - 1L)] == 'BID'), 'MktQty'])
+      sellInitTrades <- sum(secMktData[which(reason[arrPriceIdxs[t]:(arrPriceIdxs[t + 1] - 1L)] == 'ASK'), 'MktQty'])
       secImb[hStop, s] <- abs(buyInitTrades - sellInitTrades)
       secImbSide[hStop, s] <- sign(buyInitTrades - sellInitTrades) # [buyInitTrades != sellInitTrades]
       secImbSize[hStop, s] <- secImb[hStop, s]/ADV[hStop, s]
       
       # Percentage of Volume
-      POV[hStop, s] <- secImb[hStop, s]/secMktDataDaily[hStop, 'MktQty']
+      POV[hStop, s] <- secImb[hStop, s]/secMktDataSessions[hStop, 'MktQty']
       
       # Cost metric
       if (length(MktData) > 1) {# Arrival Cost, VWAP as proxy of average execution price
-        VWAP[hStop, s] <- secMktDataDaily[hStop, 'MktValue']/secMktDataDaily[hStop, 'MktQty']
+        VWAP[hStop, s] <- secMktDataSessions[hStop, 'MktValue']/secMktDataSessions[hStop, 'MktQty']
         arrCost[hStop, s] <- (log(VWAP[hStop, s]) - log(arrPrice[hStop])) * secImbSide[hStop, s] * 10000L
       }
       # progress bar console feedback
-      progbar <- txtProgressBar(min = 0, max = (nrow(secMktDataDaily) - horizon + 1), style = 3)
+      progbar <- txtProgressBar(min = 0, max = (nrow(secMktDataSessions) - horizon + 1), style = 3)
       setTxtProgressBar(progbar, t)
     }
     close(progbar)
@@ -443,7 +462,6 @@ iStarPostTrade <- function(MktData
   outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
   outstore[['nls.impact.fits']] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
   outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
-  
   return(outstore)
 }
 

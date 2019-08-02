@@ -4,15 +4,18 @@
 \alias{iStarPostTrade}
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
-iStarPostTrade(MktData, yrBizdays = 250, horizon = 30, xtsfy = FALSE,
-  targetGrid, minDataPoints, paramsBounds, TxnData, side, ...)
+iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
+  xtsfy = FALSE, targetGrid, minDataPoints, paramsBounds, TxnData, side,
+  ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects each representing a security market data. See 'Details'}
 
+\item{sessions}{A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis}
+
 \item{yrBizdays}{A numeric value, the number of business days in a given year data refers to. Default is 250 days}
 
-\item{horizon}{A numeric value, the number of days to compute the rolling variables over. Default is 30 days}
+\item{horizon}{A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'}
 
 \item{xtsfy}{A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates}
 
@@ -64,7 +67,8 @@ are on constistent dates across the full data set.
 Our best suggestion is to use a data set within the same period and including 
 the same number of days for each security involved in the analysis.
 
-TODO: discuss stock specific analysis (after review in main docs body)
+The \code{horizon} should be chosen according to the number of \code{sessions}
+a trading day is splitted in.
 
 TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
 TODO: add \code{paramsBounds} default values
