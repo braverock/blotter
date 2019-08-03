@@ -139,7 +139,8 @@
 #' @param sessions A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis  
 #' @param yrBizdays A numeric value, the number of business days in a given year data refers to. Default is 250 days
 #' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
-#' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates   
+#' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates 
+#' @param grouping A boolean specifying whether the provided dataset has to be grouped. Groups are based on \code{targetGrid} and \code{minDataPoints}, see 'Details'
 #' @param targetGrid A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details' 
 #' @param minDataPoints A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'
 #' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls()}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
@@ -183,8 +184,10 @@
 #' The \code{horizon} should be chosen according to the number of \code{sessions}
 #' a trading day is splitted in.
 #' 
-#' TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
-#' TODO: add \code{paramsBounds} default values
+#' TODO: DATA-GROUPING DISCUSSION 
+#' - add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
+#' - add \code{paramsBounds} default values
+#' - report Kissell's sequences and intervals on the above variables  
 #' 
 #' @notes
 #' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
@@ -201,13 +204,13 @@ iStarPostTrade <- function(MktData
                            , yrBizdays = 250
                            , horizon = 30
                            , xtsfy = FALSE
+                           , grouping = FALSE
                            , targetGrid
                            , minDataPoints
                            , paramsBounds
                            , TxnData 
                            , side
                            , ...) # TODO: can ellipses pass params to nls() ? 
-
 { 
   secNames <- names(MktData)
   firstDays <- as.Date(sapply(1:length(MktData), function(s, MktData) format(index(first(MktData[[s]])), '%Y-%m-%d'), MktData))
@@ -309,7 +312,7 @@ iStarPostTrade <- function(MktData
       sessionEndsIdxs[[k]] <- endpoints(secMktData[sessions[k]], 'days')
       secMktDataSessions[[k]] <- secMktData[sessions[k]][sessionEndsIdxs[[k]]]
       secMktDataSessions[[k]][, 'MktQty'] <- period.apply(secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum)
-      secMktDataSessions[[k]]$MktValue <- period.apply(secMktData[sessions[k], 'MktPrice'] * secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum)
+      secMktDataSessions[[k]]$MktValue <- period.apply(as.numeric(secMktData[sessions[k], 'MktPrice']) * as.numeric(secMktData[sessions[k], 'MktQty']), sessionEndsIdxs[[k]], sum)
       
       # Arrival Price
       sessionStartsIdxs[[k]] <- sessionEndsIdxs[[k]] + 1L
@@ -378,6 +381,7 @@ iStarPostTrade <- function(MktData
     rollingVariables[[item]] <- x
   }
   
+  if (grouping) {
   if (missing(targetGrid)) targetGrid <- expand.grid(seq(0.01, 0.3, 0.01), seq(0.1, 0.8, 0.1), seq(0.05, 0.65, 0.05)) # in decimal units, sensical comparison with computed variables
   colnames(targetGrid) <- c('ImbSize', 'Volatility', 'POV')
   if (missing(minDataPoints)) minDataPoints <- 25L
@@ -419,6 +423,7 @@ iStarPostTrade <- function(MktData
   
   rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
   rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, Annual.Vol.Samples = volSamples, POV.Samples = povSamples)
+  }
   
   # TODO: code below needs to be re-evaluated to eventually account for samples constructed similarly as above. 
   #       At the moment the full data set is used to give a sense of how it will work.
@@ -458,8 +463,8 @@ iStarPostTrade <- function(MktData
   
   # Output handling
   outstore[['Rolling.Variables']] <- rollingVariables
-  outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
-  outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
+  # outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
+  # outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
   outstore[['nls.impact.fits']] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
   outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
   return(outstore)

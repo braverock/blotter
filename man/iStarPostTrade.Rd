@@ -5,8 +5,8 @@
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
 iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
-  xtsfy = FALSE, targetGrid, minDataPoints, paramsBounds, TxnData, side,
-  ...)
+  xtsfy = FALSE, grouping = FALSE, targetGrid, minDataPoints,
+  paramsBounds, TxnData, side, ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects each representing a security market data. See 'Details'}
@@ -18,6 +18,8 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 \item{horizon}{A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'}
 
 \item{xtsfy}{A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates}
+
+\item{grouping}{A boolean specifying whether the provided dataset has to be grouped. Groups are based on \code{targetGrid} and \code{minDataPoints}, see 'Details'}
 
 \item{targetGrid}{A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details'}
 
@@ -70,8 +72,10 @@ the same number of days for each security involved in the analysis.
 The \code{horizon} should be chosen according to the number of \code{sessions}
 a trading day is splitted in.
 
-TODO: add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
-TODO: add \code{paramsBounds} default values
+TODO: DATA-GROUPING DISCUSSION 
+- add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
+- add \code{paramsBounds} default values
+- report Kissell's sequences and intervals on the above variables
 }
 \examples{
 
