@@ -305,25 +305,23 @@ iStarPostTrade <- function(MktData
     
     ### DATA-SPLITTING ###
     # TODO: check on midnight crossing times
-    sessionStartsIdxs <- sessionEndsIdxs <- secMktDataSessions <- list()
-    arrPrice <- list()
-    for (k in 1:length(sessions)) {
-      # Market data on intraday sessions close-to-close basis
-      sessionEndsIdxs[[k]] <- endpoints(secMktData[sessions[k]], 'days')
-      secMktDataSessions[[k]] <- secMktData[sessions[k]][sessionEndsIdxs[[k]]]
-      secMktDataSessions[[k]][, 'MktQty'] <- period.apply(secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum)
-      secMktDataSessions[[k]]$MktValue <- period.apply(as.numeric(secMktData[sessions[k], 'MktPrice']) * as.numeric(secMktData[sessions[k], 'MktQty']), sessionEndsIdxs[[k]], sum)
-      
-      # Arrival Price
-      sessionStartsIdxs[[k]] <- sessionEndsIdxs[[k]] + 1L
-      sessionStartsIdxs[[k]] <- sessionStartsIdxs[[k]][-length(sessionStartsIdxs[[k]])]
-      if (any(colnames(secMktDataSessions) == 'Bid') & any(colnames(secMktDataSessions) == 'Ask')) {# first bid-ask spreads midpoint
-        arrPrice[[k]] <- 0.5 * (secMktData[sessions[k], 'Ask'][sessionStartsIdxs[[k]]] + secMktData[sessions[k], 'Bid'][sessionStartsIdxs[[k]]])
-      } else {# proxy
-        arrPrice[[k]] <- secMktData[sessions[k], 'MktPrice'][sessionStartsIdxs[[k]]]
-      }
-    }
+    # Market data on intraday sessions (close-to-close)
+    sessionEndsIdxs <- lapply(1:length(sessions), function(k, secMktData) endpoints(secMktData[sessions[k]], 'days'), secMktData)
+    secMktDataSessions <- lapply(1:length(sessions), function(k, secMktData) secMktData[sessions[k]][sessionEndsIdxs[[k]]], secMktData)
+    totMktQty <- lapply(1:length(sessions), function(k, secMktData) period.apply(secMktData[sessions[k], 'MktQty'], sessionEndsIdxs[[k]], sum), secMktData)
+    mktValue <- lapply(1:length(sessions), function(k, secMktData) period.apply(as.numeric(secMktData[sessions[k], 'MktPrice']) * as.numeric(secMktData[sessions[k], 'MktQty']), sessionEndsIdxs[[k]], sum), secMktData)
     secMktDataSessions <- do.call(rbind, secMktDataSessions)
+    secMktDataSessions[, 'MktQty'] <- do.call(rbind, totMktQty)
+    secMktDataSessions$MktValue <- do.call(rbind, mktValue)
+    
+    # Arrival Price
+    sessionStartsIdxs <- lapply(1:length(sessionEndsIdxs), function(k, sessionEndsIdxs) sessionEndsIdxs[[k]] + 1L, sessionEndsIdxs)
+    sessionStartsIdxs <- lapply(1:length(sessionStartsIdxs), function(k, sessionStartsIdxs) sessionStartsIdxs[[k]][-length(sessionStartsIdxs[[k]])], sessionStartsIdxs)
+    if (all(c('Bid', 'Ask') %in% colnames(secMktDataSessions))) {# first bid-ask spreads midpoint
+      arrPrice <-  lapply(1:length(sessionStartsIdxs), function(k, secMktData) 0.5 * (secMktData[sessions[k], 'Ask'][sessionStartsIdxs[[k]]] + secMktData[sessions[k], 'Bid'][sessionStartsIdxs[[k]]]), secMktData)
+    } else {# proxy
+      arrPrice <- lapply(1:length(sessionStartsIdxs), function(k, secMktData) secMktData[sessions[k], 'MktPrice'][sessionStartsIdxs[[k]]], secMktData)
+    }
     arrPriceIdxs <- do.call(rbind, sessionStartsIdxs)
     arrPrice <- do.call(rbind, arrPrice)
     
