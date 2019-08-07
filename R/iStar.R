@@ -309,7 +309,7 @@ iStarPostTrade <- function(MktData
     sessionCloseIdxs <- lapply(1:length(sessions), function(k, secMktData) endpoints(secMktData[sessions[k]], 'days'), secMktData)
     secMktDataSessions <- lapply(1:length(sessions), function(k, secMktData) secMktData[sessions[k]][sessionCloseIdxs[[k]]], secMktData)
     sessionMktQty <- lapply(1:length(sessions), function(k, secMktData) period.apply(secMktData[sessions[k], 'MktQty'], sessionCloseIdxs[[k]], sum), secMktData)
-    sessionMktValue <- lapply(1:length(sessions), function(k, secMktData) period.apply(as.numeric(secMktData[sessions[k], 'MktPrice']) * as.numeric(secMktData[sessions[k], 'MktQty']), sessionCloseIdxs[[k]], sum), secMktData)
+    sessionMktValue <- lapply(1:length(sessions), function(k, secMktData) period.apply(secMktData[sessions[k], 'MktPrice'] * secMktData[sessions[k], 'MktQty'], sessionCloseIdxs[[k]], sum), secMktData)
     secMktDataSessions <- do.call(rbind, secMktDataSessions)
     secMktDataSessions$MktQty <- do.call(rbind, sessionMktQty)
     secMktDataSessions$MktValue <- do.call(rbind, sessionMktValue)
