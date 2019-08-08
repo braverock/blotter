@@ -156,6 +156,10 @@
 #'      \item{\code{}: }{}
 #' }
 #' 
+#' 
+#' @importFrom utils type.convert txtProgressBar setTxtProgressBar
+#' @importFrom stats nls coef
+#' 
 #' @seealso 
 #'    \code{\link[PerformanceAnalytics]{Return.calculate}},
 #'    \code{\link[PerformanceAnalytics]{sd.annualized}},
