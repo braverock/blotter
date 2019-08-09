@@ -5,7 +5,7 @@
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
 iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
-  xtsfy = FALSE, grouping = FALSE, targetGrid, minDataPoints,
+  xtsfy = FALSE, grouping = FALSE, targetIntervals, minDataPoints,
   paramsBounds, TxnData, side, ...)
 }
 \arguments{
@@ -19,13 +19,13 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{xtsfy}{A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates}
 
-\item{grouping}{A boolean specifying whether the provided dataset has to be grouped. Groups are based on \code{targetGrid} and \code{minDataPoints}, see 'Details'}
+\item{grouping}{A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'}
 
-\item{targetGrid}{A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details'}
+\item{targetIntervals}{A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details'}
 
-\item{minDataPoints}{A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'}
+\item{minDataPoints}{A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'}
 
-\item{paramsBounds}{A matrix to provide model parameters bounds to pass to \code{nls()}. Parameters are considered by row and columns represents lower and upper bounds, respectively}
+\item{paramsBounds}{A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively}
 
 \item{TxnData}{An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'}
 
@@ -70,12 +70,14 @@ Our best suggestion is to use a data set within the same period and including
 the same number of days for each security involved in the analysis.
 
 The \code{horizon} should be chosen according to the number of \code{sessions}
-a trading day is splitted in.
+a trading day is splitted into.
 
-TODO: DATA-GROUPING DISCUSSION 
-- add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
-- add \code{paramsBounds} default values
-- report Kissell's sequences and intervals on the above variables
+Parameters \code{targetInterval} and \code{minDataPoints} regulate the grouping process.
+\code{minDataPoints} of each group to let its datapoints belong to the estimation 
+process dafaults to 25 datapoints, as suggested by the author. However, this parameter
+largerly depends on the given dataset and on others parameters such as the \code{session} 
+specifications.
+TODO: add \code{targetInterval} default sequences, also specify bounds inclusion
 }
 \examples{
 

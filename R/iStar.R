@@ -117,10 +117,17 @@
 #'   where \eqn{S} is the private order size. 
 #' }
 #' 
-#' @section Data-points grouping process and outliers analysis
-#' TODO: add outliers criteria and rolling variables considered thereafter (consistency still under discussion)
-#' TODO: add \code{targetGrid} default bounds values of the grouping process 
+#' @section Outliers analysis
+#' TODO: add outliers criteria (consistency still under discussion)
 #' 
+#' @section Data grouping procedure
+#' The grouping may be carried before procedeeding with the non-linear regression estimation.
+#' 
+#' Using Kissell's words "too fine increments [lead to] excessive groupings surface 
+#' and we have found that a substantially large data grouping does not always uncover
+#' a statistical relationship between cost and our set of explanatory factors."
+#'
+#' TODO: discuss minimal number of obs per bucket and data exclusion that may occur
 #' 
 #' @section Parameters estimation
 #' TODO: discuss model parameters estimation techniques included in the function
@@ -140,10 +147,10 @@
 #' @param yrBizdays A numeric value, the number of business days in a given year data refers to. Default is 250 days
 #' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
 #' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates 
-#' @param grouping A boolean specifying whether the provided dataset has to be grouped. Groups are based on \code{targetGrid} and \code{minDataPoints}, see 'Details'
-#' @param targetGrid A data.frame with all the ImbalanceSize-Volatility-POV combinations to build data-points groups with. See 'Details' 
-#' @param minDataPoints A numeric value, the minimum number of data-points to accept in the data grouping process. See 'Details'
-#' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls()}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
+#' @param grouping A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'
+#' @param targetIntervals A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
+#' @param minDataPoints A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
+#' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
 #' @param TxnData An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'
 #' @param side A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'
 #' @param ... Passthrough parameters
@@ -186,12 +193,15 @@
 #' the same number of days for each security involved in the analysis.
 #' 
 #' The \code{horizon} should be chosen according to the number of \code{sessions}
-#' a trading day is splitted in.
+#' a trading day is splitted into.
 #' 
-#' TODO: DATA-GROUPING DISCUSSION 
-#' - add, eventually, explanations of how provided \code{targetGrid} values will be treated internally and on the \code{minDataPoints} check
-#' - add \code{paramsBounds} default values
-#' - report Kissell's sequences and intervals on the above variables  
+#' Parameters \code{targetInterval} and \code{minDataPoints} regulate the grouping process.
+#' \code{minDataPoints} of each group to let its datapoints belong to the estimation 
+#' process dafaults to 25 datapoints, as suggested by the author. However, this parameter
+#' largerly depends on the given dataset and on others parameters such as the \code{sessions} 
+#' and \code{horizon} specifications.
+#' TODO: add \code{targetInterval} default sequences, also specify bounds inclusion
+#' 
 #' 
 #' @notes
 #' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
@@ -209,7 +219,7 @@ iStarPostTrade <- function(MktData
                            , horizon = 30
                            , xtsfy = FALSE
                            , grouping = FALSE
-                           , targetGrid
+                           , targetIntervals
                            , minDataPoints
                            , paramsBounds
                            , TxnData 
@@ -322,7 +332,7 @@ iStarPostTrade <- function(MktData
     sessionOpenIdxs <- lapply(1:length(sessionCloseIdxs), function(k, sessionCloseIdxs) sessionCloseIdxs[[k]] + 1L, sessionCloseIdxs)
     sessionOpenIdxs <- lapply(1:length(sessionOpenIdxs), function(k, sessionOpenIdxs) sessionOpenIdxs[[k]][-length(sessionOpenIdxs[[k]])], sessionOpenIdxs)
     if (all(c('Bid', 'Ask') %in% colnames(secMktDataSessions))) {# first bid-ask spreads midpoint
-      arrPrice <-  lapply(1:length(sessionOpenIdxs), function(k, secMktData) 0.5 * (secMktData[sessions[k], 'Ask'][sessionOpenIdxs[[k]]] + secMktData[sessions[k], 'Bid'][sessionStartsIdxs[[k]]]), secMktData)
+      arrPrice <-  lapply(1:length(sessionOpenIdxs), function(k, secMktData) 0.5 * (secMktData[sessions[k], 'Ask'][sessionOpenIdxs[[k]]] + secMktData[sessions[k], 'Bid'][sessionOpenIdxs[[k]]]), secMktData)
     } else {# proxy
       arrPrice <- lapply(1:length(sessionOpenIdxs), function(k, secMktData) secMktData[sessions[k], 'MktPrice'][sessionOpenIdxs[[k]]], secMktData)
     }
@@ -382,58 +392,126 @@ iStarPostTrade <- function(MktData
     names(x) <- paste(names(MktData), names(rollingVariables)[item], sep = '.')
     rollingVariables[[item]] <- x
   }
+  imbSize <- rollingVariables[['Imb.Size']]
+  annualVol <- rollingVariables[['Annual.Vol']]
+  POV <- rollingVariables[['POV']]
+  arrCost <- rollingVariables[['Arr.Cost']]
   
-  if (grouping) {
-  if (missing(targetGrid)) targetGrid <- expand.grid(seq(0.01, 0.3, 0.01), seq(0.1, 0.8, 0.1), seq(0.05, 0.65, 0.05)) # in decimal units, sensical comparison with computed variables
-  colnames(targetGrid) <- c('ImbSize', 'Volatility', 'POV')
-  if (missing(minDataPoints)) minDataPoints <- 25L
-  
-  obsTargetVol <- obsTargetImb <- obsTargetPOV <- targetObs <- list()
-  volSamples <- imbSamples <- povSamples <- arrCostSamples <- list()
-  obsTargetVol[[1]] <- 1L; obsTargetVol[[1]] <- as.list(obsTargetVol[[1]])
-  obsTargetImb[[1]] <- 1L; obsTargetImb[[1]] <- as.list(obsTargetImb[[1]])
-  obsTargetPOV[[1]] <- 1L; obsTargetPOV[[1]] <- as.list(obsTargetPOV[[1]])
-  targetObs[[1]] <- 1L; targetObs[[1]] <- as.list(targetObs[[1]])
-  names(obsTargetVol)[1] <- names(obsTargetImb)[1] <- names(obsTargetPOV)[1] <- names(targetObs)[1] <- 'groups'
-  volSamples[[1]] <- 1L; volSamples[[1]] <- as.list(volSamples[[1]])
-  imbSamples[[1]] <- 1L; imbSamples[[1]] <- as.list(imbSamples[[1]])
-  povSamples[[1]] <- 1L; povSamples[[1]] <- as.list(povSamples[[1]])
-  arrCostSamples[[1]] <- 1L; arrCostSamples[[1]] <- as.list(arrCostSamples[[1]])
-  names(volSamples)[1] <- names(imbSamples)[1] <- names(povSamples)[1] <- names(arrCostSamples)[1] <- 'samples'
-  
-  for (g in 1:nrow(targetGrid)) {
-    target <- targetGrid[g, ]
-    obsTargetVol[[1]][[g]] <- sapply(1:length(MktData), function(s, secAnnualVol) which(secAnnualVol[, s] == target[, 'Volatility']), secAnnualVol)
-    obsTargetImb[[1]][[g]] <- sapply(1:length(MktData), function(s, secImbSize) which(secImbSize[, s] == target[, 'ImbSize']), secImbSize)
-    obsTargetPOV[[1]][[g]] <- sapply(1:length(MktData), function(s, POV) which(POV[, s] == target[, 'POV']), POV)
+  ### DATA-POINTS GROUPING ###
+  if (grouping[1]) {
+    # Buckets specs
+    if (missing(targetIntervals)) {# values in decimal units, comparable with rolling variables ones
+      imbBounds <- c(0.005, seq(0.01, 0.3, 0.01))
+      volBounds <- seq(0.1, 0.8, 0.1)
+      povBounds <- c(0.01, seq(0.05, 0.65, 0.05))
+    } else {
+      if (!all(c('ImbSize', 'Vol', 'POV') %in% names(targetIntervals))) {
+        stop("No 'ImbSize', 'Vol' or 'POV' columns found in targetIntervals, what did you call them?")
+      }
+      imbBounds <- targetIntervals['ImbSize']
+      volBounds <- targetIntervals['Vol']
+      povBounds <- targetIntervals['POV']
+    }
+    # 3D buckets
+    targetBuckets <- list()
+    numImbIntervals <- (length(imbBounds) - 1L)
+    numPovIntervals <- (length(povBounds) - 1L)
+    numVolIntervals <- (length(volBounds) - 1L)
+    numBuckets <- numImbIntervals * numPovIntervals * numVolIntervals
     
-    targetObs[[1]][[g]] <- Reduce(intersect, list(unlist(obsTargetVol[[1]][[g]]), unlist(obsTargetImb[[1]][[g]]), unlist(obsTargetPOV[[1]][[g]])))
-    # message(paste(length(na.omit(as.vector(unlist(targetObs[[1]][[g]])))), "data-point(s) in group", g)) # paste0('(ImbSize = ', target[, 'ImbSize'], ', Volatility = ', target[, 'Volatility'], ', POV = ', target[, 'POV'], ')'), "group."))
+    iter <- matrix(1:(numVolIntervals * numPovIntervals), nrow = numVolIntervals, byrow = TRUE)
+    imbVar <- rep(imbBounds, each = 2)
+    for (v in 1:numVolIntervals) {
+      volVar <-  rep(rev(volBounds[v:(v + 1)]), length(rep(imbBounds)))
+      for (p in 1:numPovIntervals) {
+        povVar <- rep(rev(povBounds[p:(p + 1)]), length(rep(imbBounds)))
+        targetBuckets[[iter[v, p]]] <- cbind(imbVar, povVar, volVar)
+      }
+    }
+    targetBuckets <- do.call(rbind, targetBuckets)
+    colnames(targetBuckets) <- c('ImbSize', 'POV', 'Vol')
+    imbLowerBounds <- imbUpperBounds <- rep(NA, nrow(targetBuckets))
+    volLowerBounds <- volUpperBounds <- rep(NA, nrow(targetBuckets))
+    povLowerBounds <- povUpperBounds <- rep(NA, nrow(targetBuckets))
+    for (r in 1:nrow(targetBuckets)) {
+      if (r %% 2 == 0 & r %% length(imbBounds) != 0) {
+        imbLowerBounds[r] <- as.numeric(targetBuckets[r, 'ImbSize'])
+        imbUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'ImbSize'])
+        volLowerBounds[r] <- as.numeric(targetBuckets[r, 'Vol'])
+        volUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'Vol'])
+        povLowerBounds[r] <- as.numeric(targetBuckets[r, 'POV'])
+        povUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'POV'])
+      }
+    }
+    imbLowerBounds <- na.omit(imbLowerBounds)
+    imbUpperBounds <- na.omit(imbUpperBounds)
+    volLowerBounds <- na.omit(volLowerBounds) 
+    volUpperBounds <- na.omit(volUpperBounds)
+    povLowerBounds <- na.omit(povLowerBounds)
+    povUpperBounds <- na.omit(povUpperBounds)
     
-    if (length(na.omit(as.vector(unlist(targetObs[[1]][[g]])))) >= minDataPoints) {
-      volSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, secAnnualVol) secAnnualVol[targetObs[[1]][[g]], s], secAnnualVol)
-      imbSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, secImb) secImb[targetObs[[1]][[g]], s], secImb)
-      povSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, POV) POV[targetObs[[1]][[g]], s] , POV)
-      arrCostSamples[[1]][[g]] <- sapply(1:length(MktData), function(s, arrCost) arrCost[[s]][targetObs[[1]][[g]]], arrCost)
+    # Grouping and 'sampling' procedure 
+    if (missing(minDataPoints)) minDataPoints <- 25L 
+    
+    obsTargetVol <- obsTargetImb <- obsTargetPOV <- targetObs <- vector('list', length = numBuckets)
+    volSamples <- imbSamples <- povSamples <- arrCostSamples <- vector('list', length = numBuckets)
+    names(obsTargetVol) <- names(obsTargetImb) <- names(obsTargetPOV) <- names(targetObs) <- paste0('group.', 1:numBuckets)
+    names(volSamples) <- names(imbSamples) <- names(povSamples) <- names(arrCostSamples) <- paste0('group.', 1:numBuckets, '.sample')
+    
+    for (g in 1:numBuckets) {
+      obsTargetImb[[g]] <- lapply(1:length(MktData), function(s, imbSize) which(imbSize[[s]] > imbLowerBounds[g] & imbSize[[s]] <= imbUpperBounds[g]), imbSize)
+      obsTargetVol[[g]] <- lapply(1:length(MktData), function(s, annualVol) which(annualVol[[s]] > volLowerBounds[g] & annualVol[[s]] <= volUpperBounds[g]), annualVol)
+      obsTargetPOV[[g]] <- lapply(1:length(MktData), function(s, POV) which(POV[[s]] > povLowerBounds[g] & POV[[s]] <= povUpperBounds[g]), POV)
+      
+      targetObs[[g]] <- lapply(1:length(MktData), function(s, obsTargetVol, obsTargetImb, obsTargetPOV) Reduce(intersect, list(obsTargetVol[[g]][[s]], obsTargetImb[[g]][[s]], obsTargetPOV[[g]][[s]])), obsTargetVol, obsTargetImb, obsTargetPOV)
+      if (length(na.omit(as.vector(unlist(targetObs[[g]])))) >= minDataPoints) {
+        imbSamples[[g]] <- lapply(1:length(MktData), function(s, imbSize) imbSize[[s]][targetObs[[g]][[s]]], imbSize)
+        volSamples[[g]] <- lapply(1:length(MktData), function(s, annualVol) annualVol[[s]][targetObs[[g]][[s]]], annualVol)
+        povSamples[[g]] <- lapply(1:length(MktData), function(s, POV) POV[[s]][targetObs[[g]][[s]]], POV)
+        arrCostSamples[[g]] <- lapply(1:length(MktData), function(s, arrCost) arrCost[[s]][targetObs[[g]][[s]]], arrCost)
+      } else {
+        imbSamples[[g]] <- volSamples[[g]] <- povSamples[[g]] <- arrCostSamples[[g]] <- as.list(rep(NA, length(MktData)))
+      }
+      names(obsTargetVol[[g]]) <- names(obsTargetImb[[g]]) <- names(obsTargetPOV[[g]]) <- names(MktData)
+      names(volSamples[[g]]) <- names(imbSamples[[g]]) <- names(povSamples[[g]]) <- names(arrCostSamples[[g]]) <- names(MktData)
+    }
+    imbSize <- as.vector(na.omit(do.call(c, imbSamples)))
+    annualVol <- as.vector(na.omit(do.call(c, volSamples)))
+    POV <- as.vector(na.omit(do.call(c, povSamples)))
+    arrCost <- as.vector(na.omit(do.call(c, arrCostSamples)))
+    
+    # Grouped variables means
+    if (grouping[2]) {
+      imbSize <- lapply(unlist(imbSamples, recursive = FALSE), mean, na.rm = TRUE)
+      annualVol <- lapply(unlist(volSamples, recursive = FALSE), mean, na.rm = TRUE)
+      POV <- lapply(unlist(povSamples, recursive = FALSE), mean, na.rm = TRUE)
+      arrCost <- lapply(unlist(arrCostSamples, recursive = FALSE), mean, na.rm = TRUE)
+      
+      imbSize <- as.vector(do.call(c, imbSize)) 
+      annualVol <- as.vector(do.call(c, annualVol))
+      POV <- as.vector(do.call(c, POV))
+      arrCost <- as.vector(do.call(c, arrCost))
     }
     
-    names(obsTargetVol[[1]])[g] <- names(obsTargetImb[[1]])[g] <- names(obsTargetPOV[[1]])[g] <- paste0('group.', g)
-    names(obsTargetVol[[1]][[g]]) <- names(obsTargetImb[[1]][[g]]) <- names(obsTargetPOV[[1]][[g]]) <- paste0(names(MktData), '.datapoints')
-    names(targetObs[[1]])[g] <- paste0('group.', g, '.datapoints')
-    names(volSamples[[1]])[g] <- names(imbSamples[[1]])[g] <- names(povSamples[[1]])[g] <- names(arrCostSamples[[1]])[g] <- paste0('group.', g, '.sample')
-  }
-  
-  rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
-  rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, Annual.Vol.Samples = volSamples, POV.Samples = povSamples)
-  }
+    groupsBounds <- as.data.frame(cbind('Imb.Lower.Bound' = imbLowerBounds, 'Imb.Upper.Bound' = imbUpperBounds, 'POV.Lower.Bound' = povLowerBounds, 'POV.Upper.Bound' = povUpperBounds, 'Vol.Lower.Bound' = volLowerBounds, 'Vol.Upper.Bound' = volUpperBounds))
+    rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
+    rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, POV.Samples = povSamples, Annual.Vol.Samples = volSamples)
+    outstore[['Groups.Bounds']] <- groupsBounds
+    outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
+    outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
+    
+  } else {# full datapoints
+    
+    imbSize <- as.vector(unlist(imbSize))
+    annualVol <- as.vector(unlist(annualVol))
+    POV <- as.vector(unlist(POV))
+    arrCost <- as.vector(unlist(arrCost))
+    
+  } # end of data grouping 
   
   # TODO: code below needs to be re-evaluated to eventually account for samples constructed similarly as above. 
   #       At the moment the full data set is used to give a sense of how it will work.
   #       Note that outuput produced this way is meaningless with respect to our modeling context
-  arrCost <- as.vector(unlist(rollingVariables[['Arr.Cost']]))
-  imbSize <- as.vector(unlist(rollingVariables[['Imb.Size']]))
-  annualVol <- as.vector(unlist(rollingVariables[['Annual.Vol']]))
-  POV <- as.vector(unlist(rollingVariables[['POV']]))
   
   # Instantaneous impact
   # if (missing(paramsBounds)) {# a_1, a_2, a_3, a_4, b_1 by row
@@ -465,8 +543,6 @@ iStarPostTrade <- function(MktData
   
   # Output handling
   outstore[['Rolling.Variables']] <- rollingVariables
-  # outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
-  # outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
   outstore[['nls.impact.fits']] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
   outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
   return(outstore)
