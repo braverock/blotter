@@ -122,12 +122,20 @@
 #' 
 #' @section Data grouping procedure
 #' The grouping may be carried before procedeeding with the non-linear regression estimation.
+#' The grouping is based on buckets built with respect to three variables: the Imbalance size, 
+#' the POV and the annualized volatility. It is irrespective of the security whose values fall
+#' into the buckets. A datapoints threshold in each bucket has to be reached in order to include 
+#' the corresponding group in the estimation process.
 #' 
-#' Using Kissell's words "too fine increments [lead to] excessive groupings surface 
-#' and we have found that a substantially large data grouping does not always uncover
-#' a statistical relationship between cost and our set of explanatory factors."
-#'
-#' TODO: discuss minimal number of obs per bucket and data exclusion that may occur
+#' Several aspects are worth empashizing. First of all, using Kissell's words "too fine increments 
+#' [lead to] excessive groupings surface and we have found that a substantially large data grouping 
+#' does not always uncover a statistical relationship between cost and our set of explanatory factors."
+#' This in turn points to an important consideration: also depending on the datapoints threshold 
+#' specified, the data grouping may result in discarding data and this allows to exclude anomalous 
+#' observations (outliers) with respect to the explanatory variables.
+#' On one hand is therefore understood how this step offers improvement margins to the nonlinear 
+#' least squares estimation procedure, on the other it may cause convergence issues dependending 
+#' on the effective shrinkage datapoints go through.
 #' 
 #' @section Parameters estimation
 #' TODO: discuss model parameters estimation techniques included in the function
@@ -148,8 +156,8 @@
 #' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
 #' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates 
 #' @param grouping A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'
-#' @param targetIntervals A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
-#' @param minDataPoints A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
+#' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
+#' @param minGroupDps A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
 #' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
 #' @param TxnData An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'
 #' @param side A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'
@@ -195,13 +203,19 @@
 #' The \code{horizon} should be chosen according to the number of \code{sessions}
 #' a trading day is splitted into.
 #' 
-#' Parameters \code{targetInterval} and \code{minDataPoints} regulate the grouping process.
-#' \code{minDataPoints} of each group to let its datapoints belong to the estimation 
-#' process dafaults to 25 datapoints, as suggested by the author. However, this parameter
-#' largerly depends on the given dataset and on others parameters such as the \code{sessions} 
+#' Parameters \code{groupsBounds} and \code{minGroupDps} regulate the grouping process.
+#' \code{minGroupDps} of each group has to be reached in order to let its datapoints 
+#' be included in the estimation process. It dafaults to 25 datapoints, as suggested 
+#' by the author. However, this appears to be a rule of thumb, as the parameter largerly 
+#' depends on the given original dataset and on others parameters such as the \code{sessions} 
 #' and \code{horizon} specifications.
-#' TODO: add \code{targetInterval} default sequences, also specify bounds inclusion
-#' 
+#' \code{groupsBounds} defaults to the following sequences: 
+#' \tabular{cc}{
+#'   Imbalance Size        \tab 0.005, 0.01, 0.02, ..., 0.3 \cr
+#'   Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
+#'   POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
+#' }
+#' Again, these values are suggested by the author and appear to come from empirical findings.
 #' 
 #' @notes
 #' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
@@ -219,8 +233,8 @@ iStarPostTrade <- function(MktData
                            , horizon = 30
                            , xtsfy = FALSE
                            , grouping = FALSE
-                           , targetIntervals
-                           , minDataPoints
+                           , groupsBounds
+                           , minGroupDps
                            , paramsBounds
                            , TxnData 
                            , side
@@ -397,20 +411,20 @@ iStarPostTrade <- function(MktData
   POV <- rollingVariables[['POV']]
   arrCost <- rollingVariables[['Arr.Cost']]
   
-  ### DATA-POINTS GROUPING ###
+  ### DATAPOINTS GROUPING ###
   if (grouping[1]) {
     # Buckets specs
-    if (missing(targetIntervals)) {# values in decimal units, comparable with rolling variables ones
+    if (missing(groupsBounds)) {# values in decimal units, comparable with rolling variables ones
       imbBounds <- c(0.005, seq(0.01, 0.3, 0.01))
       volBounds <- seq(0.1, 0.8, 0.1)
       povBounds <- c(0.01, seq(0.05, 0.65, 0.05))
     } else {
-      if (!all(c('ImbSize', 'Vol', 'POV') %in% names(targetIntervals))) {
-        stop("No 'ImbSize', 'Vol' or 'POV' columns found in targetIntervals, what did you call them?")
+      if (!all(c('ImbSize', 'Vol', 'POV') %in% names(groupsBounds))) {
+        stop("No 'ImbSize', 'Vol' or 'POV' columns found in groupsBounds, what did you call them?")
       }
-      imbBounds <- targetIntervals['ImbSize']
-      volBounds <- targetIntervals['Vol']
-      povBounds <- targetIntervals['POV']
+      imbBounds <- groupsBounds['ImbSize']
+      volBounds <- groupsBounds['Vol']
+      povBounds <- groupsBounds['POV']
     }
     # 3D buckets
     targetBuckets <- list()
@@ -451,7 +465,7 @@ iStarPostTrade <- function(MktData
     povUpperBounds <- na.omit(povUpperBounds)
     
     # Grouping and 'sampling' procedure 
-    if (missing(minDataPoints)) minDataPoints <- 25L 
+    if (missing(minGroupDps)) minGroupDps <- 25L 
     
     obsTargetVol <- obsTargetImb <- obsTargetPOV <- targetObs <- vector('list', length = numBuckets)
     volSamples <- imbSamples <- povSamples <- arrCostSamples <- vector('list', length = numBuckets)
@@ -464,7 +478,7 @@ iStarPostTrade <- function(MktData
       obsTargetPOV[[g]] <- lapply(1:length(MktData), function(s, POV) which(POV[[s]] > povLowerBounds[g] & POV[[s]] <= povUpperBounds[g]), POV)
       
       targetObs[[g]] <- lapply(1:length(MktData), function(s, obsTargetVol, obsTargetImb, obsTargetPOV) Reduce(intersect, list(obsTargetVol[[g]][[s]], obsTargetImb[[g]][[s]], obsTargetPOV[[g]][[s]])), obsTargetVol, obsTargetImb, obsTargetPOV)
-      if (length(na.omit(as.vector(unlist(targetObs[[g]])))) >= minDataPoints) {
+      if (length(na.omit(as.vector(unlist(targetObs[[g]])))) >= minGroupDps) {
         imbSamples[[g]] <- lapply(1:length(MktData), function(s, imbSize) imbSize[[s]][targetObs[[g]][[s]]], imbSize)
         volSamples[[g]] <- lapply(1:length(MktData), function(s, annualVol) annualVol[[s]][targetObs[[g]][[s]]], annualVol)
         povSamples[[g]] <- lapply(1:length(MktData), function(s, POV) POV[[s]][targetObs[[g]][[s]]], POV)
@@ -493,10 +507,10 @@ iStarPostTrade <- function(MktData
       arrCost <- na.omit(sapply(arrCostGrouped, mean, na.rm = TRUE))
     }
     
-    groupsBounds <- as.data.frame(cbind('Imb.Lower.Bound' = imbLowerBounds, 'Imb.Upper.Bound' = imbUpperBounds, 'POV.Lower.Bound' = povLowerBounds, 'POV.Upper.Bound' = povUpperBounds, 'Vol.Lower.Bound' = volLowerBounds, 'Vol.Upper.Bound' = volUpperBounds))
+    groupsBuckets <- as.data.frame(cbind('Imb.Lower.Bound' = imbLowerBounds, 'Imb.Upper.Bound' = imbUpperBounds, 'POV.Lower.Bound' = povLowerBounds, 'POV.Upper.Bound' = povUpperBounds, 'Vol.Lower.Bound' = volLowerBounds, 'Vol.Upper.Bound' = volUpperBounds))
     rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
     rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, POV.Samples = povSamples, Annual.Vol.Samples = volSamples)
-    outstore[['Groups.Bounds']] <- groupsBounds
+    outstore[['Groups.Buckets']] <- groupsBuckets
     outstore[['Rolling.Variables.Groups']] <- rollingVariablesGroups
     outstore[['Rolling.Variables.Samples']] <- rollingVariablesSamples
     

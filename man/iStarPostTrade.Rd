@@ -5,7 +5,7 @@
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
 iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
-  xtsfy = FALSE, grouping = FALSE, targetIntervals, minDataPoints,
+  xtsfy = FALSE, grouping = FALSE, groupsBounds, minGroupDps,
   paramsBounds, TxnData, side, ...)
 }
 \arguments{
@@ -21,9 +21,9 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{grouping}{A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'}
 
-\item{targetIntervals}{A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details'}
+\item{groupsBounds}{A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details'}
 
-\item{minDataPoints}{A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'}
+\item{minGroupDps}{A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'}
 
 \item{paramsBounds}{A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively}
 
@@ -72,12 +72,19 @@ the same number of days for each security involved in the analysis.
 The \code{horizon} should be chosen according to the number of \code{sessions}
 a trading day is splitted into.
 
-Parameters \code{targetInterval} and \code{minDataPoints} regulate the grouping process.
-\code{minDataPoints} of each group to let its datapoints belong to the estimation 
-process dafaults to 25 datapoints, as suggested by the author. However, this parameter
-largerly depends on the given dataset and on others parameters such as the \code{session} 
-specifications.
-TODO: add \code{targetInterval} default sequences, also specify bounds inclusion
+Parameters \code{groupsBounds} and \code{minGroupDps} regulate the grouping process.
+\code{minGroupDps} of each group has to be reached in order to let its datapoints 
+be included in the estimation process. It dafaults to 25 datapoints, as suggested 
+by the author. However, this appears to be a rule of thumb, as the parameter largerly 
+depends on the given original dataset and on others parameters such as the \code{sessions} 
+and \code{horizon} specifications.
+\code{groupsBounds} defaults to the following sequences: 
+\tabular{cc}{
+  Imbalance Size        \tab 0.005, 0.01, 0.02, ..., 0.3 \cr
+  Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
+  POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
+}
+Again, these values are suggested by the author and appear to come from empirical findings.
 }
 \examples{
 
