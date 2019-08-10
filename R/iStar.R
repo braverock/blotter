@@ -475,22 +475,22 @@ iStarPostTrade <- function(MktData
       names(obsTargetVol[[g]]) <- names(obsTargetImb[[g]]) <- names(obsTargetPOV[[g]]) <- names(MktData)
       names(volSamples[[g]]) <- names(imbSamples[[g]]) <- names(povSamples[[g]]) <- names(arrCostSamples[[g]]) <- names(MktData)
     }
-    imbSize <- as.vector(na.omit(do.call(c, imbSamples)))
-    annualVol <- as.vector(na.omit(do.call(c, volSamples)))
-    POV <- as.vector(na.omit(do.call(c, povSamples)))
-    arrCost <- as.vector(na.omit(do.call(c, arrCostSamples)))
+    imbSize <- as.vector(na.omit(unlist(imbSamples)))
+    annualVol <- as.vector(na.omit(unlist(volSamples)))
+    POV <- as.vector(na.omit(unlist(povSamples)))
+    arrCost <- as.vector(na.omit(unlist(arrCostSamples)))
     
     # Grouped variables means
     if (grouping[2]) {
-      imbSize <- lapply(unlist(imbSamples, recursive = FALSE), mean, na.rm = TRUE)
-      annualVol <- lapply(unlist(volSamples, recursive = FALSE), mean, na.rm = TRUE)
-      POV <- lapply(unlist(povSamples, recursive = FALSE), mean, na.rm = TRUE)
-      arrCost <- lapply(unlist(arrCostSamples, recursive = FALSE), mean, na.rm = TRUE)
+      imbSizeGrouped <- lapply(1:length(imbSamples), function(g, imbSamples) as.vector(unlist(imbSamples[[g]], recursive = FALSE)), imbSamples)
+      annualVolGrouped <- lapply(1:length(volSamples), function(g, volSamples) as.vector(unlist(volSamples[[g]], recursive = FALSE)), volSamples)
+      povGrouped <- lapply(1:length(povSamples), function(g, povSamples) as.vector(unlist(povSamples[[g]], recursive = FALSE)), povSamples)
+      arrCostGrouped <- lapply(1:length(arrCostSamples), function(g, arrCostSamples) as.vector(unlist(imbSamples[[g]], recursive = FALSE)), arrCostSamples)
       
-      imbSize <- as.vector(do.call(c, imbSize)) 
-      annualVol <- as.vector(do.call(c, annualVol))
-      POV <- as.vector(do.call(c, POV))
-      arrCost <- as.vector(do.call(c, arrCost))
+      imbSize <- na.omit(sapply(imbSizeGrouped, mean, na.rm = TRUE))
+      annualVol <- na.omit(sapply(annualVolGrouped, mean, na.rm = TRUE))
+      POV <- na.omit(sapply(povGrouped, mean, na.rm = TRUE))
+      arrCost <- na.omit(sapply(arrCostGrouped, mean, na.rm = TRUE))
     }
     
     groupsBounds <- as.data.frame(cbind('Imb.Lower.Bound' = imbLowerBounds, 'Imb.Upper.Bound' = imbUpperBounds, 'POV.Lower.Bound' = povLowerBounds, 'POV.Upper.Bound' = povUpperBounds, 'Vol.Lower.Bound' = volLowerBounds, 'Vol.Upper.Bound' = volUpperBounds))
