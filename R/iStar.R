@@ -138,7 +138,30 @@
 #' on the effective shrinkage datapoints go through.
 #' 
 #' @section Parameters estimation
-#' TODO: discuss model parameters estimation techniques included in the function
+#' The author suggests three methods to estimate model paramaters from the instantaneous and the 
+#' market impact equations.
+#' 
+#' \describe{
+#'   \item{\emph{Two-step process}: }{Not implemented at present.} 
+#'   \item{\emph{Guesstimate technique}: }{Not implemented at present.}
+#'   \item{\emph{Nonlinear regression}: }{The full model parameters are estimated 
+#'   by means of nonlinear least squares. There is a wide theory behind such theory, 
+#'   rich of reasons inherent to the specific iterative procedure used and their 
+#'   peculiarities in achieving converge. The interested reader may consult Venables 
+#'   and Ripley (2002).
+#'   
+#'   In his modeling context the author sets a constrained problem providing bounds 
+#'   on parameters, in order to ensure feasible estimated values.
+#'   The author's suggested bounds are implemented by default to follow his methodology, 
+#'   as reported in 'Details'. However, the opportunity to provide bounds is supported 
+#'   and left to the users.
+#'   A general warning in estimating this model comes from the author himself:
+#'   "Analysts choosing to solve the parameters of the model via non-linear regression 
+#'   of the full model need to thoroughly understand the repercussions of non-linear 
+#'   regression analysis as well as the sensitivity of the parameters, and potential 
+#'   solution ranges for the parameters."
+#'   }
+#' }
 #' 
 #' @section Impact estimates
 #' TODO: cost curves, etc.
@@ -147,6 +170,7 @@
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
 #' \emph{A Practical Framework for Estimating Transaction Costs and Developing Optimal Trading Strategies to Achieve Best Execution} (Kissell, Glantz and Malamut, 2004), Finance Research Letters.
 #' \emph{Inferring Trade Direction from Intraday Data} (Lee and Ready, 1991), The Journal of Finance.
+#' \emph{Modern Applied Statistics with S} (Venables and Ripley, 2002), Springer. 
 #' 
 #' @author Vito Lestingi
 #' 
@@ -158,10 +182,10 @@
 #' @param grouping A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'
 #' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
 #' @param minGroupDps A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
-#' @param paramsBounds A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively 
+#' @param paramsBounds A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'
 #' @param TxnData An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'
 #' @param side A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'
-#' @param ... Passthrough parameters
+#' @param ... Any other passthrough parameters
 #' 
 #' @return
 #' TODO: WIP 
@@ -210,12 +234,28 @@
 #' depends on the given original dataset and on others parameters such as the \code{sessions} 
 #' and \code{horizon} specifications.
 #' \code{groupsBounds} defaults to the following sequences: 
-#' \tabular{cc}{
+#' \tabular{rl}{
 #'   Imbalance Size        \tab 0.005, 0.01, 0.02, ..., 0.3 \cr
 #'   Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
 #'   POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
 #' }
-#' Again, these values are suggested by the author and appear to come from empirical findings.
+#' Again, these values are suggested by the author and appear to come from empirical 
+#' findings.
+#' 
+#' For the estimation we use \code{nls}, specifying \code{algorithm = 'port'} in 
+#' order to implement in the procedure the parameters bounds provided by the author:
+#' The parameters initial values is chosen to be their respective lower bound.
+#' These default bounds are:
+#' \tabular{c}{
+#'  100 <= a_1 <= 1000 \cr
+#'  0.1 <= a_2 <= 1    \cr
+#'  0.1 <= a_3 <= 1    \cr
+#'  0.1 <= a_4 <= 1    \cr
+#'  0.7 <= b_1 <= 1    \cr
+#' }
+#' TODO: b_1 lower bound should be zero, however the author reports using 0.7 as an empirical value
+#' Nonetheless, the user if left free to specify desired parameters bounds via \code{paramBounds},
+#' where the rows must follow a_1, a_2, a_3, a_4 and b_1 order or be appropriately named. 
 #' 
 #' @notes
 #' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
@@ -238,7 +278,7 @@ iStarPostTrade <- function(MktData
                            , paramsBounds
                            , TxnData 
                            , side
-                           , ...) # TODO: can ellipses pass params to nls() ? 
+                           , ...)
 { 
   secNames <- names(MktData)
   firstDays <- as.Date(sapply(1:length(MktData), function(s, MktData) format(index(first(MktData[[s]])), '%Y-%m-%d'), MktData))
@@ -523,42 +563,25 @@ iStarPostTrade <- function(MktData
     
   } # end of data grouping 
   
-  # TODO: code below needs to be re-evaluated to eventually account for samples constructed similarly as above. 
-  #       At the moment the full data set is used to give a sense of how it will work.
-  #       Note that outuput produced this way is meaningless with respect to our modeling context
-  
-  # Instantaneous impact
-  # if (missing(paramsBounds)) {# a_1, a_2, a_3, a_4, b_1 by row
+  ### PARAMETERS ESTIMATION ###
+  if (missing(paramsBounds)) {
     paramsBounds <- matrix(NA, nrow = 5, ncol = 2)
-    paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7) # 0 <= b_1 <= 1, 0.7 is an empirical value 
+    row.names(paramsBounds) <- c('a_1', 'a_2', 'a_3', 'a_4', 'b_1')
+    paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7)
     paramsBounds[1:5, 2] <- c(1000, 1, 1, 1, 1)
-  # }
-  nlsFitInstImpact <- nls(arrCost ~ a_1 * (imbSize)^(a_2) * (annualVol)^(a_3),
-                          start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1),
-                          lower = paramsBounds[1:3, 1], upper = paramsBounds[1:3, 2],
-                          algorithm = 'port')
+  }
   
-  estParam <- coef(nlsFitInstImpact)
-  instImpact <- estParam['a_1'] * (imbSize)^(estParam['a_2']) * (annualVol)^(estParam['a_3'])
+  nlsImpactFit <- nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
+                      start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1, a_4 = 0.1, b_1 = 0.7),
+                      lower = paramsBounds[, 1], upper = paramsBounds[, 2],
+                      algorithm = 'port', ...) 
   
-  # Market impact
-  nlsFitMktImpact <- nls(arrCost ~ b_1 * instImpact * (POV)^(a_4) + (1L - b_1) * instImpact,
-                         start = list(a_4 = 0.1, b_1 = 0.7),
-                         lower = paramsBounds[4:5, 1], upper = paramsBounds[4:5, 2],
-                         algorithm = 'port')
-  
-  estParam[c('a_4', 'b_1')] <- coef(nlsFitMktImpact)
-  tempImpact <- estParam['b_1'] * instImpact * POV^(estParam['a_4'])
-  permImpact <- (1L - estParam['b_1']) * instImpact
-  mktImpact <- tempImpact + permImpact
-  
-  iStarImpactsEst <- as.data.frame(cbind(instImpact, tempImpact, permImpact, mktImpact))
-  colnames(iStarImpactsEst) <- c('Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact')
+  estParam <- coef(nlsFitImpact)
   
   # Output handling
   outstore[['Rolling.Variables']] <- rollingVariables
-  outstore[['nls.impact.fits']] <- list('nls.fit.instImpact' = nlsFitInstImpact, 'nls.fit.mktImpact' = nlsFitMktImpact)
-  outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
+  outstore[['nls.impact.fit']] <- nlsImpactFit
+  
   return(outstore)
 }
 

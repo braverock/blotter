@@ -25,13 +25,13 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{minGroupDps}{A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'}
 
-\item{paramsBounds}{A matrix to provide model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively}
+\item{paramsBounds}{A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'}
 
 \item{TxnData}{An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'}
 
 \item{side}{A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'}
 
-\item{...}{Passthrough parameters}
+\item{...}{Any other passthrough parameters}
 }
 \value{
 TODO: WIP 
@@ -79,12 +79,28 @@ by the author. However, this appears to be a rule of thumb, as the parameter lar
 depends on the given original dataset and on others parameters such as the \code{sessions} 
 and \code{horizon} specifications.
 \code{groupsBounds} defaults to the following sequences: 
-\tabular{cc}{
+\tabular{rl}{
   Imbalance Size        \tab 0.005, 0.01, 0.02, ..., 0.3 \cr
   Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
   POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
 }
-Again, these values are suggested by the author and appear to come from empirical findings.
+Again, these values are suggested by the author and appear to come from empirical 
+findings.
+
+For the estimation we use \code{nls}, specifying \code{algorithm = 'port'} in 
+order to implement in the procedure the parameters bounds provided by the author:
+The parameters initial values is chosen to be their respective lower bound.
+These default bounds are:
+\tabular{c}{
+ 100 <= a_1 <= 1000 \cr
+ 0.1 <= a_2 <= 1    \cr
+ 0.1 <= a_3 <= 1    \cr
+ 0.1 <= a_4 <= 1    \cr
+ 0.7 <= b_1 <= 1    \cr
+}
+TODO: b_1 lower bound should be zero, however the author reports using 0.7 as an empirical value
+Nonetheless, the user if left free to specify desired parameters bounds via \code{paramBounds},
+where the rows must follow a_1, a_2, a_3, a_4 and b_1 order or be appropriately named.
 }
 \examples{
 
@@ -93,6 +109,7 @@ Again, these values are suggested by the author and appear to come from empirica
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
 \emph{A Practical Framework for Estimating Transaction Costs and Developing Optimal Trading Strategies to Achieve Best Execution} (Kissell, Glantz and Malamut, 2004), Finance Research Letters.
 \emph{Inferring Trade Direction from Intraday Data} (Lee and Ready, 1991), The Journal of Finance.
+\emph{Modern Applied Statistics with S} (Venables and Ripley, 2002), Springer.
 }
 \seealso{
 \code{\link[PerformanceAnalytics]{Return.calculate}},
