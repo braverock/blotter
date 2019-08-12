@@ -239,6 +239,7 @@
 #'   Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
 #'   POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
 #' }
+#' Where each interval is considered to be left opened and right closed.
 #' Again, these values are suggested by the author and appear to come from empirical 
 #' findings.
 #' 
@@ -467,42 +468,26 @@ iStarPostTrade <- function(MktData
       povBounds <- groupsBounds['POV']
     }
     # 3D buckets
-    targetBuckets <- list()
     numImbIntervals <- (length(imbBounds) - 1L)
     numPovIntervals <- (length(povBounds) - 1L)
     numVolIntervals <- (length(volBounds) - 1L)
     numBuckets <- numImbIntervals * numPovIntervals * numVolIntervals
     
-    iter <- matrix(1:(numVolIntervals * numPovIntervals), nrow = numVolIntervals, byrow = TRUE)
-    imbVar <- rep(imbBounds, each = 2)
-    for (v in 1:numVolIntervals) {
-      volVar <-  rep(rev(volBounds[v:(v + 1)]), length(rep(imbBounds)))
-      for (p in 1:numPovIntervals) {
-        povVar <- rep(rev(povBounds[p:(p + 1)]), length(rep(imbBounds)))
-        targetBuckets[[iter[v, p]]] <- cbind(imbVar, povVar, volVar)
-      }
-    }
-    targetBuckets <- do.call(rbind, targetBuckets)
-    colnames(targetBuckets) <- c('ImbSize', 'POV', 'Vol')
-    imbLowerBounds <- imbUpperBounds <- rep(NA, nrow(targetBuckets))
-    volLowerBounds <- volUpperBounds <- rep(NA, nrow(targetBuckets))
-    povLowerBounds <- povUpperBounds <- rep(NA, nrow(targetBuckets))
-    for (r in 1:nrow(targetBuckets)) {
-      if (r %% 2 == 0 & r %% length(imbBounds) != 0) {
-        imbLowerBounds[r] <- as.numeric(targetBuckets[r, 'ImbSize'])
-        imbUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'ImbSize'])
-        volLowerBounds[r] <- as.numeric(targetBuckets[r, 'Vol'])
-        volUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'Vol'])
-        povLowerBounds[r] <- as.numeric(targetBuckets[r, 'POV'])
-        povUpperBounds[r] <- as.numeric(targetBuckets[r + 1, 'POV'])
-      }
-    }
-    imbLowerBounds <- na.omit(imbLowerBounds)
-    imbUpperBounds <- na.omit(imbUpperBounds)
-    volLowerBounds <- na.omit(volLowerBounds) 
-    volUpperBounds <- na.omit(volUpperBounds)
-    povLowerBounds <- na.omit(povLowerBounds)
-    povUpperBounds <- na.omit(povUpperBounds)
+    imbLowerBounds <- imbBounds[1:numImbIntervals]
+    imbUpperBounds <- imbBounds[2:length(imbBounds)]
+    volLowerBounds <- volBounds[1:numVolIntervals]
+    volUpperBounds <- volBounds[2:length(volBounds)]
+    povLowerBounds <- povBounds[1:numPovIntervals]
+    povUpperBounds <- povBounds[2:length(povBounds)]
+    
+    lowerBounds <- expand.grid(imb = imbLowerBounds, vol = volLowerBounds, pov = povLowerBounds)
+    upperBounds <- expand.grid(imb = imbUpperBounds, vol = volUpperBounds, pov = povUpperBounds)
+    imbLo <- lowerBounds$imb
+    imbUp <- upperBounds$imb
+    volLo <- lowerBounds$vol
+    volUp <- upperBounds$vol
+    povLo <- lowerBounds$pov
+    povUp <- upperBounds$pov
     
     # Grouping and 'sampling' procedure 
     if (missing(minGroupDps)) minGroupDps <- 25L 
@@ -513,11 +498,14 @@ iStarPostTrade <- function(MktData
     names(volSamples) <- names(imbSamples) <- names(povSamples) <- names(arrCostSamples) <- paste0('group.', 1:numBuckets, '.sample')
     
     for (g in 1:numBuckets) {
-      obsTargetImb[[g]] <- lapply(1:length(MktData), function(s, imbSize) which(imbSize[[s]] > imbLowerBounds[g] & imbSize[[s]] <= imbUpperBounds[g]), imbSize)
-      obsTargetVol[[g]] <- lapply(1:length(MktData), function(s, annualVol) which(annualVol[[s]] > volLowerBounds[g] & annualVol[[s]] <= volUpperBounds[g]), annualVol)
-      obsTargetPOV[[g]] <- lapply(1:length(MktData), function(s, POV) which(POV[[s]] > povLowerBounds[g] & POV[[s]] <= povUpperBounds[g]), POV)
+      obsTargetImb[[g]] <- lapply(1:length(MktData), function(s, imbSize) which(imbSize[[s]] > imbLo[g] & imbSize[[s]] <= imbUp[g]), imbSize)
+      obsTargetVol[[g]] <- lapply(1:length(MktData), function(s, annualVol) which(annualVol[[s]] > volLo[g] & annualVol[[s]] <= volUp[g]), annualVol)
+      obsTargetPOV[[g]] <- lapply(1:length(MktData), function(s, POV) which(POV[[s]] > povLo[g] & POV[[s]] <= povUp[g]), POV)
       
-      targetObs[[g]] <- lapply(1:length(MktData), function(s, obsTargetVol, obsTargetImb, obsTargetPOV) Reduce(intersect, list(obsTargetVol[[g]][[s]], obsTargetImb[[g]][[s]], obsTargetPOV[[g]][[s]])), obsTargetVol, obsTargetImb, obsTargetPOV)
+      targetObs[[g]] <- lapply(1:length(MktData), 
+                               function(s, obsTargetVol, obsTargetImb, obsTargetPOV) Reduce(intersect, list(obsTargetVol[[g]][[s]], obsTargetImb[[g]][[s]], obsTargetPOV[[g]][[s]])), 
+                               obsTargetVol, obsTargetImb, obsTargetPOV)
+      
       if (length(na.omit(as.vector(unlist(targetObs[[g]])))) >= minGroupDps) {
         imbSamples[[g]] <- lapply(1:length(MktData), function(s, imbSize) imbSize[[s]][targetObs[[g]][[s]]], imbSize)
         volSamples[[g]] <- lapply(1:length(MktData), function(s, annualVol) annualVol[[s]][targetObs[[g]][[s]]], annualVol)
@@ -547,7 +535,7 @@ iStarPostTrade <- function(MktData
       arrCost <- na.omit(sapply(arrCostGrouped, mean, na.rm = TRUE))
     }
     
-    groupsBuckets <- as.data.frame(cbind('Imb.Lower.Bound' = imbLowerBounds, 'Imb.Upper.Bound' = imbUpperBounds, 'POV.Lower.Bound' = povLowerBounds, 'POV.Upper.Bound' = povUpperBounds, 'Vol.Lower.Bound' = volLowerBounds, 'Vol.Upper.Bound' = volUpperBounds))
+    groupsBuckets <- as.data.frame(cbind('Imb.Low.Bound' = imbLo, 'Imb.Up.Bound' = imbUp, 'Vol.Low.Bound' = volLo, 'Vol.Up.Bound' = volUp, 'POV.Low.Bound' = povLo, 'POV.Up.Bound' = povUp))
     rollingVariablesGroups <- list(obs.Imb = obsTargetImb, obs.Vol = obsTargetVol, obs.POV = obsTargetPOV, obs.target = targetObs)
     rollingVariablesSamples <- list(Arr.Cost.Samples = arrCostSamples, Imb.Size.Samples = imbSamples, POV.Samples = povSamples, Annual.Vol.Samples = volSamples)
     outstore[['Groups.Buckets']] <- groupsBuckets
@@ -576,7 +564,7 @@ iStarPostTrade <- function(MktData
                       lower = paramsBounds[, 1], upper = paramsBounds[, 2],
                       algorithm = 'port', ...) 
   
-  estParam <- coef(nlsFitImpact)
+  estParam <- coef(nlsImpactFit)
   
   # Output handling
   outstore[['Rolling.Variables']] <- rollingVariables
