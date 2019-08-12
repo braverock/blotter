@@ -517,13 +517,8 @@ iStarPostTrade <- function(MktData
       names(obsTargetVol[[g]]) <- names(obsTargetImb[[g]]) <- names(obsTargetPOV[[g]]) <- names(MktData)
       names(volSamples[[g]]) <- names(imbSamples[[g]]) <- names(povSamples[[g]]) <- names(arrCostSamples[[g]]) <- names(MktData)
     }
-    imbSize <- as.vector(na.omit(unlist(imbSamples)))
-    annualVol <- as.vector(na.omit(unlist(volSamples)))
-    POV <- as.vector(na.omit(unlist(povSamples)))
-    arrCost <- as.vector(na.omit(unlist(arrCostSamples)))
     
-    # Grouped variables means
-    if (grouping[2]) {
+    if (grouping[2]) {# grouped datapoints means
       imbSizeGrouped <- lapply(1:length(imbSamples), function(g, imbSamples) as.vector(unlist(imbSamples[[g]], recursive = FALSE)), imbSamples)
       annualVolGrouped <- lapply(1:length(volSamples), function(g, volSamples) as.vector(unlist(volSamples[[g]], recursive = FALSE)), volSamples)
       povGrouped <- lapply(1:length(povSamples), function(g, povSamples) as.vector(unlist(povSamples[[g]], recursive = FALSE)), povSamples)
@@ -533,6 +528,11 @@ iStarPostTrade <- function(MktData
       annualVol <- na.omit(sapply(annualVolGrouped, mean, na.rm = TRUE))
       POV <- na.omit(sapply(povGrouped, mean, na.rm = TRUE))
       arrCost <- na.omit(sapply(arrCostGrouped, mean, na.rm = TRUE))
+    } else {# grouped datapoints
+      imbSize <- as.vector(na.omit(unlist(imbSamples)))
+      annualVol <- as.vector(na.omit(unlist(volSamples)))
+      POV <- as.vector(na.omit(unlist(povSamples)))
+      arrCost <- as.vector(na.omit(unlist(arrCostSamples)))
     }
     
     groupsBuckets <- as.data.frame(cbind('Imb.Low.Bound' = imbLo, 'Imb.Up.Bound' = imbUp, 'Vol.Low.Bound' = volLo, 'Vol.Up.Bound' = volUp, 'POV.Low.Bound' = povLo, 'POV.Up.Bound' = povUp))
