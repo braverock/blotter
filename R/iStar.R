@@ -174,7 +174,7 @@
 #' 
 #' @author Vito Lestingi
 #' 
-#' @param MktData A list of \code{xts} objects each representing a security market data. See 'Details'
+#' @param MktData A list of \code{xts} objects, each representing a security market data. See 'Details'
 #' @param sessions A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis  
 #' @param yrBizdays A numeric value, the number of business days in a given year data refers to. Default is 250 days
 #' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
@@ -206,22 +206,19 @@
 #' 
 #' @details 
 #' The \code{MktData} input dataset must be a list, with items being market data
-#' by security considered. It is suggested to name them to match the security they
-#' refer to.
-#' Each item is required to be an \code{xts} object which must have at least two 
-#' columns, 'MktPrice' and 'MktQty'. For theoretical accuracy of the arrival price
-#' it is recommended to input 'Bid' and 'Ask' columns as well. Similarly, providing 
-#' a 'Reason' column allows to have trades classified by your preferred criterion; 
-#' if it is not available the Lee-Ready tick test will be used to infere the trade 
-#' direction.
+#' by security considered. These items must be named to match the security they refer to.
+#' Each item is required to be an \code{xts} object having at least 'MktPrice' and 
+#' 'MktQty' columns. For theoretical accuracy of the arrival price it is recommended 
+#' to input 'Bid' and 'Ask' columns as well. Similarly, providing a 'Reason' column 
+#' allows to have trades classified by your preferred criterion; when this data is 
+#' not available the \emph{Lee-Ready tick test} will be used to infer the trade direction.
 #' If the \code{MktData} list provided has items with different number of observations,
 #' then data considered will be only until to match the item with the smallest number
-#' of observations. Also, beware that there is no strict timestamps matching (to avoid
-#' unwanted restrictions on potentially mismatching intraday timestamps), therefore:
-#' be careful to provide a data set which as at least the same number or unique 
-#' days across all the securities included; be careful in checking that observations 
-#' are on constistent dates across the full data set.
-#' Our best suggestion is to use a data set within the same period and including 
+#' of observations. Also, beware that to avoid strict restrictions on potentially
+#' mismatching intraday timestamps there is no timestamps complete matching, therefore:
+#' provide a dataset with securities included observed on the same number of unique
+#' days, consistently across the full dataset.
+#' Our best suggestion is to use a data set within the same timeframe and including 
 #' the same number of days for each security involved in the analysis.
 #' 
 #' The \code{horizon} should be chosen according to the number of \code{sessions}
@@ -282,6 +279,12 @@ iStarPostTrade <- function(MktData
                            , ...)
 { 
   secNames <- names(MktData)
+  
+  # MktData checks 
+  secColsCheck <- sapply(1:length(MktData), function(s, MktData) sum(colnames(MktData[[s]]) %in% c('MktPrice', 'MktQty')) <= 2, MktData)
+  if (!all(secColsCheck)) {
+    stop(paste("No 'MktPrice' or 'MktQty' columns found in", paste(names(MktData)[which(secColsCheck == FALSE)], collapse = ", "), ". What did you call them?"))
+  }
   firstDays <- as.Date(sapply(1:length(MktData), function(s, MktData) format(index(first(MktData[[s]])), '%Y-%m-%d'), MktData))
   lastDays <- as.Date(sapply(1:length(MktData), function(s, MktData) format(index(last(MktData[[s]])), '%Y-%m-%d'), MktData))
   if (length(unique(firstDays)) != 1) {
@@ -306,7 +309,6 @@ iStarPostTrade <- function(MktData
   numUniqueDays <- unlist(lapply(lapply(MktData, endpoints, 'days'), length))
   minUniqueDays <- min(numUniqueDays)
   maxUniqueDays <- max(numUniqueDays)
-  # maxUniqueDaysAhead <- maxUniqueDays + 1L # one ahead
   if (horizon > minUniqueDays) {
     warning(paste("Horizon greater than minimum daily obs across MktData. Setting horizon =", minUniqueDays))
     horizon <- minUniqueDays
@@ -362,11 +364,12 @@ iStarPostTrade <- function(MktData
     
     secMktData <- MktData[[s]]
     
-    if (any(colnames(secMktData) == 'Reason')) {# 'Reason' from intraday data
+    # Trade reason
+    if (any(colnames(secMktData) == 'Reason')) {# from intraday data
       reason <- toupper(secMktData[, 'Reason'])
       secMktData <- type.convert(secMktData[, colnames(secMktData) != 'Reason'], 'numeric')
       secMktData <- xts(secMktData, index(MktData[[s]]))
-    } else {# Kissell modified Lee-Ready 'tick test'
+    } else {# Lee-Ready 'tick test'
       reason <- rep(NA, length(secMktData))
       secPriceDiff <- diff(secMktData[, 'MktPrice'])
       reason[2:length(reason)] <- ifelse(secPriceDiff > 0, 'BID', 'ASK') # secPriceDiff[2:length(secPriceDiff)] > 0

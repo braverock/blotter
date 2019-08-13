@@ -9,7 +9,7 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
   paramsBounds, TxnData, side, ...)
 }
 \arguments{
-\item{MktData}{A list of \code{xts} objects each representing a security market data. See 'Details'}
+\item{MktData}{A list of \code{xts} objects, each representing a security market data. See 'Details'}
 
 \item{sessions}{A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis}
 
@@ -51,22 +51,19 @@ scenarios that take place into the market in response to imbalances.
 }
 \details{
 The \code{MktData} input dataset must be a list, with items being market data
-by security considered. It is suggested to name them to match the security they
-refer to.
-Each item is required to be an \code{xts} object which must have at least two 
-columns, 'MktPrice' and 'MktQty'. For theoretical accuracy of the arrival price
-it is recommended to input 'Bid' and 'Ask' columns as well. Similarly, providing 
-a 'Reason' column allows to have trades classified by your preferred criterion; 
-if it is not available the Lee-Ready tick test will be used to infere the trade 
-direction.
+by security considered. These items must be named to match the security they refer to.
+Each item is required to be an \code{xts} object having at least 'MktPrice' and 
+'MktQty' columns. For theoretical accuracy of the arrival price it is recommended 
+to input 'Bid' and 'Ask' columns as well. Similarly, providing a 'Reason' column 
+allows to have trades classified by your preferred criterion; when this data is 
+not available the \emph{Lee-Ready tick test} will be used to infer the trade direction.
 If the \code{MktData} list provided has items with different number of observations,
 then data considered will be only until to match the item with the smallest number
-of observations. Also, beware that there is no strict timestamps matching (to avoid
-unwanted restrictions on potentially mismatching intraday timestamps), therefore:
-be careful to provide a data set which as at least the same number or unique 
-days across all the securities included; be careful in checking that observations 
-are on constistent dates across the full data set.
-Our best suggestion is to use a data set within the same period and including 
+of observations. Also, beware that to avoid strict restrictions on potentially
+mismatching intraday timestamps there is no timestamps complete matching, therefore:
+provide a dataset with securities included observed on the same number of unique
+days, consistently across the full dataset.
+Our best suggestion is to use a data set within the same timeframe and including 
 the same number of days for each security involved in the analysis.
 
 The \code{horizon} should be chosen according to the number of \code{sessions}
@@ -84,6 +81,7 @@ and \code{horizon} specifications.
   Annualized volatility \tab 0.1, 0.2, ..., 0.8          \cr
   POV                   \tab 0.01, 0.05, 0.1, ..., 0.65  \cr
 }
+Where each interval is considered to be left opened and right closed.
 Again, these values are suggested by the author and appear to come from empirical 
 findings.
 
