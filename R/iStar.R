@@ -423,11 +423,12 @@ iStarPostTrade <- function(MktData
       # Percentage of Volume
       POV[hStop, s] <- secImb[hStop, s]/secMktDataSessions[hStop, 'MktQty']
       
-      # Cost metric
-      if (length(MktData) > 1) {# Arrival Cost, VWAP as proxy of average execution price
-        VWAP[hStop, s] <- secMktDataSessions[hStop, 'MktValue']/secMktDataSessions[hStop, 'MktQty']
-        arrCost[hStop, s] <- (log(VWAP[hStop, s]) - log(arrPrice[hStop])) * secImbSide[hStop, s] * 10000L
-      }
+      # VWAP
+      VWAP[hStop, s] <- secMktDataSessions[hStop, 'MktValue']/secMktDataSessions[hStop, 'MktQty']
+      
+      # Arrival Cost 
+      arrCost[hStop, s] <- (log(VWAP[hStop, s]) - log(arrPrice[hStop])) * secImbSide[hStop, s] * 10000L
+      
       # progress bar console feedback
       progbar <- txtProgressBar(min = 0, max = (nrow(secMktDataSessions) - horizon + 1), style = 3)
       setTxtProgressBar(progbar, t)
