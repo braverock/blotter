@@ -95,27 +95,32 @@
 #' The I-Star model is made of three main components, all expressed in basis points:
 #' 
 #' \enumerate{
-#'  \item \emph{Instantaneous impact} (I) 
-#'  It is the theoretical impact of executing the entire order at once. We express 
-#'  it here in its "power" functional form, suggested by the author as the empirically 
-#'  most robust, stable and accurate over time one with respect to linear and 
-#'  non-linear alternatives: 
-#'  \deqn{I = a_1 . (\frac{Q}{ADV})^{a_2} . \sigma^{a_{3}}}
-#'  where the parameter \eqn{a_1} is the \emph{sensitivity to trade size}, \eqn{a_2}
-#'  is the \emph{order shape parameter} and \eqn{a_3} the \emph{volatility shape parameter}.
-#'  
+#'   \item \emph{Instantaneous impact} (I) 
+#'   It is the theoretical impact of executing the entire order at once. We express 
+#'   it here in its "power" functional form, suggested by the author as the empirically 
+#'   most robust, stable and accurate over time one with respect to linear and 
+#'   non-linear alternatives: 
+#'   \deqn{I = a_1 . (\frac{Q}{ADV})^{a_2} . \sigma^{a_{3}}}
+#'   where the parameter \eqn{a_1} is the \emph{sensitivity to trade size}, \eqn{a_2}
+#'   is the \emph{order shape parameter} and \eqn{a_3} the \emph{volatility shape parameter}.
+#'   
 #'   \item \emph{Market impact} (MI)
 #'   It represents the period-by-period impact cost due to a given trading strategy
 #'   and is expressed as:
 #'   \deqn{MI = b_1 . POV^{a_4} . I + (1 - b_1) . I}
 #'   where \eqn{a_4} is said \emph{POV shape parameter} and \eqn{b_1} is the 
 #'   \emph{percentage of total temporary market impact}. 0 <= b_1 <= 1
-#' 
+#'   
 #'   \item \emph{Timing risk measure}
 #'   It is a proxy for the uncertainty surrounding the cost estimate
 #'   \deqn{TR = \sigma . \sqrt{\frac{S . (1 - POV)}{3 . T_{m} . ADV . POV}} * 10^{4}}
 #'   where \eqn{S} is the private order size. 
-#' }
+#' } 
+#' 
+#' The first two equations are part of the model estimation, whereas the last one
+#' is used as a measure of risk esposure for a given order. 
+#' 
+#' TODO: discuss timing risk, it becomes relevant again in the error analysis section below 
 #' 
 #' @section Outliers analysis
 #' TODO: add outliers criteria (consistency still under discussion)
@@ -142,11 +147,15 @@
 #' market impact equations.
 #' 
 #' \describe{
-#'   \item{\emph{Two-step process}: }{Not implemented at present.} 
-#'   \item{\emph{Guesstimate technique}: }{Not implemented at present.}
-#'   \item{\emph{Nonlinear regression}: }{The full model parameters are estimated 
-#'   by means of nonlinear least squares. There is a wide theory behind such theory, 
-#'   rich of reasons inherent to the specific iterative procedure used and their 
+#'   \item{\emph{Two-step process}: }{
+#'   Not implemented at present.
+#'   } 
+#'   \item{\emph{Guesstimate technique}: }{
+#'   Not implemented at present.
+#'   }
+#'   \item{\emph{Nonlinear regression}: }{
+#'   The full model parameters are estimated by means of nonlinear least squares. 
+#'   There is a wide theory behind such theory, rich of reasons inherent to the specific iterative procedure used and their 
 #'   peculiarities in achieving converge. The interested reader may consult Venables 
 #'   and Ripley (2002).
 #'   
@@ -163,8 +172,18 @@
 #'   }
 #' }
 #' 
-#' @section Impact estimates
-#' TODO: cost curves, etc.
+#' @section Impact estimates, error and sensitivity analyses 
+#' Once the parameters have been estimated, the I-Star best fit equations provide 
+#' impact costs estimates for a given market parent order specified by its size,
+#' POV, annualized volatility, side and arrival price. 
+#' 
+#' The \emph{cost error} is assessed as the difference between the arrival cost 
+#' of the order and the market impact estimate.
+#' 
+#' The \emph{z-score} is a "risk-adjusted error" and is expressed as the ratio 
+#' between the cost error above and timining risk. Most accurate models possess
+#' z-scores distributions with mean zero and unit variance.
+#' 
 #' 
 #' @references 
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
@@ -183,9 +202,8 @@
 #' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
 #' @param minGroupDps A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
 #' @param paramsBounds A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'
-#' @param TxnData An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'
-#' @param side A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'
-#' @param ... Any other passthrough parameters
+#' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for. Required columns are 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. See 'Details'
+#' @param ... Any other passthrough parameter
 #' 
 #' @return
 #' TODO: WIP 
@@ -251,9 +269,19 @@
 #'  0.1 <= a_4 <= 1    \cr
 #'  0.7 <= b_1 <= 1    \cr
 #' }
-#' TODO: b_1 lower bound should be zero, however the author reports using 0.7 as an empirical value
-#' Nonetheless, the user if left free to specify desired parameters bounds via \code{paramBounds},
-#' where the rows must follow a_1, a_2, a_3, a_4 and b_1 order or be appropriately named. 
+#' TODO: b_1 lower bound should be zero, however the author reports using 0.7 as 
+#' an empirical value Nonetheless, the user if left free to specify desired parameters 
+#' bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
+#' and b_1 order or be appropriately named. 
+#' 
+#' \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
+#' or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
+#' value expressing the price of the traded security (for theoretical accuracy it 
+#' is recommended to use the corresponding bid-ask spreads midpoint); 'AvgExecPrice',
+#' specifying the average execution price over the order lifetime; the 'POV' of 
+#' and the 'AnnualVol', the order percentage of volume and annualized volatility
+#' respectively. 
+#' 
 #' 
 #' @notes
 #' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
@@ -274,8 +302,7 @@ iStarPostTrade <- function(MktData
                            , groupsBounds
                            , minGroupDps
                            , paramsBounds
-                           , TxnData 
-                           , side
+                           , OrdData 
                            , ...)
 { 
   secNames <- names(MktData)
@@ -319,38 +346,8 @@ iStarPostTrade <- function(MktData
     sessions <- paste0(earliestHour, latestHour)
   }
   
-  # Stock specific analysis order data
-  # TODO: mostly ignored so far, it will be considered in light of the testing function (estimated vs. actual costs, etc.) 
-  if (!missing(TxnData)) {
-    if (!('TxnPrice' %in% colnames(TxnData) & 'TxnQty' %in% colnames(TxnData))) stop("No TxnPrice or TxnQty column found, what did you call them?")
-    if (missing(side)) side <- 1
-    
-    txnsDates <- index(TxnData)
-    nTxnsDays <- length(endpoints(TxnData, 'days'))
-    txnsQty <- TxnData[, 'TxnQty']
-    tTxnsQty <- sum(txnsQty)
-    
-    # Txns Arrival Cost
-    if (any(colnames(MktData) == 'Bid') & any(colnames(MktData) == 'Ask')) {# first bid-ask spreads midpoint
-      arrPrice <- 0.5 * (MktData[1, 'Ask'] + MktData[1, 'Bid'])
-    } else {# proxy
-      arrPrice <- 2323 # as.numeric(first(TxnData[, 'Txn.Price'][min(which(TxnData[, 'Txn.Price'] != 0))]))
-    }
-    p_avg <- arrCost <- vector('double', length = nrow(TxnData))
-    for (t in 1:nrow(TxnData)) {
-      p_avg[t] <- mean(TxnData[1:t, 'TxnPrice'])
-      arrCost[t] <- side * (p_avg[t] - arrPrice)/arrPrice * 10000L
-    }
-    
-    # Chop MktData so to match transactions period ?
-    if (length(MktData[[1]]) > nrow(TxnData)) {
-      MktData <- MktData[[1]][1:nrow(TxnData)]
-    }
-  }
-  
   outstore <- list()
   periodIdxs <- periodDayDates <- list() # nextDayDates <- nextDayLastDate
-  
   secAnnualVol <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
   ADV          <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
   secImb       <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
@@ -568,6 +565,41 @@ iStarPostTrade <- function(MktData
                       algorithm = 'port', ...) 
   
   estParam <- coef(nlsImpactFit)
+  
+  ### I-STAR IMPACT ESTIMATES ###
+  if (!missing(OrdData)) {
+    if (!all(c('Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV', 'AnnualVol') %in% colnames(OrdData))) {
+      stop("No 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' or 'AnnualVol' column found in OrdData, what did you call them?")
+    }
+    # Order Arrival Price
+    # ordSymbol <- OrdData[, 'Symbol']
+    # if (all(c('Bid', 'Ask') %in% colnames(MktData[[ordSymbol]]))) {# first bid-ask spreads midpoint
+    #   if (OrdData[, 'StartDate'] %in% index(MktData[[ordSymbol]])) {
+    #     ordArrTime <- OrdData[, 'StartDate']
+    #     ordArrPrice <- 0.5 * (MktData[[ordSymbol]][which(ordArrTime %in% index(MktData)), 'Ask'] + MktData[[ordSymbol]][which(ordArrTime %in% index(MktData[[ordSymbol]])), 'Bid'])
+    #   }
+    # } else {# user-specified value (could be the first bid-ask spreads midpoint or a proxy)
+    ordArrPrice <- OrdData[, 'ArrPrice']
+    # }
+    # Order Arrival Cost
+    ordArrCost <- OrdData[, 'Side'] * (OrdData[, 'AvgExecPrice'] - ordArrPrice)/ordArrPrice * 10000L
+    # Instantaneous impact
+    instImpact <- estParam['a_1'] * (OrdData[, 'Size'])^(estParam['a_2']) * (OrdData[, 'AnnualVol'])^(estParam['a_3'])
+    # Market impact
+    tempImpact <- estParam['b_1'] * instImpact * OrdData[, 'POV']^(estParam['a_4'])
+    permImpact <- (1L - estParam['b_1']) * instImpact
+    mktImpact <- tempImpact + permImpact
+    # Cost error
+    costError <- ordArrCost - mktImpact
+    # Timing risk
+    timingRisk <- OrdData[, 'AnnualVol'] * sqrt((OrdData[, 'Size'] * (1L -  OrdData[, 'POV']))/(3L * yrBizdays * length(sessions) * OrdData[, 'POV'])) * 10000L # TODO: length(sessions) open discussion
+    # z-score
+    zScore <- costError/timingRisk
+    
+    iStarImpactsEst <- as.data.frame(cbind(ordArrCost, instImpact, tempImpact, permImpact, mktImpact, costError, timingRisk, zScore))
+    colnames(iStarImpactsEst) <- c('Arr.Cost', 'Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact', 'Cost.Error', 'Timing.Risk', 'z.score')
+    outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
+  }
   
   # Output handling
   outstore[['Rolling.Variables']] <- rollingVariables

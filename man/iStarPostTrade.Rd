@@ -6,7 +6,7 @@
 \usage{
 iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
   xtsfy = FALSE, grouping = FALSE, groupsBounds, minGroupDps,
-  paramsBounds, TxnData, side, ...)
+  paramsBounds, OrdData, ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects, each representing a security market data. See 'Details'}
@@ -27,11 +27,9 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{paramsBounds}{A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'}
 
-\item{TxnData}{An \code{xts} object, with 'TxnPrice' and 'TxnQty' required columns. See 'Details'}
+\item{OrdData}{A \code{data.frame} providing custom order data specifics to estimate the impacts for. Required columns are 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. See 'Details'}
 
-\item{side}{A numeric. Either 1 meaning 'buy' or -1 meaning 'sell'}
-
-\item{...}{Any other passthrough parameters}
+\item{...}{Any other passthrough parameter}
 }
 \value{
 TODO: WIP 
@@ -96,9 +94,18 @@ These default bounds are:
  0.1 <= a_4 <= 1    \cr
  0.7 <= b_1 <= 1    \cr
 }
-TODO: b_1 lower bound should be zero, however the author reports using 0.7 as an empirical value
-Nonetheless, the user if left free to specify desired parameters bounds via \code{paramBounds},
-where the rows must follow a_1, a_2, a_3, a_4 and b_1 order or be appropriately named.
+TODO: b_1 lower bound should be zero, however the author reports using 0.7 as 
+an empirical value Nonetheless, the user if left free to specify desired parameters 
+bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
+and b_1 order or be appropriately named. 
+
+\code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
+or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
+value expressing the price of the traded security (for theoretical accuracy it 
+is recommended to use the corresponding bid-ask spreads midpoint); 'AvgExecPrice',
+specifying the average execution price over the order lifetime; the 'POV' of 
+and the 'AnnualVol', the order percentage of volume and annualized volatility
+respectively.
 }
 \examples{
 
