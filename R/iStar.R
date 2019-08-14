@@ -364,7 +364,7 @@ iStarPostTrade <- function(MktData
     # Trade reason
     if (any(colnames(secMktData) == 'Reason')) {# from intraday data
       reason <- toupper(secMktData[, 'Reason'])
-      secMktData <- type.convert(secMktData[, colnames(secMktData) != 'Reason'], 'numeric')
+      secMktData <- apply(secMktData[, colnames(secMktData) != 'Reason'], 2, as.numeric)
       secMktData <- xts(secMktData, index(MktData[[s]]))
     } else {# Lee-Ready 'tick test'
       reason <- rep(NA, length(secMktData))
