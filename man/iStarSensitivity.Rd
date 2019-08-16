@@ -12,6 +12,8 @@ iStarSensitivity(object, paramsBounds, paramSteps, ...)
 \item{paramsBounds}{A matrix providing model parameters bounds to pass to \code{nls}. The same used in \code{iStarPostTrade} and defaults to the same values dicussed there}
 
 \item{paramSteps}{A vector of named elements representing each parameter step size to build the parameters sequences with. See 'Details'}
+
+\item{...}{Any other passthrough parameter}
 }
 \value{
 A \code{list} with elements:
@@ -31,8 +33,8 @@ a parameter, the nonlinear problem is solved to estimate the remaing four
 paramaters by means of nonlinear regression.
 
 Results of the analysis are reported along with the corresponding \emph{residul
-sum of square} of each model being fitted. Best fit paramaters should be such 
-that this quantity is minimized.
+sum of square} (RSS) of each model being fitted. Best fit paramaters should be 
+such that this quantity is minimized.
 
 
 Of course, \code{paramSteps} is related to \code{paramsBounds}. In particular, 

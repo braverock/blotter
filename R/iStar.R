@@ -632,6 +632,7 @@ iStarPostTrade <- function(MktData
 #' @param object An object of class 'iStarEst' from the \code{iStarPostTrade} function # TODO: the class is not defined at present, nor checks are in place here
 #' @param paramsBounds A matrix providing model parameters bounds to pass to \code{nls}. The same used in \code{iStarPostTrade} and defaults to the same values dicussed there
 #' @param paramSteps A vector of named elements representing each parameter step size to build the parameters sequences with. See 'Details'  
+#' @param ... Any other passthrough parameter
 #' 
 #' @return 
 #' A \code{list} with elements:
