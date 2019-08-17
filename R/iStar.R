@@ -202,7 +202,7 @@
 #' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
 #' @param minGroupDps A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
 #' @param paramsBounds A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'
-#' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for. Required columns are 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. See 'Details'
+#' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'
 #' @param ... Any other passthrough parameter
 #' 
 #' @return
@@ -274,6 +274,7 @@
 #' bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
 #' and b_1 order or be appropriately named. 
 #' 
+#' \code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 #' \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
 #' or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
 #' value expressing the price of the traded security (for theoretical accuracy it 
@@ -281,6 +282,14 @@
 #' specifying the average execution price over the order lifetime; the 'POV' of 
 #' and the 'AnnualVol', the order percentage of volume and annualized volatility
 #' respectively. 
+#' Whereas, when \code{OrdData} is a \code{list} it has to contain two named elements:
+#' 'Order.Data', a \code{data.frame} with the same characteristics as above and 
+#' 'Params', a vector consisting of named elements being the paramaters to use in 
+#' the I-Star equations to compute the impact costs and the error measures.
+#' This is useful in cases one already has estimated parameters for the model or 
+#' simply wants to see what I-Star model values would look like with different 
+#' paramaters, perhaps those coming from the sensitivity analysis carried with 
+#' \code{iStarSensitivity}.   
 #' 
 #' 
 #' @notes
@@ -305,8 +314,9 @@ iStarPostTrade <- function(MktData
                            , OrdData 
                            , ...)
 { 
+  outstore <- list()
+  if (missing(OrdData) | (!missing(OrdData) & is.data.frame(OrdData))) {
   secNames <- names(MktData)
-  
   # MktData checks 
   secColsCheck <- sapply(1:length(MktData), function(s, MktData) sum(colnames(MktData[[s]]) %in% c('MktPrice', 'MktQty')) <= 2, MktData)
   if (!all(secColsCheck)) {
@@ -346,7 +356,6 @@ iStarPostTrade <- function(MktData
     sessions <- paste0(earliestHour, latestHour)
   }
   
-  outstore <- list()
   periodIdxs <- periodDayDates <- list() # nextDayDates <- nextDayLastDate
   secAnnualVol <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
   ADV          <- matrix(NA, nrow = maxUniqueDays * length(sessions), ncol = length(MktData))
@@ -448,10 +457,12 @@ iStarPostTrade <- function(MktData
     names(x) <- paste(names(MktData), names(rollingVariables)[item], sep = '.')
     rollingVariables[[item]] <- x
   }
-  imbSize <- rollingVariables[['Imb.Size']]
-  annualVol <- rollingVariables[['Annual.Vol']]
-  POV <- rollingVariables[['POV']]
-  arrCost <- rollingVariables[['Arr.Cost']]
+  outstore[['Rolling.Variables']] <- rollingVariables
+  
+  imbSize   <- rollingVariables$Imb.Size
+  annualVol <- rollingVariables$Annual.Vol
+  POV       <- rollingVariables$POV
+  arrCost   <- rollingVariables$Arr.Cost
   
   ### DATAPOINTS GROUPING ###
   if (grouping[1]) {
@@ -566,7 +577,16 @@ iStarPostTrade <- function(MktData
                       lower = paramsBounds[, 1], upper = paramsBounds[, 2],
                       algorithm = 'port', ...) 
   
+  outstore[['nls.impact.fit']] <- nlsImpactFit
+  
   estParam <- coef(nlsImpactFit)
+  
+  } else if (!missing(OrdData) & is.list(OrdData)) {
+    
+    OrdData <- as.data.frame(OrdData[['Order.Data']])
+    estParam <- OrdData[['Params']]
+    
+  }
   
   ### I-STAR IMPACT ESTIMATES ###
   if (!missing(OrdData)) {
@@ -602,11 +622,6 @@ iStarPostTrade <- function(MktData
     colnames(iStarImpactsEst) <- c('Arr.Cost', 'Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact', 'Cost.Error', 'Timing.Risk', 'z.score')
     outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
   }
-  
-  # Output handling
-  outstore[['Rolling.Variables']] <- rollingVariables
-  outstore[['nls.impact.fit']] <- nlsImpactFit
-  
   return(outstore)
 }
 

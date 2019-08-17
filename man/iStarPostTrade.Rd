@@ -27,7 +27,7 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{paramsBounds}{A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'}
 
-\item{OrdData}{A \code{data.frame} providing custom order data specifics to estimate the impacts for. Required columns are 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. See 'Details'}
+\item{OrdData}{A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'}
 
 \item{...}{Any other passthrough parameter}
 }
@@ -99,13 +99,22 @@ an empirical value Nonetheless, the user if left free to specify desired paramet
 bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
 and b_1 order or be appropriately named. 
 
+\code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
 or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
 value expressing the price of the traded security (for theoretical accuracy it 
 is recommended to use the corresponding bid-ask spreads midpoint); 'AvgExecPrice',
 specifying the average execution price over the order lifetime; the 'POV' of 
 and the 'AnnualVol', the order percentage of volume and annualized volatility
-respectively.
+respectively. 
+Whereas, when \code{OrdData} is a \code{list} it has to contain two named elements:
+'Order.Data', a \code{data.frame} with the same characteristics as above and 
+'Params', a vector consisting of named elements being the paramaters to use in 
+the I-Star equations to compute the impact costs and the error measures.
+The latter case is useful in cases one already has estimated parameters for 
+the model or simply wants to see what I-Star model values would look like with
+different paramaters, perhaps those coming from the sensitivity analysis carried 
+with \code{iStarSensitivity}.
 }
 \examples{
 
