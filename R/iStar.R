@@ -787,9 +787,7 @@ iStarSensitivity <- function(object
     }
     if (f > sum(paramSeqLens[1:4])) {# b_1 fixed
       for (i in 1:length(b_1_seq)) {
-        POV <- b_1_seq[i] * POV
-        b_1_comp <- 1 - b_1_seq[i]
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (POV^(a_4) + b_1_comp) * (a_1 * imbSize * annualVol^(a_3)),
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1_seq[i] * POV^(a_4) + (1 - b_1_seq[i])) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 5]], lower = paramsBounds[parCombnIdxs[, 5], 1], upper = paramsBounds[parCombnIdxs[, 5], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
