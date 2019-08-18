@@ -727,8 +727,7 @@ iStarSensitivity <- function(object
   for (f in 1:sum(paramSeqLens)) {
     if (f <= sum(paramSeqLens[1])) {# a_1 fixed
       for (i in 1:length(a_1_seq)) {
-        imbSize <- imbSize * a_1_seq[i]
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1 - b_1)) * (imbSize^(a_2) * annualVol^(a_3)),
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1 - b_1)) * (a_1_seq[i] * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 1]], lower = paramsBounds[parCombnIdxs[, 1], 1], upper = paramsBounds[parCombnIdxs[, 1], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -742,7 +741,7 @@ iStarSensitivity <- function(object
     }
     if (f > sum(paramSeqLens[1]) & f <= sum(paramSeqLens[1:2])) {# a_2 fixed
       for (i in 1:length(a_2_seq)) {
-        imbSize <- imbSize^a_2_seq[i]
+        imbSize <- imbSize^(a_2_seq[i])
         nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 2]], lower = paramsBounds[parCombnIdxs[, 2], 1], upper = paramsBounds[parCombnIdxs[, 2], 2],
                                           algorithm = 'port', ...),
