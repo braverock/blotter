@@ -33,8 +33,9 @@ a parameter, the nonlinear problem is solved to estimate the remaing four
 paramaters by means of nonlinear regression.
 
 Results of the analysis are reported along with the corresponding \emph{residul
-sum of square} (RSS) of each model being fitted. Best fit paramaters should be 
-such that this quantity is minimized.
+standard error} (RSE) of each model being fitted. Recall that this quantity is 
+expressed in the same dependent variable unit.
+Best fit paramaters should be such that this quantity is minimized.
 
 
 Of course, \code{paramSteps} is related to \code{paramsBounds}. In particular, 

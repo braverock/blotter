@@ -636,8 +636,9 @@ iStarPostTrade <- function(MktData
 #' paramaters by means of nonlinear regression.
 #' 
 #' Results of the analysis are reported along with the corresponding \emph{residul
-#' sum of square} (RSS) of each model being fitted. Best fit paramaters should be 
-#' such that this quantity is minimized.
+#' standard error} (RSE) of each model being fitted. Recall that this quantity is 
+#' expressed in the same dependent variable unit.
+#' Best fit paramaters should be such that this quantity is minimized.
 #' 
 #' @references
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
@@ -716,7 +717,7 @@ iStarSensitivity <- function(object
   out <- vector('list', 3)
   nlsImpactFit <- vector('list', sum(paramSeqLens))
   paramSens <- matrix(NA, nrow = sum(paramSeqLens), ncol = 6)
-  colnames(paramSens) <- c('a_1', 'a_2', 'a_3', 'a_4', 'b_1', 'RSS')
+  colnames(paramSens) <- c('a_1', 'a_2', 'a_3', 'a_4', 'b_1', 'RSE')
   
   # Parameters sensitivity matrix
   paramSens[1:sum(paramSeqLens[1]), 1] <- a_1_seq
@@ -735,7 +736,7 @@ iStarSensitivity <- function(object
                paramSens[f, parCombnIdxs[, 1]] <- coef(nlsImpactFit[[f]]), 
                paramSens[f, parCombnIdxs[, 1]] <- rep(NA, 4))
         ifelse(!is.na(nlsImpactFit[[f]]), 
-               paramSens[f, ncol(paramSens)] <- deviance(nlsImpactFit[[f]]), 
+               paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <-  NA)
       }
     }
@@ -749,7 +750,7 @@ iStarSensitivity <- function(object
                paramSens[f, parCombnIdxs[, 2]] <- coef(nlsImpactFit[[f]]), 
                paramSens[f, parCombnIdxs[, 2]] <- rep(NA, 4))
         ifelse(!is.na(nlsImpactFit[[f]]), 
-               paramSens[f, ncol(paramSens)] <- deviance(nlsImpactFit[[f]]),
+               paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]),
                paramSens[f, ncol(paramSens)] <- NA)
       } 
     }
@@ -763,7 +764,7 @@ iStarSensitivity <- function(object
                paramSens[f, parCombnIdxs[, 3]] <- coef(nlsImpactFit[[f]]), 
                paramSens[f, parCombnIdxs[, 3]] <- rep(NA, 4))
         ifelse(!is.na(nlsImpactFit[[f]]), 
-               paramSens[f, ncol(paramSens)] <- deviance(nlsImpactFit[[f]]), 
+               paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- NA)
       }
     }
@@ -777,7 +778,7 @@ iStarSensitivity <- function(object
                paramSens[f, parCombnIdxs[, 4]] <- coef(nlsImpactFit[[f]]), 
                paramSens[f, parCombnIdxs[, 4]] <- rep(NA, 4))
         ifelse(!is.na(nlsImpactFit[[f]]), 
-               paramSens[f, ncol(paramSens)] <- deviance(nlsImpactFit[[f]]),
+               paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]),
                paramSens[f, ncol(paramSens)] <- NA)
       }
     }
@@ -791,7 +792,7 @@ iStarSensitivity <- function(object
                paramSens[f, parCombnIdxs[, 5]] <- coef(nlsImpactFit[[f]]), 
                paramSens[f, parCombnIdxs[, 5]] <- rep(NA, 4))
         ifelse(!is.na(nlsImpactFit[[f]]), 
-               paramSens[f, ncol(paramSens)] <- deviance(nlsImpactFit[[f]]), 
+               paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- NA)
       }
     }
