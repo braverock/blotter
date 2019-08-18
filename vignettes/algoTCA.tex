@@ -1,0 +1,73 @@
+% !TeX root = RJwrapper.tex
+\title{Capitalized Title Here}
+\author{by Author One, Author Two}
+
+\maketitle
+
+\abstract{%
+An abstract of less than 150 words.
+}
+
+% Any extra LaTeX you need in the preamble
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+Introductory section which may include references in parentheses
+\citep{R}, or cite a reference such as \citet{R} in the text.
+
+\hypertarget{section-title-in-sentence-case}{%
+\subsection{Section title in sentence
+case}\label{section-title-in-sentence-case}}
+
+This section may contain a figure such as Figure \ref{figure:rlogo}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{Rlogo}
+  \caption{The logo of R.}
+  \label{figure:rlogo}
+\end{figure}
+
+\hypertarget{another-section}{%
+\subsection{Another section}\label{another-section}}
+
+There will likely be several sections, perhaps including code snippets,
+such as:
+
+\begin{Schunk}
+\begin{Sinput}
+x <- 1:10
+x
+\end{Sinput}
+\begin{Soutput}
+#>  [1]  1  2  3  4  5  6  7  8  9 10
+\end{Soutput}
+\end{Schunk}
+
+\hypertarget{summary}{%
+\subsection{Summary}\label{summary}}
+
+This file is only a basic article template. For full details of
+\emph{The R Journal} style and information on how to prepare your
+article for submission, see the
+\href{https://journal.r-project.org/share/author-guide.pdf}{Instructions
+for Authors}.
+
+\bibliography{RJreferences}
+
+
+\address{%
+Author One\\
+Affiliation\\
+line 1\\ line 2\\
+}
+\href{mailto:author1@work}{\nolinkurl{author1@work}}
+
+\address{%
+Author Two\\
+Affiliation\\
+line 1\\ line 2\\
+}
+\href{mailto:author2@work}{\nolinkurl{author2@work}}
+
