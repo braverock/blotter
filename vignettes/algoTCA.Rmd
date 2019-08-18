@@ -19,6 +19,10 @@ output:
   rticles::rjournal_article:
     includes:
       in_header: preamble.tex
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Title of your vignette}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ## Introduction
