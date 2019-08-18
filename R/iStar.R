@@ -741,8 +741,7 @@ iStarSensitivity <- function(object
     }
     if (f > sum(paramSeqLens[1]) & f <= sum(paramSeqLens[1:2])) {# a_2 fixed
       for (i in 1:length(a_2_seq)) {
-        imbSize <- imbSize^(a_2_seq[i])
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize * annualVol^(a_3)),
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2_seq[i]) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 2]], lower = paramsBounds[parCombnIdxs[, 2], 1], upper = paramsBounds[parCombnIdxs[, 2], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -756,8 +755,7 @@ iStarSensitivity <- function(object
     }
     if (f > sum(paramSeqLens[1:2]) & f <= sum(paramSeqLens[1:3])) {# a_3 fixed
       for (i in 1:length(a_3_seq)) {
-        annualVol <-  annualVol^(a_3_seq[i])
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol),
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3_seq[i])),
                                           start = initValues[parCombnIdxs[, 3]], lower = paramsBounds[parCombnIdxs[, 3], 1], upper = paramsBounds[parCombnIdxs[, 3], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -771,8 +769,7 @@ iStarSensitivity <- function(object
     }
     if (f > sum(paramSeqLens[1:3]) & f <= sum(paramSeqLens[1:4])) {# a_4 fixed
       for (i in 1:length(a_4_seq)) {
-        POV <- POV^(a_4_seq[i])
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV + (1 - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4_seq[i]) + (1 - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 4]], lower = paramsBounds[parCombnIdxs[, 4], 1], upper = paramsBounds[parCombnIdxs[, 4], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
