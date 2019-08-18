@@ -6,7 +6,7 @@
 \usage{
 iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
   xtsfy = FALSE, grouping = FALSE, groupsBounds, minGroupDps,
-  paramsBounds, OrdData, ...)
+  paramsBounds, paramsInit, OrdData, ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects, each representing a security market data. See 'Details'}
@@ -26,6 +26,8 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 \item{minGroupDps}{A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'}
 
 \item{paramsBounds}{A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'}
+
+\item{paramsInit}{A list providing model paramaters initial values to pass to \code{nls}. Elements should be named with the corresponding parameter, i.e. 'a_1', 'a_2', 'a_3', 'a_4' and 'b_1'. See 'Details'}
 
 \item{OrdData}{A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'}
 
@@ -83,10 +85,12 @@ Where each interval is considered to be left opened and right closed.
 Again, these values are suggested by the author and appear to come from empirical 
 findings.
 
-For the estimation we use \code{nls}, specifying \code{algorithm = 'port'} in 
-order to implement in the procedure the parameters bounds provided by the author:
-The parameters initial values is chosen to be their respective lower bound.
-These default bounds are:
+For the estimation we use \code{nls}, specifying the \code{algorithm = 'port'} 
+in order to implement the constrained problem the author proposes.
+Parameters starting values are provided with \code{paramsInit}, if missing they 
+are chosen to be their respective lower bound. Note that specified values must 
+be included in the corresponding \code{paramsBounds}.
+If missing, default values for the bounds are:
 \tabular{c}{
  100 <= a_1 <= 1000 \cr
  0.1 <= a_2 <= 1    \cr
@@ -98,6 +102,7 @@ TODO: b_1 lower bound should be zero, however the author reports using 0.7 as
 an empirical value Nonetheless, the user if left free to specify desired parameters 
 bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
 and b_1 order or be appropriately named. 
+
 
 \code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
@@ -111,10 +116,10 @@ Whereas, when \code{OrdData} is a \code{list} it has to contain two named elemen
 'Order.Data', a \code{data.frame} with the same characteristics as above and 
 'Params', a vector consisting of named elements being the paramaters to use in 
 the I-Star equations to compute the impact costs and the error measures.
-The latter case is useful in cases one already has estimated parameters for 
-the model or simply wants to see what I-Star model values would look like with
-different paramaters, perhaps those coming from the sensitivity analysis carried 
-with \code{iStarSensitivity}.
+This is useful in cases one already has estimated parameters for the model or 
+simply wants to see what I-Star model values would look like with different 
+paramaters, perhaps those coming from the sensitivity analysis carried with 
+\code{iStarSensitivity}.
 }
 \examples{
 

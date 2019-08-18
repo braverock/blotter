@@ -155,20 +155,26 @@
 #'   }
 #'   \item{\emph{Nonlinear regression}: }{
 #'   The full model parameters are estimated by means of nonlinear least squares. 
-#'   There is a wide theory behind such theory, rich of reasons inherent to the specific iterative procedure used and their 
-#'   peculiarities in achieving converge. The interested reader may consult Venables 
-#'   and Ripley (2002).
-#'   
-#'   In his modeling context the author sets a constrained problem providing bounds 
-#'   on parameters, in order to ensure feasible estimated values.
-#'   The author's suggested bounds are implemented by default to follow his methodology, 
-#'   as reported in 'Details'. However, the opportunity to provide bounds is supported 
-#'   and left to the users.
+#'   There is a wide theory behind such approach, rich of pros and contra inherent 
+#'   to the specific iterative procedure used and their peculiarities in achieving 
+#'   converge. The interested reader may consult Venables and Ripley (2002).
 #'   A general warning in estimating this model comes from the author himself:
 #'   "Analysts choosing to solve the parameters of the model via non-linear regression 
 #'   of the full model need to thoroughly understand the repercussions of non-linear 
 #'   regression analysis as well as the sensitivity of the parameters, and potential 
 #'   solution ranges for the parameters."
+#'   
+#'   In his modeling context the author sets a constrained problem providing bounds 
+#'   on parameters, in order to ensure feasible estimated values.
+#'   The author's suggested bounds are implemented by default to follow his methodology, 
+#'   as reported in 'Details'. However, the opportunity to provide bounds is supported 
+#'   and left to the users. Likewise, initial parameters values to start the iterative
+#'   constrained minimization problem resolution from is left to the user: to my 
+#'   knowledge at the time of writing, the author does not provide any specific 
+#'   clue in the estimation procedure used and especially there is no suggestion 
+#'   on particular starting values to begin with. It is valuable for a user to control
+#'   starting values, as a way to check whether the estimated parameters come form 
+#'   a local optimum or if a global optimum may have been reasonably achieved.
 #'   }
 #' }
 #' 
@@ -202,6 +208,7 @@
 #' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
 #' @param minGroupDps A numeric value, the minimum number of datapoints a group should have to be included in the estimation process. Default is 25. See 'Details'
 #' @param paramsBounds A matrix providing model parameters bounds to pass to \code{nls}. Parameters are considered by row and columns represents lower and upper bounds, respectively. See 'Details'
+#' @param paramsInit A list providing model paramaters initial values to pass to \code{nls}. Elements should be named with the corresponding parameter, i.e. 'a_1', 'a_2', 'a_3', 'a_4' and 'b_1'. See 'Details'
 #' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'
 #' @param ... Any other passthrough parameter
 #' 
@@ -258,10 +265,12 @@
 #' Again, these values are suggested by the author and appear to come from empirical 
 #' findings.
 #' 
-#' For the estimation we use \code{nls}, specifying \code{algorithm = 'port'} in 
-#' order to implement in the procedure the parameters bounds provided by the author:
-#' The parameters initial values is chosen to be their respective lower bound.
-#' These default bounds are:
+#' For the estimation we use \code{nls}, specifying the \code{algorithm = 'port'} 
+#' in order to implement the constrained problem the author proposes.
+#' Parameters starting values are provided with \code{paramsInit}, if missing they 
+#' are chosen to be their respective lower bound. Note that specified values must 
+#' be included in the corresponding \code{paramsBounds}.
+#' If missing, default values for the bounds are:
 #' \tabular{c}{
 #'  100 <= a_1 <= 1000 \cr
 #'  0.1 <= a_2 <= 1    \cr
@@ -273,6 +282,7 @@
 #' an empirical value Nonetheless, the user if left free to specify desired parameters 
 #' bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
 #' and b_1 order or be appropriately named. 
+#' 
 #' 
 #' \code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 #' \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
@@ -311,6 +321,7 @@ iStarPostTrade <- function(MktData
                            , groupsBounds
                            , minGroupDps
                            , paramsBounds
+                           , paramsInit
                            , OrdData 
                            , ...)
 { 
@@ -571,11 +582,12 @@ iStarPostTrade <- function(MktData
     paramsBounds[1:5, 1] <- c(100, 0.1, 0.1, 0.1, 0.7)
     paramsBounds[1:5, 2] <- c(1000, 1, 1, 1, 1)
   }
+  if (missing(paramsInit)) {
+    paramsInit <- list(a_1 = 100, a_2 = 0.1, a_3 = 0.1, a_4 = 0.1, b_1 = 0.7)
+  }
   
   nlsImpactFit <- nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
-                      start = list(a_1 = 100, a_2 = 0.1, a_3 = 0.1, a_4 = 0.1, b_1 = 0.7),
-                      lower = paramsBounds[, 1], upper = paramsBounds[, 2],
-                      algorithm = 'port', ...) 
+                      start = paramsInit, lower = paramsBounds[, 1], upper = paramsBounds[, 2], algorithm = 'port', ...) 
   
   outstore[['nls.impact.fit']] <- nlsImpactFit
   
@@ -639,6 +651,7 @@ iStarPostTrade <- function(MktData
 #' standard error} (RSE) of each model being fitted. Recall that this quantity is 
 #' expressed in the same dependent variable unit.
 #' Best fit paramaters should be such that this quantity is minimized.
+#' 
 #' 
 #' @references
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
