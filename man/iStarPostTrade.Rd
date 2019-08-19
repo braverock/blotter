@@ -33,23 +33,25 @@ iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
 
 \item{...}{Any other passthrough parameter}
 }
-\value{
-TODO: WIP 
-\describe{
-     \item{\code{}: }{}
-     \item{\code{}: }{}
-     \item{\code{}: }{}
-}
-}
 \description{
 The model is a cost allocation method to quantify the market impact of financial
 transactions, depending on an agent order size relative to the market volume;  
-in its authors words is theoretically based on the supply-demand principle, 
+in the authors words is theoretically based on the supply-demand principle, 
 although it may be rather difficult to express ourselves precisely in these 
 terms and even so our interpretations may differ by the several possible 
 scenarios that take place into the market in response to imbalances.
 }
 \details{
+Theoretically the I-Star model can be estimated using private order data for
+which one intends to estimate the impact costs. The main limitations of this 
+approach are: on one hand the lack of data and the effect of neglecting the 
+effect of wider market movements than the ones of the single security on which 
+the order was placed, on the other it may include potential opportunistic trading 
+biases. Based on these considerations we follow Kissell's main discussion line, 
+focusing on the use of market "tic data" and derived quantities that represent 
+proxies of the corresponding order-related variables.
+
+
 The \code{MktData} input dataset must be a list, with items being market data
 by security considered. These items must be named to match the security they refer to.
 Each item is required to be an \code{xts} object having at least 'MktPrice' and 
@@ -98,20 +100,21 @@ If missing, default values for the bounds are:
  0.1 <= a_4 <= 1    \cr
  0.7 <= b_1 <= 1    \cr
 }
-TODO: b_1 lower bound should be zero, however the author reports using 0.7 as 
-an empirical value Nonetheless, the user if left free to specify desired parameters 
-bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
-and b_1 order or be appropriately named. 
+Note that by definition \eqn{0 <= b_1 <= 1}, however the author reports using 
+0.7 as an empirical value Nonetheless, the user if left free to specify desired 
+parameters bounds via \code{paramBounds}, where the rows must follow a_1, a_2, 
+a_3, a_4 and b_1 order or be named accordingly. 
 
 
 \code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
-or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
-value expressing the price of the traded security (for theoretical accuracy it 
-is recommended to use the corresponding bid-ask spreads midpoint); 'AvgExecPrice',
-specifying the average execution price over the order lifetime; the 'POV' of 
-and the 'AnnualVol', the order percentage of volume and annualized volatility
-respectively. 
+or -1 ("sell"); 'Size', the order size expressed in terms of , that is the ratio 
+between the total number of traded units and that the ADV on the day the order 
+was traded ; 'ArrPrice', a numeric value expressing the price of the traded 
+security (for theoretical accuracy it is recommended to use the corresponding 
+bid-ask spreads midpoint); 'AvgExecPrice', specifying the average execution 
+price over the order lifetime; the 'POV' of and the 'AnnualVol', the order 
+percentage of volume and annualized volatility respectively. 
 Whereas, when \code{OrdData} is a \code{list} it has to contain two named elements:
 'Order.Data', a \code{data.frame} with the same characteristics as above and 
 'Params', a vector consisting of named elements being the paramaters to use in 

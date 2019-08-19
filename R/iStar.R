@@ -2,82 +2,100 @@
 #' 
 #' The model is a cost allocation method to quantify the market impact of financial
 #' transactions, depending on an agent order size relative to the market volume;  
-#' in its authors words is theoretically based on the supply-demand principle, 
+#' in the authors words is theoretically based on the supply-demand principle, 
 #' although it may be rather difficult to express ourselves precisely in these 
 #' terms and even so our interpretations may differ by the several possible 
 #' scenarios that take place into the market in response to imbalances.
 #' 
-#'
+#' Theoretically the I-Star model can be estimated using private order data for
+#' which one intends to estimate the impact costs. The main limitations of this 
+#' approach are: on one hand the lack of data and the effect of neglecting the 
+#' effect of wider market movements than the ones of the single security on which 
+#' the order was placed, on the other it may include potential opportunistic trading 
+#' biases. Based on these considerations we follow Kissell's main discussion line, 
+#' focusing on the use of market "tic data" and derived quantities that represent 
+#' proxies of the corresponding order-related variables. 
+#' 
 #' @section Market "tic data" and variables   
-#' In its most genearl setting, the model is based on market tic data only. 
+#' In its most genearl setting, the model is based on market "tic data" only. 
 #' It is difficult to relate Kissell's provided notion of "tic data" with respect 
 #' to current data provision standards, which in turn may also vary by data vendors. 
 #' Here should suffice to mention that an ideal market intraday dataset to input 
-#' into the model includes: trades prices and volumes, "bid" and "ask" prices 
+#' into the model includes trades prices and volumes, "bid" and "ask" prices 
 #' in order to compute the spreads and possibly the so called "reason" (i.e, the 
 #' classification of trades as "bid" or "ask"); for each security involved in the 
 #' analysis.
-#' See 'Details' for specifications on input data structure and its requirements. 
 #' 
 #' All the historical variables needed the model are computed internally from 
 #' market data and most of them are "rolling end-of-day quantities", meaning that 
-#' they are based on previous variables over a specified \emph{horizon} (\eqn{t = 1,...,T})
-#' that rolls one step ahead until data available allows.
+#' they are based on previous variables over a specified \emph{horizon} 
+#' (\eqn{t = 1,...,T}) that rolls one step ahead until data available allows.
 #' Some variables are annualized and hence need the total number of business days 
 #' in a given market and within a given year (typically a factor of 252 days, in 
 #' the US markets, or of 250 days), we denote it \eqn{T_{m}}.
 #' These and other quantities involved are defined below: 
 #' 
 #' \describe{
-#'   \item{\emph{Arrival Price}. }{Ideally is the first bid-ask spreads midpoint. 
-#'   When missing spread data, the first daily market price is used as a proxy.}
-#' 
-#'   \item{\emph{Annualized volatility}. }{Is the standard deviation of the 
+#'   \item{\emph{Arrival Price}. }{
+#'   Ideally is the first bid-ask spreads midpoint. 
+#'   When missing spread data, the first daily market price is used as a proxy.
+#'   }
+#'   
+#'   \item{\emph{Annualized volatility}. }{
+#'   Is the standard deviation of the 
 #'   close-to-close security returns, scaled on the number of business days in a 
 #'   given year:
 #'   \deqn{\sigma = \sqrt{\frac{T_{m}}{T - 1} . \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}}}
 #'   It is expressed in decimal units.
 #'   } 
 #' 
-#'   \item{\emph{Average Daily Volume} (ADV). }{Over the specified horizon
-#'   \deqn{ADV = \frac{1}{T} . \sum_{t}^{T} V_{t}}}
+#'   \item{\emph{Average Daily Volume} (ADV). }{
+#'   Over the specified horizon:
+#'   \deqn{ADV = \frac{1}{T} . \sum_{t}^{T} V_{t}}
+#'   }
 #'       
-#'   \item{\emph{Imbalance} (Q). }{It is calculated from "buy initiated trades" 
-#'   and "sell initiated trades". When trade 'Reason' is already available there 
-#'   is no need to explicitly infere trades direction. In cases such a 'Reason' 
-#'   is missing, the Lee-Ready \emph{tick test} will be used to infere trading 
-#'   direction. In its essence, the test is based on determining the sign of price 
-#'   changes: uptick or zero-uptick trades are considered "buy initiated", whereas 
-#'   downtick or zero-downtick tradesare counted as "sell initiated". We express 
-#'   it as:
+#'   \item{\emph{Imbalance} (Q). }{
+#'   It is calculated from "buy initiated trades" and "sell initiated trades". 
+#'   When trade 'Reason' is already available there is no need to explicitly infere 
+#'   trades direction. In cases such a 'Reason' is missing, the Lee-Ready \emph{tick test} 
+#'   will be used to infere trading direction. In its essence, the test is based 
+#'   on determining the sign of price changes: uptick or zero-uptick trades are 
+#'   considered "buy initiated", whereas downtick or zero-downtick tradesare counted 
+#'   as "sell initiated". We express it as:
 #'   \deqn{Q = |\sum{Buy initiated trades volume} - \sum{Sell initiated trades volume}|}
 #'   To note is that, as the "reason" refers to each trade, "buy initiated trades" 
 #'   and "sell initiated trades" can only be deduced from intraday data and then
 #'   taken to a daily scale.
 #'   }
 #' 
-#'   \item{\emph{Imbalance size}. }{It is defined as the ratio:
+#'   \item{\emph{Imbalance size}. }{
+#'   It is defined as the ratio:
 #'   \deqn{\frac{Q_{t}}{ADV}}
 #'   It is expressed on a daily basis and the values are in decimal units.
 #'   In the I-Star modeling context it represents a proxy of a private agent order size. 
 #'   }
 #' 
-#'   \item{\emph{Imbalance side}. }{It is the signed imbalance and it indicates
+#'   \item{\emph{Imbalance side}. }{
+#'   It is the signed imbalance and it indicates
 #'   which side of the market is prevailing. Either +1 or -1 indicating respectively
-#'   prevailing buy or sell initiated trades.}
+#'   prevailing buy or sell initiated trades.
+#'   }
 #' 
-#'   \item{\emph{Percentage of volume} (POV).}{The ratio between market imbalance 
+#'   \item{\emph{Percentage of volume} (POV).}{
+#'   The ratio between market imbalance 
 #'   and the market daily volume traded over a given day:
 #'   \deqn{\frac{Q_{t}}{V_{t}}}
 #'   }
 #' 
-#'   \item{ \emph{Volume Weighted Average Price} (VWAP). }{ Expressed as
+#'   \item{ \emph{Volume Weighted Average Price} (VWAP). }{
+#'   Expressed as
 #'   \deqn{VWAP = \frac{\sum{P_{t}Q_{t}}}{\sum{Q_{t}}}}
 #'   it is commonly used as a proxy of fair market price. In the present context is
 #'   specifically used as a proxy of the average execution price.
 #'   }
 #' 
-#'   \item{\emph{Arrival Cost}. }{The usual arrival cost benchmark metric. In a 
+#'   \item{\emph{Arrival Cost}. }{
+#'   The usual arrival cost benchmark metric. In a 
 #'   single security analysis framework it refers to the arrival cost of private 
 #'   order transactions, whereas with respect to the full model with market tic 
 #'   data only is an analogous metric based on the VWAP as proxy of a fair average 
@@ -93,7 +111,6 @@
 #' temporary and a permanent market impact (Lee-Ready, 1991).
 #' 
 #' The I-Star model is made of three main components, all expressed in basis points:
-#' 
 #' \enumerate{
 #'   \item \emph{Instantaneous impact} (I) 
 #'   It is the theoretical impact of executing the entire order at once. We express 
@@ -109,7 +126,7 @@
 #'   and is expressed as:
 #'   \deqn{MI = b_1 . POV^{a_4} . I + (1 - b_1) . I}
 #'   where \eqn{a_4} is said \emph{POV shape parameter} and \eqn{b_1} is the 
-#'   \emph{percentage of total temporary market impact}. 0 <= b_1 <= 1
+#'   \emph{percentage of total temporary market impact}.
 #'   
 #'   \item \emph{Timing risk measure}
 #'   It is a proxy for the uncertainty surrounding the cost estimate
@@ -119,8 +136,6 @@
 #' 
 #' The first two equations are part of the model estimation, whereas the last one
 #' is used as a measure of risk esposure for a given order. 
-#' 
-#' TODO: discuss timing risk, it becomes relevant again in the error analysis section below 
 #' 
 #' @section Outliers analysis
 #' TODO: add outliers criteria (consistency still under discussion)
@@ -181,14 +196,14 @@
 #' @section Impact estimates, error and sensitivity analyses 
 #' Once the parameters have been estimated, the I-Star best fit equations provide 
 #' impact costs estimates for a given market parent order specified by its size,
-#' POV, annualized volatility, side and arrival price. 
-#' 
+#' POV, annualized volatility, side and arrival price.
+#' The instantaneous, market impacts (both temporary and permanent) and timing
+#' risk are described by the I-Star model equations explained above.
 #' The \emph{cost error} is assessed as the difference between the arrival cost 
 #' of the order and the market impact estimate.
-#' 
 #' The \emph{z-score} is a "risk-adjusted error" and is expressed as the ratio 
-#' between the cost error above and timining risk. Most accurate models possess
-#' z-scores distributions with mean zero and unit variance.
+#' between the cost error and timining risk. The author reports that most accurate 
+#' models possess z-scores distributions with mean zero and unit variance.
 #' 
 #' 
 #' @references 
@@ -213,13 +228,17 @@
 #' @param ... Any other passthrough parameter
 #' 
 #' @return
-#' TODO: WIP 
+#' A list whose elements depends on the chosen \code{grouping} and the usage of \code{OrdData}.
+#' It can contain:
 #' \describe{
-#'      \item{\code{}: }{}
-#'      \item{\code{}: }{}
-#'      \item{\code{}: }{}
+#'      \item{\code{'Rolling.Variables'}: }{A \code{list} whose elements are 'ADV', Annual.Vol', 'Arrival.Cost', 'Imb', 'Imb.Size', 'Imb.Side', 'POV' and 'VWAP' computed depending on the original \code{MktData} dataset provided and over specified \code{horizon} and \{sessions}}
+#'      \item{\code{'Groups.Buckets'}: }{A \code{data.frame} providing the per-group imbalance size, percentage of volume and annualized volatility bounds built from provided sequences}
+#'      \item{\code{'Rolling.Variables.Groups'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' indices}
+#'      \item{\code{'Rolling.Variables.Samples'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' values}
+#'      \item{\code{'Regression.Variables'}: }{A \code{data.frame} consisting of the nonlinear regression model data}
+#'      \item{\code{'nls.impact.fit'}: }{The \code{nls} object resulting from the nonlinear model being fitted on 'Regression.Variables'}
+#'      \item{\code{'iStar.Impact.Estimates'}: }{A \code{data.frame} with I-Star model impact estimates, error measures and orders arrival cost for comparison}
 #' }
-#' 
 #' 
 #' @importFrom utils type.convert txtProgressBar setTxtProgressBar
 #' @importFrom stats nls coef
@@ -278,20 +297,21 @@
 #'  0.1 <= a_4 <= 1    \cr
 #'  0.7 <= b_1 <= 1    \cr
 #' }
-#' TODO: b_1 lower bound should be zero, however the author reports using 0.7 as 
-#' an empirical value Nonetheless, the user if left free to specify desired parameters 
-#' bounds via \code{paramBounds}, where the rows must follow a_1, a_2, a_3, a_4 
-#' and b_1 order or be appropriately named. 
+#' Note that by definition \eqn{0 <= b_1 <= 1}, however the author reports using 
+#' \eqn{0.7} as an empirical value. Nonetheless, the user if left free to specify desired 
+#' parameters bounds via \code{paramBounds}, where the rows must follow a_1, a_2, 
+#' a_3, a_4 and b_1 order or be named accordingly. 
 #' 
 #' 
 #' \code{OrdData} can be a \code{data.frame} or \code{list}. When it is a \code{data.frame},
 #' \code{OrdData} columns are required to be: 'Side', a numeric value being 1 ("buy")
-#' or -1 ("sell"); 'Size', the total number of units traded; 'ArrPrice', a numeric 
-#' value expressing the price of the traded security (for theoretical accuracy it 
-#' is recommended to use the corresponding bid-ask spreads midpoint); 'AvgExecPrice',
-#' specifying the average execution price over the order lifetime; the 'POV' of 
-#' and the 'AnnualVol', the order percentage of volume and annualized volatility
-#' respectively. 
+#' or -1 ("sell"); 'Size', the order size expressed in terms of , that is the ratio 
+#' between the total number of traded units and that the ADV on the day the order 
+#' was traded ; 'ArrPrice', a numeric value expressing the price of the traded 
+#' security (for theoretical accuracy it is recommended to use the corresponding 
+#' bid-ask spreads midpoint); 'AvgExecPrice', specifying the average execution 
+#' price over the order lifetime; the 'POV' of and the 'AnnualVol', the order 
+#' percentage of volume and annualized volatility respectively. 
 #' Whereas, when \code{OrdData} is a \code{list} it has to contain two named elements:
 #' 'Order.Data', a \code{data.frame} with the same characteristics as above and 
 #' 'Params', a vector consisting of named elements being the paramaters to use in 
@@ -303,10 +323,10 @@
 #' 
 #' 
 #' @notes
-#' TODO: stock specific analysis is a WIP, it shouldn't be hard to integrate in function flow already in place (but has to be seen in light of further analyses such as error analysis)
-#' To run the model in a security specific analysis framework, transactional data 
-#' is needed. Input are therefore \code{TxnData} with a specified \code{side} and 
-#' a single \code{MktData} item to represent traded security market data.
+#' TODO: stock specific analysis is a WIP (it shouldn't be hard to integrate in 
+#' function flow already in place, see it in light of further analyses such as 
+#' error analysis. Also for testing purposes other kind of data such as market 
+#' capitalization is needed)
 #' 
 #' @examples 
 #' 
@@ -573,7 +593,7 @@ iStarPostTrade <- function(MktData
     arrCost <- as.vector(unlist(arrCost))
     
   } # end of data grouping 
-  outstore[['Regression.Variables']] <- list(Arr.Cost = arrCost, Imb.Size = imbSize, Annual.Vol = annualVol, POV = POV)
+  outstore[['Regression.Variables']] <- as.data.frame(cbind('Arr.Cost' = arrCost, 'Imb.Size' = imbSize, 'POV' = POV, 'Annual.Vol' = annualVol))
   
   ### PARAMETERS ESTIMATION ###
   if (missing(paramsBounds)) {
