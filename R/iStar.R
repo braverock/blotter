@@ -654,6 +654,7 @@ iStarPostTrade <- function(MktData
     colnames(iStarImpactsEst) <- c('Arr.Cost', 'Inst.Impact', 'Temp.Impact', 'Perm.Impact', 'Mkt.Impact', 'Cost.Error', 'Timing.Risk', 'z.score')
     outstore[['iStar.Impact.Estimates']] <- iStarImpactsEst
   }
+  class(outstore) <- 'iStarEst'
   return(outstore)
 }
 
@@ -834,4 +835,83 @@ iStarSensitivity <- function(object
   out[['nls.impact.fits']] <- nlsImpactFit
   out[['Params.Sensitivity']] <- paramSens
   return(out)
+}
+
+
+#' Plot method for object of type \code{iStarEst}
+#' 
+#' The main scope of present function is to reproduce what Kissell refers to as 
+#' \emph{cost curves}. In these curves estimated market impact is plotted against 
+#' the order size for a given value of the volatility or against the volatility 
+#' for a given order size. Likewise, we can plot the estimated market impact against 
+#' sequences of 'POV' or 'AnnualVol' with the other two respective variables being 
+#' fixed.
+#' 
+#' The plots are mainly provided for exaplanatory purposes. They are a qualitatite
+#' mean to extend an order scrutiny to the market impact estimated cost shape under 
+#' different values of the relevant variables. Cost curves are expected to possess 
+#' a concave shape.
+#' 
+#' It shall be stressed that even when actual custom order data will be provided,
+#' we do not use it to compute variables underlying the cost curve. Instead, the 
+#' selected variable is varied along a given sequence and for provided values of
+#' the other two variables.
+#' 
+#' @references
+#' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
+#'
+#' @author Vito Lestingi
+#' 
+#' @param object An object of class \code{iStarEst} from \code{iStarPostTrade}
+#' @param xVar A character specifying the variable to plot the market impact against, one of 'Size' (default), 'POV' or 'AnnualVol'
+#' @param fixVars A vector of character specifying the variable to fix. A couple of 'Size', 'POV' (default) or 'AnnualVol' (default)
+#' @param fixVals A vector with named elements representing the values to fix \code{fixVars} at, in decimal units 
+#' @param OrdData Same as in \code{iStarPostTrade}
+#' @param ... Any other passthrough parameter
+#' 
+#' @return 
+#' In the produced plot, the chosen \code{xVar} and \code{fixVars} are expressed 
+#' in percentages terms, as they are most commonly used in reports.
+#' 
+#' @seealso \code{\link{iStarPostTrade}}
+#' 
+#' @details  
+#' For comparisons consistency, the \code{OrdData} must be the one passed to 
+#' \code{iStarPostTrade} to compute I-Star model impact estimates.
+#' 
+#' @examples
+#' 
+#' @export
+#'
+plot.iStarEst <- function(object
+                          , xVar
+                          , fixVars
+                          , fixVals
+                          , OrdData = NULL
+                          , ...) 
+{
+  if (missing(xVar)) xVar <- 'Size'
+  if (missing(fixVars)) fixVars <- c('POV', 'AnnualVol')
+  if (missing(fixVals)) fixVals <- c('POV' = 0.10, 'AnnualVol' = 0.25)
+  
+  xVarValues <- seq(0.01, 1, 0.01)
+  dummyValues <- rep(1, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values are assigned to use iStarPostTrade with consistent parameters
+  if (xVar == 'Size') {
+    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = xVarValues, 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
+  } else if (xVar == 'POV') {
+    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], dummyValues), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = xVarValues, 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
+  } else if (xVar == 'AnnualVol') {
+    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = xVarValues)
+  } 
+  if (is.null(OrdData) | is.data.frame(OrdData)) {
+    tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = coef(object$nls.impact.fit)))
+  } else if (is.list(OrdData)) {
+    tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = OrdData['Params']))
+  }
+  mktImpact <- tmp$iStar.Impact.Estimates$Mkt.Impact
+  
+  plot(xVarValues * 100, mktImpact, type = 'l',
+       main = "Cost curves estimated trading costs",
+       xlab = paste0(xVar, " (%)"), ylab = "Market impact (bps)", ...)
+  grid()
 }
