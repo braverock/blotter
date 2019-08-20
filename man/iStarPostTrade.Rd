@@ -4,18 +4,18 @@
 \alias{iStarPostTrade}
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
-iStarPostTrade(MktData, sessions, yrBizdays = 250, horizon = 30,
-  xtsfy = FALSE, grouping = FALSE, groupsBounds, minGroupDps,
-  paramsBounds, paramsInit, OrdData, ...)
+iStarPostTrade(MktData, sessions = NULL, yrBizdays = 250,
+  horizon = 30, xtsfy = FALSE, grouping = FALSE, groupsBounds,
+  minGroupDps, paramsBounds, paramsInit, OrdData, ...)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects, each representing a security market data. See 'Details'}
 
-\item{sessions}{A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis}
+\item{sessions}{A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If not specified, sessions will be assumed to be on a daily basis}
 
 \item{yrBizdays}{A numeric value, the number of business days in a given year data refers to. Default is 250 days}
 
-\item{horizon}{A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'}
+\item{horizon}{A numeric value, the number of sessions to compute the rolling variables over. Default is 30. See 'Details'}
 
 \item{xtsfy}{A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates}
 
@@ -101,7 +101,7 @@ If missing, default values for the bounds are:
  0.7 <= b_1 <= 1    \cr
 }
 Note that by definition \eqn{0 <= b_1 <= 1}, however the author reports using 
-0.7 as an empirical value Nonetheless, the user if left free to specify desired 
+\eqn{0.7} as an empirical value. Nonetheless, the user if left free to specify desired 
 parameters bounds via \code{paramBounds}, where the rows must follow a_1, a_2, 
 a_3, a_4 and b_1 order or be named accordingly. 
 

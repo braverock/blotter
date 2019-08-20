@@ -215,9 +215,9 @@
 #' @author Vito Lestingi
 #' 
 #' @param MktData A list of \code{xts} objects, each representing a security market data. See 'Details'
-#' @param sessions A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If missing sessions are on a daily basis  
+#' @param sessions A character or a vector of character representing ISO time subsets to split each trading day in "sessions". If not specified, sessions will be assumed to be on a daily basis  
 #' @param yrBizdays A numeric value, the number of business days in a given year data refers to. Default is 250 days
-#' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30 days. See 'Details'
+#' @param horizon A numeric value, the number of sessions to compute the rolling variables over. Default is 30. See 'Details'
 #' @param xtsfy A boolean specifying whether the rolling variables computed should become \code{xts} object with consistent dates 
 #' @param grouping A boolean or vector of booleans to specifying whether to group datapoints. Eventually, the second element specifies whether to average group values. Attention: the grouping may discard data. See 'Details'
 #' @param groupsBounds A vector with named elements being 'ImSize', 'POV', 'Vol'. They have to be increasing sequences expressing the respective variable bounds, which are used to build datapoints groups. See 'Details' 
@@ -333,7 +333,7 @@
 #' @export
 #'
 iStarPostTrade <- function(MktData
-                           , sessions
+                           , sessions = NULL
                            , yrBizdays = 250
                            , horizon = 30
                            , xtsfy = FALSE
@@ -381,7 +381,7 @@ iStarPostTrade <- function(MktData
     warning(paste("Horizon greater than minimum daily obs across MktData. Setting horizon =", minUniqueDays))
     horizon <- minUniqueDays
   }
-  if (missing(sessions)) {
+  if (is.null(sessions)) {
     earliestHour <- min(unlist(lapply(1:length(MktData), function(s, MktData) format(round(index(MktData[[s]]), 'hours'), 'T%H:%M:%S'), MktData)))
     latestHour <- max(unlist(lapply(1:length(MktData), function(s, MktData) format(round(index(MktData[[s]]), 'hours'), '/T%H:%M:%S'), MktData)))
     sessions <- paste0(earliestHour, latestHour)
@@ -615,8 +615,8 @@ iStarPostTrade <- function(MktData
   
   } else if (!missing(OrdData) & is.list(OrdData)) {
     
-    OrdData <- as.data.frame(OrdData[['Order.Data']])
     estParam <- OrdData[['Params']]
+    OrdData <- as.data.frame(OrdData[['Order.Data']])
     
   }
   
@@ -840,6 +840,11 @@ iStarSensitivity <- function(object
 
 #' Plot method for object of type \code{iStarEst}
 #' 
+#' The plots are mainly provided for exaplanatory purposes. They are a qualitatite
+#' mean to extend an order scrutiny to the market impact estimated cost shape under 
+#' different values of the relevant variables and of the model parameters. 
+#' Cost curves are expected to possess a concave shape.
+#' 
 #' The main scope of present function is to reproduce what Kissell refers to as 
 #' \emph{cost curves}. In these curves estimated market impact is plotted against 
 #' the order size for a given value of the volatility or against the volatility 
@@ -847,15 +852,10 @@ iStarSensitivity <- function(object
 #' sequences of 'POV' or 'AnnualVol' with the other two respective variables being 
 #' fixed.
 #' 
-#' The plots are mainly provided for exaplanatory purposes. They are a qualitatite
-#' mean to extend an order scrutiny to the market impact estimated cost shape under 
-#' different values of the relevant variables. Cost curves are expected to possess 
-#' a concave shape.
-#' 
-#' It shall be stressed that even when actual custom order data will be provided,
-#' we do not use it to compute variables underlying the cost curve. Instead, the 
-#' selected variable is varied along a given sequence and for provided values of
-#' the other two variables.
+#' It shall be stressed that cost curves refers to ideal circumstances where the 
+#' market impact is computed varying the selected variable along a given sequence 
+#' (while keeping fixed the other two variables at their provided values) and using
+#' parameters of interest (whether estimated or not).
 #' 
 #' @references
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
@@ -866,7 +866,7 @@ iStarSensitivity <- function(object
 #' @param xVar A character specifying the variable to plot the market impact against, one of 'Size' (default), 'POV' or 'AnnualVol'
 #' @param fixVars A vector of character specifying the variable to fix. A couple of 'Size', 'POV' (default) or 'AnnualVol' (default)
 #' @param fixVals A vector with named elements representing the values to fix \code{fixVars} at, in decimal units 
-#' @param OrdData Same as in \code{iStarPostTrade}
+#' @param params A vector with named elements being 'a_1:4' and 'b_1', the parameters to compute the market impact with. See 'Details'
 #' @param ... Any other passthrough parameter
 #' 
 #' @return 
@@ -876,8 +876,8 @@ iStarSensitivity <- function(object
 #' @seealso \code{\link{iStarPostTrade}}
 #' 
 #' @details  
-#' For comparisons consistency, the \code{OrdData} must be the one passed to 
-#' \code{iStarPostTrade} to compute I-Star model impact estimates.
+#' For consistency the \code{params} parameters must be within their respective
+#' bounds provided by the author and reported in \code{iStarPostTrade} documentation.
 #' 
 #' @examples
 #' 
@@ -887,7 +887,7 @@ plot.iStarEst <- function(object
                           , xVar
                           , fixVars
                           , fixVals
-                          , OrdData = NULL
+                          , params
                           , ...) 
 {
   if (missing(xVar)) xVar <- 'Size'
@@ -895,19 +895,15 @@ plot.iStarEst <- function(object
   if (missing(fixVals)) fixVals <- c('POV' = 0.10, 'AnnualVol' = 0.25)
   
   xVarValues <- seq(0.01, 1, 0.01)
-  dummyValues <- rep(1, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values are assigned to use iStarPostTrade with consistent parameters
+  dummyValues <- rep(NA, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values assigned to workaround iStarPostTrade error for missing columns
   if (xVar == 'Size') {
     tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = xVarValues, 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
   } else if (xVar == 'POV') {
-    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], dummyValues), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = xVarValues, 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
+    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = xVarValues, 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
   } else if (xVar == 'AnnualVol') {
     tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = xVarValues)
   } 
-  if (is.null(OrdData) | is.data.frame(OrdData)) {
-    tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = coef(object$nls.impact.fit)))
-  } else if (is.list(OrdData)) {
-    tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = OrdData['Params']))
-  }
+  tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = params))
   mktImpact <- tmp$iStar.Impact.Estimates$Mkt.Impact
   
   plot(xVarValues * 100, mktImpact, type = 'l',
