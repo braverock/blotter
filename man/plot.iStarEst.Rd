@@ -4,10 +4,10 @@
 \alias{plot.iStarEst}
 \title{Plot method for object of type \code{iStarEst}}
 \usage{
-\method{plot}{iStarEst}(object, xVar, fixVars, fixVals, params, ...)
+\method{plot}{iStarEst}(x, xVar, fixVars, fixVals, params, ...)
 }
 \arguments{
-\item{object}{An object of class \code{iStarEst} from \code{iStarPostTrade}}
+\item{x}{An object of class \code{iStarEst}, from \code{iStarPostTrade}. See 'Details'}
 
 \item{xVar}{A character specifying the variable to plot the market impact against, one of 'Size' (default), 'POV' or 'AnnualVol'}
 
@@ -43,8 +43,15 @@ market impact is computed varying the selected variable along a given sequence
 parameters of interest (whether estimated or not).
 
  
-For consistency the \code{params} parameters must be within their respective
-bounds provided by the author and reported in \code{iStarPostTrade} documentation.
+When the \code{x} object passed comes for , there is no need to explicitly 
+pass the estimated parameters. Whereas if \code{iStarPostTrade} was simply 
+used to obtain the I-Star model impact estimates with provided parameters then
+- although the rusulting \code{x} object is of class \code{iStarEst} one needs
+to explicitly pass parameters to the plotting method as well, via \code{params}.
+
+Furthrmore, for consistency it should be noted that \code{params} must be within 
+their respective bounds, provided by the author and reported in \code{iStarPostTrade} 
+documentation.
 }
 \examples{
 

@@ -862,7 +862,7 @@ iStarSensitivity <- function(object
 #'
 #' @author Vito Lestingi
 #' 
-#' @param object An object of class \code{iStarEst} from \code{iStarPostTrade}
+#' @param x An object of class \code{iStarEst}, from \code{iStarPostTrade}. See 'Details'
 #' @param xVar A character specifying the variable to plot the market impact against, one of 'Size' (default), 'POV' or 'AnnualVol'
 #' @param fixVars A vector of character specifying the variable to fix. A couple of 'Size', 'POV' (default) or 'AnnualVol' (default)
 #' @param fixVals A vector with named elements representing the values to fix \code{fixVars} at, in decimal units 
@@ -876,14 +876,21 @@ iStarSensitivity <- function(object
 #' @seealso \code{\link{iStarPostTrade}}
 #' 
 #' @details  
-#' For consistency the \code{params} parameters must be within their respective
-#' bounds provided by the author and reported in \code{iStarPostTrade} documentation.
+#' When the \code{x} object passed comes for , there is no need to explicitly 
+#' pass the estimated parameters. Whereas if \code{iStarPostTrade} was simply 
+#' used to obtain the I-Star model impact estimates with provided parameters then
+#' - although the rusulting \code{x} object is of class \code{iStarEst} - one needs
+#' to explicitly pass parameters to the plotting method as well, via \code{params}.
+#' 
+#' Furthrmore, for consistency it should be noted that \code{params} must be within 
+#' their respective bounds, provided by the author and reported in \code{iStarPostTrade} 
+#' documentation.
 #' 
 #' @examples
 #' 
 #' @export
 #'
-plot.iStarEst <- function(object
+plot.iStarEst <- function(x
                           , xVar
                           , fixVars
                           , fixVals
@@ -893,6 +900,7 @@ plot.iStarEst <- function(object
   if (missing(xVar)) xVar <- 'Size'
   if (missing(fixVars)) fixVars <- c('POV', 'AnnualVol')
   if (missing(fixVals)) fixVals <- c('POV' = 0.10, 'AnnualVol' = 0.25)
+  if (missing(params)) params <- coef(x$nls.impact.fit) 
   
   xVarValues <- seq(0.01, 1, 0.01)
   dummyValues <- rep(NA, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values assigned to workaround iStarPostTrade error for missing columns
