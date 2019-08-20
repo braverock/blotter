@@ -4,8 +4,7 @@
 \alias{plot.iStarEst}
 \title{Plot method for object of type \code{iStarEst}}
 \usage{
-\method{plot}{iStarEst}(object, xVar, fixVars, fixVals, OrdData = NULL,
-  ...)
+\method{plot}{iStarEst}(object, xVar, fixVars, fixVals, params, ...)
 }
 \arguments{
 \item{object}{An object of class \code{iStarEst} from \code{iStarPostTrade}}
@@ -16,7 +15,7 @@
 
 \item{fixVals}{A vector with named elements representing the values to fix \code{fixVars} at, in decimal units}
 
-\item{OrdData}{Same as in \code{iStarPostTrade}}
+\item{params}{A vector with named elements being 'a_1:4' and 'b_1', the parameters to compute the market impact with. See 'Details'}
 
 \item{...}{Any other passthrough parameter}
 }
@@ -25,27 +24,27 @@ In the produced plot, the chosen \code{xVar} and \code{fixVars} are expressed
 in percentages terms, as they are most commonly used in reports.
 }
 \description{
+The plots are mainly provided for exaplanatory purposes. They are a qualitatite
+mean to extend an order scrutiny to the market impact estimated cost shape under 
+different values of the relevant variables and of the model parameters. 
+Cost curves are expected to possess a concave shape.
+}
+\details{
 The main scope of present function is to reproduce what Kissell refers to as 
 \emph{cost curves}. In these curves estimated market impact is plotted against 
 the order size for a given value of the volatility or against the volatility 
 for a given order size. Likewise, we can plot the estimated market impact against 
 sequences of 'POV' or 'AnnualVol' with the other two respective variables being 
 fixed.
-}
-\details{
-The plots are mainly provided for exaplanatory purposes. They are a qualitatite
-mean to extend an order scrutiny to the market impact estimated cost shape under 
-different values of the relevant variables. Cost curves are expected to possess 
-a concave shape.
 
-It shall be stressed that even when actual custom order data will be provided,
-we do not use it to compute variables underlying the cost curve. Instead, the 
-selected variable is varied along a given sequence and for provided values of
-the other two variables.
+It shall be stressed that cost curves refers to ideal circumstances where the 
+market impact is computed varying the selected variable along a given sequence 
+(while keeping fixed the other two variables at their provided values) and using
+parameters of interest (whether estimated or not).
 
  
-For comparisons consistency, the \code{OrdData} must be the one passed to 
-\code{iStarPostTrade} to compute I-Star model impact estimates.
+For consistency the \code{params} parameters must be within their respective
+bounds provided by the author and reported in \code{iStarPostTrade} documentation.
 }
 \examples{
 
