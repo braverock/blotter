@@ -3,6 +3,7 @@
 S3method(hist,mcsim)
 S3method(hist,txnsim)
 S3method(plot,iStarEst)
+S3method(plot,iStarSens)
 S3method(plot,mcsim)
 S3method(plot,txnsPerf)
 S3method(plot,txnsim)

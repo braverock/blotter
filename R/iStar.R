@@ -817,9 +817,10 @@ iStarSensitivity <- function(object
                paramSens[f, ncol(paramSens)] <- NA)
       }
   }
-  out[['Params.Seqs']] <- list(a_1_seq, a_2_seq, a_3_seq, a_4_seq, b_1_seq)
+  out[['Params.Seqs']] <- list(a_1 = a_1_seq, a_2 = a_2_seq, a_3 = a_3_seq, a_4 = a_4_seq, b_1 = b_1_seq)
   out[['nls.impact.fits']] <- nlsImpactFit
   out[['Params.Sensitivity']] <- paramSens
+  class(out) <- 'iStarSens'
   return(out)
 }
 
@@ -904,4 +905,52 @@ plot.iStarEst <- function(x
        main = "Cost curves estimated trading costs",
        xlab = paste0(xVar, " (%)"), ylab = "Market impact (bps)", ...)
   grid()
+}
+
+
+#' Plot method for object of type \code{iStarSens}
+#' 
+#' S3 method to conveniently plot \code{iStarSensitivity} results on I-Star model 
+#' parameters sensitivity.
+#' 
+#' The chosen parameter, or better its given sequence specified in the \code{iStarSensitivity}
+#' call, is plotted against the \code{RSE} of the models fitted on the remaining 
+#' parameters.
+#' 
+#' 
+#' @param x An object of class \code{iStarSens} from \code{iStarSensitivity}
+#' @param fix A character, the name of the parameter to fix. One of 'a_1', 'a_2', 'a_3', 'a_4' or 'b_1'  
+#' @param ... Any other passthrough parameter
+#'
+#' @references
+#' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
+#'
+#' @author Vito Lestingi
+#'
+#' @examples
+#'
+#' @export
+#'
+plot.iStarSens <- function(x
+                           , fix
+                           , ...) 
+{
+  paramSeqLens <- sapply(x$Params.Seqs, length)
+  if (fix == 'a_1') {
+    fixParamIdxs <-  1:sum(paramSeqLens[1])
+  } else if (fix == 'a_2') {
+    fixParamIdxs <- (sum(paramSeqLens[1]) + 1):sum(paramSeqLens[1:2])
+  } else if (fix == 'a_3') {
+    fixParamIdxs <- (sum(paramSeqLens[1:2]) + 1):sum(paramSeqLens[1:3])
+  } else if (fix == 'a_4') {
+    fixParamIdxs <- (sum(paramSeqLens[1:3]) + 1):sum(paramSeqLens[1:4])
+  } else if (fix == 'b_1') {
+    fixParamIdxs <- (sum(paramSeqLens[1:4]) + 1):sum(paramSeqLens[1:5])
+  }
+  paramSens <- x$Params.Sensitivity
+  fixedParamSeq <- paramSens[fixParamIdxs, fix]
+  RSE <- paramSens[fixParamIdxs, 'RSE']
+  
+  plot(fixedParamSeq, RSE, main = paste0(fix, " sensitivity analysis"), type = 'b', xlab = fix, ylab = "RSE", ...)
+  points(fixedParamSeq[which.min(RSE)], min(RSE), pch = 20, col = 'red', ...)
 }
