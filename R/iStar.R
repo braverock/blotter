@@ -669,10 +669,9 @@ iStarPostTrade <- function(MktData
 #' paramaters by means of nonlinear regression.
 #' 
 #' Results of the analysis are reported along with the corresponding \emph{residul
-#' standard error} (RSE) of each model being fitted. Recall that this quantity is 
-#' expressed in the same dependent variable unit.
-#' Best fit paramaters should be such that this quantity is minimized.
-#' 
+#' standard error} (RSE) of each model being fitted. This quantity is expressed 
+#' in the same dependent variable unit and best fit paramaters should be such that 
+#' this quantity is minimized.
 #' 
 #' @references
 #' \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
@@ -692,7 +691,7 @@ iStarPostTrade <- function(MktData
 #'      \item{\code{Params.Sensitivity}: }{A \code{matrix} contining the results of the sensitivity analysis}
 #' }
 #' 
-#' @importFrom stats nls coef deviance
+#' @importFrom stats nls coef sigma
 #' 
 #' @seealso 
 #'   \code{iStarPostTrade},
@@ -746,23 +745,23 @@ iStarSensitivity <- function(object
   a_3_seq <- seq(paramsBounds['a_3', 1], paramsBounds['a_3', 2], paramSteps['a_3'])
   a_4_seq <- seq(paramsBounds['a_4', 1], paramsBounds['a_4', 2], paramSteps['a_4'])
   b_1_seq <- seq(paramsBounds['b_1', 1], paramsBounds['b_1', 2], paramSteps['b_1'])
-  paramSeqLens <- sapply(list(a_1_seq, a_2_seq, a_3_seq, a_4_seq, b_1_seq), length)
+  parSeqsVals <- c(a_1_seq, a_2_seq, a_3_seq, a_4_seq, b_1_seq)
+  parSeqsLens <- sapply(list(a_1_seq, a_2_seq, a_3_seq, a_4_seq, b_1_seq), length)
   
   out <- vector('list', 3)
-  nlsImpactFit <- vector('list', sum(paramSeqLens))
-  paramSens <- matrix(NA, nrow = sum(paramSeqLens), ncol = 6)
+  nlsImpactFit <- vector('list', sum(parSeqsLens))
+  paramSens <- matrix(NA, nrow = sum(parSeqsLens), ncol = 6)
   colnames(paramSens) <- c('a_1', 'a_2', 'a_3', 'a_4', 'b_1', 'RSE')
   
   # Parameters sensitivity matrix
-  paramSens[1:sum(paramSeqLens[1]), 1] <- a_1_seq
-  paramSens[(sum(paramSeqLens[1]) + 1):sum(paramSeqLens[1:2]), 2] <- a_2_seq
-  paramSens[(sum(paramSeqLens[1:2]) + 1):sum(paramSeqLens[1:3]), 3] <- a_3_seq
-  paramSens[(sum(paramSeqLens[1:3]) + 1):sum(paramSeqLens[1:4]), 4] <- a_4_seq
-  paramSens[(sum(paramSeqLens[1:4]) + 1):sum(paramSeqLens[1:5]), 5] <- b_1_seq
-  for (f in 1:sum(paramSeqLens)) {
-    if (f <= sum(paramSeqLens[1])) {# a_1 fixed
-      for (i in 1:length(a_1_seq)) {
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1 - b_1)) * (a_1_seq[i] * imbSize^(a_2) * annualVol^(a_3)),
+  paramSens[1:sum(parSeqsLens[1]), 1] <- a_1_seq
+  paramSens[(sum(parSeqsLens[1]) + 1):sum(parSeqsLens[1:2]), 2] <- a_2_seq
+  paramSens[(sum(parSeqsLens[1:2]) + 1):sum(parSeqsLens[1:3]), 3] <- a_3_seq
+  paramSens[(sum(parSeqsLens[1:3]) + 1):sum(parSeqsLens[1:4]), 4] <- a_4_seq
+  paramSens[(sum(parSeqsLens[1:4]) + 1):sum(parSeqsLens[1:5]), 5] <- b_1_seq
+  for (f in 1:sum(parSeqsLens)) {
+    if (f <= sum(parSeqsLens[1])) {# a_1 fixed
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1 - b_1)) * (parSeqsVals[f] * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 1]], lower = paramsBounds[parCombnIdxs[, 1], 1], upper = paramsBounds[parCombnIdxs[, 1], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -772,11 +771,8 @@ iStarSensitivity <- function(object
         ifelse(!is.na(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <-  NA)
-      }
-    }
-    if (f > sum(paramSeqLens[1]) & f <= sum(paramSeqLens[1:2])) {# a_2 fixed
-      for (i in 1:length(a_2_seq)) {
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2_seq[i]) * annualVol^(a_3)),
+      } else if (f > sum(parSeqsLens[1]) & f <= sum(parSeqsLens[1:2])) {# a_2 fixed
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(parSeqsVals[f]) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 2]], lower = paramsBounds[parCombnIdxs[, 2], 1], upper = paramsBounds[parCombnIdxs[, 2], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -786,11 +782,8 @@ iStarSensitivity <- function(object
         ifelse(!is.na(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]),
                paramSens[f, ncol(paramSens)] <- NA)
-      } 
-    }
-    if (f > sum(paramSeqLens[1:2]) & f <= sum(paramSeqLens[1:3])) {# a_3 fixed
-      for (i in 1:length(a_3_seq)) {
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3_seq[i])),
+      } else if (f > sum(parSeqsLens[1:2]) & f <= sum(parSeqsLens[1:3])) {# a_3 fixed
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4) + (1L - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(parSeqsVals[f])),
                                           start = initValues[parCombnIdxs[, 3]], lower = paramsBounds[parCombnIdxs[, 3], 1], upper = paramsBounds[parCombnIdxs[, 3], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -800,11 +793,8 @@ iStarSensitivity <- function(object
         ifelse(!is.na(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- NA)
-      }
-    }
-    if (f > sum(paramSeqLens[1:3]) & f <= sum(paramSeqLens[1:4])) {# a_4 fixed
-      for (i in 1:length(a_4_seq)) {
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(a_4_seq[i]) + (1 - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
+      } else if (f > sum(parSeqsLens[1:3]) & f <= sum(parSeqsLens[1:4])) {# a_4 fixed
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1 * POV^(parSeqsVals[f]) + (1 - b_1)) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 4]], lower = paramsBounds[parCombnIdxs[, 4], 1], upper = paramsBounds[parCombnIdxs[, 4], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -814,11 +804,8 @@ iStarSensitivity <- function(object
         ifelse(!is.na(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]),
                paramSens[f, ncol(paramSens)] <- NA)
-      }
-    }
-    if (f > sum(paramSeqLens[1:4])) {# b_1 fixed
-      for (i in 1:length(b_1_seq)) {
-        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (b_1_seq[i] * POV^(a_4) + (1 - b_1_seq[i])) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
+      } else if (f > sum(parSeqsLens[1:4])) {# b_1 fixed
+        nlsImpactFit[[f]] <- tryCatch(nls(arrCost ~ (parSeqsVals[f] * POV^(a_4) + (1 - parSeqsVals[f])) * (a_1 * imbSize^(a_2) * annualVol^(a_3)),
                                           start = initValues[parCombnIdxs[, 5]], lower = paramsBounds[parCombnIdxs[, 5], 1], upper = paramsBounds[parCombnIdxs[, 5], 2],
                                           algorithm = 'port', ...),
                                       error = function(err) NA)
@@ -829,7 +816,6 @@ iStarSensitivity <- function(object
                paramSens[f, ncol(paramSens)] <- sigma(nlsImpactFit[[f]]), 
                paramSens[f, ncol(paramSens)] <- NA)
       }
-    }
   }
   out[['Params.Seqs']] <- list(a_1_seq, a_2_seq, a_3_seq, a_4_seq, b_1_seq)
   out[['nls.impact.fits']] <- nlsImpactFit
