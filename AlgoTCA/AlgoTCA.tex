@@ -1,0 +1,497 @@
+% !TeX root = RJwrapper.tex
+\title{AlgoTCA - GSoC 2019}
+\author{by Vito Lestingi, Jasen K Mackie, Brian G Peterson}
+
+\maketitle
+
+\abstract{%
+As part of the R organization's participation in the Google Summer of
+Code 2019 we replicate, and to some degree extend, the pre and
+post-trade TCA models as disclosed in ``The Science of Algorithmic
+Trading and Portfolio Management'' -- Robert L. Kissell. The main focus
+of this 3-month programme was to build an Implementation Shortfall TCA
+model and a range of benchmark price performance models (VWAP, PWP, RPM,
+Arrival Cost etc), models for statistically comparing different
+algorithmic execution performances and lastly replicating Kissell's I*
+model for Market Impact estimates. Using 11 months of JSE data and 16200
+observations we are able to train a non-linear least squares estimation
+function which converges on a plausible solution, allowing us to
+validate the model which can be used in production for larger datasets
+with presumably lower variance.
+}
+
+% Any extra LaTeX you need in the preamble
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+Post-trade Transaction Cost Analysis (TCA) is critical for assessing the
+efficiency with which trading decisions are implemented, especially for
+the institutional investor whose trade ideas can span multiple time
+periods to implement and which risks adverse market impact if not
+managed accordingly. Pre-trade and intra-day TCA is an equally vital
+component for making optimal trading decisions based on market
+conditions and trading constraints. The
+\href{https://github.com/braverock/blotter}{blotter} package in R is an
+ideal package in the R ecosystem for hosting TCA functionality since it
+serves as the transaction infrastructure for building and analysing
+simulated and production trading systems. In this article we describe
+the functions implemented as part of this GSoC 2019 project in 3 parts,
+namely: 1. Post-trade TCA models, 2. Models for the statistical
+comparison of algorithmic executions, 3. Pre-trade Market Impact
+estimation using the I* model as documented in ``The Science of
+Algorithmic Trading and Portfolio Management'' -- Robert L. Kissell,
+originally developed by Kissell and Malamut in 1998. Where appropriate
+we include examples, elaborate on extensions, document the journey of a
+supposed analyst and communicate results and findings relevant to a
+user. Lastly we comment on interesting paths of future work.
+
+\hypertarget{post-trade-tca}{%
+\subsection{1. Post Trade TCA}\label{post-trade-tca}}
+
+\hypertarget{implementation-shortfall}{%
+\subsection{Implementation Shortfall}\label{implementation-shortfall}}
+
+Implementation Shortfall is a measure that represents the total cost of
+executing an investment idea. Implementation Shortfall is calculated as
+the difference between the paper return of a portfolio where all shares
+are assumed to have transacted at the manager's decision price and the
+actual return of the portfolio using actual transaction prices and
+shares executed.
+
+Implementation Shortfall can be implemented in 4 ways:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Assuming Complete Execution, implying a zero opportunity cost
+  component. This is the default method for
+  \code{Implementation Shortfall}
+\end{enumerate}
+
+The simplest formulation for the Complete Execution IS method is:
+
+\[ IS = S . P_{avg} - S . P_{d} + fees \]
+
+Note that we add fees, as a positive metric indicates a cost.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Using an Opportunity Cost (Perold 1988) component, where not all
+  shares originally allocated for trading are finally executed.
+  Opportunity Cost is the cost of not executing a portion of the
+  originally allocated shares \code{S} for execution. This could be due
+  to limit price constraints or a lack of liquidity.
+\end{enumerate}
+
+The formulation for Opportunity Cost is:
+
+\[ {(S - \sum s_{j}) . (P_{n} - P_{d})} \]
+
+The Implementation Shortfall formulation of Perold (1988) can be written
+as:
+
+\[ {IS = \sum s_{j} . (P_{avg} - P_{d}) + (S - \sum s_{j}) . (P_{n} - P_{d}) + fees} \]
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Expanded Implementation Shortfall (Wayne Wagner)
+\end{enumerate}
+
+Wayne Wagner's implementation categorizes costs into delay, trading and
+opportunity related costs. Assuming \$ P\_\{d\} \$ is the decision
+price, \$ P\_\{0\} \$ is the price when trading begins (ideally Arrival
+Price, defined as the mid-price at order arrival, alternatively Last
+Price at order arrival or failing that data availability then first
+transaction price), and \$ P\_\{n\} \$ is the price at the end of
+trading. The Expanded IS can be written as:
+
+\[ (P_{n} - P_{d}) = (P_{n} - P_{0}) + (P_{0} - P_{d}) \]
+
+If you substitute the RHS into Perold's IS, then IS can be written as:
+
+\[ IS = (\sum s_{j}p_{j} - \sum s_{j}P_{d}) + (S - \sum s_{j}) . ((P_{n} - P_{0}) + (P_{0} - P_{d})) + fees \]
+
+This formula can be re-written into a separate delay, trading and
+opportunity cost related component as follows:
+
+\[ Expanded IS = S(P_{0} - P_{d}) + (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees \]
+
+where each term (excluding fees) reflects the delay, trading and
+opportunity cost components respectively. Wagner's method allows for an
+additional decomposition of the ``Delay related cost'' into the
+\emph{opportunity delay cost} component and the
+\emph{trading delay cost} component. Our implementation provides this
+breakdown in the output.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Market Activity IS, which assumes the analyst is unaware of the
+  manager's decision price. This method is equivalent to the Wagner
+  formulation except that the first term is excluded in order to assess
+  only market activity IS:
+\end{enumerate}
+
+\[ Market Activity IS = (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees \]
+
+\hypertarget{implementation-shortfall---examples}{%
+\subsection{Implementation Shortfall -
+Examples}\label{implementation-shortfall---examples}}
+
+For the IS examples we borrow from the code in the function help
+documentation. The first 2 examples below illustrate the output for the
+Complete Execution and Market Activity implementations using identical
+datasets. The Implementation Shortfall quantums are identical as we
+assume complete execution in both instances including the Market
+Activity IS, although you will notice this version returns additional
+info when compared with the Complete Execution version, including filled
+and unfilled units, the opportunity cost component and fees.
+
+\begin{Schunk}
+\begin{Sinput}
+### Complete Execution IS
+impShortfall("testport", "test_txns",
+          paQty=5000,
+          priceStart=10,
+          priceEnd=11,
+          arrPrice=10,
+          method='Complete')
+\end{Sinput}
+\begin{Soutput}
+#>      Symbol   Method Paper.Ret Actual.Ret Shortfall
+#> 1 test_txns Complete      5000       2400      2600
+\end{Soutput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+### Market Activity IS
+impShortfall("testport", "test_txns",
+          paQty=5000, 
+          priceEnd=11,
+          arrPrice = 10,
+          method='Market')
+\end{Sinput}
+\begin{Soutput}
+#>      Symbol Method t.Txn.Qty u.Txn.Qty Trade.Cost Opp.Cost Fees Shortfall
+#> 1 test_txns Market      5000         0       2500        0  100      2600
+\end{Soutput}
+\end{Schunk}
+
+The next 2 examples illustrate the Perold and Wagner versions,
+respectively, again using identical datasets in both cases. We assume
+only 4,000 of the originially allocated 5,000 units eventually trade.
+
+For the Perold output, we see the breakdown between Execution Cost,
+Opportunity Cost and Fees separately.
+
+\begin{Schunk}
+\begin{Sinput}
+### Perold
+impShortfall("testport", "test_txns",
+          paQty=5000,
+          priceStart=10,
+          priceEnd=11,
+          arrPrice=10,
+          method='Perold')
+\end{Sinput}
+\begin{Soutput}
+#>      Symbol Method t.Txn.Qty u.Txn.Qty Exe.Cost Opp.Cost Fees Shortfall
+#> 1 test_txns Perold      4000      1000     2000     1000   80      3080
+\end{Soutput}
+\end{Schunk}
+
+In the case of the Wagner implementation, we see the extra breakdown
+compared with Perold, ultimately equating to the same hypothetical
+Implementation Shortfall measure.
+
+\begin{Schunk}
+\begin{Sinput}
+### Wagner
+impShortfall("testport", "test_txns",
+          paQty=5000,
+          priceStart=10,
+          priceEnd=11,
+          arrPrice=10.25,
+          method='Wagner')
+\end{Sinput}
+\begin{Soutput}
+#>      Symbol Method t.Txn.Qty u.Txn.Qty Opp.Delay Trade.Delay Delay.Cost
+#> 1 test_txns Wagner      4000      1000       250        1000       1250
+#>   Trade.Cost Opp.Cost Fees Shortfall
+#> 1       1000      750   80      3080
+\end{Soutput}
+\end{Schunk}
+
+\hypertarget{benchmark-price-performance---examples}{%
+\subsection{Benchmark Price Performance -
+Examples}\label{benchmark-price-performance---examples}}
+
+We built a single function for computing TCA benchmarks where the
+benchmark price is one of: Arrival Price, Day's Open/Close/Other,
+Participation Weighted Price (PWP), Volume Weighted Average Price (VWAP)
+or a qualitative score with the Realtive Performance Measure (RPM). When
+all methods are used in conjunction, an analyst can derive measures for
+each benchmark giving a different view of the resultant execution. In
+addition to giving an overall score, we have built an S3 method for
+plotting the performance through the life of the execution which allows
+an analyst to identify specific time periods that warrant additional
+review.
+
+\hypertarget{benchmarktradebench}{%
+\subsubsection{benchmark=`TradeBench'}\label{benchmarktradebench}}
+
+For all 4 methods we use the same sampled set of public trades data to
+simulate a private execution. In all cases, a positive value indicates
+outperformance and a negative value, underperformance. In the case of
+\code{benchmark='TradeBench'} the benchmark price is the first
+transaction price in the execution, as a proxy for the Arrival Price.
+For a true Arrival Cost benchmark using the actual Arrival Price, the
+user can use \code{benchmark='MktBench'} with the Arrival Price
+specified for with the `priceToBench' argument.
+
+\begin{Schunk}
+\begin{Sinput}
+benchTradeBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'TradeBench', MktData = ABC.day)
+last(benchTradeBench$Trades.TradeBench.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                  Dates Symbol Side Avg.Exec.Price TradeBench Performance
+#> 50 2019-02-01 16:49:30    ABC  Buy       4991.218       5027    71.17988
+\end{Soutput}
+\begin{Sinput}
+plot(benchTradeBench, benchmark = 'TradeBench')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-8-1} \end{Schunk}
+
+\hypertarget{benchmarkmktbench}{%
+\subsubsection{benchmark=`MktBench'}\label{benchmarkmktbench}}
+
+As alluded to previously, with \code{benchmark='MktBench'} the user can
+specify ``Open'', ``Close'' or a numeric price value for benchmarking.
+
+\begin{Schunk}
+\begin{Sinput}
+benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against daily open price
+last(benchMktBenchOpen$Trades.MktBench.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                  Dates Symbol Side Avg.Exec.Price MktBench.Open
+#> 50 2019-02-01 16:49:30    ABC  Buy       4991.218          5000
+#>    Performance
+#> 50    17.56425
+\end{Soutput}
+\begin{Sinput}
+plot(benchMktBenchOpen, benchmark = 'MktBench')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-9-1} \end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against daily closing price
+last(benchMktBenchClose$Trades.MktBench.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                  Dates Symbol Side Avg.Exec.Price MktBench.Close
+#> 50 2019-02-01 16:49:30    ABC  Buy       4991.218           5037
+#>    Performance
+#> 50    90.89166
+\end{Soutput}
+\begin{Sinput}
+plot(benchMktBenchClose, benchmark = 'MktBench')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-10-1} \end{Schunk}
+
+\hypertarget{benchmarkvwap}{%
+\subsubsection{benchmark=`VWAP'}\label{benchmarkvwap}}
+
+A widely used benchmark is the Volume Weighted Average Price (VWAP)
+benchmark. The benchmark is defined as:
+
+\[ VWAP = \frac{\sum {P_{j}Q_{j}}}{\sum {Q_{j}}} \]
+
+P\_\{j\} is the market price and Q\_\{j\} the market volume, during j
+trading periods activity of the market. Two different types of VWAP
+benchmarks are included in the present function, the Interval VWAP and
+the Full VWAP. Referring to the former as the VWAP where the j market
+trading periods considered are the ones during which the order is being
+executed, whereas the latter includes all the j market periods from
+order execution beginning to last transaction. The VWAP benchmark varies
+by timespan considered and is commonly used as a proxy for fair market
+price. It can differ by data vendors specific market data filtering.
+There are recognized drawbacks of this benchamrk. First of all, the
+larger the order the closer the execution will be to VWAP. Second, where
+large block trades occur these could skew the benchmark. Lastly, it is
+not an indicated comparison across stocks or different days for the same
+stock.
+
+\begin{Schunk}
+\begin{Sinput}
+benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'interval'), MktData = ABC.day)
+last(benchVWAPinterv$Trades.VWAP.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                    Dates Symbol Side Avg.Exec.Price VWAP.interval
+#> 7091 2019-02-01 16:49:30    ABC  Buy       4991.218      4988.044
+#>      Performance
+#> 7091   -6.363777
+\end{Soutput}
+\begin{Sinput}
+plot(benchVWAPinterv, benchmark = 'MktBench')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-11-1} \end{Schunk}
+
+\hypertarget{benchmarkpwp}{%
+\subsubsection{benchmark=`PWP'}\label{benchmarkpwp}}
+
+A variation of the VWAP benchmark is given by the Participation Weighted
+Price (PWP) benchmark, where the weighting is with respect to the PWP
+shares:
+
+\[ PWP shares = \frac{Traded shares}{POV} \]
+
+POV refers to the percentage of volume.
+
+The PWP benchwark is:
+
+\[ PWP price = \frac{\sum {P_{h}Q_{h}}}{\sum {Q_{h}}} \]
+
+where h are the periods from the arrival time of the order into the
+market until when the PWP shares are completely executed. As the VWAP,
+the PWP benchmark provides a glimpse into market fair prices. However
+this benchmark have limitations similar to the VWAP. It is subject to
+manipulation in that the market price can be kept inflated by larger
+orders. Furthermore, as the VWAP, it is not comparable between stocks or
+across days for the same stock. Also, the benchmark may be biased by
+temporary impact dissipation.
+
+\begin{Schunk}
+\begin{Sinput}
+benchPWP <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'PWP', POV = 0.3, MktData = ABC.day)
+last(benchPWP$Trades.PWP.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                   Dates Symbol Side Cum.Txn.Qty POV PWP.Shares
+#> 164 2019-02-01 16:49:30    ABC  Buy       17322 0.3      57740
+#>     Avg.Exec.Price PWP.Price Performance
+#> 164       4991.218  5023.869    64.99206
+\end{Soutput}
+\begin{Sinput}
+plot(benchPWP, benchmark = 'PWP')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-12-1} \end{Schunk}
+
+\hypertarget{benchmarkrpm}{%
+\subsubsection{benchmark=`RPM'}\label{benchmarkrpm}}
+
+Lastly, the Relative Performance Measure (RPM), which differs from the
+PnL metrics above, is a percentile ranking of trading activity. Its
+expression depends on the side of the trade:
+
+\[ RPM_{buy} = 0.5 * \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{Total volume} \]
+
+\[ RPM_{sell} = 0.5 * \frac{Total volume + Volume at P < P_{avg} - Volume at P > P_{avg}}{Total volume} \]
+
+where P is the market price specified. The an RPM over 50\% is
+considered as an indication of superior trades, more precisely the RPM
+can be mapped to a qualitative score of the trades:
+
+0 \textless{}= RPM \textless{} 20 Fair 20 \textless{}= RPM \textless{}
+40 Poor 40 \textless{}= RPM \textless{}= 60 Average 60 \textless{} RPM
+\textless{}= 80 Good 80 \textless{} RPM \textless{}= 100 Excellent
+
+This measure is considered as preferred to the VWAP metric because it
+overcomes some of its drawbacks: it can be used to compare performance
+across different stocks, days, and volatility; it is not less influenced
+by large blocks trade at extreme prices.
+
+\begin{Schunk}
+\begin{Sinput}
+benchRPM <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'RPM', MktData = ABC.day)
+last(benchRPM$Trades.RPM.Perf)
+\end{Sinput}
+\begin{Soutput}
+#>                  Dates Symbol Side Avg.Exec.Price Mkt.Price t.Mkt.Qty
+#> 50 2019-02-01 16:49:30    ABC  Buy       4991.218      5012   2814601
+#>    t.Fav.Qty t.Unfav.Qty      RPM Quality
+#> 50   1606594     1208007 0.570807 Average
+\end{Soutput}
+\begin{Sinput}
+plot(benchRPM, benchmark = 'RPM')
+\end{Sinput}
+
+\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-13-1} \end{Schunk}
+
+This section may contain a figure such as Figure \ref{figure:rlogo}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics{Rlogo}
+  \caption{The logo of R.}
+  \label{figure:rlogo}
+\end{figure}
+
+\hypertarget{another-section}{%
+\subsection{Another section}\label{another-section}}
+
+There will likely be several sections, perhaps including code snippets,
+such as:
+
+\begin{Schunk}
+\begin{Sinput}
+x <- 1:10
+x
+\end{Sinput}
+\begin{Soutput}
+#>  [1]  1  2  3  4  5  6  7  8  9 10
+\end{Soutput}
+\end{Schunk}
+
+\hypertarget{summary}{%
+\subsection{Summary}\label{summary}}
+
+This file is only a basic article template. For full details of
+\emph{The R Journal} style and information on how to prepare your
+article for submission, see the
+\href{https://journal.r-project.org/share/author-guide.pdf}{Instructions
+for Authors}.
+
+\bibliography{RJreferences}
+
+
+\address{%
+Vito Lestingi\\
+Student - University of Rome\\
+line 1\\ line 2\\
+}
+\href{mailto:author1@work}{\nolinkurl{author1@work}}
+
+\address{%
+Jasen K Mackie\\
+Algorithmic Trading Services - Iress\\
+line 1\\ line 2\\
+}
+\href{mailto:jasen.mackie@iress.com}{\nolinkurl{jasen.mackie@iress.com}}
+
+\address{%
+Brian G Peterson\\
+TODO\\
+line 1\\ line 2\\
+}
+\href{mailto:brian@braverock.com}{\nolinkurl{brian@braverock.com}}
+
