@@ -177,20 +177,20 @@
 #'                  by = "hours"))
 #' colnames(test_txns) <- c("TxnPrice","TxnQty","TxnFees")
 #'
-#' stock.str='tca_test' # what are we trying it on
+#' stock.str='test_txns' # what are we trying it on
 #' currency('USD')
 #' stock(stock.str,currency='USD',multiplier=1)
 #' suppressWarnings(rm("account.testport","portfolio.testport",pos=.blotter))
 #' initPortf("testport", symbols=stock.str)
 #' initAcct("testport","testport", symbols=stock.str)
-#' addtxns <- addTxns("testport","tca_test",test_txns)
+#' addtxns <- addTxns("testport","test_txns",test_txns)
 #' updatePortf("testport")
 #' p = getPortfolio("testport") # make a local copy of the portfolio object
 #' a = getAccount("testport") # make a local copy of the account object
-#' p$symbols$tca_test$txn
+#' p$symbols$test_txns$txn
 #'
 #' ### Complete Execution
-#' shortfall("testport", "tca_test",
+#' impShortfall("testport", "test_txns",
 #'           paQty=5000,
 #'           priceStart=10,
 #'           priceEnd=11,
@@ -198,7 +198,7 @@
 #'           method='Complete')
 #'
 #' ### Market
-#' shortfall("testport", "tca_test",
+#' impShortfall("testport", "test_txns",
 #'           paQty=5000, 
 #'           priceEnd=11,
 #'           arrPrice = 10,
@@ -209,14 +209,14 @@
 #' suppressWarnings(rm("account.testport","portfolio.testport",pos=.blotter))
 #' initPortf("testport", symbols=stock.str)
 #' initAcct("testport","testport", symbols=stock.str)
-#' addtxns <- addTxns("testport","tca_test",test_txns)
+#' addtxns <- addTxns("testport","test_txns",test_txns)
 #' updatePortf("testport")
 #' p = getPortfolio("testport") # make a local copy of the portfolio object
 #' a = getAccount("testport") # make a local copy of the account object
-#' p$symbols$tca_test$txn
+#' p$symbols$test_txns$txn
 #'
 #' ### Perold
-#' shortfall("testport", "tca_test",
+#' impShortfall("testport", "test_txns",
 #'           paQty=5000,
 #'           priceStart=10,
 #'           priceEnd=11,
@@ -224,7 +224,7 @@
 #'           method='Perold')
 #'
 #' ### Wagner
-#' shortfall("testport", "tca_test",
+#' impShortfall("testport", "test_txns",
 #'           paQty=5000,
 #'           priceStart=10,
 #'           priceEnd=11,
