@@ -13,6 +13,8 @@ put.portfolio <- function(portfolio.st, portfolio, envir=.blotter)
         p.attr <- attributes(p.arg)
         p.attr <- p.attr[!(names(p.attr) %in% "names")]
         portfolio <- as.environment(p.arg)
+        portfolio$symbols <- list2env(portfolio$symbols,hash=TRUE)
+        for(instrument in ls(portfolio$symbols)) portfolio$symbols[[instrument]] <- list2env(portfolio$symbols[[instrument]])
         attributes(portfolio) <- p.attr
     }
     assign(blotter.portfolio.st, portfolio, envir=envir)
