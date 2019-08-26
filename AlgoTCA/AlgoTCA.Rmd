@@ -2,25 +2,16 @@
 title: AlgoTCA - GSoC 2019
 author:
   - name: Vito Lestingi
-    affiliation: Student - University of Rome
-    address:
-    - line 1
-    - line 2
-    email:  author1@work
+    affiliation: MSc. Quantitative Finance student - Sapienza University of Rome
+    email:  lestingiv@gmail.com
   - name: Jasen K Mackie
     affiliation: Algorithmic Trading Services - Iress
-    address:
-    - line 1
-    - line 2
     email:  jasen.mackie@iress.com
   - name: Brian G Peterson
     affiliation: TODO
-    address:
-    - line 1
-    - line 2
     email:  brian@braverock.com
 abstract: >
-  As part of the R organization’s participation in the Google Summer of Code 2019 we replicate, and to some degree extend, the pre and post-trade TCA models as disclosed in “The Science of Algorithmic Trading and Portfolio Management” – Robert L. Kissell. The main focus of this 3-month programme was to build an Implementation Shortfall TCA model and a range of benchmark price performance models (VWAP, PWP, RPM, Arrival Cost etc), models for statistically comparing different algorithmic execution performances and lastly replicating Kissell’s I* model for Market Impact estimates. Using 11 months of JSE data and 16200 observations we are able to train a non-linear least squares estimation function which converges on a plausible solution, allowing us to validate the model which can be used in production for larger datasets with presumably lower variance.
+  As part of the R organization’s participation in the Google Summer of Code 2019 we replicate, and to some degree extend, the pre and post-trade TCA models as disclosed in “The Science of Algorithmic Trading and Portfolio Management” – Robert L. Kissell. The main focus of this 3-month programme was to build an Implementation Shortfall TCA model and a range of benchmark price performance models (VWAP, PWP, RPM, Arrival Cost etc), models for statistically comparing different algorithmic execution performances and lastly replicating market impact models, Kissell's I-Star model and the Almgren-Chriss model. Using 11 months of JSE data and 16200 observations we are able to train a non-linear least squares estimation function which converges on a plausible solution, allowing us to validate the model which can be used in production for larger datasets with presumably lower variance.
 output:
   rticles::rjournal_article:
     includes:
@@ -30,13 +21,14 @@ vignette: >
   %\VignetteIndexEntry{AlgoTCA.Rmd}
   %\usepackage[UTF-8]{inputenc}
   %\VignetteEncoding{UTF-8}
+bibliography: RJreferences.bib
 ---
 
-## Introduction
+# Introduction
 
 Post-trade Transaction Cost Analysis (TCA) is critical for assessing the efficiency with which trading decisions are implemented, especially for the institutional investor whose trade ideas can span multiple time periods to implement and which risks adverse market impact if not managed accordingly. Pre-trade and intra-day TCA is an equally vital component for making optimal trading decisions based on market conditions and trading constraints. The [blotter](https://github.com/braverock/blotter) package in R is an ideal package in the R ecosystem for hosting TCA functionality since it serves as the transaction infrastructure for building and analysing simulated and production trading systems. In this article we describe the functions implemented as part of this GSoC 2019 project in 3 parts, namely: 1. Post-trade TCA models, 2. Models for the statistical comparison of algorithmic executions, 3. Pre-trade Market Impact estimation using the I* model as documented in “The Science of Algorithmic Trading and Portfolio Management” – Robert L. Kissell, originally developed by Kissell and Malamut in 1998. Where appropriate we include examples, elaborate on extensions, document the journey of a supposed analyst and communicate results and findings relevant to a user. Lastly we comment on interesting paths of future work.
 
-## 1. Post Trade TCA
+# 1. Post Trade TCA
 
 ## Implementation Shortfall 
 
@@ -45,47 +37,47 @@ Implementation Shortfall is a measure that represents the total cost of executin
 
 Implementation Shortfall can be implemented in 4 ways:
 
-1. Assuming Complete Execution, implying a zero opportunity cost component. This is the default method for \code{Implementation Shortfall}
+1. Assuming Complete Execution, implying a zero opportunity cost component. This is the default method for \emph{Implementation Shortfall}
 
 The simplest formulation for the Complete Execution IS method is:
 
-$$ IS = S . P_{avg} - S . P_{d} + fees $$
+$$ IS = S P_{avg} - S P_{d} + fees $$
 
 Note that we add fees, as a positive metric indicates a cost.
 
-2. Using an Opportunity Cost (Perold 1988) component, where not all shares originally allocated for trading are finally executed. Opportunity Cost is the cost of not executing a portion of the originally allocated shares \code{S} for execution. This could be due to limit price constraints or a lack of liquidity.
+2. Using an Opportunity Cost (Perold 1988) component, where not all shares originally allocated for trading are finally executed. Opportunity Cost is the cost of not executing a portion of the originally allocated $S$ shares for execution. This could be due to limit price constraints or a lack of liquidity.
 
 The formulation for Opportunity Cost is:
 
-$$ {(S - \sum s_{j}) . (P_{n} - P_{d})} $$
+$$ (S - \sum s_{j}) (P_{n} - P_{d}) $$
 
 The Implementation Shortfall formulation of Perold (1988) can be written as:
 
-$$ {IS = \sum s_{j} . (P_{avg} - P_{d}) + (S - \sum s_{j}) . (P_{n} - P_{d}) + fees} $$
+$$ IS = \sum s_{j} (P_{avg} - P_{d}) + (S - \sum s_{j}) (P_{n} - P_{d}) + fees $$
 
 3. Expanded Implementation Shortfall (Wayne Wagner)
 
-Wayne Wagner's implementation categorizes costs into delay, trading and opportunity related costs. Assuming $ P_{d} $ is the decision price, $ P_{0} $ is the price when trading begins (ideally Arrival Price, defined as the mid-price at order arrival, alternatively Last Price at order arrival or failing that data availability then first transaction price), and $ P_{n} $ is the price at the end of
+Wayne Wagner's implementation categorizes costs into delay, trading and opportunity related costs. Assuming $P_{d}$ is the decision price, $P_{0}$ is the price when trading begins (ideally Arrival Price, defined as the mid-price at order arrival, alternatively Last Price at order arrival or failing that data availability then first transaction price), and $P_{n}$ is the price at the end of
 trading. The Expanded IS can be written as:
 
 $$ (P_{n} - P_{d}) = (P_{n} - P_{0}) + (P_{0} - P_{d}) $$
 
 If you substitute the RHS into Perold's IS, then IS can be written as:
 
-$$ IS = (\sum s_{j}p_{j} - \sum s_{j}P_{d}) + (S - \sum s_{j}) . ((P_{n} - P_{0}) + (P_{0} - P_{d})) + fees $$
+$$ IS = (\sum s_{j}p_{j} - \sum s_{j}P_{d}) + (S - \sum s_{j}) ((P_{n} - P_{0}) + (P_{0} - P_{d})) + fees $$
 
 This formula can be re-written into a separate delay, trading and opportunity cost related component as follows:
 
-$$ Expanded IS = S(P_{0} - P_{d}) + (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees $$
+$$ IS_{expanded} = S(P_{0} - P_{d}) + (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees $$
 
 where each term (excluding fees) reflects the delay, trading and opportunity cost components respectively. Wagner's method allows for an additional decomposition of the "Delay related cost" into the \emph{opportunity delay cost} component and the \emph{trading delay cost} component. Our implementation provides this breakdown in the output.
 
 4. Market Activity IS, which assumes the analyst is unaware of the manager's decision price. This method is equivalent to the Wagner formulation except that the first term is excluded in order to assess only market activity IS:
 
-$$ Market Activity IS = (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees $$
+$$ IS_{MktAct} = (\sum s_{j})(P_{avg} - P_{0}) + (S - \sum s_{j})(P_{n} - P_{0}) + fees $$
 
 
-## Implementation Shortfall - Examples
+### Implementation Shortfall - Examples
 
 For the IS examples we borrow from the code in the function help documentation. The first 2 examples below illustrate the output for the Complete Execution and Market Activity implementations using identical datasets. The Implementation Shortfall quantums are identical as we assume complete execution in both instances including the Market Activity IS, although you will notice this version returns additional info when compared with the Complete Execution version, including filled and unfilled units, the opportunity cost component and fees.
 ```{r, include=FALSE}
@@ -176,7 +168,6 @@ impShortfall("testport", "test_txns",
 We built a single function for computing TCA benchmarks where the benchmark price is one of: Arrival Price, Day's Open/Close/Other, Participation Weighted Price (PWP), Volume Weighted Average Price (VWAP) or a qualitative score with the Realtive Performance Measure (RPM). When all methods are used in conjunction, an analyst can derive measures for each benchmark giving a different view of the resultant execution. In addition to giving an overall score, we have built an S3 method for plotting the performance through the life of the execution which allows an analyst to identify specific time periods that warrant additional review.
 
 ### benchmark='TradeBench'
-
 For all 4 methods we use the same sampled set of public trades data to simulate a private execution. In all cases, a positive value indicates outperformance and a negative value, underperformance. In the case of \code{benchmark='TradeBench'} the benchmark price is the first transaction price in the execution, as a proxy for the Arrival Price. For a true Arrival Cost benchmark using the actual Arrival Price, the user can use \code{benchmark='MktBench'} with the Arrival Price specified for with the 'priceToBench' argument.
 
 ```{r, include=FALSE}
@@ -195,7 +186,7 @@ addTxns('abc.port.day', 'ABC', TxnData = abc.trades.day)
 updatePortf('abc.port.day', 'ABC')
 ```
 
-```{r}
+```{r, fig.width=4.5, fig.height=3, fig.align="center"}
 benchTradeBench <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'TradeBench', MktData = ABC.day)
 last(benchTradeBench$Trades.TradeBench.Perf)
 
@@ -206,15 +197,19 @@ plot(benchTradeBench, benchmark = 'TradeBench')
 
 As alluded to previously, with \code{benchmark='MktBench'} the user can specify "Open", "Close" or a numeric price value for benchmarking.
 
-```{r}
-benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against daily open price
+```{r, fig.cap="Performance vs. open price", out.width='80%', out.height='40%', fig.align="center"}
+# performance against daily open price
+benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', 
+                                    type = list(price = 'Open'), MktData = ABC.day[1])
 last(benchMktBenchOpen$Trades.MktBench.Perf)
 
 plot(benchMktBenchOpen, benchmark = 'MktBench')
 ```
 
-```{r}
-benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against daily closing price
+```{r, fig.cap="Performance vs. close price", out.width='80%', out.height='40%', fig.align="center"}
+# performance against daily closing price
+benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', 
+                                     type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)])
 last(benchMktBenchClose$Trades.MktBench.Perf)
 
 plot(benchMktBenchClose, benchmark = 'MktBench')
@@ -222,14 +217,15 @@ plot(benchMktBenchClose, benchmark = 'MktBench')
 
 ### benchmark='VWAP'
 
-A widely used benchmark is the Volume Weighted Average Price (VWAP) benchmark. The benchmark is defined as:
+A widely used benchmark is the *Volume Weighted Average Price* (VWAP) benchmark. The benchmark is defined as:
 
 $$ VWAP = \frac{\sum {P_{j}Q_{j}}}{\sum {Q_{j}}} $$
 
-P_{j} is the market price and Q_{j} the market volume, during j trading periods activity of the market. Two different types of VWAP benchmarks are included in the present function, the Interval VWAP and the Full VWAP. Referring to the former as the VWAP where the j market trading periods considered are the ones during which the order is being executed, whereas the latter includes all the j market periods from order execution beginning to last transaction. The VWAP benchmark varies by timespan considered and is commonly used as a proxy for fair market price. It can differ by data vendors specific market data filtering. There are recognized drawbacks of this benchamrk. First of all, the larger the order the closer the execution will be to VWAP. Second, where large block trades occur these could skew the benchmark. Lastly, it is not an indicated comparison across stocks or different days for the same stock.
+where $P_{j}$ is the market price and $Q_{j}$ the market volume, during $j$ trading periods activity of the market. Two different types of VWAP benchmarks are included in the present function, the Interval VWAP and the Full VWAP. Referring to the former as the VWAP where the j market trading periods considered are the ones during which the order is being executed, whereas the latter includes all the j market periods from order execution beginning to last transaction. The VWAP benchmark varies by timespan considered and is commonly used as a proxy for fair market price. It can differ by data vendors specific market data filtering. There are recognized drawbacks of this benchamrk. First of all, the larger the order the closer the execution will be to VWAP. Second, where large block trades occur these could skew the benchmark. Lastly, it is not an indicated comparison across stocks or different days for the same stock.
 
-```{r}
-benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'interval'), MktData = ABC.day)
+```{r, fig.cap="Performance vs. interval-VWAP", out.width='80%', out.height='40%', fig.align="center"}
+benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', 
+                                  type = list(vwap = 'interval'), MktData = ABC.day)
 last(benchVWAPinterv$Trades.VWAP.Perf)
 
 plot(benchVWAPinterv, benchmark = 'MktBench')
@@ -239,67 +235,371 @@ plot(benchVWAPinterv, benchmark = 'MktBench')
 
 A variation of the VWAP benchmark is given by the Participation Weighted Price (PWP) benchmark, where the weighting is with respect to the PWP shares:
 
-$$ PWP shares = \frac{Traded shares}{POV} $$
+$$ PWP_{shares} = \frac{Traded shares}{POV} $$
 
 POV refers to the percentage of volume. 
 
 The PWP benchwark is:
 
-$$ PWP price = \frac{\sum {P_{h}Q_{h}}}{\sum {Q_{h}}} $$
+$$ PWP_{price} = \frac{\sum {P_{h}Q_{h}}}{\sum {Q_{h}}} $$
 
-where h are the periods from the arrival time of the order into the market until when the PWP shares are completely executed. As the VWAP, the PWP benchmark provides a glimpse into market fair prices. However this benchmark have limitations similar to the VWAP. It is subject to manipulation in that the market price can be kept inflated by larger orders. Furthermore, as the VWAP, it is not comparable between stocks or across days for the same stock. Also, the benchmark may be biased by temporary impact dissipation.
+where $h$ are the periods from the arrival time of the order into the market until when the PWP shares are completely executed. As the VWAP, the PWP benchmark provides a glimpse into market fair prices. However, this benchmark have limitations similar to the VWAP. It is subject to manipulation in that the market price can be kept inflated by larger orders. Furthermore, as the VWAP, it is not comparable between stocks or across days for the same stock. Also, the benchmark may be biased by temporary impact dissipation.
 
-```{r}
+```{r, fig.cap="Performance vs. PWP price", out.width='80%', out.height='40%', fig.align="center"}
 benchPWP <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'PWP', POV = 0.3, MktData = ABC.day)
 last(benchPWP$Trades.PWP.Perf)
 
-plot(benchPWP, benchmark = 'PWP')
+plot(benchPWP, benchmark = 'PWP', main = "")
 ```
 
-###  benchmark='RPM'
+### benchmark='RPM'
 
 Lastly, the Relative Performance Measure (RPM), which differs from the PnL metrics above, is a percentile ranking of trading activity. Its expression depends on the side of the trade:
 
-$$ RPM_{buy} = 0.5 * \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{Total volume} $$
+$$ RPM_{buy} = \frac{Total volume + Volume at P > P_{avg} - Volume at P < P_{avg}}{2 * Total volume} $$
+$$ RPM_{sell} = \frac{Total volume + Volume at P < P_{avg} - Volume at P > P_{avg}}{2 * Total volume} $$
 
-$$ RPM_{sell} = 0.5 * \frac{Total volume + Volume at P < P_{avg} - Volume at P > P_{avg}}{Total volume} $$
+where $P$ is the market price specified. The an RPM over 50% is considered as an indication of superior trades, more precisely the RPM can be mapped to a qualitative score of the trades:
 
-where P is the market price specified. The an RPM over 50% is considered as an indication of superior trades, more precisely the RPM can be mapped to a qualitative score of the trades:
+\begin{center}
+\begin{tabular}{ c l }
+RPM                     & Quality   \\
+\hline
+$ 0 \leq RPM < 20 $	    & Fair      \\
+$ 20 \leq RPM < 40 $	  & Poor      \\
+$ 40 \leq RPM \leq 60 $	& Average   \\
+$ 60 < RPM \leq 80 $	  & Good      \\
+$ 80 < RPM \leq 100	$   & Excellent \\
+\end{tabular}
+\end{center}
 
-0 <= RPM < 20	Fair
-20 <= RPM < 40	Poor
-40 <= RPM <= 60	Average
-60 < RPM <= 80	Good
-80 < RPM <= 100	Excellent
 
 This measure is considered as preferred to the VWAP metric because it overcomes some of its drawbacks: it can be used to compare performance across different stocks, days, and volatility; it is not less influenced by large blocks trade at extreme prices.
 
-```{r}
+```{r, fig.cap="Execution RPM", out.width='80%', out.height='40%', fig.align="center"}
 benchRPM <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'RPM', MktData = ABC.day)
 last(benchRPM$Trades.RPM.Perf)
 
-plot(benchRPM, benchmark = 'RPM')
+plot(benchRPM, benchmark = 'RPM', legend.loc = 'topleft')
 ```
 
-This section may contain a figure such as Figure \ref{figure:rlogo}.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics{Rlogo}
-  \caption{The logo of R.}
-  \label{figure:rlogo}
-\end{figure}
 
-## Another section
 
-There will likely be several sections, perhaps including code snippets, such as:
+## Statistical testing of benchamrked strategies
+When testing trading strategies on Symbols, assessing whether there is a statistical significant difference in their performance is of interest. In other words,
+the goal is determining which given strategy outperformed the other or if they statistically bear the same results in terms of performance. Let us consider two execution strategies or equivalently two brokers using the "same" strategy, the baseline two-sided hypotesis we test is in their performance median: 
+
+$$ H_{0}: med(A) = med(B) $$
+$$ H_{1}:may med(A) \neq med(B) $$
+
+All the statistical test included are \emph{non-parametric tests}, that is distribution-free tests. These tests allow great flexibility, but in turn require that data verifies some assumptions in order for their results to be meaningful.  
+There exists a wide range of algorithmic trading strategies and even whithin the same category of strategies many sligthly different versions may exist 
+as they often differ by brokerage firm. In a post-trade analysis framework, starting from trading strategies transactions prices we compare the overall
+performance of multiple orders, each executed under two different categories, to ultimately test whether data supports a difference in their median.
+In other words, the basic statistical hypothesis test setting is to test the null hypothesis of a same median against the alternative hypothesis of a different median.
+
+Two statistical testing approach are contemplated, namely the \emph{paired samples approach} and the \emph{independent samples approach}. The suitability of the approach ultimately relies on analysts' specific research questions. Also, each of them critically depends on how transactional data was obtained in the first place and on its distributional properties, therefore in turn one may be interested in studying the distribution of the overall performance/cost across the orders that is investigating the underlying data generating process.
+In `R` all the statistical tests we use are from the `stats` package.
 
 ```{r}
-x <- 1:10
-x
+# TODO: in 'benchTradeStats.R' docs I provided many usage examples 
+# 
+# However, these examples are based on "silly numbers" given only for sake of showing the function.
+# 
+# If we are to add into the vignette examples on real (possibly anonymized) private orders, 
+# as I wish so that we can meaningfully interpret the tests, the provided code needs to refer 
+# to appropriate data that has to be adjusted accordingly. 
+# 
+# Then is simply a metter of chosing wich test to apply and show the different examples below
+# 
 ```
 
-## Summary
+### Paired samples approach
+The \emph{paired samples approach}, where: trades are two equal-length child orders belonging to the same parent order on a Symbol and each occurred 
+in the same exact timeframe. Following Kissell, the preferred comparison metric against which trades have to be benchmarked is the VWAP benchmark. In this context, tests included are the \emph{Wicolxon Signed Rank test} and the \emph{Sign test}.
 
-This file is only a basic article template. For full details of _The R Journal_ style and information on how to prepare your article for submission, see the [Instructions for Authors](https://journal.r-project.org/share/author-guide.pdf).
-\bibliography{RJreferences}
+
+### Independent samples approach
+The \emph{independent samples approach}, where trades can be on different symbols, that may have occured over different periods and possibly with different frequency; here Kissell suggests the Arrival Cost as the preferred trades benchmark metric. In this context, tests included are the \emph{Median test} 
+and the \emph{Wicolxon-Mann-Withney test}.
+
+
+### Data generating process
+In addition to the statistical tests above, it is possible to study the distribution of the overall performance/cost across the orders in order to support hypothesis on whether they come from the same distribution or not. Such analysis is said a \emph{distribution analysis}, which for our purposes reduces to a
+\emph{data generating process (DGP)} comparison. Statistical tests implemented in this framework are the \emph{Chi-Square goodness-of-fit} test and the \emph{Kolmogorov-Smirnoff goodness-of-fit} test.
+
+
+# Market impact models 
+
+## I-Star model
+The model provided by Kissell-Malamut, presented in @kissell2013, is a cost allocation method to quantify the market impact of financial transactions, depending on an agent order size relative to the market volume. It is theoretically based on the supply-demand principle, although it may be rather difficult to express ourselves precisely in these terms and even so our interpretations may differ by the several possible scenarios that take place into the market in response to imbalances.
+
+Theoretically the I-Star model can be estimated using private order data for which one intends to estimate the impact costs. The main limitations of this approach are: on one hand the lack of data and the effect of neglecting the effect of wider market movements than the ones of the single security on which the order was placed, on the other it may include potential opportunistic trading biases. Based on these considerations we follow Kissell's main discussion line, focusing on the use of market "tic data" and derived quantities that represent proxies of the corresponding order-related variables. 
+
+### Market tick data and variables   
+In its most genearl setting, the model is based on market "tic data" only. It is difficult to relate Kissell's provided notion of "tick data" with respect to current data provision standards, which in turn may also vary by data vendors. Here should suffice to mention that an ideal market intraday dataset to input into the model includes trades prices and volumes, "bid" and "ask" prices in order to compute the spreads and possibly the so called "reason" (i.e, the classification of trades as "bid" or "ask"); for each security involved in the analysis.
+
+All the historical variables needed the model are computed internally from market data and most of them are "rolling end-of-day quantities", meaning that they are based on previous variables over a specified \emph{horizon} ($t = 1,...,T$) that rolls one step ahead until data available allows.
+Some variables are annualized and hence need the total number of business days in a given market and within a given year (typically a factor of 252 days, in the US markets, or of 250 days), we denote it $T_{m}$. Below we provide a schematic view of these and other quantities involved are defined below: 
+
+* *Arrival Price*. 
+  Ideally is the first bid-ask spreads midpoint. When missing spread data, the first daily market price is used as a proxy.
+
+* *Annualized volatility*. 
+  Is the standard deviation of the close-to-close security returns, scaled on the number of business days in a given year:
+  $$ \sigma = \sqrt{\frac{T_{m}}{T - 1} \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}} $$
+  expressed in decimal units.
+
+* *Average Daily Volume* (ADV). 
+  Over the specified horizon:
+  $$ ADV = \frac{1}{T} \sum_{t}^{T}V_{t}$$
+
+* *Imbalance* (Q).
+  It is calculated from "buy initiated trades" and "sell initiated trades". When trade 'Reason' is already available there is no need to explicitly infere
+  trades direction. In cases such a 'Reason' is missing, the Lee-Ready \emph{tick test} will be used to infere trading direction. In its essence, the test is
+  based on determining the sign of price changes: uptick or zero-uptick trades are considered "buy initiated", whereas downtick or zero-downtick trades are
+  counted as "sell initiated". We express it as
+  $$ Q_{t} = |\sum{V_{buy}} - \sum{V_{sell}}|$$
+  where $V_{buy}$ and $V_{sell}$ stands for total market volume of buy or sell initiated trades, respectively.
+  To note is that, as the "reason" refers to each trade, "buy initiated trades" and "sell initiated trades" can only be deduced from intraday data and then
+  taken to a daily scale.
+
+* *Imbalance size*. 
+  It is defined as the ratio:
+  $$\frac{Q_{t}}{ADV}$$
+  It is expressed on a daily basis and the values are in decimal units. In the I-Star modeling context it represents a proxy of a private agent order size. 
+
+* *Imbalance side*.
+  It is the signed imbalance and it indicates which side of the market is prevailing. Either $+1$ or $-1$ indicating respectively prevailing buy or sell
+  initiated trades, i.e $\sum{V_{buy}} > \sum{V_{sell}}$ or $\sum{V_{buy}} < \sum{V_{sell}}$, respectively.
+
+* *Percentage of volume* (POV).
+  The ratio between market imbalance and the market daily volume traded over a given day:
+  $$ POV = \frac{Q_{t}}{V_{t}}$$
+
+* *Volume Weighted Average Price* (VWAP). 
+  Expressed as:
+  $$ VWAP = \sum{\frac{P_{t}Q_{t}}{Q_{t}}} $$
+  it is commonly used as a proxy of fair market price. In the present context is
+  specifically used as a proxy of the average execution price.
+
+* *Arrival Cost*. 
+  The usual arrival cost benchmark metric. In a single security analysis framework it refers to the arrival cost of private order   transactions, whereas      with respect to the full model with market tick data only is an analogous metric based on the VWAP as proxy of a fair average 
+  execution price:
+  $$ Arrival Cost = \log(\frac{VWAP}{P_{0}}) Imbalance Side 10^{4} $$
+  where $P_{0}$ is the arrival price.
+
+### I-Star model equations
+We start from calculating the total cost of transacting the entire order and then distribute this quantity within single trade periods that took place.  
+Also, with respect to each trade period impact we can distinguish between a temporary and a permanent market impact (Lee-Ready, 1991).
+
+The I-Star model is made of three main components, all expressed in basis points. First of all there is the *Instantaneous impact* (I), the theoretical impact of executing the entire order at once. We express it here in its "power" functional form, suggested by the author as the empirically most robust, stable and accurate over time one with respect to linear and non-linear alternatives: 
+  
+$$ I = a_1 (\frac{Q}{ADV})^{a_2} \sigma^a_{3} $$
+where the parameter $a_1$ is the \emph{sensitivity to trade size}, $a_2$ is the \emph{order shape parameter} and $a_3$ the \emph{volatility shape parameter}.
+
+Then we consider the *market impact* (MI), which represents the period-by-period impact cost due to a given trading strategy and is expressed as:
+$$ MI = b_1 POV^{a_4} I + (1 - b_1) I $$
+  
+where $a_4$ is said \emph{POV shape parameter} and $b_1$ is the \emph{percentage of total temporary market impact}.
+  
+Lastly, the *Timing risk measure*, a proxy for the uncertainty surrounding the cost estimate:
+  
+$$ TR = \sigma \sqrt{\frac{S (1 - POV)}{3 T_{m} ADV POV}} 10^{4} $$
+where $S$ is the private order size. 
+
+The first two equations are part of the model estimation, whereas the last one is used as a measure of risk esposure for a given order. 
+
+### Data pre-processing and parameters estimation
+
+TODO: outliers analysis is still under discussion
+
+Data pre-processing consists of data grouping and outlier analysis.
+The grouping may be carried before proceeding with the non-linear regression estimation. The grouping is based on buckets built with respect to three variables: the Imbalance size, the POV and the annualized volatility. It is irrespective of the security whose values fall into the buckets. A datapoints threshold in each bucket has to be reached in order to include the corresponding group in the estimation process.
+
+Several aspects are worth empashizing. First of all, using Kissell's words "too fine increments [lead to] excessive groupings surface and we have found that a substantially large data grouping does not always uncover a statistical relationship between cost and our set of explanatory factors."
+This in turn points to an important consideration: also depending on the datapoints threshold specified, the data grouping may result in discarding data and this allows to exclude anomalous observations (outliers) with respect to the explanatory variables. On one hand is therefore understood how this step offers improvement margins to the nonlinear least squares estimation procedure, on the other it may cause convergence issues dependending on the effective shrinkage datapoints go through.
+
+**I-Star parameters estimation**. The author suggests three methods to estimate model paramaters from the instantaneous and the market impact equations, namely the *two-step process*, the *guesstimate technique* and *nonlinear regression*. At present only this last one is implemented, through \code{stats::nls}. 
+
+The full model parameters are estimated by means of nonlinear least squares. There is a wide theory behind such approach, rich of pros and contra inherent 
+to the specific iterative procedure used and their peculiarities in achieving converge. The interested reader may consult @venables2002.
+A general warning in estimating this model comes from the author himself: "Analysts choosing to solve the parameters of the model via non-linear regression 
+of the full model need to thoroughly understand the repercussions of non-linear regression analysis as well as the sensitivity of the parameters, and potential solution ranges for the parameters."
+
+In his modeling context the author sets a constrained problem providing bounds on parameters, in order to ensure feasible estimated values. The author's suggested bounds are implemented by default to follow his methodology, as reported in 'Details'. However, the opportunity to provide bounds is supported 
+and left to the users. Likewise, initial parameters values to start the iterative constrained minimization problem resolution from is left to the user: to my
+knowledge at the time of writing, the author does not provide any specific clue in the estimation procedure used and especially there is no suggestion 
+on particular starting values to begin with. It is valuable for a user to control starting values, as a way to check whether the estimated parameters come form a local optimum or if a global optimum may have been reasonably achieved.
+
+```{r}
+# TODO: add 'iStarPostTrade' examples
+# 
+# Before we can provide this example, the chosen dataset should be made publicly available.
+# 
+# Also, whichever dataset will probably be in GB 
+# (our testing datasets had a minimum of around 1.5 GB in RStudio). 
+# 
+# This will slow down knitting, so I believe that it is better if we load results internally.
+#  
+# Also, here we can show cost curves with the method implemented on 'iStarEst' class
+#
+
+```
+
+
+### Impact estimates, error and sensitivity analyses 
+Once the parameters have been estimated, the I-Star best fit equations provide impact costs estimates for a given market parent order specified by its size,
+POV, annualized volatility, side and arrival price. The instantaneous, market impacts (both temporary and permanent) and timing
+risk are described by the I-Star model equations explained above. The \emph{cost error} is assessed as the difference between the arrival cost 
+of the order and the market impact estimate. The \emph{z-score} is a "risk-adjusted error" and is expressed as the ratio between the cost error and timining risk. The author reports that most accurate models possess z-scores distributions with mean zero and unit variance.
+```{r}
+# TODO: add iStarSensitivity() example on estimation results or provided parameters,
+#  we also have plotting methods
+```
+
+## Almgren-Chriss (2000) model
+In their proposed modeling framework @almgren2000 consider the following trade-off that ultimately determines the transaction cost: on one hand a 
+trader may modulate the trading rate in order to decrease the \emph{volatility risk} exposure to secutities prices fluctuations, on the other the rate of exection has the effect of increasing the transaction cost through the price impact these trades generate.
+This so called \emph{trader dilemma} can be conxtualized from two equivalent points of view, maximize the expected trading revenues or minimize the expected 
+transaction costs, for any given trader's \emph{risk tolerance} as captured by the \emph{risk-aversion} coefficient $\gamma$.
+The authors' fundamental idea of \emph{optimal liquidation} is to find which trading trajectory minimizes the trade-off.
+
+### The trading model
+Among the authors assumptions is there the security price dynamic is driven by a \emph{discrete arithmetic random-walk} with independent increments, furthermore - following their extended discussion - a drift is permitted. As known it allows to incorporate directional views on the traded security price, however it may result in changed signs of the optimal trajectories computed (e.g. there may be buy trades in a selling program). Also, in light of the short-term trading horizons considered, the authors do not take into account other procecesses nor the carry or time-value of money.
+Another assumption is with respect to the equally spaced interval between the trading discrete times, $\tau = T/N$ where $T$ is the time the execution program has to be completed and $N$ represents the number of intervals the among the trading times.
+With respect to the impact functions, although not strictly necessary, we follow the authors' seminal work and assume linear forms. It is a simplification that as we shall specify shortly allows to provide explicit solutions to the optimization problem posed.
+
+Permanent and temporary impact are functions of the \emph{average trading rate}, $v_{k} = n_{k}/\eta$.
+
+**Permanent market impact**. Sometimes described as "information leakeage" is an ebrilibrium-changing in the security price during the trading times, i.e
+an influence on its dynamic, that we write as:
+$$ S_{k} = S_{k-1} + \sigma\sqrt{\tau}\psi_{k} + \mu\tau - \tau g(v_{k}) $$
+where $\psi$ is a standard normal random variable, $\mu$ is the security price drift and $\sigma$ is the security price volatility. The function 
+$g(v_{k})$ is the linear permanent impact function
+
+$$ g(v_{k}) = \gamma v_{k} $$
+the parameter impact $\gamma$ permanent impact parameter can be seen as a fixed cost independent of the trajectory (and is expressed in (currency/trade-unit)/trade-unit). 
+
+**Temporary market impact**. The execution of a sufficiently large $n_{k}$ units between times $t_(k - 1)$ and $t_k$ may influence the price of 
+the traded asset. The impact is always against the trader in that buying (selling) 
+a too large number of units may increase (decrease) its price. Due to this impact 
+the effective price per traded unit on the $k$-th transaction is:
+
+$$ \tilde{S}_{k} = S_{k-1} - h(v_{k}) $$
+with $h(v_{k})$, the linear temporary impact function, defined as:
+
+$$ h(v_{k}) = \epsilon sgn(n_{k}) + \eta v_{k} $$
+
+the parameter $\epsilon$ is expressed in currency/trade-unit, authors report that a reasonable estimate for is the fixed costs of trading, such as half the 
+bid-ask spread plus fees; the temporary impact parameter $\eta$ is expressed in (currency/trade-unit)/(trade-unit/time) and is reportedly more difficult to estimate.
+
+Associated with any given trading trajectory there is a \emph{capture trajectory}, and a \emph{total cost of trading}.
+The former is the full trading revenue upon completion of all trades:
+$$ \sum_{k=1}^{N}{n_{k}  \tilde{S}_{k}} $$
+Whereas the latter is the difference between the portfolio value at the beginning of trading (book value) and the capture trajectory:
+$$ XS_{0} - \sum_{k=1}^{N}{n_{k} \tilde{S}_{k}} $$
+which is Perold's (ex-post) \emph{implementation shortfall}.
+
+### The optimization problem
+A rational trader seeks to minimize the expectation of shortfall, for a given level of variance of shortfall. For each level of risk aversion there is a uniquely determined \emph{optimal trading strategy}.
+The optimization problem Almgren-Chriss posed aims to find such a strategy, which has lower variance for the same or lower level of expected transaction 
+costs, or, equivalently, no strategy which has a lower level of expected transaction costs for the same or lower level of variance.
+Mathematically the problem is posed as
+$$ \min[E(x) + \lambda V(x)] $$
+
+where the \emph{expected shortfall} $E(x)$ is the expectation of impact costs:
+$$ E(x) = \frac{1}{2}\gamma X^2 - \mu\sum_{k=1}^{N}{\tau x_{j}} + \epsilon\sum_{k=1}^{N}{|n_{k}|} + (\eta - \frac{\gamma\tau}{2})\sum_{k=1}^{N}{n_{k}^2} $$
+and the \emph{variance of the shortfall} $V(x)$ is
+
+$$ V(x) = \sigma^2 \sum_{k=1}^{N}{\tau x_{j}^2} $$
+
+The Lagrange multiplier $\lambda$ is interpreted as a measure of risk aversion, that is how much the variance is penalized with respect to the to expected cost. 
+As long as $\lambda \geq 0$ there exists a unique minimizer $x_{k}^{*}$.
+
+The solution of this problem depends on the specified forms of the impact functions. In the linear case assumed explicit solutions of the optimal holding trajectory and as a consequence of the associated optimal trade trajectory exist:
+
+$$
+x_{j} = \frac{\sinh[\kappa(T - t_{j})]}{\sinh(\kappa T)} X
+        + (1 - \frac{\sinh[\kappa(T - t_{j})] + \sinh(\kappa t_{j})}{\sinh(\kappa T)}) \bar{x}
+$$
+
+$$
+n_{j} = \frac{2 \sinh(\frac{1}{2} \kappa\tau)}{\sinh(\kappa T)} \cosh[\kappa(T - t_{j - 1/2})] X
+        + \frac{2 \sinh(\frac{1}{2} \kappa \tau)}{\sinh(\kappa T)} \{\cosh(\kappa t_{j - 1/2}) - \cosh[\kappa (T - t_{j - 1/2})]\} \bar{x}
+$$
+
+where $t_{j - 1/2} = (j - 1/2)\tau$, $\bar{x} = \mu/2 \lambda\sigma^2$ is the optimal level of security holding for a time-independent porfolio and allows to incorporate a drift correction into the optimal trajectories dynamics, when the hypothesized drift term is not null. 
+The parameter $\kappa$, sometimes called the \emph{urgency parameter}, expresses the curvature of the optimal trajectory, approximated for small equally spaced trade periods, that is:
+
+$$ \kappa \sim \sqrt{\frac{\lambda\sigma^2}{\eta}} + O(\tau) $$
+as $\tau \to 0$.
+Also, $\kappa$ provides an interesting interpretation in terms of the time needed to complete the order. Rewriting $\theta = 1/\kappa$, the so called \emph{half-life} of a trade, is evident that the larger the value of $\kappa$ and the smaller the time $\theta$ needed deplete the execution, that is the rapidly the trade schedule will be completely executed. In other terms it can be seen as a measure of the liquidity of the traded security.
+Resolving the optimization problems with respect to different such values of $\lambda$ leads to the \emph{efficient frontier}, that is the locus of the 
+optimal trading strategies where each strategy has the minimum transaction cost for a given level of volatility or the minimun volatility for a given amount 
+of transaction costs (i.e. cost-volatility optimal combinations). The frontier is a smooth convex function, differentiable at its minimal point
+which is what the authors call the \emph{naive strategy}, corresponding to trading at a constant rate. 
+
+It is important to stress how under the above context the optimal execution trajectories can be statically determined. This is not always exactly true, as there could be serial correlation effects and paramters shifts due to regime changes (news, events, etc.). However the author shows how even in that case optimal trajectory are piecewise static and notwithstanding that gains from introducing these components into the dynamics is argued to be negligible for large portfolios with respect to the impact costs.
+
+### Almgren-Chriss example
+We can proceed illustrating the example authors provide in their original contribution [@almgren2000, see section 4.4].
+
+```{r}
+set.seed(333)
+Securities <- data.frame()
+Securities[1, 'Init.Price'] <- 50
+Securities[1, 'Units'] <- 10^6
+Securities[1, 'Complete.By'] <- 5
+Securities[1, 'Trade.Periods'] <- 20 # 5 # 20 better gives the idea of what it should look like (but we should have it with 5)
+mu <- 0.02
+sigma <- 0.95
+gamma <- 2.5 * 10^-7 
+epsilon <- 0.0625
+eta <- 2.5 * 10^-6 
+```
+
+Optimal trajectories associated with different risk tolerance, i.e. different values of the risk-aversion coefficient, are given for example assuming in turn the following coefficients:  
+```{r}
+lambda_averse <- 2 * 10^-6; lambda_neutral <- 0; lambda_propense <- (-2) * 10^-7
+
+ac_averse <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                       gamma = gamma, epsilon = epsilon, eta = eta, 
+                       lambda = lambda_averse)
+ac_neutral <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                        gamma = gamma, epsilon = epsilon, eta = eta, 
+                        lambda = lambda_neutral)
+ac_propense <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                         gamma = gamma, epsilon = epsilon, eta = eta, 
+                         lambda = lambda_propense)
+```
+
+```{r, echo=FALSE, fig.cap="Optimal holding trajectories, risk profiles comparison.", fig.width=4, fig.height=3.5, fig.align="center", fig.pos="ht"}
+plot(ac_averse$Optimal.Trajs[, 'Opt.Hold'], type = 'b', xlab = "Trading period", ylab = "Optimal holding", col = 'blue')
+lines(ac_neutral$Optimal.Trajs[, 'Opt.Hold'], type = 'b', col = 'black')
+lines(ac_propense$Optimal.Trajs[, 'Opt.Hold'], type = 'b', col = 'red')
+legend('topright', legend = c('Averse', 'Neutral', 'Propense'), col = c('blue', 'black', 'red'), lty = rep(1, 3), bty = 'n', cex = 1, inset = 0.03)
+```
+
+The *efficient trading frontier* can then be shown as follows:
+```{r}
+lambdas <- seq(-5e-07, 5e-06, 1e-07)
+opt.pts <- matrix(NA, nrow = length(lambdas), ncol = 2)
+for (l in 1:length(lambdas)) {
+  opt.pts[l, ] <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, gamma = gamma, epsilon = epsilon, eta = eta, 
+                            lambda = lambdas[l])$Optimal.Comb
+  e <- opt.pts[, 1]
+  v <- opt.pts[, 2]
+}
+```
+
+```{r, echo=FALSE, fig.cap="The efficient trading frontier.", fig.width=4, fig.height=3.5, fig.align="center", fig.pos="ht"}
+plot(v, e, type = 'l', lwd = 1.5, xlab = "Variance, V(x)", ylab = "Expected loss, E(x)")
+points(ac_averse$Optimal.Comb['V(x)'], ac_averse$Optimal.Comb['E(x)'], pch = 13, col = 'blue')
+points(ac_neutral$Optimal.Comb['V(x)'], ac_neutral$Optimal.Comb['E(x)'], pch = 13, col = 'black')
+points(ac_propense$Optimal.Comb['V(x)'], ac_propense$Optimal.Comb['E(x)'], pch = 13, col = 'red')
+legend('topright', legend = c('Averse', 'Neutral', 'Propense'), col = c('blue', 'black', 'red'), pch = rep(13, 3), bty = 'n', cex = 1, inset = 0.03)
+``` 
+
+# References
