@@ -12,12 +12,12 @@ Trading and Portfolio Management'' -- Robert L. Kissell. The main focus
 of this 3-month programme was to build an Implementation Shortfall TCA
 model and a range of benchmark price performance models (VWAP, PWP, RPM,
 Arrival Cost etc), models for statistically comparing different
-algorithmic execution performances and lastly replicating Kissell's I*
-model for Market Impact estimates. Using 11 months of JSE data and 16200
-observations we are able to train a non-linear least squares estimation
-function which converges on a plausible solution, allowing us to
-validate the model which can be used in production for larger datasets
-with presumably lower variance.
+algorithmic execution performances and lastly replicating market impact
+models, Kissell's I-Star model and the Almgren-Chriss model. Using 11
+months of JSE data and 16200 observations we are able to train a
+non-linear least squares estimation function which converges on a
+plausible solution, allowing us to validate the model which can be used
+in production for larger datasets with presumably lower variance.
 }
 
 % Any extra LaTeX you need in the preamble
@@ -67,7 +67,7 @@ Implementation Shortfall can be implemented in 4 ways:
 \item
   Assuming Complete Execution, implying a zero opportunity cost
   component. This is the default method for
-  \code{Implementation Shortfall}
+  \emph{Implementation Shortfall}
 \end{enumerate}
 
 The simplest formulation for the Complete Execution IS method is:
@@ -84,8 +84,8 @@ Note that we add fees, as a positive metric indicates a cost.
   Using an Opportunity Cost (Perold 1988) component, where not all
   shares originally allocated for trading are finally executed.
   Opportunity Cost is the cost of not executing a portion of the
-  originally allocated shares \code{S} for execution. This could be due
-  to limit price constraints or a lack of liquidity.
+  originally allocated \(S\) shares for execution. This could be due to
+  limit price constraints or a lack of liquidity.
 \end{enumerate}
 
 The formulation for Opportunity Cost is:
@@ -273,7 +273,10 @@ last(benchTradeBench$Trades.TradeBench.Perf)
 plot(benchTradeBench, benchmark = 'TradeBench')
 \end{Sinput}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-8-1} \end{Schunk}
+
+\begin{center}\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-8-1} \end{center}
+
+\end{Schunk}
 
 \hypertarget{benchmarkmktbench}{%
 \subsubsection{benchmark=`MktBench'}\label{benchmarkmktbench}}
@@ -283,7 +286,9 @@ specify ``Open'', ``Close'' or a numeric price value for benchmarking.
 
 \begin{Schunk}
 \begin{Sinput}
-benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Open'), MktData = ABC.day[1]) # performance against daily open price
+# performance against daily open price
+benchMktBenchOpen <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', 
+                                    type = list(price = 'Open'), MktData = ABC.day[1])
 last(benchMktBenchOpen$Trades.MktBench.Perf)
 \end{Sinput}
 \begin{Soutput}
@@ -295,12 +300,21 @@ last(benchMktBenchOpen$Trades.MktBench.Perf)
 \begin{Sinput}
 plot(benchMktBenchOpen, benchmark = 'MktBench')
 \end{Sinput}
+\begin{figure}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-9-1} \end{Schunk}
+{\centering \includegraphics[width=0.8\linewidth,height=0.4\textheight]{AlgoTCA_files/figure-latex/unnamed-chunk-9-1} 
+
+}
+
+\caption[Performance vs]{Performance vs. open price}\label{fig:unnamed-chunk-9}
+\end{figure}
+\end{Schunk}
 
 \begin{Schunk}
 \begin{Sinput}
-benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)]) # performance against daily closing price
+# performance against daily closing price
+benchMktBenchClose <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'MktBench', 
+                                     type = list(price = 'Close'), MktData = ABC.day[nrow(ABC.day)])
 last(benchMktBenchClose$Trades.MktBench.Perf)
 \end{Sinput}
 \begin{Soutput}
@@ -312,8 +326,15 @@ last(benchMktBenchClose$Trades.MktBench.Perf)
 \begin{Sinput}
 plot(benchMktBenchClose, benchmark = 'MktBench')
 \end{Sinput}
+\begin{figure}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-10-1} \end{Schunk}
+{\centering \includegraphics[width=0.8\linewidth,height=0.4\textheight]{AlgoTCA_files/figure-latex/unnamed-chunk-10-1} 
+
+}
+
+\caption[Performance vs]{Performance vs. close price}\label{fig:unnamed-chunk-10}
+\end{figure}
+\end{Schunk}
 
 \hypertarget{benchmarkvwap}{%
 \subsubsection{benchmark=`VWAP'}\label{benchmarkvwap}}
@@ -340,7 +361,8 @@ days for the same stock.
 
 \begin{Schunk}
 \begin{Sinput}
-benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', type = list(vwap = 'interval'), MktData = ABC.day)
+benchVWAPinterv <- benchTradePerf('abc.port.day', 'ABC', side = 1, benchmark = 'VWAP', 
+                                  type = list(vwap = 'interval'), MktData = ABC.day)
 last(benchVWAPinterv$Trades.VWAP.Perf)
 \end{Sinput}
 \begin{Soutput}
@@ -352,8 +374,15 @@ last(benchVWAPinterv$Trades.VWAP.Perf)
 \begin{Sinput}
 plot(benchVWAPinterv, benchmark = 'MktBench')
 \end{Sinput}
+\begin{figure}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-11-1} \end{Schunk}
+{\centering \includegraphics[width=0.8\linewidth,height=0.4\textheight]{AlgoTCA_files/figure-latex/unnamed-chunk-11-1} 
+
+}
+
+\caption[Performance vs]{Performance vs. interval-VWAP}\label{fig:unnamed-chunk-11}
+\end{figure}
+\end{Schunk}
 
 \hypertarget{benchmarkpwp}{%
 \subsubsection{benchmark=`PWP'}\label{benchmarkpwp}}
@@ -391,10 +420,17 @@ last(benchPWP$Trades.PWP.Perf)
 #> 164       4991.218  5023.869    64.99206
 \end{Soutput}
 \begin{Sinput}
-plot(benchPWP, benchmark = 'PWP')
+plot(benchPWP, benchmark = 'PWP', main = "")
 \end{Sinput}
+\begin{figure}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-12-1} \end{Schunk}
+{\centering \includegraphics[width=0.8\linewidth,height=0.4\textheight]{AlgoTCA_files/figure-latex/unnamed-chunk-12-1} 
+
+}
+
+\caption[Performance vs]{Performance vs. PWP price}\label{fig:unnamed-chunk-12}
+\end{figure}
+\end{Schunk}
 
 \hypertarget{benchmarkrpm}{%
 \subsubsection{benchmark=`RPM'}\label{benchmarkrpm}}
@@ -439,10 +475,17 @@ last(benchRPM$Trades.RPM.Perf)
 #> 50   1606594     1208007 0.570807 Average
 \end{Soutput}
 \begin{Sinput}
-plot(benchRPM, benchmark = 'RPM')
+plot(benchRPM, benchmark = 'RPM', legend.loc = 'topleft')
 \end{Sinput}
+\begin{figure}
 
-\includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-13-1} \end{Schunk}
+{\centering \includegraphics[width=0.8\linewidth,height=0.4\textheight]{AlgoTCA_files/figure-latex/unnamed-chunk-13-1} 
+
+}
+
+\caption[Execution RPM]{Execution RPM}\label{fig:unnamed-chunk-13}
+\end{figure}
+\end{Schunk}
 
 \hypertarget{statistical-testing-of-benchamrked-strategies}{%
 \subsection{Statistical testing of benchamrked
@@ -456,7 +499,7 @@ terms of performance. Let us consider two execution strategies or
 equivalently two brokers using the ``same'' strategy, the baseline
 two-sided hypotesis we test is in their performance median:
 
-\[ H_{0}: med(A) = med(B) \] \[ H_{1} = med(A) \neq med(B) \]
+\[ H_{0}: med(A) = med(B) \] \[ H_{1}:may med(A) \neq med(B) \]
 
 All the statistical test included are \emph{non-parametric tests}, that
 is distribution-free tests. These tests allow great flexibility, but in
@@ -489,8 +532,9 @@ are from the \texttt{stats} package.
 # 
 # However, these examples are based on "silly numbers" given only for sake of showing the function.
 # 
-# If we are to add into the vignette examples on real (possibly anonymized) private orders, as I wish so that we can meaningfully interpret the tests, the 
-# provided code needs to refer to appropriate data that has to be adjusted accordingly. 
+# If we are to add into the vignette examples on real (possibly anonymized) private orders, 
+# as I wish so that we can meaningfully interpret the tests, the provided code needs to refer 
+# to appropriate data that has to be adjusted accordingly. 
 # 
 # Then is simply a metter of chosing wich test to apply and show the different examples below
 # 
@@ -711,7 +755,7 @@ The full model parameters are estimated by means of nonlinear least
 squares. There is a wide theory behind such approach, rich of pros and
 contra inherent to the specific iterative procedure used and their
 peculiarities in achieving converge. The interested reader may consult
-Venables and Ripley (2010). A general warning in estimating this model
+Venables and Ripley (2002). A general warning in estimating this model
 comes from the author himself: ``Analysts choosing to solve the
 parameters of the model via non-linear regression of the full model need
 to thoroughly understand the repercussions of non-linear regression
@@ -738,10 +782,13 @@ been reasonably achieved.
 # 
 # Before we can provide this example, the chosen dataset should be made publicly available.
 # 
-# Also, whichever dataset will probably be in GB (our testing datasets had a minimum of around 1.5 GB in RStudio). This will slow down knitting.
+# Also, whichever dataset will probably be in GB 
+# (our testing datasets had a minimum of around 1.5 GB in RStudio). 
 # 
-# So I believe that it is better if we load results internally.
+# This will slow down knitting, so I believe that it is better if we load results internally.
 #  
+# Also, here we can show cost curves with the method implemented on 'iStarEst' class
+#
 \end{Sinput}
 \end{Schunk}
 
@@ -762,7 +809,8 @@ possess z-scores distributions with mean zero and unit variance.
 
 \begin{Schunk}
 \begin{Sinput}
-# TODO: add iStarSensitivity() example on estimation results or provided parameters, we also have plotting methods
+# TODO: add iStarSensitivity() example on estimation results or provided parameters,
+#  we also have plotting methods
 \end{Sinput}
 \end{Schunk}
 
@@ -929,18 +977,16 @@ original contribution (Almgren and Chriss 2001, see section 4.4).
 
 \begin{Schunk}
 \begin{Sinput}
-# Almgren-Chriss example
 set.seed(333)
-
 Securities <- data.frame()
 Securities[1, 'Init.Price'] <- 50
 Securities[1, 'Units'] <- 10^6
 Securities[1, 'Complete.By'] <- 5
-Securities[1, 'Trade.Periods'] <- 5
+Securities[1, 'Trade.Periods'] <- 20 # 5 # 20 better gives the idea of what it should look like (but we should have it with 5)
 mu <- 0.02
 sigma <- 0.95
-epsilon <- 0.0625
 gamma <- 2.5 * 10^-7 
+epsilon <- 0.0625
 eta <- 2.5 * 10^-6 
 \end{Sinput}
 \end{Schunk}
@@ -951,49 +997,61 @@ example assuming in turn the following coefficients:
 
 \begin{Schunk}
 \begin{Sinput}
-lambda_averse <- 2 * 10^-6
-lambda_neutral <- 0
-lambda_propense <- (-2) * 10^-7
-
-# ac_averse <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, epsilon = epsilon, gamma = gamma, eta = eta, lambda = lambda_averse)
-# ac_neutral <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, epsilon = epsilon, gamma = gamma, eta = eta, lambda = lambda_neutral)
-# ac_propense <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, epsilon = epsilon, gamma = gamma, eta = eta, lambda = lambda_propense)
+lambda_averse <- 2 * 10^-6; lambda_neutral <- 0; lambda_propense <- (-2) * 10^-7
+ac_averse <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                       gamma = gamma, epsilon = epsilon, eta = eta, 
+                       lambda = lambda_averse)
+ac_neutral <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                        gamma = gamma, epsilon = epsilon, eta = eta, 
+                        lambda = lambda_neutral)
+ac_propense <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, 
+                         gamma = gamma, epsilon = epsilon, eta = eta, 
+                         lambda = lambda_propense)
 \end{Sinput}
 \end{Schunk}
 
-To compare the \emph{optimal holding trajectories}:
-
 \begin{Schunk}
-\begin{Sinput}
-# TODO: The risk-averse case curvature in incorrect. See the explanation I argued here https://github.com/braverock/blotter/pull/99
+\begin{figure}[ht]
 
-# plot(ac_averse$Optimal.Trajs[, 'Opt.Hold'], type = 'b', main = 'Order Execution (risk profiles)', xlab = "Trading period", ylab = "Optimal holding", col = 'blue')
-# lines(ac_neutral$Optimal.Trajs[, 'Opt.Hold'], type = 'b', col = 'black')
-# lines(ac_propense$Optimal.Trajs[, 'Opt.Hold'], type = 'b', col = 'red')
-# legend('topright', legend = c('Averse', 'Neutral', 'Propense'), col = c('blue', 'black', 'red'), lty = rep(1, 3), bty = 'n', cex = 1, inset = 0.03)
-\end{Sinput}
+{\centering \includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-19-1} 
+
+}
+
+\caption[Optimal holding trajectories, risk profiles comparison]{Optimal holding trajectories, risk profiles comparison.}\label{fig:unnamed-chunk-19}
+\end{figure}
 \end{Schunk}
 
 The \emph{efficient trading frontier} can then be shown as follows:
 
 \begin{Schunk}
 \begin{Sinput}
-# TODO: as a consequence (as argued https://github.com/braverock/blotter/pull/99), the effiecient frontier is incorrect 
-
-# lambdas <- seq(-5e-07, 5e-06, 1e-07)
-# opt.pts <- matrix(NA, nrow = length(lambdas), ncol = 2)
-# for (l in 1:length(lambdas)) {
-#   opt.pts[l, ] <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, epsilon = epsilon, gamma = gamma, eta = eta, lambda = lambdas[l])$Optimal.Comb
-#   e <- opt.pts[, 1]
-#   v <- opt.pts[, 2]
-# }
-# plot(v, e, type = 'l', lwd = 1.5, main = "Efficient Trading Frontier", xlab = "Variance, V(x)", ylab = "Expected loss, E(x)")
-# points(ac_averse$Optimal.Comb['V(x)'], ac_averse$Optimal.Comb['E(x)'], pch = 13, col = 'blue')
-# points(ac_neutral$Optimal.Comb['V(x)'], ac_neutral$Optimal.Comb['E(x)'], pch = 13, col = 'black')
-# points(ac_propense$Optimal.Comb['V(x)'], ac_propense$Optimal.Comb['E(x)'], pch = 13, col = 'red')
-# legend('topright', legend = c('Averse', 'Neutral', 'Propense'), col = c('blue', 'black', 'red'), pch = rep(13, 3), bty = 'n', cex = 1, inset = 0.03)
+lambdas <- seq(-5e-07, 5e-06, 1e-07)
+opt.pts <- matrix(NA, nrow = length(lambdas), ncol = 2)
+for (l in 1:length(lambdas)) {
+  opt.pts[l, ] <- acOptTxns(Securities = Securities, mu = 0, sigma = sigma, gamma = gamma, epsilon = epsilon, eta = eta, 
+                            lambda = lambdas[l])$Optimal.Comb
+  e <- opt.pts[, 1]
+  v <- opt.pts[, 2]
+}
 \end{Sinput}
 \end{Schunk}
+
+\begin{Schunk}
+\begin{figure}[ht]
+
+{\centering \includegraphics{AlgoTCA_files/figure-latex/unnamed-chunk-21-1} 
+
+}
+
+\caption[The efficient trading frontier]{The efficient trading frontier.}\label{fig:unnamed-chunk-21}
+\end{figure}
+\end{Schunk}
+
+\newpage
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
 \leavevmode\hypertarget{ref-almgren2000}{}%
@@ -1005,29 +1063,29 @@ Kissell, Robert. 2013. \emph{The Science of Algorithmic Trading and
 Portfolio Management}. 1st ed. Elsevier Science.
 
 \leavevmode\hypertarget{ref-venables2002}{}%
-Venables, W. N., and B. D. Ripley. 2010. \emph{Modern Applied Statistics
+Venables, W. N., and B. D. Ripley. 2002. \emph{Modern Applied Statistics
 with S}. Springer.
 
 \bibliography{RJreferences.bib}
 
 \address{%
 Vito Lestingi\\
-Student - Sapienza University of Rome, MSc. Quantitative Finance\\
-line 1\\ line 2\\
+MSc. Quantitative Finance Student - Sapienza University of Rome\\
+\\
 }
 \href{mailto:lestingiv@gmail.com}{\nolinkurl{lestingiv@gmail.com}}
 
 \address{%
 Jasen K Mackie\\
 Algorithmic Trading Services - Iress\\
-line 1\\ line 2\\
+\\
 }
 \href{mailto:jasen.mackie@iress.com}{\nolinkurl{jasen.mackie@iress.com}}
 
 \address{%
 Brian G Peterson\\
 TODO\\
-line 1\\ line 2\\
+\\
 }
 \href{mailto:brian@braverock.com}{\nolinkurl{brian@braverock.com}}
 
