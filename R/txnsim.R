@@ -708,112 +708,102 @@ txnsim <- function(Portfolio,
         # Use a while loop to build layers until total duration matches x% of target
         # Longs while loop
         layer.trades <- NULL
-        while(cumlongdur < (0.99 * longdur) && wlc2 <= 1000){
+        while(cumlongdur < (0.999 * longdur) && wlc2 <= 1000){
           li <- sample(longrange, 1) # sample another row from longrange for layering
-          # browser()
           wlc2 <- wlc2 + 1
-          # print(wlc2)
-          # ln.ts <- sample(timeseq,1) # square brackets converts the output to a POSIXct
           newlayerbuffer <- sample(longstartdiff*86400,1) # longstartdiff is in days, and we need unit in secs
           newlayerqty <- longdf[li,'quantity']
-          # layer.trades <- NULL
           # sample from the last layered start timestamps, upon which we will add a new layer if maxpos 
           # does not constrain us. call it prevlayer.tn for "previous layer transaction" which it soon will be
           prevlayer.tn <- sample(tmp_tdf$last.layered.start[which(tmp_tdf$lqty > 0 & tmp_tdf$num_layers < num_overlaps)], 1) # keep lqty zero for layered longs, instead put the qty in "qty"
           prevlayer.idx <- last(which(tmp_tdf$last.layered.start == prevlayer.tn)) # use last as we may have more than 1 layers starting on last.layered.start date, so we pick last observation to add next layer to
           newlayerstart <- prevlayer.tn + newlayerbuffer # start timestamp of new layer
-          # if(newlayerstart == "2009-03-27" | newlayerstart == "2009-05-24") {
-          #   browser()
-          # }
           
           if(newlayerstart >= tmp_tdf$last.layered.end[prevlayer.idx]) { # new layer start is after our previous layer ends...go back and sample another layer start date
             next()
           }
           
           flayer.trade <- tdf[last(which(tdf$start<=newlayerstart)),] # the first layer trade start timestamp, sourced from the 'tdf' dataframe
-
-            # newlayerend <- newlayerstart + flayer.trade$duration
-            newlayerend <- newlayerstart + longdf[li,'duration']
-            # if(newlayerend == "2008-04-03") {
-            #   browser()
-            # }
-            # ftend <- flayer.trade$start + tmp_tdf$duration[prevlayer.idx] # first layer target end; we cannot overlap this end timestamp
-            new_ftend <- tmp_tdf$last.layered.start[prevlayer.idx] + difftime(tmp_tdf$last.layered.end[prevlayer.idx], tmp_tdf$last.layered.start[prevlayer.idx], units = "secs") # first layer target end; we cannot overlap this end timestamp
-            txnlongdur <- longdf[li,'duration']
-            wlc <- 0 # initialize while loop counter
-            
-            # Next we use a bool "insertnew" variable to indicate whether or not we need to insert a new observation into tmp_tdf or we can use the 
-            # existing observation to update cumsum quantity. Any layered trades extending beyond our furthest possible point for the firstlayer
-            # trade, will not need a new row. Instead, we will increment the cumsum qty of the current row, as the current row and the layered trade
-            # share the same end date (after truncation). However, if the layered does not extend beyong the prior layering trade end date, we insert
-            # a new row, and track the cumsum of this row separately...including the quantity from the prior layer, only up until the end date of the
-            # new row, which ends before the end date of the prior layering trade.
-            
-            # initialize some variables
-            insertnew <- TRUE
-            cinsertnew <- 0
-            flayerendvec <- NULL 
-            if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
-              # browser()
-              while(newlayerend >= new_ftend){ # # we've gone over the duration, check the next trade
-                wlc <- wlc + 1
-                if (!is.na(tmp_tdf[prevlayer.idx+wlc,'quantity']) && tmp_tdf[prevlayer.idx+wlc,'quantity']>0){ # next trade is also a long
-                  if (tmp_tdf$lcumsum[prevlayer.idx+wlc] + newlayerqty <= maxlongpos) {
-                    new_ftend <- new_ftend + tmp_tdf[prevlayer.idx+wlc,'duration']
-                    if(newlayerend < new_ftend){
-                      txnlongdur <- longdf[li,'duration']
-                      insertnew <- TRUE # we will insert a new row, and increment cumsum qty with this new observation if there is no maxpos violation
-                      break() # we're good, move on to adding the new row
-                      } else {
-                        # browser()
-                        insertnew <- TRUE
-                        # wlc <- wlc + 1 # we're still over the duration, check the next trade
-                      }
-                  } else {
-                    browser()
-                    insertnew <- FALSE
-                    txnlongdur <- 0
-                    break()
-                    }
-                  } else { # the next trade is not a long, so we truncate 'txnlongdur' if there is no maxpos violation
-                    # if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
-                    # truncate duration here
-                    # wlc <- 0
+          newlayerend <- newlayerstart + longdf[li,'duration']
+          new_ftend <- tmp_tdf$last.layered.start[prevlayer.idx] + difftime(tmp_tdf$last.layered.end[prevlayer.idx], tmp_tdf$last.layered.start[prevlayer.idx], units = "secs") # first layer target end; we cannot overlap this end timestamp
+          txnlongdur <- longdf[li,'duration']
+          wlc <- 0 # initialize while loop counter
+          
+          # Next we use a bool "insertnew" variable to indicate whether or not we need to insert a new observation into tmp_tdf or we can use the 
+          # existing observation to update cumsum quantity. Any layered trades extending beyond our furthest possible point for the firstlayer
+          # trade, will not need a new row. Instead, we will increment the cumsum qty of the current row, as the current row and the layered trade
+          # share the same end date (after truncation). However, if the layered does not extend beyong the prior layering trade end date, we insert
+          # a new row, and track the cumsum of this row separately...including the quantity from the prior layer, only up until the end date of the
+          # new row, which ends before the end date of the prior layering trade.
+          
+          insertnew <- TRUE
+          if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
+            # browser()
+            while(newlayerend >= new_ftend){ # # we've gone over the duration, check the next trade
+              wlc <- wlc + 1
+              # check if next trade is also a long, if not then we truncate
+              if (!is.na(tmp_tdf[prevlayer.idx+wlc,'quantity']) && tmp_tdf[prevlayer.idx+wlc,'quantity']>0){
+                # check if next trade will take us over our max pos, if not then extend previous layer end date
+                if (tmp_tdf$lcumsum[prevlayer.idx+wlc] + newlayerqty <= maxlongpos) { # TODO: potentially check how much qty we can trade before breaching max pos
+                  new_ftend <- new_ftend + tmp_tdf[prevlayer.idx+wlc,'duration'] # extend previous layer end date
+                  # check if new layer end date is before prior layer end date, if so then use full sampled duration as the duration of the new trade 
+                  if(newlayerend < new_ftend){
+                    txnlongdur <- longdf[li,'duration']
+                    insertnew <- TRUE # we will insert a new row, and increment cumsum qty with this new observation
+                    break() # we're good, move on to adding the new row
+                    } # we're still over the duration, check the next trade by proceeding to next increment in While loop
+                  
+                  } else { # TODO: potentially check what duration we can trade before breaching max pos with newlayerqty
                     txnlongdur <- difftime(new_ftend, newlayerstart, units = "secs")
                     insertnew <- FALSE # we wont insert new row
-                    # print(newlayerstart)
-                    # browser()
                     tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
                     tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
                     tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
-  
-                    if(is.null(layer.trades)){
+                    
+                    if(is.null(layer.trades)) {
                       layer.trades <- data.frame(start=newlayerstart,
                                                  duration = txnlongdur,
                                                  quantity = longdf[li,'quantity'])
                       } else {
                         layer.trades <- rbind(layer.trades,
+                                              data.frame(start=newlayerstart,
+                                                         duration = txnlongdur,
+                                                         quantity = longdf[li,'quantity']))
+                      }
+                    li <- sample(longrange, 1) # sample another row from longrange for layering
+                    break()
+                  }
+                
+                } else { # the next trade is not a long, so we truncate 'txnlongdur' if there is no maxpos violation
+                  
+                  txnlongdur <- difftime(new_ftend, newlayerstart, units = "secs")
+                  insertnew <- FALSE # we wont insert new row
+                  tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                  tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
+                  tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
+                  
+                  if(is.null(layer.trades)) {
+                    layer.trades <- data.frame(start=newlayerstart,
+                                               duration = txnlongdur,
+                                               quantity = longdf[li,'quantity'])
+                    } else {
+                      layer.trades <- rbind(layer.trades,
                                             data.frame(start=newlayerstart,
                                                        duration = txnlongdur,
                                                        quantity = longdf[li,'quantity']))
-                        }
-                    li <- sample(longrange, 1) # sample another row from longrange for layering
-  
-                    # break the while loop
-                    break()
-                    # } else { # TODO: potentially trim excess quantity, but for now we will avoid adding the new layer completely
-                    #   txnlongdur <- 0
-                    #   break()
-                    # }
-                  }
-              }
+                    }
+                  
+                  li <- sample(longrange, 1) # sample another row from longrange for layering
+                  break()
+                  
+                }
             }
+          }
             
             # newlayerend is before the end of our first layer end timestamp, so we need to add this new layer to the first
             # layer, truncate the first layer where the new layer ends, and create a new separate first layer trade with the
             # balance
             if(insertnew == TRUE){ # insertnew is NULL meaning we need to insert a new row since newlayerend is < ftend
-              # browser()
               if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
                 newrow <- as.data.frame(t(rep.int(0,14)))
                 colnames(newrow) <- c("start","duration","quantity","last.layered.start","last.layered.end","num_layers","lqty","ltrade","f.ltrade","lcumsum","sqty","strade","f.strade","scumsum")
@@ -850,23 +840,19 @@ txnsim <- function(Portfolio,
                                           data.frame(start=newlayerstart,
                                                      duration = txnlongdur,
                                                      quantity = longdf[li,'quantity']))
-                    }
+                  }
+                
                 li <- sample(longrange, 1)
-                } else {
+                
+                } else { # this trade will take us over max pos, set txnlongdur to zero and proceed to next sampled start time and duration
                   txnlongdur <- 0
                 }
-              }
-            
-            # if(tmp_tdf$last.layered.end[29]>tmp_tdf$start[30]) {
-            #   browser()
-            #   }
-            cumlongdur <- cumlongdur + txnlongdur
-            # print(cumlongdur/86400)
-            # print(wlc2)
-        } # end long layering
-        
+            }
+          cumlongdur <- cumlongdur + txnlongdur
+          # print(cumlongdur/86400)
+          # print(wlc2)
+        } # end long layering While loop
 
-        
         
         # Shorts while loop
         wsc2 <- 0
