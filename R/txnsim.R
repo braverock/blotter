@@ -710,7 +710,7 @@ txnsim <- function(Portfolio,
         # Use a while loop to build layers until total duration matches x% of target
         # Longs while loop
         layer.trades <- NULL
-        while(cumlongdur < (0.99 * longdur) && wlc2 <= 1000){
+        while(cumlongdur < (1 * longdur) && wlc2 <= 1000){
           li <- sample(longrange, 1) # sample another row from longrange for layering
           wlc2 <- wlc2 + 1
           newlayerbuffer <- sample(longstartdiff*86400,1) # longstartdiff is in days, and we need unit in secs
@@ -858,7 +858,7 @@ txnsim <- function(Portfolio,
         
         # Shorts while loop
         wlc2 <- 0
-        while(cumshortdur < (0.99 * shortdur) && wlc2 <= 1000){
+        while(cumshortdur < (1 * shortdur) && wlc2 <= 1000){
           # browser()
           si <- sample(shortrange, 1) # sample another row from shortrange for layering
           wlc2 <- wlc2 + 1
