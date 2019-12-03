@@ -1,19 +1,41 @@
 ---
-title: "txnsim() - Technical Specification"
-author: "Jasen Mackie, Brian G. Peterson"
-date: "9/30/2019"
-output: html_document
+title: Round Turn Trade Monte Carlo Simulation in R
+author:
+  - name: Jasen Mackie
+    affiliation: Affiliation
+    address:
+    - line 1
+    - line 2
+    email:  jasen.mackie@iress.com
+  - name: Author Two
+    affiliation: Brian G. Peterson
+    address:
+    - line 1
+    - line 2
+    email:  author2@work
+abstract: >
+  With txnsim() the analyst is able to construct a random strategy that preserves as many of the stylized facts (or style) of the observed strategy as possible, while demonstrating no skill. The round turn trades of the random replicate strategies, while outwardly resembling the original strategy in summary time series statistics, are the result of random combinations of observed features taking place at random times in the tested time period. This effectively creates simulated traders with the same style but without skill. For this reason txnsim() is most appropriate for discerning skill vs. luck or overfitting.
+output:
+  rticles::rjournal_article:
+    includes:
+      in_header: preamble.tex
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## Introduction
 
-With txnsim() the analyst is able to construct a random strategy that preserves as many of the stylized facts (or style) of the observed strategy as possible, while demonstrating no skill. The round turn trades of the random replicate strategies, while outwardly resembling the original strategy in summary time series statistics, are the result of random combinations of observed features taking place at random times in the tested time period. This effectively creates simulated traders with the same style but without skill. For this reason txnsim() is most appropriate for discerning skill vs. luck or overfitting.
+Introductory section which may include references in parentheses
+\citep{R}, or cite a reference such as \citet{R} in the text.
 
-TODO: refine the introduction to include more infromation
+Performance simulations via Monte Carlo and other methods are widely used in Finance.
+
+\citet{@burns2004} covers the use of random portfolios for performance measurement and in a subsequent paper in \citet{@burns2006} for evaluating trading strategies which he terms a related but distinct task. He goes on to mention in his evaluating strategies paper that statistical tests for a signal's predictiveness was generally possible even in the presence of potential data snooping bias. Things have likely changed in the 14 years since in that data snooping has become more prevalent, with more data, significantly advanced computing power and the ability to fit an open source model to almost any dataset.
+Tomasini & Jaeckle in their Trading Systems book \citep{@tomasini2009} refer to the analysis of trading systems using Monte Carlo analysis of trade PNL. In particular they mention the benefit of a confidence interval estimation for max drawdowns.
+In the Probability of Backtest Overfitting paper by de Prado et al in 2015 \citep{@bailey2014}, they present a method for assessing data snooping as it relates to backtests, which are used by investment firms and portfolio managers to allocate capital.
+Harvey et al, in their series of papers including Backtesting \citep{@harvey2015} and the Cross-Section of Expected Returns \citep{@harvey2013} discuss their general dismay at the reported significance of papers attempting to explain the cross-section of expected returns. They propose a method for deflating the Sharpe Ratio when taking into account the data snooping bias otherwise referred to as Multiple Hypothesis testing.
+Comapared with more well-known simulation methods, such as simulating portfolio P&L, Round Turn Trade Simulation has the following benefits:
+1. Increased transparency, since you can view the simulation detail down to the exact transaction, thereby comparing the original strategy being simulated to random entries and exits with the same overall dynamic
+2. More realistic since you sample from trade durations and quantities actually observed inside the strategy, thereby creating a distribution around the trading dynamics, not just the daily P&L
+What all this means, of course, is you are effectively creating simulated traders with the same style but zero skill.
 
 <br>
 
@@ -302,7 +324,6 @@ chart.Posn(Portfolio='bbands',Symbol="AAPL",TA="add_BBands(on=1,sd=SD,n=N)")
 
 The below diagram depicts the main functional flow inside txnsim. The first internal function, `txnstruct` is used to build a dataframe of start times, round turn trade durations and quantities. We assign this to a list named `backtest.trades` with one element per symbol in the original portfolio object. We output the backtest.trades slot in the result of a call to txnsim().
 
-
 ```{r lt txnsim, echo=FALSE, warning=FALSE}
 ex.txnsim <- function(Portfolio, n ,replacement=FALSE, tradeDef='flat.to.flat',
                       chart=FALSE){
@@ -509,7 +530,7 @@ Using txnsim() we are able to measure the performance of any number of randomize
 t1 <- Sys.time()
 # print(Sys.time())
 set.seed(333) #for the purposes of replicating my results
-n <- 1000
+n <- 10
 
 ex.txnsim <- function(Portfolio
                       ,n
@@ -788,7 +809,7 @@ The *txnsim* function can be fairly CPU and memory intensive. We have observed 1
  t1 <- Sys.time()
 # print(Sys.time())
 set.seed(333) #for the purposes of replicating my results
-n <- 1000
+n <- 10
 
 ex.txnsim <- function(Portfolio
                       ,n
@@ -1097,5 +1118,34 @@ Round turn trade Monte Carlo simulates random traders who behave in a similar ma
 
 Round turn trade Monte Carlo as implemented in *txnsim* directly analyzes what types of trades and P&L were plausible with a similar trade cadence to the observed series.  It acts on the same real market data as the observed trades, efficiently searching the feasible space of possible trades given the stylized facts. It is, in our opinion, a significant contribution for any analyst seeking to evaluate the question of "skill vs. luck" of the observed trades, or for more broadly understanding what is theoretically possible with a certain trading cadence and style. 
 
+<br>
+
+## References  {.smaller}
+
+Burns, Patrick. 2004. "Performance Measurement Via Random Portfolios." https://papers.ssrn.com/sol3/papers.cfm?abstract_id=630123
+
+Burns, Patrick. 2006. "Random Portfolios for Evaluating Trading Strategies." http://www.burns-stat.com/pages/Working/evalstrat.pdf
+
+Tomasini, Emilio \& Jaekle, Urban. 2009. "Trading Systems: A New Approach to System Development and Portfolio Optimization" 
+
+Bailey, David H, Jonathan M Borwein, Marcos López de Prado, and Qiji Jim Zhu. 2014. “The Probability of Backtest Overfitting.” http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253.
+
+Harvey, Campbell R., and Yan Liu. 2015. “Backtesting.” SSRN. http://ssrn.com/abstract=2345489.
+
+Peterson, Brian G. 2017. "Developing \& Backtesting Systematic Trading Strategies." http://goo.gl/na4u5d
 
 
+
+## Another section
+
+There will likely be several sections, perhaps including code snippets, such as:
+
+```{r}
+x <- 1:10
+x
+```
+
+## Summary
+
+This file is only a basic article template. For full details of _The R Journal_ style and information on how to prepare your article for submission, see the [Instructions for Authors](https://journal.r-project.org/share/author-guide.pdf).
+\bibliography{RJreferences}
