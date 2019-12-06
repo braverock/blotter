@@ -7,8 +7,8 @@ author:
     - line 1
     - line 2
     email:  jasen.mackie@iress.com
-  - name: Author Two
-    affiliation: Brian G. Peterson
+  - name: Brian G. Peterson
+    affiliation: Affiliation
     address:
     - line 1
     - line 2
@@ -23,18 +23,14 @@ output:
 
 ## Introduction
 
-Introductory section which may include references in parentheses
-\citep{R}, or cite a reference such as \citet{R} in the text.
-
 Performance simulations via Monte Carlo and other methods are widely used in Finance.
-
-\citet{@burns2004} covers the use of random portfolios for performance measurement and in a subsequent paper in \citet{@burns2006} for evaluating trading strategies which he terms a related but distinct task. He goes on to mention in his evaluating strategies paper that statistical tests for a signal's predictiveness was generally possible even in the presence of potential data snooping bias. Things have likely changed in the 14 years since in that data snooping has become more prevalent, with more data, significantly advanced computing power and the ability to fit an open source model to almost any dataset.
-Tomasini & Jaeckle in their Trading Systems book \citep{@tomasini2009} refer to the analysis of trading systems using Monte Carlo analysis of trade PNL. In particular they mention the benefit of a confidence interval estimation for max drawdowns.
-In the Probability of Backtest Overfitting paper by de Prado et al in 2015 \citep{@bailey2014}, they present a method for assessing data snooping as it relates to backtests, which are used by investment firms and portfolio managers to allocate capital.
-Harvey et al, in their series of papers including Backtesting \citep{@harvey2015} and the Cross-Section of Expected Returns \citep{@harvey2013} discuss their general dismay at the reported significance of papers attempting to explain the cross-section of expected returns. They propose a method for deflating the Sharpe Ratio when taking into account the data snooping bias otherwise referred to as Multiple Hypothesis testing.
+Patrick Burns \citep{burns2004} covers the use of random portfolios for performance measurement and in a subsequent paper in \citet{burns2006} for evaluating trading strategies which he terms a related but distinct task. Burns goes on to mention in his evaluating strategies paper that statistical tests for a signal's predictiveness was generally possible even in the presence of potential data snooping bias. Things have likely changed in the 14 years since in that data snooping has become more prevalent, with more data, significantly advanced computing power and the ability to fit an open source model to almost any dataset.
+Tomasini and Jaeckle in their Trading Systems book \citep{tomasini2009} refer to the analysis of trading systems using Monte Carlo analysis of trade PNL. In particular they mention the benefit of a confidence interval estimation for max drawdowns.
+In \citet{Bailey2014probability} the authors present a method for assessing data snooping as it relates to backtests, which are used by investment firms and portfolio managers to allocate capital.
+Harvey et al, in their series of papers including Backtesting \citep{Harvey2013backtesting} and the Cross-Section of Expected Returns \citep{Harvey2015crosssection} discuss their general dismay at the reported significance of papers attempting to explain the cross-section of expected returns. They propose a method for deflating the Sharpe Ratio when taking into account the data snooping bias otherwise referred to as Multiple Hypothesis testing.
 Comapared with more well-known simulation methods, such as simulating portfolio P&L, Round Turn Trade Simulation has the following benefits:
-1. Increased transparency, since you can view the simulation detail down to the exact transaction, thereby comparing the original strategy being simulated to random entries and exits with the same overall dynamic
-2. More realistic since you sample from trade durations and quantities actually observed inside the strategy, thereby creating a distribution around the trading dynamics, not just the daily P&L
+1. Increased transparency, since you can view the simulation detail down to the exact transaction, thereby comparing the original strategy being simulated to random entries and exits with the same overall dynamic.
+2. More realistic since you sample from trade durations and quantities actually observed inside the strategy, thereby creating a distribution around the trading dynamics, not just the daily P&L.
 What all this means, of course, is you are effectively creating simulated traders with the same style but zero skill.
 
 <br>
@@ -309,22 +305,22 @@ ltportfolio = getPortfolio("longtrend")
 ltaccount = getAccount("longtrend")
 ```
 
-```{r longtrend chart, fig.align="center", echo=FALSE, warning=FALSE}
+```{r longtrend_chart, fig.align="center", echo=FALSE, warning=FALSE}
 chart.Posn("longtrend", Symbol = 'GSPC', Dates = '1998::',
            TA="add_SMA(n=10,col='darkgreen', on=1)")
 ```
 
-We will use the 'bbands' strategy above to illustrate the sampling process for increased.to.reduced. The same sampling methodology is used for trade definition flat.to.reduced.
+We will use the 'bbands' strategy from quantstrat to illustrate the sampling process for increased.to.reduced. The same sampling methodology is used for trade definition flat.to.reduced.
 
 A quick look at the output shows the extent of the layering in this demo strategy:
 
-```{r chart.Posn bbands txnsim demo, fig.align="center", echo=TRUE, warning=FALSE}
+```{r chart_Posn_bbands_txnsim_demo, fig.align="center", echo=TRUE, warning=FALSE}
 chart.Posn(Portfolio='bbands',Symbol="AAPL",TA="add_BBands(on=1,sd=SD,n=N)")
 ```
 
 The below diagram depicts the main functional flow inside txnsim. The first internal function, `txnstruct` is used to build a dataframe of start times, round turn trade durations and quantities. We assign this to a list named `backtest.trades` with one element per symbol in the original portfolio object. We output the backtest.trades slot in the result of a call to txnsim().
 
-```{r lt txnsim, echo=FALSE, warning=FALSE}
+```{r lt_txnsim, echo=FALSE, warning=FALSE}
 ex.txnsim <- function(Portfolio, n ,replacement=FALSE, tradeDef='flat.to.flat',
                       chart=FALSE){
   out <- txnsim(Portfolio,n,replacement, tradeDef = tradeDef)
@@ -345,7 +341,7 @@ ex.txnsim <- function(Portfolio, n ,replacement=FALSE, tradeDef='flat.to.flat',
 lt.wr <- ex.txnsim('longtrend',n=10, replacement=TRUE, chart=FALSE)
 ```
 
-```{r lt backtest.trades, echo=TRUE}
+```{r lt_backtest.trades, echo=TRUE}
 lt.wr$backtest.trades
 ```
 
@@ -353,9 +349,9 @@ Depending on the tradeDef and the bool value for replacement, the function can t
 
 <br>
 
-```{r txnsim flow diagram diagram, echo=FALSE, fig.cap="Fig.1. txnsim() - functional flow", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/txnsim_flow_diagram.png")
-```
+<!-- ```{r txnsim_flow_diagram_diagram, echo=FALSE, fig.cap="Fig.1. txnsim() - functional flow", fig.align='center', out.width = "400px"} -->
+<!-- knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/txnsim_flow_diagram.png") -->
+<!-- ``` -->
 
 <br>
 
@@ -377,9 +373,9 @@ The simplest path to follow inside `txnsim()` for replicating strategies is usin
 
 <br>
 
-```{r symsample.nr flow diagram diagram, echo=FALSE, fig.cap="Fig.2. symsample.nr() - functional flow", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/symsample.nr_flow_diagram.png")
-```
+<!-- ```{r symsample.nr flow diagram diagram, echo=FALSE, fig.cap="Fig.2. symsample.nr() - functional flow", fig.align='center'} -->
+<!-- knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample_nr_flow_diagram.png") -->
+<!-- ``` -->
 
 <br>
 
@@ -391,9 +387,9 @@ When sampling round turn trades defined as "flat.to.flat" but _with replacement_
 
 <br>
 
-```{r symsample.wr flow diagram diagram, echo=FALSE, fig.cap="Fig.3. symsample.wr() - functional flow", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/symsample.wr_flow_diagram.png")
-```
+<!-- ```{r symsample.wr flow diagram diagram, echo=FALSE, fig.cap="Fig.3. symsample.wr() - functional flow", fig.align='center'} -->
+<!-- knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample_wr_flow_diagram.png") -->
+<!-- ``` -->
 
 <br>
 
@@ -419,9 +415,9 @@ The simplest scenario for layering is a new layer which overlaps into a flat or 
 
 <br>
 
-```{r SimpleNewLayer_Truncated diagram, echo=FALSE, fig.cap="Fig.4. truncate new layer", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/SimpleNewLayer_Truncated.png")
-```
+# ```{r SimpleNewLayer_Truncated diagram, echo=FALSE, fig.cap="Fig.4. truncate new layer", fig.align='center'}
+# knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer_Truncated.png")
+# ```
 
 <br>
 
@@ -431,9 +427,9 @@ In scenarios where the new layered trade duration ends before the end of the pri
 
 <br>
 
-```{r SimpleNewLayer_Split diagram, echo=FALSE, fig.cap="Fig.5. split prior layer", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/SimpleNewLayer_Split.png")
-```
+# ```{r SimpleNewLayer_Split diagram, echo=FALSE, fig.cap="Fig.5. split prior layer", fig.align='center'}
+# knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer_Split.png")
+# ```
 
 <br>
 
@@ -451,9 +447,9 @@ The example in figure 6 assumes a new layer which overlaps into a flat period, w
 
 <br>
 
-```{r MultiplePriorLayerNewLayer_Truncate diagram, echo=FALSE, fig.cap="Fig.6. multiple prior layer w/ truncate", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/MultiplePriorLayerNewLayer_Truncate.png")
-```
+# ```{r MultiplePriorLayerNewLayer_Truncate diagram, echo=FALSE, fig.cap="Fig.6. multiple prior layer w/ truncate", fig.align='center'}
+# knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer_Truncate.png")
+# ```
 
 <br>
 
@@ -461,9 +457,9 @@ Figure 7 illustrates the scenario in which a proposed single new layer (also rep
 
 <br>
 
-```{r MultiplePriorLayerNewLayer_Split diagram, echo=FALSE, fig.cap="Fig.7. multiple prior layer w/ split", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/MultiplePriorLayerNewLayer_Split.png")
-```
+# ```{r MultiplePriorLayerNewLayer_Split diagram, echo=FALSE, fig.cap="Fig.7. multiple prior layer w/ split", fig.align='center'}
+# knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer_Split.png")
+# ```
 
 <br>
 
@@ -477,9 +473,9 @@ Below is a depiction of the logical flow in symsample(). The layering explained 
 
 <br>
 
-```{r symsample flow diagram diagram, echo=FALSE, fig.cap="Fig.8. symsample() - functional flow", fig.align='center'}
-knitr::include_graphics("/home/jmackie/blotter/sandbox/symsample_flow_diagram.png")
-```
+# ```{r symsample flow diagram diagram, echo=FALSE, fig.cap="Fig.8. symsample() - functional flow", fig.align='center'}
+# knitr::include_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample_flow_diagram.png")
+# ```
 
 <br>
 
@@ -508,7 +504,7 @@ Based on the strategy covered in Faber's paper [A Quantitative Approach to Tacti
 
 Taking a look at the 'longtrend' equity curve, its clear the strategy benefitted from being out the market during the protracted bear markets following the tech and housing bubbles. For this reason trend following systems add the most value when applied over entire busines cycles.
 
-```{r longtrend equity_curve, fig.align="center", echo=FALSE}
+```{r longtrend_equity_curve, fig.align="center", echo=FALSE}
 longtrend <- ltaccount$summary$End.Eq
 plot(longtrend, major.ticks = "years", grid.ticks.on = "years")
 ```
@@ -517,7 +513,7 @@ plot(longtrend, major.ticks = "years", grid.ticks.on = "years")
 
 For a more holistic view of the strategy performance and time in the market we call _chart.Posn()_. The flat periods during the protracted bear markets should be more evident looking at the position fill window.
 
-```{r longtrend chart_again, fig.align="center", echo=FALSE, warning=FALSE}
+```{r longtrend_chart_again, fig.align="center", echo=FALSE, warning=FALSE}
 chart.Posn("longtrend", Symbol = 'GSPC', Dates = '1998::',
            TA="add_SMA(n=10,col='darkgreen', on=1)")
 ```
@@ -569,7 +565,7 @@ print(runtime)
 
 Interestingly, the 'longtrend' strategy appears difficult to beat at random when constrained by the same characteristics as the original strategy. There are some "lucky" traders which manage to outperform 'longtrend' for a period until close to the end of the strategy when in early 2016 and until the end of the backtest period 'longtrend' is long and benefits from the 2016/2017 bull market. In terms of totalPL 'longtrend' ranks 12th to eleven [very lucky chimps](http://www.followingthetrend.com/2016/04/you-cant-beat-all-the-chimps/). Of course many of the random traders would have been disadvantaged by taking positions during the deep drawdowns experienced following the tech and housing bubbles or being flat during the 2016-2017 bull market, but their time in the market would resemble the same characteristics as 'longtrend' itself. We can take a look at the position chart of any one of the replicates to get a sense of how the respective random trader did. It should also illustrate how txnsim() honors the characteristics of the original strategy in terms of time in and out the market and quantities traded. Of course there is no layering in 'longtrend' nor are there any short trades, so we expect to see 1 level of long positions for a similar total duration as the original strategy.
 
-```{r longtrend_txnsim 1st replicate, fig.align="center", echo=TRUE, warning=FALSE}
+```{r longtrend_txnsim_1st_replicate, fig.align="center", echo=TRUE, warning=FALSE}
 chart.Posn("txnsim.wr.longtrend.1", Symbol = "GSPC")
 ```
 
@@ -584,7 +580,7 @@ From the analysis thus far we are able to deduce that our 'longtrend' strategy o
 One of the slots in the return object from txnsim() are the
 ranks of each replicate and the original strategy in terms of the summary statistics. The original strategy will be the first row in the dataframe. These ranks are used to determine the p-values of the statistics, in which p-values are calculated with reference to [North et. al. (2002)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/) who use Davison & Hinkley (1997) as their source. 
 
-```{r longtrend_txnsim ranks, fig.align="center", include=TRUE}
+```{r longtrend_txnsim_ranks, fig.align="center", include=TRUE}
 head(lt.wr$ranks, 10)
 lt.wr$pvalues
 ```
@@ -593,7 +589,7 @@ lt.wr$pvalues
 
 Since we have the statistic ranks of each replicate in a dataframe, it is possible to identify which replicates outperformed our original strategy based on either statistic. The below replicates outperformed 'longtrend' on a totalPL basis.
 
-```{r longtrend_txnsim ranks_better, fig.align="center", include=TRUE}
+```{r longtrend_txnsim_ranks_better, fig.align="center", include=TRUE}
 lt.wr$ranks[,6][which(lt.wr$ranks[,6] < 16)][order(lt.wr$ranks[,6][which(lt.wr$ranks[,6] < 16)])]
 ```
 
@@ -601,7 +597,7 @@ lt.wr$ranks[,6][which(lt.wr$ranks[,6] < 16)][order(lt.wr$ranks[,6][which(lt.wr$r
 
 One of the benefits mentioned previously for simulating round turn trades versus portfolio PL is the transparency. For a closer look at the winning random replicate we can analyse the trade durations and quantities using _chart.Posn()_.
 
-```{r longtrend_txnsim best totalPL replicate, fig.align="center", echo=TRUE, warning=FALSE}
+```{r longtrend_txnsim_best_totalPL_replicate, fig.align="center", echo=TRUE, warning=FALSE}
 win_rep <- names(lt.wr$ranks[,6][which(lt.wr$ranks[,6] == 1)])
 chart.Posn(win_rep, Symbol = "GSPC")
 ```
@@ -614,7 +610,7 @@ With the hist.txnsim() method the analyst can generate a histogram from 5 differ
 
 Looking at the risk adjusted return we see our 'longtrend' demo is close to the top of the distribution, well ahead of the upper confidence interval which was left as the default 95%.
 
-```{r longtrend_txnsim hist_sharpe, fig.align="center", include=TRUE}
+```{r longtrend_txnsim_hist_sharpe, fig.align="center", include=TRUE}
 hist(lt.wr, methods = "sharpe")
 ```
 
@@ -622,7 +618,7 @@ hist(lt.wr, methods = "sharpe")
 
 For max drawdown, since we missed the deep drawdowns in 2001-2002 and 2008, we expect to be close to the upper bound of that distribution too.
 
-```{r longtrend_txnsim hist_maxDD, fig.align="center", include=TRUE}
+```{r longtrend_txnsim_hist_maxDD, fig.align="center", include=TRUE}
 hist(lt.wr, methods = "maxDD")
 ```
 
@@ -653,7 +649,7 @@ Looking at the results of mcsim() on the 'longtrend' demo the return and drawdow
 
 Lastly for 'longtrend' we look at a summary of the backtest and replicate summary statistics using the print.txnsim() S3 method. It is a wrapper for the summary.txnsim() method, so calling print(lt.wr) will be sufficient for viewing a summary of the results.
 
-```{r longtrend_txnsim print(summary), fig.align="center", echo=TRUE}
+```{r longtrend_txnsim_print(summary), fig.align="center", echo=TRUE}
 print(lt.wr)
 ```
 
@@ -791,7 +787,7 @@ updatePortf(Portfolio='bbands',Dates=paste('::',as.Date(Sys.time()),sep=''))
 
 A call to _chart.Posn_ highlights the additional traits, namely entering long __and__ short positions __with leveling__ in and out, when compared with 'longtrend'.
 
-```{r bbands chart and equity curve, fig.align="center", echo=TRUE, warning=FALSE}
+```{r bbands_chart_and_equity_curve, fig.align="center", echo=TRUE, warning=FALSE}
 chart.Posn(Portfolio='bbands',Symbol="AAPL",
            TA="add_BBands(on=1,sd=SD,n=N)")
 ```
@@ -837,7 +833,7 @@ ex.txnsim <- function(Portfolio
 bb.wr <- ex.txnsim('bbands',n, replacement = TRUE, chart = FALSE)
 ```
 
-```{r bbands_txnsim plot, fig.align="center", echo=FALSE}
+```{r bbands_txnsim_plot, fig.align="center", echo=FALSE}
 plot(bb.wr)
 # print(Sys.time())
 t2 <- Sys.time()
@@ -851,7 +847,7 @@ The resulting equity curves confirm our suspicions that we have a lower probabil
 
 Taking a closer look at the performance and position taking of the "winning" random replicate, we get a sense of how the strategy attempts to mirror the original in terms of position sizing and duration of long versus short positions overall. It should also be evident how the replicate has honored the maximum long and short positions observed in the original strategy.
 
-```{r bbands_txnsim best totalPL replicate, fig.align="center", echo=TRUE, warning=FALSE}
+```{r bbands_txnsim_best_totalPL_replicate, fig.align="center", echo=TRUE, warning=FALSE}
 win_rep <- names(bb.wr$ranks[,6][which(bb.wr$ranks[,6] == 1)])
 chart.Posn(win_rep, Symbol = "AAPL") 
 ```
@@ -860,7 +856,7 @@ chart.Posn(win_rep, Symbol = "AAPL")
 
 Below is another view of the Positionfill segment in the above chart.
 
-```{r bbands_txnsim PositionFill, fig.align="center", echo=FALSE, warning=FALSE}
+```{r bbands_txnsim_PositionFill, fig.align="center", echo=FALSE, warning=FALSE}
 # Position Fill comparison
 par(mfrow = c(2, 1))
 
@@ -901,7 +897,7 @@ Using the _replicates_ slot returned in the output of txnsim, we can analyze the
 
 Looking at the sum of long period durations from the original strategy as well as for the first 2 replicates should highlight how txnsim honors this stylized fact when building out the replicates using tradeDef=flat.to.flat and replace=FALSE for our 'longtrend' example.
 
-```{r duration longtrend_txnsim flat.to.flat without replacement, echo=FALSE}
+```{r duration_longtrend_txnsim_flat.to.flat_without_replacement, echo=FALSE}
 pt_lt <- perTradeStats("longtrend", tradeDef = "flat.to.flat", includeFlatPeriods = TRUE)
 lt_totaldur <- as.numeric(sum(pt_lt$duration)/86400) # total duration for original longtrend strategy
 lt_longdur <- as.numeric(sum(pt_lt$duration[which(pt_lt$Init.Qty > 0)])/86400) # long duration for original longtrend strategy
@@ -926,7 +922,7 @@ After sampling the resultant durations we identify which n-th element in the vec
 
 Since we have sampled with replacement, our replicates will have a range of long and flat period durations centered around the long and flat period durations from 'longtrend' itself. Before building a histogram to show these distributions, a quick look at the sum of long period durations and flat period durations from a few replicates is worthwhile.
 
-```{r long and flat durations longtrend_txnsim flat.to.flat with replacement, echo=FALSE}
+```{r long_and_flat_durations_longtrend_txnsim_flattoflat_with_replacement, echo=FALSE}
 lt_flatdur <- as.numeric(sum(pt_lt$duration[which(pt_lt$Init.Qty == 0)])/86400) # flat duration for original longtrend strategy
 
 rep1_longdur.wr <- as.numeric(sum(lt.wr$replicates$GSPC[[1]][which(lt.wr$replicates$GSPC[[1]]$quantity > 0),2])/86400) # long duration for replicate 1
@@ -957,7 +953,7 @@ cat("\n",
 
 The histogram below confirms the normal distribution around which our longtrend demo long period duration is centered.
 
-```{r histogram long period durations longtrend_txnsim flat.to.flat with replacement, echo=FALSE}
+```{r histogram_long_period_durations_longtrend_txnsim_flattoflat_with_replacement, echo=FALSE}
 sum_longdur <- function(i){
   as.numeric(sum(lt.wr$replicates$GSPC[[i]][which(lt.wr$replicates$GSPC[[i]]$quantity > 0),2])/86400)
 }
@@ -978,7 +974,7 @@ text(x = original_long, hhh, labels = "Longtrend long period duration", offset =
 
 By implication the flat period durations will display an equivalent distribution around the sum of our longtrend demo flat durations.
 
-```{r histogram flat period durations longtrend_txnsim flat.to.flat with replacement, echo=FALSE}
+```{r histogram_flat_period_durations_longtrend_txnsim_flattoflat_with_replacement, echo=FALSE}
 sum_flatdur <- function(i){
   as.numeric(sum(lt.wr$replicates$GSPC[[i]][which(lt.wr$replicates$GSPC[[i]]$quantity == 0),2])/86400)
 }
@@ -1011,7 +1007,7 @@ The procedure for building the first layer in a replicate strategy using tradeDe
 
 At this point it would be worth taking a look at a few _first layer_ replicate flat, long and short durations before looking at their total distributions. We expect the first layer distributions to be tightly centered around the original strategy. This is because we secured the flat periods per the original strategy and used the long:short ratio stylized fact _(lsratio)_ to target sample first layer long and short durations (the sum of which may not exceed the calendar duration of the original strategy). The variation for long and short durations will stem from the fact that we truncate completely the duration which takes us over our target for long and short duration sampling.
 
-```{r bbands_txnsim flat duration, fig.align="center", echo=FALSE}
+```{r bbands_txnsim_flat_duration, fig.align="center", echo=FALSE}
 pt_bb <- perTradeStats("bbands", tradeDef = "flat.to.flat", includeFlatPeriods = TRUE)
 bb_flatdur <- as.numeric(sum(pt_bb$duration[which(pt_bb$Init.Qty == 0)])/86400) # flat duration for original bbands strategy
 bb_longdur <- as.numeric(sum(pt_bb$duration[which(pt_bb$Init.Qty > 0)])/86400) # long duration for original bbands strategy
@@ -1056,7 +1052,7 @@ cat("\n",
 
 The replicate flat periods are each 584 days and identical to the original strategy. Due to truncation, the first layer long and short periods will vary but to a much lesser extent than with tradeDef="flat.to.flat" with replacement. Of course, when comparing the total duration of each strategy including their respective layers, the distribution will fan out somewhat. Let's look at the long and short period distributions of each replicate for all layers combined.
 
-```{r histogram long period durations bbands_txnsim with replacement, echo=FALSE}
+```{r histogram_long_period_durations_bbands_txnsim_with_replacement, echo=FALSE}
 pt_bb.i2r <- perTradeStats("bbands", tradeDef = "increased.to.reduced", includeFlatPeriods = TRUE)
 sum_longdur.bb <- function(i){
   as.numeric(sum(bb.wr$replicates$AAPL[[i]][which(bb.wr$replicates$AAPL[[i]]$quantity > 0),2])/86400)
@@ -1075,7 +1071,7 @@ hhh = rep(0.2 * par("usr")[3] + 1 * par("usr")[4], 1)
 text(x = original_long.bb, hhh, labels = "bbands long period duration", offset = 0.6, pos = 2, cex = 1, srt = 90, col="black")
 ```
 
-```{r histogram short period durations bbands_txnsim with replacement, echo=FALSE}
+```{r histogram_short_period_durations_bbands_txnsim_with_replacement, echo=FALSE}
 # pt_bb.i2r <- perTradeStats("bbands", tradeDef = "increased.to.reduced", includeFlatPeriods = TRUE)
 sum_shortdur.bb <- function(i){
   as.numeric(sum(bb.wr$replicates$AAPL[[i]][which(bb.wr$replicates$AAPL[[i]]$quantity < 0),2])/86400)
@@ -1100,7 +1096,7 @@ The above histograms highlight how the observed durations from our bbands demo a
 
 ### Future Work
 
-This research area is full of pitfalls and opportunities.  Using the simulation to try to replicate stylized facts is a series of tradeoffs.  Each stylized fact adds more realism to the simulated random traders, but also runs the risk of overfitting to the behavior of the original observed series of trades.  For example, as of January 2018, the trade layering simulations systematically under-represent the amount of time the simulation takes a larger position, in comparison to the observed trades. We feel that this particular problem is solvable, but other simulation difficulties are sure to arise as other stylized facts are considered for inclusion in later versions.  
+This research area is full of pitfalls and opportunities.  Using the simulation to try to replicate stylized facts is a series of tradeoffs.  Each stylized fact adds more realism to the simulated random traders, but also runs the risk of overfitting to the behavior of the original observed series of trades.  
 
 There are other simulation methodologies still to be implemented, including Combinatorially Symmetric Cross-Validation (CSCV per Bailey and Lopez de Prado), various drawdown analysis simulation metrics, simulations using simulated or resampled market data, application of the *txnsim* stylized facts to other market data than the original observed data, and more.  
 
@@ -1133,19 +1129,3 @@ Bailey, David H, Jonathan M Borwein, Marcos López de Prado, and Qiji Jim Zhu. 2
 Harvey, Campbell R., and Yan Liu. 2015. “Backtesting.” SSRN. http://ssrn.com/abstract=2345489.
 
 Peterson, Brian G. 2017. "Developing \& Backtesting Systematic Trading Strategies." http://goo.gl/na4u5d
-
-
-
-## Another section
-
-There will likely be several sections, perhaps including code snippets, such as:
-
-```{r}
-x <- 1:10
-x
-```
-
-## Summary
-
-This file is only a basic article template. For full details of _The R Journal_ style and information on how to prepare your article for submission, see the [Instructions for Authors](https://journal.r-project.org/share/author-guide.pdf).
-\bibliography{RJreferences}

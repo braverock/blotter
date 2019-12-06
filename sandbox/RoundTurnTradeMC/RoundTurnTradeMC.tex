@@ -1,6 +1,6 @@
 % !TeX root = RJwrapper.tex
 \title{Round Turn Trade Monte Carlo Simulation in R}
-\author{by Jasen Mackie, Author Two}
+\author{by Jasen Mackie, Brian G. Peterson}
 
 \maketitle
 
@@ -21,45 +21,39 @@ appropriate for discerning skill vs.~luck or overfitting.
 \hypertarget{introduction}{%
 \subsection{Introduction}\label{introduction}}
 
-Introductory section which may include references in parentheses
-\citep{R}, or cite a reference such as \citet{R} in the text.
-
 Performance simulations via Monte Carlo and other methods are widely
-used in Finance.
-
-\citet{@burns2004} covers the use of random portfolios for performance
-measurement and in a subsequent paper in \citet{@burns2006} for
-evaluating trading strategies which he terms a related but distinct
-task. He goes on to mention in his evaluating strategies paper that
-statistical tests for a signal's predictiveness was generally possible
-even in the presence of potential data snooping bias. Things have likely
-changed in the 14 years since in that data snooping has become more
-prevalent, with more data, significantly advanced computing power and
-the ability to fit an open source model to almost any dataset. Tomasini
-\& Jaeckle in their Trading Systems book \citep{@tomasini2009} refer to
-the analysis of trading systems using Monte Carlo analysis of trade PNL.
-In particular they mention the benefit of a confidence interval
-estimation for max drawdowns. In the Probability of Backtest Overfitting
-paper by de Prado et al in 2015 \citep{@bailey2014}, they present a
-method for assessing data snooping as it relates to backtests, which are
-used by investment firms and portfolio managers to allocate capital.
-Harvey et al, in their series of papers including Backtesting
-\citep{@harvey2015} and the Cross-Section of Expected Returns
-\citep{@harvey2013} discuss their general dismay at the reported
-significance of papers attempting to explain the cross-section of
-expected returns. They propose a method for deflating the Sharpe Ratio
-when taking into account the data snooping bias otherwise referred to as
-Multiple Hypothesis testing. Comapared with more well-known simulation
-methods, such as simulating portfolio P\&L, Round Turn Trade Simulation
-has the following benefits: 1. Increased transparency, since you can
-view the simulation detail down to the exact transaction, thereby
-comparing the original strategy being simulated to random entries and
-exits with the same overall dynamic 2. More realistic since you sample
-from trade durations and quantities actually observed inside the
-strategy, thereby creating a distribution around the trading dynamics,
-not just the daily P\&L What all this means, of course, is you are
-effectively creating simulated traders with the same style but zero
-skill.
+used in Finance. Patrick Burns \citep{burns2004} covers the use of
+random portfolios for performance measurement and in a subsequent paper
+in \citet{burns2006} for evaluating trading strategies which he terms a
+related but distinct task. Burns goes on to mention in his evaluating
+strategies paper that statistical tests for a signal's predictiveness
+was generally possible even in the presence of potential data snooping
+bias. Things have likely changed in the 14 years since in that data
+snooping has become more prevalent, with more data, significantly
+advanced computing power and the ability to fit an open source model to
+almost any dataset. Tomasini and Jaeckle in their Trading Systems book
+\citep{tomasini2009} refer to the analysis of trading systems using
+Monte Carlo analysis of trade PNL. In particular they mention the
+benefit of a confidence interval estimation for max drawdowns. In
+\citet{Bailey2014probability} the authors present a method for assessing
+data snooping as it relates to backtests, which are used by investment
+firms and portfolio managers to allocate capital. Harvey et al, in their
+series of papers including Backtesting \citep{Harvey2013backtesting} and
+the Cross-Section of Expected Returns \citep{Harvey2015crosssection}
+discuss their general dismay at the reported significance of papers
+attempting to explain the cross-section of expected returns. They
+propose a method for deflating the Sharpe Ratio when taking into account
+the data snooping bias otherwise referred to as Multiple Hypothesis
+testing. Comapared with more well-known simulation methods, such as
+simulating portfolio P\&L, Round Turn Trade Simulation has the following
+benefits: 1. Increased transparency, since you can view the simulation
+detail down to the exact transaction, thereby comparing the original
+strategy being simulated to random entries and exits with the same
+overall dynamic. 2. More realistic since you sample from trade durations
+and quantities actually observed inside the strategy, thereby creating a
+distribution around the trading dynamics, not just the daily P\&L. What
+all this means, of course, is you are effectively creating simulated
+traders with the same style but zero skill.
 
 \hypertarget{stylized-facts}{%
 \subsection{Stylized facts}\label{stylized-facts}}
@@ -238,13 +232,13 @@ trade definition for this strategy is flat.to.flat.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend chart-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_chart-1} \end{center}
 
 \end{Schunk}
 
-We will use the `bbands' strategy above to illustrate the sampling
-process for increased.to.reduced. The same sampling methodology is used
-for trade definition flat.to.reduced.
+We will use the `bbands' strategy from quantstrat to illustrate the
+sampling process for increased.to.reduced. The same sampling methodology
+is used for trade definition flat.to.reduced.
 
 A quick look at the output shows the extent of the layering in this demo
 strategy:
@@ -255,7 +249,7 @@ chart.Posn(Portfolio='bbands',Symbol="AAPL",TA="add_BBands(on=1,sd=SD,n=N)")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/chart.Posn bbands txnsim demo-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/chart_Posn_bbands_txnsim_demo-1} \end{center}
 
 \end{Schunk}
 
@@ -300,17 +294,6 @@ lt.wr$backtest.trades
 Depending on the tradeDef and the bool value for replacement, the
 function can take one of 3 routes into a sampling procedure.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/txnsim_flow_diagram} 
-
-}
-
-\caption[Fig.1]{Fig.1. txnsim() - functional flow}\label{fig:txnsim flow diagram diagram}
-\end{figure}
-\end{Schunk}
-
 \hypertarget{sampling-process}{%
 \subsection{Sampling Process}\label{sampling-process}}
 
@@ -344,17 +327,6 @@ strategy dataframes of start times, durations and quantities. Since the
 sampling happens without replacement the replicate strategies will
 exhibit exactly identical durations.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/symsample.nr_flow_diagram} 
-
-}
-
-\caption[Fig.2]{Fig.2. symsample.nr() - functional flow}\label{fig:symsample.nr flow diagram diagram}
-\end{figure}
-\end{Schunk}
-
 \hypertarget{symsample.wr}{%
 \subsubsection{symsample.wr}\label{symsample.wr}}
 
@@ -373,17 +345,6 @@ one row), we truncate excess rows and reduce the duration of the row
 which takes us over our target duration by the amount required to equal
 our target duration. This resulting dataframe becomes our replicate
 sampled dataframe of start times, durations and quantities.
-
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/symsample.wr_flow_diagram} 
-
-}
-
-\caption[Fig.3]{Fig.3. symsample.wr() - functional flow}\label{fig:symsample.wr flow diagram diagram}
-\end{figure}
-\end{Schunk}
 
 \hypertarget{symsample}{%
 \subsubsection{symsample}\label{symsample}}
@@ -443,16 +404,8 @@ The simplest scenario for layering is a new layer which overlaps into a
 flat or short period. In this case the duration overlapping the end of
 the previous layer is truncated.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/SimpleNewLayer_Truncated} 
-
-}
-
-\caption[Fig.4]{Fig.4. truncate new layer}\label{fig:SimpleNewLayer_Truncated diagram}
-\end{figure}
-\end{Schunk}
+\hypertarget{r-simplenewlayer_truncated-diagram-echofalse-fig.capfig.4.-truncate-new-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_truncated.png}{%
+\section{\texorpdfstring{\texttt{\{r\ SimpleNewLayer\_Truncated\ diagram,\ echo=FALSE,\ fig.cap="Fig.4.\ truncate\ new\ layer",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Truncated.png")\ \#}}{\{r SimpleNewLayer\_Truncated diagram, echo=FALSE, fig.cap="Fig.4. truncate new layer", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Truncated.png") \#}}\label{r-simplenewlayer_truncated-diagram-echofalse-fig.capfig.4.-truncate-new-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_truncated.png}}
 
 \hypertarget{split}{%
 \paragraph{Split}\label{split}}
@@ -469,16 +422,8 @@ that a new layer may be strapped onto this portion, we need to separate
 it in order to monitor the cumulative position with respect to the max
 position constraint.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/SimpleNewLayer_Split} 
-
-}
-
-\caption[Fig.5]{Fig.5. split prior layer}\label{fig:SimpleNewLayer_Split diagram}
-\end{figure}
-\end{Schunk}
+\hypertarget{r-simplenewlayer_split-diagram-echofalse-fig.capfig.5.-split-prior-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_split.png}{%
+\section{\texorpdfstring{\texttt{\{r\ SimpleNewLayer\_Split\ diagram,\ echo=FALSE,\ fig.cap="Fig.5.\ split\ prior\ layer",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Split.png")\ \#}}{\{r SimpleNewLayer\_Split diagram, echo=FALSE, fig.cap="Fig.5. split prior layer", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Split.png") \#}}\label{r-simplenewlayer_split-diagram-echofalse-fig.capfig.5.-split-prior-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_split.png}}
 
 The above scenarios for truncating a new layer duration or splitting a
 prior layer round turn trade assume the prior layer is a single round
@@ -507,16 +452,8 @@ new layer which would breach the max position constraint.
 The example in figure 6 assumes a new layer which overlaps into a flat
 period, where the new layer duration is truncated accordingly.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/MultiplePriorLayerNewLayer_Truncate} 
-
-}
-
-\caption[Fig.6]{Fig.6. multiple prior layer w/ truncate}\label{fig:MultiplePriorLayerNewLayer_Truncate diagram}
-\end{figure}
-\end{Schunk}
+\hypertarget{r-multiplepriorlayernewlayer_truncate-diagram-echofalse-fig.capfig.6.-multiple-prior-layer-w-truncate-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_truncate.png}{%
+\section{\texorpdfstring{\texttt{\{r\ MultiplePriorLayerNewLayer\_Truncate\ diagram,\ echo=FALSE,\ fig.cap="Fig.6.\ multiple\ prior\ layer\ w/\ truncate",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Truncate.png")\ \#}}{\{r MultiplePriorLayerNewLayer\_Truncate diagram, echo=FALSE, fig.cap="Fig.6. multiple prior layer w/ truncate", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Truncate.png") \#}}\label{r-multiplepriorlayernewlayer_truncate-diagram-echofalse-fig.capfig.6.-multiple-prior-layer-w-truncate-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_truncate.png}}
 
 Figure 7 illustrates the scenario in which a proposed single new layer
 (also represented with a blue fill) overlaps multiple individual prior
@@ -525,16 +462,8 @@ this case, as above in figure 5, we split the last prior-layer,
 recording the cumulative position of each segment individually for
 future potential new layers with respect to max position constraints.
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/MultiplePriorLayerNewLayer_Split} 
-
-}
-
-\caption[Fig.7]{Fig.7. multiple prior layer w/ split}\label{fig:MultiplePriorLayerNewLayer_Split diagram}
-\end{figure}
-\end{Schunk}
+\hypertarget{r-multiplepriorlayernewlayer_split-diagram-echofalse-fig.capfig.7.-multiple-prior-layer-w-split-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_split.png}{%
+\section{\texorpdfstring{\texttt{\{r\ MultiplePriorLayerNewLayer\_Split\ diagram,\ echo=FALSE,\ fig.cap="Fig.7.\ multiple\ prior\ layer\ w/\ split",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Split.png")\ \#}}{\{r MultiplePriorLayerNewLayer\_Split diagram, echo=FALSE, fig.cap="Fig.7. multiple prior layer w/ split", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Split.png") \#}}\label{r-multiplepriorlayernewlayer_split-diagram-echofalse-fig.capfig.7.-multiple-prior-layer-w-split-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_split.png}}
 
 \hypertarget{sampling-start-times-and-periods-between-start-times}{%
 \paragraph{Sampling start times and periods between start
@@ -552,16 +481,8 @@ explained above is depicted in a separate flow diagram in Fig. 9.
 {[}TODO: determine whether a flowchart is necessary for the layering
 separately\ldots{}{]}
 
-\begin{Schunk}
-\begin{figure}
-
-{\centering \includegraphics{/home/jmackie/blotter/sandbox/symsample_flow_diagram} 
-
-}
-
-\caption[Fig.8]{Fig.8. symsample() - functional flow}\label{fig:symsample flow diagram diagram}
-\end{figure}
-\end{Schunk}
+\hypertarget{r-symsample-flow-diagram-diagram-echofalse-fig.capfig.8.-symsample---functional-flow-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsymsample_flow_diagram.png}{%
+\section{\texorpdfstring{\texttt{\{r\ symsample\ flow\ diagram\ diagram,\ echo=FALSE,\ fig.cap="Fig.8.\ symsample()\ -\ functional\ flow",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample\_flow\_diagram.png")\ \#}}{\{r symsample flow diagram diagram, echo=FALSE, fig.cap="Fig.8. symsample() - functional flow", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample\_flow\_diagram.png") \#}}\label{r-symsample-flow-diagram-diagram-echofalse-fig.capfig.8.-symsample---functional-flow-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsymsample_flow_diagram.png}}
 
 TODO: put flowchart here if deemed necessary
 
@@ -640,7 +561,7 @@ systems add the most value when applied over entire busines cycles.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend equity_curve-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_equity_curve-1} \end{center}
 
 \end{Schunk}
 
@@ -652,7 +573,7 @@ fill window.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend chart_again-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_chart_again-1} \end{center}
 
 \end{Schunk}
 
@@ -664,14 +585,14 @@ replicate equity curves with and without replacement.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim-1} \end{center}
 
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim-2} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim-2} \end{center}
 
 \begin{Soutput}
-#> Time difference of 0.5874317 secs
+#> Time difference of 0.5854604 secs
 \end{Soutput}
 \end{Schunk}
 
@@ -702,7 +623,7 @@ chart.Posn("txnsim.wr.longtrend.1", Symbol = "GSPC")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim 1st replicate-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim_1st_replicate-1} \end{center}
 
 \end{Schunk}
 
@@ -733,7 +654,7 @@ statistics. The original strategy will be the first row in the
 dataframe. These ranks are used to determine the p-values of the
 statistics, in which p-values are calculated with reference to
 \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC379178/}{North et.
-al. (2002)} who use Davison \& Hinkley (1997) as their source.
+al.~(2002)} who use Davison \& Hinkley (1997) as their source.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -792,7 +713,7 @@ chart.Posn(win_rep, Symbol = "GSPC")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim best totalPL replicate-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim_best_totalPL_replicate-1} \end{center}
 
 \end{Schunk}
 
@@ -815,7 +736,7 @@ hist(lt.wr, methods = "sharpe")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim hist_sharpe-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim_hist_sharpe-1} \end{center}
 
 \end{Schunk}
 
@@ -828,7 +749,7 @@ hist(lt.wr, methods = "maxDD")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_txnsim hist_maxDD-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim_hist_maxDD-1} \end{center}
 
 \end{Schunk}
 
@@ -860,21 +781,21 @@ plot(lt.mcsim.wr)
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_mscim-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_mscim-1} \end{center}
 
 \begin{Sinput}
 hist(lt.mcsim.wr, methods = "mean", normalize = FALSE)
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_mscim-2} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_mscim-2} \end{center}
 
 \begin{Sinput}
 hist(lt.mcsim.wr, methods = "maxDD", normalize = FALSE)
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/longtrend_mscim-3} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_mscim-3} \end{center}
 
 \begin{Sinput}
 print(lt.mcsim.wr, normalize = FALSE)
@@ -941,7 +862,7 @@ chart.Posn(Portfolio='bbands',Symbol="AAPL",
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/bbands chart and equity curve-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/bbands_chart_and_equity_curve-1} \end{center}
 
 \end{Schunk}
 
@@ -961,10 +882,10 @@ test on my laptop{]}.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/bbands_txnsim plot-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/bbands_txnsim_plot-1} \end{center}
 
 \begin{Soutput}
-#> Time difference of 8.337038 secs
+#> Time difference of 8.48555 secs
 \end{Soutput}
 \end{Schunk}
 
@@ -986,7 +907,7 @@ chart.Posn(win_rep, Symbol = "AAPL")
 \end{Sinput}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/bbands_txnsim best totalPL replicate-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/bbands_txnsim_best_totalPL_replicate-1} \end{center}
 
 \end{Schunk}
 
@@ -995,7 +916,7 @@ Below is another view of the Positionfill segment in the above chart.
 \begin{Schunk}
 
 
-\begin{center}\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/bbands_txnsim PositionFill-1} \end{center}
+\begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/bbands_txnsim_PositionFill-1} \end{center}
 
 \end{Schunk}
 
@@ -1094,14 +1015,14 @@ longtrend demo long period duration is centered.
 
 \begin{Schunk}
 
-\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/histogram long period durations longtrend_txnsim flat.to.flat with replacement-1} \end{Schunk}
+\includegraphics{RoundTurnTradeMC_files/figure-latex/histogram_long_period_durations_longtrend_txnsim_flattoflat_with_replacement-1} \end{Schunk}
 
 By implication the flat period durations will display an equivalent
 distribution around the sum of our longtrend demo flat durations.
 
 \begin{Schunk}
 
-\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/histogram flat period durations longtrend_txnsim flat.to.flat with replacement-1} \end{Schunk}
+\includegraphics{RoundTurnTradeMC_files/figure-latex/histogram_flat_period_durations_longtrend_txnsim_flattoflat_with_replacement-1} \end{Schunk}
 
 \hypertarget{increased.to.reduced-flat.to.reduced}{%
 \paragraph{3. ``increased.to.reduced'' \textbar{}\textbar{}
@@ -1190,11 +1111,11 @@ period distributions of each replicate for all layers combined.
 
 \begin{Schunk}
 
-\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/histogram long period durations bbands_txnsim with replacement-1} \end{Schunk}
+\includegraphics{RoundTurnTradeMC_files/figure-latex/histogram_long_period_durations_bbands_txnsim_with_replacement-1} \end{Schunk}
 
 \begin{Schunk}
 
-\includegraphics{RoundTurnTradeMonteCarloSimulation_files/figure-latex/histogram short period durations bbands_txnsim with replacement-1} \end{Schunk}
+\includegraphics{RoundTurnTradeMC_files/figure-latex/histogram_short_period_durations_bbands_txnsim_with_replacement-1} \end{Schunk}
 
 The above histograms highlight how the observed durations from our
 bbands demo are quite far removed from the distribution of the random
@@ -1213,12 +1134,7 @@ This research area is full of pitfalls and opportunities. Using the
 simulation to try to replicate stylized facts is a series of tradeoffs.
 Each stylized fact adds more realism to the simulated random traders,
 but also runs the risk of overfitting to the behavior of the original
-observed series of trades. For example, as of January 2018, the trade
-layering simulations systematically under-represent the amount of time
-the simulation takes a larger position, in comparison to the observed
-trades. We feel that this particular problem is solvable, but other
-simulation difficulties are sure to arise as other stylized facts are
-considered for inclusion in later versions.
+observed series of trades.
 
 There are other simulation methodologies still to be implemented,
 including Combinatorially Symmetric Cross-Validation (CSCV per Bailey
@@ -1291,33 +1207,6 @@ Harvey, Campbell R., and Yan Liu. 2015. ``Backtesting.'' SSRN.
 Peterson, Brian G. 2017. ``Developing \& Backtesting Systematic Trading
 Strategies.'' \url{http://goo.gl/na4u5d}
 
-\hypertarget{another-section}{%
-\subsection{Another section}\label{another-section}}
-
-There will likely be several sections, perhaps including code snippets,
-such as:
-
-\begin{Schunk}
-\begin{Sinput}
-x <- 1:10
-x
-\end{Sinput}
-\begin{Soutput}
-#>  [1]  1  2  3  4  5  6  7  8  9 10
-\end{Soutput}
-\end{Schunk}
-
-\hypertarget{summary}{%
-\subsection{Summary}\label{summary}}
-
-This file is only a basic article template. For full details of
-\emph{The R Journal} style and information on how to prepare your
-article for submission, see the
-\href{https://journal.r-project.org/share/author-guide.pdf}{Instructions
-for Authors}.
-
-\bibliography{RJreferences}
-
 
 \address{%
 Jasen Mackie\\
@@ -1327,8 +1216,8 @@ line 1\\ line 2\\
 \href{mailto:jasen.mackie@iress.com}{\nolinkurl{jasen.mackie@iress.com}}
 
 \address{%
-Author Two\\
 Brian G. Peterson\\
+Affiliation\\
 line 1\\ line 2\\
 }
 \href{mailto:author2@work}{\nolinkurl{author2@work}}
