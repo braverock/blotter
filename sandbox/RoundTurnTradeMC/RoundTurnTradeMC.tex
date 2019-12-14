@@ -22,7 +22,7 @@ appropriate for discerning skill vs.~luck or overfitting.
 \subsection{Introduction}\label{introduction}}
 
 Performance simulations via Monte Carlo and other methods are widely
-used in Finance. Patrick Burns \citep{burns2004} covers the use of
+used in Finance. Patrick Burns \citep{Burns2004} covers the use of
 random portfolios for performance measurement and in a subsequent paper
 in \citet{burns2006} for evaluating trading strategies which he terms a
 related but distinct task. Burns goes on to mention in his evaluating
@@ -253,44 +253,6 @@ chart.Posn(Portfolio='bbands',Symbol="AAPL",TA="add_BBands(on=1,sd=SD,n=N)")
 
 \end{Schunk}
 
-The below diagram depicts the main functional flow inside txnsim. The
-first internal function, \texttt{txnstruct} is used to build a dataframe
-of start times, round turn trade durations and quantities. We assign
-this to a list named \texttt{backtest.trades} with one element per
-symbol in the original portfolio object. We output the backtest.trades
-slot in the result of a call to txnsim().
-
-\begin{Schunk}
-\begin{Sinput}
-lt.wr$backtest.trades
-\end{Sinput}
-\begin{Soutput}
-#> $GSPC
-#>         start       duration quantity
-#> 1  1998-10-30  28944000 secs       91
-#> 2  1999-10-29  29030400 secs       85
-#> 3  2002-03-28   2851200 secs      107
-#> 4  2003-04-30  39484800 secs      125
-#> 5  2004-10-29  97372800 secs      122
-#> 6  2009-06-30  28684800 secs      197
-#> 7  2010-07-30   2764800 secs      195
-#> 8  2010-09-30  28944000 secs      179
-#> 9  2012-01-31 113011200 secs      166
-#> 10 2015-10-30   5356800 secs      157
-#> 11 2016-03-31  55123200 secs      156
-#> 12 1999-09-30   2505600 secs        0
-#> 13 2000-09-29  47088000 secs        0
-#> 14 2002-04-30  31536000 secs        0
-#> 15 2004-07-30   7862400 secs        0
-#> 16 2007-11-30  49939200 secs        0
-#> 17 2010-05-28   5443200 secs        0
-#> 18 2010-08-31   2592000 secs        0
-#> 19 2011-08-31  13219200 secs        0
-#> 20 2015-08-31   5184000 secs        0
-#> 21 2015-12-31   7862400 secs        0
-\end{Soutput}
-\end{Schunk}
-
 Depending on the tradeDef and the bool value for replacement, the
 function can take one of 3 routes into a sampling procedure.
 
@@ -298,7 +260,7 @@ function can take one of 3 routes into a sampling procedure.
 \subsection{Sampling Process}\label{sampling-process}}
 
 The sampling inside txnsim() can happen in 3 mutually exclusive
-functions (bordered by the green dotted line), namely:
+functions, namely:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -353,10 +315,10 @@ In the event a strategy uses the round turn trade definition of
 ``increased.to.reduced'' or ``flat.to.reduced'' the function needs to
 sample with a few more constraints. Firstly, we need to ensure we do not
 over or undersample durations such that the total duration of the
-replicate strategy is widely different from the original strategy. The
-expectation is that replicates will approach, if not marginally exceed,
-the duration of the original strategy. Secondly, when sampling the
-quantities to level into an existing position, we need to ensure the
+replicate strategy is not widely different from the original strategy.
+The expectation is that replicates will approach, if not marginally
+exceed, the duration of the original strategy. Secondly, when sampling
+the quantities to level into an existing position, we need to ensure the
 maximum long or short position observed in the strategy is not breached.
 We do not know whether or not a strategy employs a max position
 constraint, nor any other strategy details. For this reason we measure
@@ -394,8 +356,7 @@ to determine if the new layered trade, at any point, will take us over
 the max position constraint. Since the new layer could overlap multiple
 sequential long periods from the first layer, we need to monitor these
 positions separately. We repeat this process for short round turn
-trades. Below are several examples by way of illustration explaining the
-process.
+trades.
 
 \hypertarget{truncate}{%
 \paragraph{Truncate}\label{truncate}}
@@ -403,9 +364,6 @@ process.
 The simplest scenario for layering is a new layer which overlaps into a
 flat or short period. In this case the duration overlapping the end of
 the previous layer is truncated.
-
-\hypertarget{r-simplenewlayer_truncated-diagram-echofalse-fig.capfig.4.-truncate-new-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_truncated.png}{%
-\section{\texorpdfstring{\texttt{\{r\ SimpleNewLayer\_Truncated\ diagram,\ echo=FALSE,\ fig.cap="Fig.4.\ truncate\ new\ layer",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Truncated.png")\ \#}}{\{r SimpleNewLayer\_Truncated diagram, echo=FALSE, fig.cap="Fig.4. truncate new layer", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Truncated.png") \#}}\label{r-simplenewlayer_truncated-diagram-echofalse-fig.capfig.4.-truncate-new-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_truncated.png}}
 
 \hypertarget{split}{%
 \paragraph{Split}\label{split}}
@@ -422,48 +380,21 @@ that a new layer may be strapped onto this portion, we need to separate
 it in order to monitor the cumulative position with respect to the max
 position constraint.
 
-\hypertarget{r-simplenewlayer_split-diagram-echofalse-fig.capfig.5.-split-prior-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_split.png}{%
-\section{\texorpdfstring{\texttt{\{r\ SimpleNewLayer\_Split\ diagram,\ echo=FALSE,\ fig.cap="Fig.5.\ split\ prior\ layer",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Split.png")\ \#}}{\{r SimpleNewLayer\_Split diagram, echo=FALSE, fig.cap="Fig.5. split prior layer", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/SimpleNewLayer\_Split.png") \#}}\label{r-simplenewlayer_split-diagram-echofalse-fig.capfig.5.-split-prior-layer-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsimplenewlayer_split.png}}
-
-The above scenarios for truncating a new layer duration or splitting a
-prior layer round turn trade assume the prior layer is a single round
-turn trade.
-
 \hypertarget{new-layer-overlaps-multiple-prior-layer-segments}{%
 \paragraph{New layer overlaps multiple prior layer
 segments}\label{new-layer-overlaps-multiple-prior-layer-segments}}
 
 In scenarios where the proposed new layer overlaps more than one
-continuous prior period (otherwise referred to as segments) of the same
-side, we need to monitor the proposed cumulative position of each
-segment individually with respect to max position constraints. The last
-prior-layer segment will either be split or the new layer duration
-truncated as above.
+continuous prior period or segment of the same side, we need to monitor
+the proposed cumulative position of each segment individually with
+respect to max position constraints. The last prior-layer segment will
+either be split or the new layer duration truncated.
 
-Figures 6 and 7 below illustrate the scenarios in which a proposed
-single new layer (represented with the blue fill) overlaps multiple
-individual prior layer segments, each potentially with different
-quantities. Before each portion of the new layer can be added, we check
-to see it will not breach the original strategy max position observed.
-Where a new layer added to a prior segment would breach the observed max
-position, the duration is truncated at the start of the segment of the
-new layer which would breach the max position constraint.
-
-The example in figure 6 assumes a new layer which overlaps into a flat
-period, where the new layer duration is truncated accordingly.
-
-\hypertarget{r-multiplepriorlayernewlayer_truncate-diagram-echofalse-fig.capfig.6.-multiple-prior-layer-w-truncate-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_truncate.png}{%
-\section{\texorpdfstring{\texttt{\{r\ MultiplePriorLayerNewLayer\_Truncate\ diagram,\ echo=FALSE,\ fig.cap="Fig.6.\ multiple\ prior\ layer\ w/\ truncate",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Truncate.png")\ \#}}{\{r MultiplePriorLayerNewLayer\_Truncate diagram, echo=FALSE, fig.cap="Fig.6. multiple prior layer w/ truncate", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Truncate.png") \#}}\label{r-multiplepriorlayernewlayer_truncate-diagram-echofalse-fig.capfig.6.-multiple-prior-layer-w-truncate-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_truncate.png}}
-
-Figure 7 illustrates the scenario in which a proposed single new layer
-(also represented with a blue fill) overlaps multiple individual prior
-layer segments but ends before the duration end of the last segment. In
-this case, as above in figure 5, we split the last prior-layer,
-recording the cumulative position of each segment individually for
-future potential new layers with respect to max position constraints.
-
-\hypertarget{r-multiplepriorlayernewlayer_split-diagram-echofalse-fig.capfig.7.-multiple-prior-layer-w-split-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_split.png}{%
-\section{\texorpdfstring{\texttt{\{r\ MultiplePriorLayerNewLayer\_Split\ diagram,\ echo=FALSE,\ fig.cap="Fig.7.\ multiple\ prior\ layer\ w/\ split",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Split.png")\ \#}}{\{r MultiplePriorLayerNewLayer\_Split diagram, echo=FALSE, fig.cap="Fig.7. multiple prior layer w/ split", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/MultiplePriorLayerNewLayer\_Split.png") \#}}\label{r-multiplepriorlayernewlayer_split-diagram-echofalse-fig.capfig.7.-multiple-prior-layer-w-split-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcmultiplepriorlayernewlayer_split.png}}
+Before each portion of the new layer can be added, we check to see it
+will not breach the original strategy max position observed. Where a new
+layer added to a prior segment would breach the observed max position,
+the duration is truncated at the start of the segment of the new layer
+which would breach the max position constraint.
 
 \hypertarget{sampling-start-times-and-periods-between-start-times}{%
 \paragraph{Sampling start times and periods between start
@@ -475,16 +406,6 @@ layer start time in our temporary dataframe. In determining how far from
 the prior layer start time to start our new layer, we sample from the
 range of durations observed between layered trades (recorded separately
 for long and short round turn trades) in the original strategy.
-
-Below is a depiction of the logical flow in symsample(). The layering
-explained above is depicted in a separate flow diagram in Fig. 9.
-{[}TODO: determine whether a flowchart is necessary for the layering
-separately\ldots{}{]}
-
-\hypertarget{r-symsample-flow-diagram-diagram-echofalse-fig.capfig.8.-symsample---functional-flow-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsymsample_flow_diagram.png}{%
-\section{\texorpdfstring{\texttt{\{r\ symsample\ flow\ diagram\ diagram,\ echo=FALSE,\ fig.cap="Fig.8.\ symsample()\ -\ functional\ flow",\ fig.align=\textquotesingle{}center\textquotesingle{}\}\ \#\ knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample\_flow\_diagram.png")\ \#}}{\{r symsample flow diagram diagram, echo=FALSE, fig.cap="Fig.8. symsample() - functional flow", fig.align='center'\} \# knitr::include\_graphics("/home/jmackie/blotter/sandbox/RoundTurnTradeMC/symsample\_flow\_diagram.png") \#}}\label{r-symsample-flow-diagram-diagram-echofalse-fig.capfig.8.-symsample---functional-flow-fig.aligncenter-knitrinclude_graphicshomejmackieblottersandboxroundturntrademcsymsample_flow_diagram.png}}
-
-TODO: put flowchart here if deemed necessary
 
 \hypertarget{generating-transactions}{%
 \subsection{Generating Transactions}\label{generating-transactions}}
@@ -592,7 +513,7 @@ replicate equity curves with and without replacement.
 \begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/longtrend_txnsim-2} \end{center}
 
 \begin{Soutput}
-#> Time difference of 0.5854604 secs
+#> Time difference of 58.95386 secs
 \end{Soutput}
 \end{Schunk}
 
@@ -662,23 +583,23 @@ head(lt.wr$ranks, 10)
 \end{Sinput}
 \begin{Soutput}
 #>                       mean median stddev maxDD sharpe totalPL
-#> longtrend                1      7      8     1      1       1
-#> txnsim.wr.longtrend.1    5      7      9     2      2       5
-#> txnsim.wr.longtrend.2   10      7     11     4      8      10
-#> txnsim.wr.longtrend.3    7      7      7     6      7       7
-#> txnsim.wr.longtrend.4    9      7     10     5      9       9
-#> txnsim.wr.longtrend.5    2      2      2     8      4       2
-#> txnsim.wr.longtrend.6   11      7      6     7     11      11
-#> txnsim.wr.longtrend.7    4      7      1    10      5       4
-#> txnsim.wr.longtrend.8    6      7      3    11      6       6
-#> txnsim.wr.longtrend.9    8      7      5     9     10       8
+#> longtrend               12    557    859  10.0      5      16
+#> txnsim.wr.longtrend.1  405    557    175 452.0    496     405
+#> txnsim.wr.longtrend.2  249     94    611 309.0    246     249
+#> txnsim.wr.longtrend.3  792    557    753 495.0    741     792
+#> txnsim.wr.longtrend.4  397    557    374 629.0    442     397
+#> txnsim.wr.longtrend.5   31    557    718 338.0     34      31
+#> txnsim.wr.longtrend.6  618    557    131 724.0    695     618
+#> txnsim.wr.longtrend.7  246     64     51 866.0    435     246
+#> txnsim.wr.longtrend.8  619    557    280 815.0    660     619
+#> txnsim.wr.longtrend.9  919    557    930 212.5    882     919
 \end{Soutput}
 \begin{Sinput}
 lt.wr$pvalues
 \end{Sinput}
 \begin{Soutput}
 #>    mean  median  stddev   maxDD  sharpe totalPL 
-#>    0.09    0.64    0.73    0.09    0.09    0.09
+#>  0.0120  0.5564  0.8581  0.0100  0.0050  0.0160
 \end{Soutput}
 \end{Schunk}
 
@@ -692,12 +613,14 @@ strategy based on either statistic. The below replicates outperformed
 lt.wr$ranks[,6][which(lt.wr$ranks[,6] < 16)][order(lt.wr$ranks[,6][which(lt.wr$ranks[,6] < 16)])]
 \end{Sinput}
 \begin{Soutput}
-#>              longtrend  txnsim.wr.longtrend.5 txnsim.wr.longtrend.10  txnsim.wr.longtrend.7  txnsim.wr.longtrend.1 
-#>                      1                      2                      3                      4                      5 
-#>  txnsim.wr.longtrend.8  txnsim.wr.longtrend.3  txnsim.wr.longtrend.9  txnsim.wr.longtrend.4  txnsim.wr.longtrend.2 
-#>                      6                      7                      8                      9                     10 
-#>  txnsim.wr.longtrend.6 
-#>                     11
+#>   txnsim.wr.longtrend.70  txnsim.wr.longtrend.659  txnsim.wr.longtrend.174   txnsim.wr.longtrend.20 
+#>                        1                        2                        3                        4 
+#>  txnsim.wr.longtrend.694  txnsim.wr.longtrend.845 txnsim.wr.longtrend.1000  txnsim.wr.longtrend.545 
+#>                        5                        6                        7                        8 
+#>  txnsim.wr.longtrend.301  txnsim.wr.longtrend.970   txnsim.wr.longtrend.49  txnsim.wr.longtrend.407 
+#>                        9                       10                       11                       12 
+#>  txnsim.wr.longtrend.760  txnsim.wr.longtrend.100  txnsim.wr.longtrend.755 
+#>                       13                       14                       15
 \end{Soutput}
 \end{Schunk}
 
@@ -831,12 +754,12 @@ print(lt.wr)
 \end{Sinput}
 \begin{Soutput}
 #>           backtest Std. Error    Lower CI   Upper CI
-#> mean      1378.020    374.085     -32.288   1434.099
-#> median       0.000    260.510    -402.663    618.519
-#> stddev    5477.659    871.925    4638.277   8056.161
-#> maxDD   -29356.796  31930.067 -163520.951 -38357.390
-#> sharpe       0.252      0.063      -0.011      0.234
-#> totalPL 318322.527  87586.686   -4576.863 338756.639
+#> mean      1378.020    310.700      38.534   1256.453
+#> median       0.000    187.514    -320.617    414.424
+#> stddev    5477.659    850.589    4704.073   8038.323
+#> maxDD   -29356.796  34773.226 -177215.495 -40906.956
+#> sharpe       0.252      0.052       0.001      0.206
+#> totalPL 318322.527  74539.754    9290.800 301481.266
 \end{Soutput}
 \end{Schunk}
 
@@ -885,7 +808,7 @@ test on my laptop{]}.
 \begin{center}\includegraphics{RoundTurnTradeMC_files/figure-latex/bbands_txnsim_plot-1} \end{center}
 
 \begin{Soutput}
-#> Time difference of 8.48555 secs
+#> Time difference of 2.894117 mins
 \end{Soutput}
 \end{Schunk}
 
@@ -996,16 +919,16 @@ durations and flat period durations from a few replicates is worthwhile.
 #>  2005 flat period duration for original strategy 
 #>  7000 total duration 
 #>  
-#>  5277 long period duration for replicate 1 
-#>  1723 flat period duration for replicate 1 
+#>  5967 long period duration for replicate 1 
+#>  1033 flat period duration for replicate 1 
 #>  7000 total duration 
 #>  
-#>  6211 long period duration for replicate 5 
-#>  789 flat period duration for replicate 5 
+#>  5450 long period duration for replicate 5 
+#>  1550 flat period duration for replicate 5 
 #>  7000 total duration 
 #>  
-#>  6239 long period duration for replicate 10 
-#>  761 flat period duration for replicate 10 
+#>  3131 long period duration for replicate 10 
+#>  3869 flat period duration for replicate 10 
 #>  7000 total duration
 \end{Soutput}
 \end{Schunk}
@@ -1089,15 +1012,15 @@ sampling.
 #>  987 first layer short period duration for original strategy 
 #>  3969 total duration of first layer 
 #>  
-#>  7055 first layer long period duration for replicate 1 
+#>  2458 first layer long period duration for replicate 1 
 #>  584 first layer flat period duration for replicate 1 
-#>  2456 first layer short period duration for replicate 1 
-#>  10095 total duration of first layer 
+#>  914 first layer short period duration for replicate 1 
+#>  3956 total duration of first layer 
 #>  
-#>  7035 first layer long period duration for replicate 2 
+#>  2453 first layer long period duration for replicate 2 
 #>  584 first layer flat period duration for replicate 2 
-#>  2307 first layer short period duration for replicate 2 
-#>  9926 total duration of first layer
+#>  864 first layer short period duration for replicate 2 
+#>  3901 total duration of first layer
 \end{Soutput}
 \end{Schunk}
 
@@ -1117,15 +1040,9 @@ period distributions of each replicate for all layers combined.
 
 \includegraphics{RoundTurnTradeMC_files/figure-latex/histogram_short_period_durations_bbands_txnsim_with_replacement-1} \end{Schunk}
 
-The above histograms highlight how the observed durations from our
-bbands demo are quite far removed from the distribution of the random
-replicates themselves, which derive directly from the bbands demo. Our
-layering procedure inside txnsim may need to capture more granularly the
-structure of the layering in the observed strategy. At present we
-essentially sample randomly between 2 points to determine the start time
-of a layered trade. Future work on txnsim will most likely focus on this
-perceived shortcoming, to better capture the style of the original
-strategy where tradeDef=``increased.to.reduced''.
+The above histograms highlight how the observed round turn trade
+durations from our bbands demo are closely resemblant of the random
+replicates themselves.
 
 \hypertarget{future-work}{%
 \subsubsection{Future Work}\label{future-work}}
@@ -1153,6 +1070,11 @@ the simulation. There may also be value in providing the stylized fact
 functions as exposed user functions that could be called on an observed
 set of transactions without doing any simulation, just for descriptive
 purposes.
+
+Another interesting direction of research with txnsim would be
+simulating multivariate time series' with capital constraints, adding
+insights to the optimality of indexes and passive funds when determining
+constituent weightings.
 
 \hypertarget{conclusion}{%
 \subsubsection{Conclusion}\label{conclusion}}
@@ -1206,6 +1128,8 @@ Harvey, Campbell R., and Yan Liu. 2015. ``Backtesting.'' SSRN.
 
 Peterson, Brian G. 2017. ``Developing \& Backtesting Systematic Trading
 Strategies.'' \url{http://goo.gl/na4u5d}
+
+\bibliography{RJreferences}
 
 
 \address{%
