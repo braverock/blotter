@@ -229,6 +229,10 @@ txnsim <- function(Portfolio,
       maxshortpos <- min(pt$Max.Pos) # maxshortpos implies maximum absolute short position
     }
     
+    cum_txn_qty <- cumsum(getTxns(Portfolio, symbols[i])$Txn.Qty)
+    startdiff <- merge(cum_txn_qty[-1], diff(index(cum_txn_qty)), diff(cum_txn_qty)[-1])
+    colnames(startdiff) <- c("cumsum_qty", "days_diff", "lag_cumsum_qty")
+    
     # Get duration difference between long start times and short start times
     # We will sample from these when building our replicate layers, however we should
     # only sample from differences in the same flat.to.flat continuous layer of
@@ -245,9 +249,9 @@ txnsim <- function(Portfolio,
       # longstartdiff <- longstartdiff[-which(longstartdiff == 0)] # get rid of zero period durations, dont want to sample those as they will break things downstream
       
       # new attempt at longstartdiff
-      cum_txn_qty <- cumsum(getTxns(Portfolio, symbols[i])$Txn.Qty)
-      startdiff <- merge(cum_txn_qty[-1], diff(index(cum_txn_qty)), diff(cum_txn_qty)[-1])
-      colnames(startdiff) <- c("cumsum_qty", "days_diff", "lag_cumsum_qty")
+      # cum_txn_qty <- cumsum(getTxns(Portfolio, symbols[i])$Txn.Qty)
+      # startdiff <- merge(cum_txn_qty[-1], diff(index(cum_txn_qty)), diff(cum_txn_qty)[-1])
+      # colnames(startdiff) <- c("cumsum_qty", "days_diff", "lag_cumsum_qty")
       # TODO: implement rem_lidx more neatly
       rem_lidx <- which(startdiff$cumsum_qty == 0 | lag(startdiff$cumsum_qty) == 0 | 
                           startdiff$cumsum_qty < 0 | startdiff$cumsum_qty == startdiff$lag_cumsum_qty | 
@@ -663,7 +667,7 @@ txnsim <- function(Portfolio,
         
         # cumsum sequential longs on firstlayer
         # browser()
-        if(targetlongrow > 0){ # ie. there are long trades in the strategy
+        # if(targetlongrow > 0){ # ie. there are long trades in the strategy
           tmp_tdf$lqty <- tmp_tdf$quantity
           tmp_tdf$lqty[which(tmp_tdf$quantity < 0)] <- 0
           tmp_tdf$ltrade <- 0
@@ -681,10 +685,10 @@ txnsim <- function(Portfolio,
           # }
           # tmp_tdf$lcumsum[lfirstindex[length(lfirstindex)]] <- sum(tmp_tdf$lqty[lfirstindex[cs+1]:last(lindex)])
           tmp_tdf$lcumsum <- tmp_tdf$lqty
-        }
+        # }
         
         # cumsum sequential shorts on firstlayer
-        if(targetshortrow > 0){ #ie. there are short trades in the strategy
+        # if(targetshortrow > 0){ #ie. there are short trades in the strategy
           tmp_tdf$sqty <- tmp_tdf$quantity
           tmp_tdf$sqty[which(tmp_tdf$quantity > 0)] <- 0
           tmp_tdf$strade <- 0
@@ -702,7 +706,7 @@ txnsim <- function(Portfolio,
           # }
           # tmp_tdf$scumsum[sfirstindex[length(sfirstindex)]] <- sum(tmp_tdf$sqty[sfirstindex[cs+1]:last(sindex)])
           tmp_tdf$scumsum <- tmp_tdf$sqty
-        }
+        # }
         
         cumlongdur <- sum(tmp_tdf$duration[which(tmp_tdf$quantity > 0)])
         cumshortdur <- sum(tmp_tdf$duration[which(tmp_tdf$quantity < 0)])
