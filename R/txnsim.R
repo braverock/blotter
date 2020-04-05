@@ -193,10 +193,10 @@ txnsim <- function(Portfolio,
   # befor doing anything inside the function which would affect the state,
   # store the current random seed for later replication, if needed
   seed <- .GlobalEnv$.Random.seed
-
+  
   # use the first tradeDef
   tradeDef <- tradeDef[1]
-
+  
   # First get strategy start dates, duration and quantity
   # get portfolio, account and symbols objects
   p <- getPortfolio(Portfolio)
@@ -204,20 +204,20 @@ txnsim <- function(Portfolio,
   initDate <- attr(p, "initDate")
   currency <- attr(p, "currency")
   initEq   <- attr(p, "initEq")
-
-
+  
+  
   txnstruct <- function(i) {
     pt <- perTradeStats(Portfolio, symbols[i], tradeDef = tradeDef, includeFlatPeriods = TRUE)
-
+    
     nonflat <- which(pt$Init.Qty!=0)
-
+    
     # get duration of non-flat periods
     tradeduration <- sum(pt$duration[nonflat])
-
+    
     # get duration and standard deviation of flat periods
     zeroduration  <- sum(pt$duration[-nonflat])
     zerostddev    <- sd(pt$duration[-nonflat])
-
+    
     # calendar duration of the entire strategy
     stratduration <- difftime(last(pt$End[nonflat]), pt$Start[1], units = "secs")
     
@@ -228,12 +228,60 @@ txnsim <- function(Portfolio,
     if(any(pt$Max.Pos < 0) == TRUE){
       maxshortpos <- min(pt$Max.Pos) # maxshortpos implies maximum absolute short position
     }
-
+    
+    cum_txn_qty <- cumsum(getTxns(Portfolio, symbols[i])$Txn.Qty)
+    startdiff <- merge(cum_txn_qty[-1], diff(index(cum_txn_qty)), diff(cum_txn_qty)[-1])
+    colnames(startdiff) <- c("cumsum_qty", "days_diff", "lag_cumsum_qty")
+    
+    # Get duration difference between long start times and short start times
+    # We will sample from these when building our replicate layers, however we should
+    # only sample from differences in the same flat.to.flat continuous layer of
+    # long or short positions.
+    if(any(pt$Init.Qty > 0) == TRUE){
+      # longstartdiff <- diff(pt$Start[-which(pt$Init.Qty == 0)])
+      # tmp.pt.Init.Qty <- pt$Init.Qty[-which(pt$Init.Qty == 0)]
+      # signlag <- c(tmp.pt.Init.Qty[-1], 0)
+      # idx <- sign(signlag * tmp.pt.Init.Qty)
+      # idx <- ifelse(tmp.pt.Init.Qty < 0, -1, idx)
+      # # cbind(longstartdiff/86400, tmp.pt.Init.Qty, signlag, idx) # inspect for debugging
+      # idx <- which(idx > 0)
+      # longstartdiff <- longstartdiff[idx]
+      # longstartdiff <- longstartdiff[-which(longstartdiff == 0)] # get rid of zero period durations, dont want to sample those as they will break things downstream
+      
+      # new attempt at longstartdiff
+      # cum_txn_qty <- cumsum(getTxns(Portfolio, symbols[i])$Txn.Qty)
+      # startdiff <- merge(cum_txn_qty[-1], diff(index(cum_txn_qty)), diff(cum_txn_qty)[-1])
+      # colnames(startdiff) <- c("cumsum_qty", "days_diff", "lag_cumsum_qty")
+      # TODO: implement rem_lidx more neatly
+      rem_lidx <- which(startdiff$cumsum_qty == 0 | lag(startdiff$cumsum_qty) == 0 | 
+                          startdiff$cumsum_qty < 0 | startdiff$cumsum_qty == startdiff$lag_cumsum_qty | 
+                          startdiff$lag_cumsum_qty < 0) # rem_lidx means "remove long index"
+      longstartdiff <- coredata(startdiff$days_diff[-rem_lidx])
+      
+    }
+    if(any(pt$Init.Qty < 0) == TRUE){
+      # shortstartdiff <- diff(pt$Start[-which(pt$Init.Qty == 0)])
+      # tmp.pt.Init.Qty <- pt$Init.Qty[-which(pt$Init.Qty == 0)]
+      # signlag <- c(tmp.pt.Init.Qty[-1], 0)
+      # idx <- sign(signlag * tmp.pt.Init.Qty)
+      # idx <- ifelse(tmp.pt.Init.Qty > 0, -1, idx)
+      # # cbind(shortstartdiff/86400, tmp.pt.Init.Qty, signlag, idx) # inspect for debugging
+      # idx <- which(idx > 0)
+      # shortstartdiff <- shortstartdiff[idx]
+      # shortstartdiff <- shortstartdiff[-which(shortstartdiff == 0)] # get rid of zero period durations, dont want to sample those as they will break things downstream
+      
+      # TODO: implement rem_sidx more neatly
+      rem_sidx <- which(startdiff$cumsum_qty == 0 | lag(startdiff$cumsum_qty) == 0 | 
+                          startdiff$cumsum_qty > 0 | startdiff$cumsum_qty == startdiff$lag_cumsum_qty | 
+                          startdiff$lag_cumsum_qty > 0) # rem_lidx means "remove long index"
+      shortstartdiff <- coredata(startdiff$days_diff[-rem_sidx])
+    }
+    
     # build dataframe of start dates and durations
     txnsimdf <- data.frame(start    = pt$Start,
                            duration = pt$duration,
                            quantity = pt$Init.Qty)
-
+    
     attr(txnsimdf,"calendar.duration") <- stratduration
     attr(txnsimdf,"trade.duration")    <- tradeduration
     attr(txnsimdf,"flat.duration")     <- zeroduration
@@ -245,24 +293,29 @@ txnsim <- function(Portfolio,
     shortcheck <- try(missing(maxshortpos), silent = TRUE)
     if (class(longcheck) != "try-error") attr(txnsimdf,"maxlongpos") <- maxlongpos
     if (class(shortcheck) != "try-error") attr(txnsimdf,"maxshortpos") <- maxshortpos
-
+    
+    longcheck <- try(missing(maxlongpos), silent = TRUE)
+    shortcheck <- try(missing(maxshortpos), silent = TRUE)
+    if (class(longcheck) != "try-error") attr(txnsimdf,"longstartdiff") <- longstartdiff
+    if (class(shortcheck) != "try-error") attr(txnsimdf,"shortstartdiff") <- shortstartdiff
+    
     txnsimdf
   }
-
+  
   # create a list of perTradeStats outputs per symbol
   backtest.trades <- lapply(1:length(symbols), txnstruct)
   names(backtest.trades) <- symbols
-
+  
   ################################################################
   # common utility functions
-
+  
   # no replacement functions are common to all tradeDef methods
-
+  
   # index expression for the replicate call, without replacement
   idxexpr.nr <- function(i, ...) {
     sample(nrow(backtest.trades[[i]]))
   }
-
+  
   # inner function to build the replicate df
   repsgen.nr <- function(j, i, idx) {
     # build a vector of start times
@@ -276,26 +329,26 @@ txnsim <- function(Portfolio,
                     duration = backtest.trades[[i]]$duration[idx[[j]]],
                     quantity = backtest.trades[[i]]$quantity[idx[[j]]])
   } # end inner lapply function
-
+  
   # outer function over the symbols
   symsample.nr <- function(i) {
     idx <- replicate(n, idxexpr.nr(i), simplify = FALSE)
     symreps <- lapply(1:length(idx), repsgen.nr, i, idx)
   }
-
+  
   ################################################################
   ################################################################
-
+  
   if (tradeDef == "flat.to.flat") {
     ### first set up functions for the lapply
     ## with replacement fns are different between flat.to.flat and other methods
-
+    
     # index expression for the replicate call, with replacement
     idxexpr.wr <- function(i) {
       fudgefactor <- 1.1 # fudgefactor is added to size for sampling
       targetdur   <- sum(backtest.trades[[i]]$duration)
       avgdur      <- as.numeric(mean(backtest.trades[[i]]$duration))
-
+      
       dur <- 0 # initialize duration counter
       tdf <- data.frame() #initialize output data.frame
       nsamples <- round(nrow(backtest.trades[[i]]) * fudgefactor, 0)
@@ -316,7 +369,7 @@ txnsim <- function(Portfolio,
         dur
       }
       # could truncate data frame here to correct total duration
-
+      
       # the row which takes our duration over the target
       xsrow <- last(which(cumsum(as.numeric(tdf$duration)) < (targetdur))) + 1
       if (xsrow == nrow(tdf)) {
@@ -343,12 +396,12 @@ txnsim <- function(Portfolio,
       #return the data frame
       tdf
     } # end idexpr.wr
-
+    
     # outer function over the symbols
     symsample.wr <- function(i) {
       symreps <- replicate(n, idxexpr.wr(i), simplify = FALSE)
     }
-
+    
     # now create the replication series
     if (isTRUE(replacement)) {
       reps <- lapply(1:length(symbols), symsample.wr)
@@ -356,24 +409,24 @@ txnsim <- function(Portfolio,
       reps <- lapply(1:length(symbols), symsample.nr)
     }
     names(reps) <- symbols
-
+    
   } # end flat.to.flat
-
+  
   if (tradeDef == "flat.to.reduced" |
       tradeDef == "increased.to.reduced") {
     ### first set up functions for the lapply
     ## with replacement fns are different to other methods
-
+    
     # sample and layer trades, with replacement
     tradesample <- function(trades, replacement=TRUE) {
-
+      
       # fudgefactor is added to size for sampling
       if (isTRUE(replacement)){
         fudgefactor <- 1.1 # fudgefactor is added to size for sampling
       } else {
         fudgefactor <- 1 # no factor needed
       }
-
+      
       # stylized facts
       calendardur <- attr(trades, 'calendar.duration')
       totaldur    <- sum(trades$duration)
@@ -392,10 +445,17 @@ txnsim <- function(Portfolio,
       if(!is.null(attr(trades, 'maxshortpos'))){
         maxshortpos <- attr(trades, 'maxshortpos')
       }
-
+      if(!is.null(attr(trades, 'maxlongpos'))){
+        longstartdiff <- attr(trades, 'longstartdiff')
+      }
+      if(!is.null(attr(trades, 'maxshortpos'))){
+        shortstartdiff <- attr(trades, 'shortstartdiff')
+      }
+      
+      
       subsample <- function(svector, targetdur, replacement=TRUE) {
         #`trades` already exists in function scope
-
+        
         dur <- 0 # initialize duration counter
         tdf <- data.frame() #initialize output data.frame
         nsamples <- round(length(svector) * fudgefactor, 0)
@@ -428,10 +488,10 @@ txnsim <- function(Portfolio,
           adjxsrow <- sum(tdf$duration) - targetdur
           tdf$duration[xsrow] <- tdf$duration[xsrow] - adjxsrow
         }
-
+        
         tdf  # return target data frame
       } # end subsample
-
+      
       #sample long, short, flat periods
       if(flatdur > 0){
         flatdf  <- subsample(svector = flatrows, targetdur = flatdur)
@@ -445,9 +505,9 @@ txnsim <- function(Portfolio,
       }
       if(shortdur > 0){ # ie. there are short round turn trades in the strategy
         shortdf <- subsample(svector = shortrows, targetdur = shortdur)
-        } else {
-          shortdf <- NULL
-        }
+      } else {
+        shortdf <- NULL
+      }
       #browser()
       # make the first layer
       # 1. start with flat periods
@@ -469,9 +529,9 @@ txnsim <- function(Portfolio,
       }
       firstlayer    <- firstlayer[sample(nrow(firstlayer),replace=FALSE),]
       # firstlayer should be just slightly longer than calendardur, we'll truncate later
-
+      
       tdf <- firstlayer # establish target data.frame
-
+      
       # build a vector of start times
       start <- first(trades$start) + cumsum(as.numeric(tdf$duration))
       # add the first start time back in
@@ -482,36 +542,39 @@ txnsim <- function(Portfolio,
       tdf$start <- start
       # rearrange columns for consistency
       tdf <- tdf[, c("start", "duration", "quantity")]
-
+      
       ###########
       # now build the extra layers
       # further layers need to respect flat periods, and long/short.
       # they can 'overlap' existing round turns, even sequential shorter round turns
       # in many cases the layer one simulated portfolios may put multiple
       # trades on in sequence, without intervening flat periods
-
-      # how many layers do we need?
+      
+      # in a previous version we looped according to the number of overlaps (num_overlaps),
+      # but in this version, we will loop until our target duration is met, and we will use
+      # num_overlaps purely to ascertain if layering is required
+      # once we determine layering is required, we will separately determine whether long &/or
+      # short layering is required
       num_overlaps <- ceiling(as.numeric(totaldur)/as.numeric(calendardur))
-
+      
       if(num_overlaps>1){ # ie. total duration > calendar duration
-
         ###
         # construct a temporary frame of the first layer for reference
         # the rows are the round turns, not a full time series of transactions
         # construct the cumulative position
-        tmpdf <- tdf
+        # tmpdf <- tdf
         # construct a vector of end times:
-        tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
-        tmpdf$lsi <- ifelse(tmpdf$quantity>0, 1, ifelse(tmpdf$quantity<0,-1,0))
+        # tmpdf$end <- first(trades$start) + cumsum(as.numeric(tmpdf$duration))
+        # tmpdf$lsi <- ifelse(tmpdf$quantity>0, 1, ifelse(tmpdf$quantity<0,-1,0))
         # split remaining longs and shorts by num_overlaps -1  ?
-
+        
         # construct series of random starts
         period <- attr(trades,'period')
         timeseq <- seq.POSIXt( from = attr(trades,"first.start")
                                , to = period$end
                                , by = period$units
         )
-
+        
         # get the range and number of rows remaining of long and short trades
         if(targetshortrow != 0 && targetshortrow < nrow(shortdf)){ # ie. there are short round turn trades in the strategy
           shortrange <- (targetshortrow+1):nrow(shortdf)
@@ -529,22 +592,12 @@ txnsim <- function(Portfolio,
           nlong <- 0
         }
         # nlong      <- length(longrange)
-
-        # construct randomized target starting timestamps for long and short
-        # trades for each layer after the first layer
-        timesample <- function(timeseq, num_overlaps, nsample) {
+        
+        timesample <- function(timeseq, n, nsample) {
           x <- NULL
-          for(n in 2:num_overlaps) {
-            if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nsample, replace = FALSE))
-            else x<-cbind(x,data.frame(sample(x = timeseq, size = nsample, replace = FALSE)))
-          }
-          colnames(x) <- 2:num_overlaps
+          if(is.null(x)) x<-data.frame(sample(x = timeseq, size = nsample, replace = FALSE))
           x
         }
-
-        ln.samples <- timesample(timeseq,num_overlaps,nsample=nlong)
-        sh.samples <- timesample(timeseq,num_overlaps,nsample=nshort)
-        # browser()
         layerdfs<-list()
         li <- longrange[1]
         si <- shortrange[1]
@@ -608,190 +661,362 @@ txnsim <- function(Portfolio,
         # - we only add to the layer if doing so does not take our cumsum over the maxpos observed in the original strategy
         
         tmp_tdf <- tdf # set up a temp dataframe based on tdf
+        tmp_tdf$last.layered.start <- tmp_tdf$start # add sampled int (from long[short]startdiff) to this timestamp to determine start of next layered trade
+        tmp_tdf$last.layered.end <- tmp_tdf$last.layered.start + as.numeric(tmp_tdf$duration)
+        tmp_tdf$num_layers <- 1
         
         # cumsum sequential longs on firstlayer
-        if(targetlongrow > 0){ # ie. there are long trades in the strategy
+        # browser()
+        # if(targetlongrow > 0){ # ie. there are long trades in the strategy
           tmp_tdf$lqty <- tmp_tdf$quantity
           tmp_tdf$lqty[which(tmp_tdf$quantity < 0)] <- 0
           tmp_tdf$ltrade <- 0
           tmp_tdf$ltrade[-1] <- ifelse(diff(cumsum(tmp_tdf$lqty)) > 0, tmp_tdf$ltrade[-1] <- 1, 0)
           if(tmp_tdf$lqty[1] > 0) tmp_tdf$ltrade[1] <- 1 else tmp_tdf$ltrade[1] <- 0
-          tmp_tdf$f.ltrade <- 0
-          tmp_tdf$f.ltrade[-1] <- ifelse(diff(tmp_tdf$ltrade) > 0, tmp_tdf$f.ltrade[-1] <- 1, 0)
-          if(tmp_tdf$ltrade[1] == 1) tmp_tdf$f.ltrade[1] <- 1 else tmp_tdf$f.ltrade[1] <- 0
+          # tmp_tdf$f.ltrade <- 0
+          # tmp_tdf$f.ltrade[-1] <- ifelse(diff(tmp_tdf$ltrade) > 0, tmp_tdf$f.ltrade[-1] <- 1, 0)
+          # if(tmp_tdf$ltrade[1] == 1) tmp_tdf$f.ltrade[1] <- 1 else tmp_tdf$f.ltrade[1] <- 0
           tmp_tdf$lcumsum <- 0 # tmp_tdf$cumsum for monitoring the cumsum of layered quantity
-          lfirstindex <- which(tmp_tdf$f.ltrade == 1) # index of the first long trade in the sequence
-          lindex <- which(tmp_tdf$ltrade == 1) # index of all long trades
-          interval <- findInterval(lindex,lfirstindex) # count of all duplicates equates to long trades in sequence
-          for(cs in 1:(length(lfirstindex)-1)){
-            tmp_tdf$lcumsum[lfirstindex[cs]] <- sum(tmp_tdf$lqty[lfirstindex[cs]:lindex[(first(which(interval > cs))-1)]])
-          }
-          tmp_tdf$lcumsum[lfirstindex[length(lfirstindex)]] <- sum(tmp_tdf$lqty[lfirstindex[cs+1]:last(lindex)])
-        }
+          # lfirstindex <- which(tmp_tdf$f.ltrade == 1) # index of the first long trade in the sequence
+          # lindex <- which(tmp_tdf$ltrade == 1) # index of all long trades
+          # interval <- findInterval(lindex,lfirstindex) # count of all duplicates equates to long trades in sequence
+          # for(cs in 1:(length(lfirstindex)-1)){
+          #   tmp_tdf$lcumsum[lfirstindex[cs]] <- sum(tmp_tdf$lqty[lfirstindex[cs]:lindex[(first(which(interval > cs))-1)]])
+          # }
+          # tmp_tdf$lcumsum[lfirstindex[length(lfirstindex)]] <- sum(tmp_tdf$lqty[lfirstindex[cs+1]:last(lindex)])
+          tmp_tdf$lcumsum <- tmp_tdf$lqty
+        # }
         
         # cumsum sequential shorts on firstlayer
-        if(targetshortrow > 0){ #ie. there are short trades in the strategy
+        # if(targetshortrow > 0){ #ie. there are short trades in the strategy
           tmp_tdf$sqty <- tmp_tdf$quantity
           tmp_tdf$sqty[which(tmp_tdf$quantity > 0)] <- 0
           tmp_tdf$strade <- 0
           tmp_tdf$strade[-1] <- ifelse(diff(cumsum(tmp_tdf$sqty)) < 0, tmp_tdf$strade[-1] <- 1, 0)
           if(tmp_tdf$sqty[1] < 0) tmp_tdf$strade[1] <- 1 else tmp_tdf$strade[1] <- 0
-          tmp_tdf$f.strade <- 0
-          tmp_tdf$f.strade[-1] <- ifelse(diff(tmp_tdf$strade) > 0, tmp_tdf$f.strade[-1] <- 1, 0)
-          if(tmp_tdf$strade[1] == 1) tmp_tdf$f.strade[1] <- 1 else tmp_tdf$f.strade[1] <- 0
+          # tmp_tdf$f.strade <- 0
+          # tmp_tdf$f.strade[-1] <- ifelse(diff(tmp_tdf$strade) > 0, tmp_tdf$f.strade[-1] <- 1, 0)
+          # if(tmp_tdf$strade[1] == 1) tmp_tdf$f.strade[1] <- 1 else tmp_tdf$f.strade[1] <- 0
           tmp_tdf$scumsum <- 0 # tmp_tdf$cumsum for monitoring the cumsum of layered quantity
-          sfirstindex <- which(tmp_tdf$f.strade == 1) # index of the first short trade in the sequence
-          sindex <- which(tmp_tdf$strade == 1) # index of all short trades
-          interval <- findInterval(sindex,sfirstindex) # count of all duplicates equates to short trades in sequence
-          for(cs in 1:(length(sfirstindex)-1)){
-            tmp_tdf$scumsum[sfirstindex[cs]] <- sum(tmp_tdf$sqty[sfirstindex[cs]:sindex[(first(which(interval > cs))-1)]])
-          }
-          tmp_tdf$scumsum[sfirstindex[length(sfirstindex)]] <- sum(tmp_tdf$sqty[sfirstindex[cs+1]:last(sindex)])
-        }
+          # sfirstindex <- which(tmp_tdf$f.strade == 1) # index of the first short trade in the sequence
+          # sindex <- which(tmp_tdf$strade == 1) # index of all short trades
+          # interval <- findInterval(sindex,sfirstindex) # count of all duplicates equates to short trades in sequence
+          # for(cs in 1:(length(sfirstindex)-1)){
+          #   tmp_tdf$scumsum[sfirstindex[cs]] <- sum(tmp_tdf$sqty[sfirstindex[cs]:sindex[(first(which(interval > cs))-1)]])
+          # }
+          # tmp_tdf$scumsum[sfirstindex[length(sfirstindex)]] <- sum(tmp_tdf$sqty[sfirstindex[cs+1]:last(sindex)])
+          tmp_tdf$scumsum <- tmp_tdf$sqty
+        # }
         
-        # now loop over the layers and construct a target data frame for each
-        for(laynum in names(ln.samples)){
-          ln.ts <- ln.samples[[laynum]]
-          sh.ts <- sh.samples[[laynum]]
+        cumlongdur <- sum(tmp_tdf$duration[which(tmp_tdf$quantity > 0)])
+        cumshortdur <- sum(tmp_tdf$duration[which(tmp_tdf$quantity < 0)])
+        wlc2 <- 0
+        # Use a while loop to build layers until total duration matches x% of target
+        # Longs while loop
+        layer.trades <- NULL
+        while(cumlongdur < (1 * longdur) && wlc2 <= 1000){
+          li <- sample(longrange, 1) # sample another row from longrange for layering
+          wlc2 <- wlc2 + 1
+          newlayerbuffer <- sample(longstartdiff*86400,1) # longstartdiff is in days, and we need unit in secs
+          newlayerqty <- longdf[li,'quantity']
+          # sample from the last layered start timestamps, upon which we will add a new layer if maxpos 
+          # does not constrain us. call it prevlayer.tn for "previous layer transaction" which it soon will be
+          prevlayer.tn <- sample(tmp_tdf$last.layered.start[which(tmp_tdf$lqty > 0)], 1) # keep lqty zero for layered longs, instead put the qty in "qty"
+          prevlayer.idx <- last(which(tmp_tdf$last.layered.start == prevlayer.tn)) # use last as we may have more than 1 layers starting on last.layered.start date, so we pick last observation to add next layer to
+          newlayerstart <- prevlayer.tn + newlayerbuffer # start timestamp of new layer
           
-          layer.trades <- NULL
+          if(newlayerstart >= tmp_tdf$last.layered.end[prevlayer.idx]) { # new layer start is after our previous layer ends...go back and sample another layer start date
+            next()
+          }
           
-          # loop over the long/short timestamps
-          if(length(ln.ts) != 0) { # ie. there are long round turn trades, proceed
-            # tmp_tdf <- tdf # set up a temp dataframe based on tdf
-            # tmp_tdf$cumsum <- 0 # tmp_tdf_cumsum for monitoring the cumsum of layered quantity
-            for(lts in 1:length(ln.ts)){
-              if(li>max(longrange)) break() # no more trades to process
-              test.ts <- ln.ts[lts]
-              # if(test.ts == "2009-11-14 02:00:00"){
-              #   browser()
-              # }
-              # get the closest trade from the first layer
-              flayer.tn <- last(which(tdf$start<=test.ts))
-              flayer.trade <- tdf[flayer.tn,]
-              # if(flayer.trade$start == "2013-10-29 02:00:00"){
-              #   browser()
-              # }
-              if(flayer.trade$quantity>0){ # we are going to layer
-                targetend <- test.ts + flayer.trade$duration
-                ftend <- flayer.trade$start + flayer.trade$duration
-                wlc <- 1 # while loop counter
-                while(targetend >= ftend){
-                  # we've gone over the duration, check the next trade
-                  # if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']>0){
-                  if (!is.na(tdf[flayer.tn+wlc,'quantity']) && tdf[flayer.tn+wlc,'quantity']>0){
-                    # ftend <- ftend + tdf[flayer.tn+1,'duration']
-                    ftend <- ftend + tdf[flayer.tn+wlc,'duration']
-                    if(targetend < ftend){
-                      break() # we're good, move on
-                    } else {
-                      wlc <- wlc +1 # we're still over the duration, check the next trade
-                    }
-                  } else {
-                    # truncate duration here
-                    longdf[li,'duration']<-difftime(ftend, test.ts, units = "secs")
-                    # break the while loop
+          flayer.trade <- tdf[last(which(tdf$start<=newlayerstart)),] # the first layer trade start timestamp, sourced from the 'tdf' dataframe
+          newlayerend <- newlayerstart + longdf[li,'duration']
+          new_ftend <- tmp_tdf$last.layered.start[prevlayer.idx] + difftime(tmp_tdf$last.layered.end[prevlayer.idx], tmp_tdf$last.layered.start[prevlayer.idx], units = "secs") # first layer target end; we cannot overlap this end timestamp
+          txnlongdur <- longdf[li,'duration']
+          wlc <- 0 # initialize while loop counter
+          
+          # Next we use a bool "insertnew" variable to indicate whether or not we need to insert a new observation into tmp_tdf or we can use the 
+          # existing observation to update cumsum quantity. Any layered trades extending beyond our furthest possible point for the firstlayer
+          # trade, will not need a new row. Instead, we will increment the cumsum qty of the current row, as the current row and the layered trade
+          # share the same end date (after truncation). However, if the layered does not extend beyong the prior layering trade end date, we insert
+          # a new row, and track the cumsum of this row separately...including the quantity from the prior layer, only up until the end date of the
+          # new row, which ends before the end date of the prior layering trade.
+          
+          insertnew <- TRUE
+          if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
+            # browser()
+            while(newlayerend >= new_ftend){ # # we've gone over the duration, check the next trade
+              wlc <- wlc + 1
+              # check if next trade is also a long, if not then we truncate
+              if (!is.na(tmp_tdf[prevlayer.idx+wlc,'quantity']) && tmp_tdf[prevlayer.idx+wlc,'quantity']>0){
+                # check if next trade will take us over our max pos, if not then extend previous layer end date
+                if (tmp_tdf$lcumsum[prevlayer.idx+wlc] + newlayerqty <= maxlongpos) { # TODO: potentially check how much qty we can trade before breaching max pos
+                  new_ftend <- new_ftend + tmp_tdf[prevlayer.idx+wlc,'duration'] # extend previous layer end date
+                  # check if new layer end date is before prior layer end date, if so then use full sampled duration as the duration of the new trade 
+                  if(newlayerend < new_ftend){
+                    txnlongdur <- longdf[li,'duration']
+                    insertnew <- TRUE # we will insert a new row, and increment cumsum qty with this new observation
+                    break() # we're good, move on to adding the new row
+                    } # we're still over the duration, check the next trade by proceeding to next increment in While loop
+                  
+                  } else { # TODO: potentially check what duration we can trade before breaching max pos with newlayerqty
+                    txnlongdur <- difftime(new_ftend, newlayerstart, units = "secs")
+                    insertnew <- FALSE # we wont insert new row
+                    tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                    tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
+                    tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
+                    
+                    if(is.null(layer.trades)) {
+                      layer.trades <- data.frame(start=newlayerstart,
+                                                 duration = txnlongdur,
+                                                 quantity = longdf[li,'quantity'])
+                      } else {
+                        layer.trades <- rbind(layer.trades,
+                                              data.frame(start=newlayerstart,
+                                                         duration = txnlongdur,
+                                                         quantity = longdf[li,'quantity']))
+                      }
+                    li <- sample(longrange, 1) # sample another row from longrange for layering
                     break()
                   }
-                }
-                # now we can build the target trade
-                # but first check to make sure the new layered trade will not take our quantity
-                # above the maximum observed in the original strategy. If it does, do nothing. If it does
-                # take us over, build the trade.
-                idx <- last(which(tmp_tdf$start<=test.ts & tmp_tdf$f.ltrade == 1))
-                if(length(idx) == 0){ # idx is "an argument of length zero"
-                  idx <- flayer.tn # set idx = flayer.tn so we have a valid value with which to subset
-                }
-                if ((tmp_tdf$lcumsum[idx] + longdf[li,'quantity']) <= maxlongpos){ # build target trade
-                  if(is.null(layer.trades)){
-                    layer.trades <- data.frame(start=test.ts,
-                                               duration = longdf[li,'duration'],
-                                               quantity = longdf[li,'quantity']
-                    )
-                  } else {
-                    layer.trades <- rbind(layer.trades,
-                                          data.frame(start=test.ts,
-                                                     duration = longdf[li,'duration'],
-                                                     quantity = longdf[li,'quantity']
-                                          )
-                    )
-                  }
-                  tmp_tdf$lcumsum[idx] <- tmp_tdf$lcumsum[idx] + longdf[li,'quantity'] # add new layered quantity for comparison to maxlongpos in next applicable loop, if any
-                  li<-li+1 #increment long index
-                }
-              } else next() #next may be unecessary if we can avoid more code after this point in longs loop
-            }
-          }# end long layering
-          #repeat a similar approach for shorts
-          if(length(sh.ts) != 0) { # ie. there are short round turn trades, proceed
-            for(sts in 1:length(sh.ts)){
-              if(si>max(shortrange)) break() # no more trades to process
-              test.ts <- sh.ts[sts]
-              # get the closest trade from the first layer
-              flayer.tn <- last(which(tdf$start<=test.ts))
-              flayer.trade <- tdf[flayer.tn,]
-              if(flayer.trade$quantity<0){
-                targetend <- test.ts + flayer.trade$duration
-                ftend <- flayer.trade$start + flayer.trade$duration
-                wlc <- 1 # while loop counter
-                while(targetend >= ftend){
-                  # we've gone over the duration, check the next trade
-                  # if (!is.na(tdf[flayer.tn+1,'quantity']) && tdf[flayer.tn+1,'quantity']<0){
-                  if (!is.na(tdf[flayer.tn+wlc,'quantity']) && tdf[flayer.tn+wlc,'quantity']<0){
-                    # ftend <- ftend + tdf[flayer.tn+1,'duration']
-                    ftend <- ftend + tdf[flayer.tn+wlc,'duration']
-                    if(targetend < ftend){
-                      break() # we're good, move on
+                
+                } else { # the next trade is not a long, so we truncate 'txnlongdur' if there is no maxpos violation
+                  
+                  txnlongdur <- difftime(new_ftend, newlayerstart, units = "secs")
+                  insertnew <- FALSE # we wont insert new row
+                  tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                  tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
+                  tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
+                  
+                  if(is.null(layer.trades)) {
+                    layer.trades <- data.frame(start=newlayerstart,
+                                               duration = txnlongdur,
+                                               quantity = longdf[li,'quantity'])
                     } else {
-                      wlc <- wlc +1 # we're still over the duration, check the next trade
+                      layer.trades <- rbind(layer.trades,
+                                            data.frame(start=newlayerstart,
+                                                       duration = txnlongdur,
+                                                       quantity = longdf[li,'quantity']))
                     }
-                  } else {
-                    # truncate duration here
-                    shortdf[si,'duration']<-difftime(ftend, test.ts, units = "secs")
-                    # break the while loop
-                    break()
-                  }
+                  
+                  li <- sample(longrange, 1) # sample another row from longrange for layering
+                  break()
+                  
                 }
-                # now we can build the target trade
-                # but first check to make sure the new layered trade will not take our quantity
-                # above the maximum observed in the original strategy. If it does, do nothing. If it does
-                # take us over, build the trade.
-                idx <- last(which(tmp_tdf$start<=test.ts & tmp_tdf$f.strade == 1))
-                if(length(idx) == 0){ # idx is "an argument of length zero"
-                  idx <- flayer.tn # set idx = flayer.tn so we have a valid value with which to subset
-                }
-                if ((tmp_tdf$scumsum[idx] + shortdf[si,'quantity']) >= maxshortpos){ # build target trade
-                  if(is.null(layer.trades)){
-                    layer.trades <- data.frame(start=test.ts,
-                                               duration = shortdf[si,'duration'],
-                                               quantity = shortdf[si,'quantity']
-                    )
+            }
+          }
+            
+            # newlayerend is before the end of our first layer end timestamp, so we need to add this new layer to the first
+            # layer, truncate the first layer where the new layer ends, and create a new separate first layer trade with the
+            # balance
+            if(insertnew == TRUE){ # insertnew is NULL meaning we need to insert a new row since newlayerend is < ftend
+              if(tmp_tdf$lcumsum[prevlayer.idx] + newlayerqty <= maxlongpos) {
+                newrow <- as.data.frame(t(rep.int(0,12)))
+                colnames(newrow) <- c("start","duration","quantity","last.layered.start","last.layered.end","num_layers","lqty","ltrade","lcumsum","sqty","strade","scumsum")
+                newrow$start <- newlayerend
+                newrow$duration <- difftime(new_ftend, newlayerend, units = "secs")
+                newrow$quantity <- tmp_tdf$lcumsum[prevlayer.idx+wlc]
+                newrow$last.layered.start <- newlayerend
+                newrow$last.layered.end <- new_ftend
+                newrow$num_layers <- 1
+                newrow$lqty <- tmp_tdf$lcumsum[prevlayer.idx+wlc]
+                newrow$ltrade <- 1
+                # newrow$f.ltrade <- 0
+                newrow$lcumsum <- tmp_tdf$lcumsum[prevlayer.idx+wlc]
+                newrow$sqty <- 0
+                newrow$strade <- 0
+                # newrow$f.strade <- 0
+                newrow$scumsum <- 0
+  
+                tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                tmp_tdf$last.layered.end[prevlayer.idx+wlc] <- newlayerend
+                tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc)] + 1  # increment num_layers, mostly for debugging
+                tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc)] <- tmp_tdf$lcumsum[prevlayer.idx:(prevlayer.idx+wlc)] + newlayerqty
+                tmp_tdf$duration[prevlayer.idx:(prevlayer.idx+wlc)] <- difftime(tmp_tdf$last.layered.end[prevlayer.idx:(prevlayer.idx+wlc)],tmp_tdf$start[prevlayer.idx:(prevlayer.idx+wlc)], units = "secs")
+  
+                tmp_tdf <- rbind(tmp_tdf, newrow)
+                tmp_tdf <- tmp_tdf[order(tmp_tdf$start),]
+                
+                if(is.null(layer.trades)){
+                  layer.trades <- data.frame(start=newlayerstart,
+                                               duration = txnlongdur,
+                                               quantity = longdf[li,'quantity'])
                   } else {
                     layer.trades <- rbind(layer.trades,
-                                          data.frame(start=test.ts,
-                                                     duration = shortdf[si,'duration'],
-                                                     quantity = shortdf[si,'quantity']
-                                          )
-                    )
+                                          data.frame(start=newlayerstart,
+                                                     duration = txnlongdur,
+                                                     quantity = longdf[li,'quantity']))
                   }
-                  tmp_tdf$scumsum[idx] <- tmp_tdf$scumsum[idx] + shortdf[si,'quantity'] # add new layered quantity for comparison to maxshortpos in next applicable loop, if any
-                  si<-si+1 #increment short index
+                
+                li <- sample(longrange, 1)
+                
+                } else { # this trade will take us over max pos, set txnlongdur to zero and proceed to next sampled start time and duration
+                  txnlongdur <- 0
                 }
-              } else next() #next may be unecessary if we can avoid more code after this point in shorts loop
             }
-          }# end short layering
+          cumlongdur <- cumlongdur + txnlongdur
+          # print(cumlongdur/86400)
+          # print(wlc2)
+        } # end long layering While loop
+
+        
+        # Shorts while loop
+        wlc2 <- 0
+        while(cumshortdur < (1 * shortdur) && wlc2 <= 1000){
+          # browser()
+          si <- sample(shortrange, 1) # sample another row from shortrange for layering
+          wlc2 <- wlc2 + 1
+          newlayerbuffer <- sample(shortstartdiff*86400,1) # shortstartdiff is in days, and we need unit in secs
+          newlayerqty <- shortdf[si,'quantity']
+          # sample from the last layered start timestamps, upon which we will add a new layer if maxpos 
+          # does not constrain us. call it prevlayer.tn for "previous layer transaction" which it soon will be
+          prevlayer.tn <- sample(tmp_tdf$last.layered.start[which(tmp_tdf$sqty < 0)], 1) # keep lqty zero for layered longs, instead put the qty in "qty"
+          prevlayer.idx <- last(which(tmp_tdf$last.layered.start == prevlayer.tn)) # use last as we may have more than 1 layers starting on last.layered.start date, so we pick last observation to add next layer to
+          newlayerstart <- prevlayer.tn + newlayerbuffer # start timestamp of new layer
           
-          #now store the result
-          layerdfs[[laynum]] <- layer.trades
-        }
-        layerdfs<-do.call(rbind,layerdfs)
+          if(newlayerstart >= tmp_tdf$last.layered.end[prevlayer.idx]) { # new layer start is after our previous layer ends...go back and sample another layer start date
+            next()
+          }
+          
+          flayer.trade <- tdf[last(which(tdf$start<=newlayerstart)),] # the first layer trade start timestamp, sourced from the 'tdf' dataframe
+          newlayerend <- newlayerstart + shortdf[si,'duration']
+          new_ftend <- tmp_tdf$last.layered.start[prevlayer.idx] + difftime(tmp_tdf$last.layered.end[prevlayer.idx], tmp_tdf$last.layered.start[prevlayer.idx], units = "secs") # first layer target end; we cannot overlap this end timestamp
+          txnshortdur <- shortdf[si,'duration']
+          wlc <- 0 # initialize while loop counter  
+          
+          # Next we use a bool "insertnew" variable to indicate whether or not we need to insert a new observation into tmp_tdf or we can use the 
+          # existing observation to update cumsum quantity. Any layered trades extending beyond our furthest possible point for the firstlayer
+          # trade, will not need a new row. Instead, we will increment the cumsum qty of the current row, as the current row and the layered trade
+          # share the same end date (after truncation). However, if the layered does not extend beyong the prior layering trade end date, we insert
+          # a new row, and track the cumsum of this row separately...including the quantity from the prior layer, only up until the end date of the
+          # new row, which ends before the end date of the prior layering trade.
+          
+          insertnew <- TRUE
+          if(tmp_tdf$scumsum[prevlayer.idx] + newlayerqty >= maxshortpos) {
+            # browser()
+            while(newlayerend >= new_ftend){ # # we've gone over the duration, check the next trade
+              wlc <- wlc + 1
+              # check if next trade is also a short, if not then we truncate
+              if (!is.na(tmp_tdf[prevlayer.idx+wlc,'quantity']) && tmp_tdf[prevlayer.idx+wlc,'quantity']<0){
+                # check if next trade will take us over our max pos, if not then extend previous layer end date
+                if (tmp_tdf$scumsum[prevlayer.idx+wlc] + newlayerqty >= maxshortpos) { # TODO: potentially check how much qty we can trade before breaching max pos
+                  new_ftend <- new_ftend + tmp_tdf[prevlayer.idx+wlc,'duration'] # extend previous layer end date
+                  # check if new layer end date is before prior layer end date, if so then use full sampled duration as the duration of the new trade 
+                  if(newlayerend < new_ftend){
+                    txnshortdur <- shortdf[si,'duration']
+                    insertnew <- TRUE # we will insert a new row, and increment cumsum qty with this new observation
+                    break() # we're good, move on to adding the new row
+                  } # we're still over the duration, check the next trade by proceeding to next increment in While loop
+                  
+                } else { # TODO: potentially check what duration we can trade before breaching max pos with newlayerqty
+                  txnshortdur <- difftime(new_ftend, newlayerstart, units = "secs")
+                  insertnew <- FALSE # we wont insert new row
+                  tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                  tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
+                  tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
+                  
+                  if(is.null(layer.trades)) {
+                    layer.trades <- data.frame(start=newlayerstart,
+                                               duration = txnshortdur,
+                                               quantity = shortdf[si,'quantity'])
+                  } else {
+                    layer.trades <- rbind(layer.trades,
+                                          data.frame(start=newlayerstart,
+                                                     duration = txnshortdur,
+                                                     quantity = shortdf[si,'quantity']))
+                  }
+                  si <- sample(shortrange, 1) # sample another row from shortrange for layering
+                  break()
+                }
+                
+              } else { # the next trade is not a short, so we truncate 'txnshortdur' if there is no maxpos violation
+                
+                txnshortdur <- difftime(new_ftend, newlayerstart, units = "secs")
+                insertnew <- FALSE # we wont insert new row
+                tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+                tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc-1)] + 1  # increment num_layers, mostly for debugging
+                tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] <- tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc-1)] + newlayerqty
+                
+                if(is.null(layer.trades)) {
+                  layer.trades <- data.frame(start=newlayerstart,
+                                             duration = txnshortdur,
+                                             quantity = shortdf[si,'quantity'])
+                } else {
+                  layer.trades <- rbind(layer.trades,
+                                        data.frame(start=newlayerstart,
+                                                   duration = txnshortdur,
+                                                   quantity = shortdf[si,'quantity']))
+                }
+                
+                si <- sample(shortrange, 1) # sample another row from shortrange for layering
+                break()
+                
+              }
+            }
+          }
+          
+          # newlayerend is before the end of our first layer end timestamp, so we need to add this new layer to the first
+          # layer, truncate the first layer where the new layer ends, and create a new separate first layer trade with the
+          # balance
+          if(insertnew == TRUE){ # insertnew is NULL meaning we need to insert a new row since newlayerend is < ftend
+            if(tmp_tdf$scumsum[prevlayer.idx] + newlayerqty >= maxshortpos) {
+              newrow <- as.data.frame(t(rep.int(0,12)))
+              colnames(newrow) <- c("start","duration","quantity","last.layered.start","last.layered.end","num_layers","lqty","ltrade","lcumsum","sqty","strade","scumsum")
+              newrow$start <- newlayerend
+              newrow$duration <- difftime(new_ftend, newlayerend, units = "secs")
+              newrow$quantity <- tmp_tdf$scumsum[prevlayer.idx+wlc]
+              newrow$last.layered.start <- newlayerend
+              newrow$last.layered.end <- new_ftend
+              newrow$num_layers <- 1
+              newrow$lqty <- 0
+              newrow$ltrade <- 0
+              # newrow$f.ltrade <- 0
+              newrow$lcumsum <- 0
+              newrow$sqty <- tmp_tdf$scumsum[prevlayer.idx+wlc]
+              newrow$strade <- 1
+              # newrow$f.strade <- 0
+              newrow$scumsum <- tmp_tdf$scumsum[prevlayer.idx+wlc]
+              
+              tmp_tdf$last.layered.start[prevlayer.idx] <- newlayerstart # update last layered start with newest layer start timestamp
+              tmp_tdf$last.layered.end[prevlayer.idx+wlc] <- newlayerend
+              tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc)] <- tmp_tdf$num_layers[prevlayer.idx:(prevlayer.idx+wlc)] + 1  # increment num_layers, mostly for debugging
+              tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc)] <- tmp_tdf$scumsum[prevlayer.idx:(prevlayer.idx+wlc)] + newlayerqty
+              tmp_tdf$duration[prevlayer.idx:(prevlayer.idx+wlc)] <- difftime(tmp_tdf$last.layered.end[prevlayer.idx:(prevlayer.idx+wlc)],tmp_tdf$start[prevlayer.idx:(prevlayer.idx+wlc)], units = "secs")
+              
+              tmp_tdf <- rbind(tmp_tdf, newrow)
+              tmp_tdf <- tmp_tdf[order(tmp_tdf$start),]
+              
+              if(is.null(layer.trades)){
+                layer.trades <- data.frame(start=newlayerstart,
+                                           duration = txnshortdur,
+                                           quantity = shortdf[si,'quantity'])
+              } else {
+                layer.trades <- rbind(layer.trades,
+                                      data.frame(start=newlayerstart,
+                                                 duration = txnshortdur,
+                                                 quantity = shortdf[si,'quantity']))
+              }
+              
+              si <- sample(shortrange, 1)
+              
+            } else { # this trade will take us over max pos, set txnlongdur to zero and proceed to next sampled start time and duration
+              txnshortdur <- 0
+            }
+          }
+          cumshortdur <- cumshortdur + txnshortdur
+          # print(cumlongdur/86400)
+          # print(wlc2)
+        } # end short layering While loop
+
+        #now store the result
+        layerdfs <- layer.trades
+        # layerdfs<-do.call(rbind,layerdfs)
         tdf <- rbind(tdf,layerdfs)
         # @TODO
         # double check that all long and short trades have been allocated, do something if not
         # ??? test for percentage of trades at each layer, and adjust accordingly ???
         # ??? test for maximum position? ???
       }
-      
       #return the data frame
       tdf
     } # end tradesample.wr inner fn
@@ -802,35 +1027,35 @@ txnsim <- function(Portfolio,
     }
     reps <- lapply(1:length(symbols), symsample )
     names(reps) <- symbols
-
+    
   } # end flat.to.reduced/increased.to.reduced method
-
+  
   ################################################################
   # reps now exists as a list of structure reps[[symbol]][[rep]]
   # each rep has columns start, duration, quantity
-
+  
   # ####################
   # # Generate Transactions
   # create the portfolios
   portnames <- txnsim.portnames(Portfolio, replacement, n)
   txnsim.portfs( Portfolio=Portfolio
-               , replacement=replacement
-               , n=length(reps[[1]])
-               , symbols=symbols
-               , initDate=initDate
-               , currency=currency
-               , initEq=initEq
-               , ...
-               )
-
+                 , replacement=replacement
+                 , n=length(reps[[1]])
+                 , symbols=symbols
+                 , initDate=initDate
+                 , currency=currency
+                 , initEq=initEq
+                 , ...
+  )
+  
   # create the transactions
   ltxn <- txnsim.txns( reps = reps
-                     , Portfolio=Portfolio
-                     , replacement=replacement
-                     , n=length(reps[[1]])
-                     , ...
-                     )
-
+                       , Portfolio=Portfolio
+                       , replacement=replacement
+                       , n=length(reps[[1]])
+                       , ...
+  )
+  
   cumpl<-NULL
   perpl<-NULL
   for (i in seq_along(reps[[1]])) {
@@ -846,21 +1071,21 @@ txnsim <- function(Portfolio,
       cumpl <- cbind(cumpl, cumsum(getPortfolio(p)$summary$Net.Trading.PL[-1]))
     }
   }
-
+  
   colnames(perpl) <- portnames
   colnames(cumpl) <- portnames
-
+  
   # add the observed portfolio here for comparison
   backtestperpl <- .getPortfolio(Portfolio)$summary$Net.Trading.PL[-1]
   colnames(backtestperpl) <- Portfolio
   backtestpl <- cumsum(backtestperpl)
   cumpl <- cbind(backtestpl,cumpl)
   perpl <- cbind(backtestperpl,perpl)
-
+  
   if(any(is.na(cumpl))){
-  cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
+    cumpl <- cumpl[-which(complete.cases(cumpl) == FALSE),] # subset away rows with NA, needed for confidence intervals, quantiles
   }
-
+  
   # compute sample stats
   sampleoutput <- data.frame(matrix(nrow = n+1, ncol = 6))
   colnames(sampleoutput) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
@@ -871,11 +1096,11 @@ txnsim <- function(Portfolio,
   sampleoutput$sharpe  <- apply(perpl, 2, function(x) { mean(x, na.rm=TRUE)/StdDev(x) } )
   sampleoutput$totalPL <- apply(perpl, 2, function(x) { sum(na.omit(x)) } )
   rownames(sampleoutput)<-colnames(perpl)
-
+  
   # store stats for use later in hist.mcsim and summary.mcsim
   original <- sampleoutput[1,]
-
-
+  
+  
   # compute p-values
   ranks <- apply(-sampleoutput,2,rank)
   # correct calc for unbiased p-value is rank+1/nsamples+1
@@ -885,7 +1110,7 @@ txnsim <- function(Portfolio,
   pvalues <- ranks[1,]/nrow(ranks)
   sigd    <- nchar(n+1)
   pvalues <- round(pvalues, digits=sigd )
-
+  
   # Compute standard errors of the sample stats
   stderror <- data.frame(matrix(nrow = 1, ncol = 6))
   colnames(stderror) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
@@ -896,7 +1121,7 @@ txnsim <- function(Portfolio,
   stderror$maxDD <- StdDev(sampleoutput[,4])
   stderror$sharpe <- StdDev(sampleoutput[,5])
   stderror$totalPL <- StdDev(sampleoutput[,6])
-
+  
   # Compute Confidence Intervals, but first add the CI functions
   CI_lower <- function(samplemean, merr) {
     #out <- original - bias - merr #based on boot package implementation in norm.ci
@@ -910,44 +1135,44 @@ txnsim <- function(Portfolio,
   }
   CI_mean <- cbind(CI_lower(mean(sampleoutput[,1]), StdDev(sampleoutput[,1])*qnorm((1+CI)/2)),
                    CI_upper(mean(sampleoutput[,1]), StdDev(sampleoutput[,1])*qnorm((1+CI)/2)))
-
+  
   CI_median <- cbind(CI_lower(mean(sampleoutput[,2]), StdDev(sampleoutput[,2])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,2]), StdDev(sampleoutput[,2])*qnorm((1+CI)/2)))
-
+  
   CI_stddev <- cbind(CI_lower(mean(sampleoutput[,3]), StdDev(sampleoutput[,3])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,3]), StdDev(sampleoutput[,3])*qnorm((1+CI)/2)))
-
+  
   CI_maxDD <- cbind(CI_lower(mean(sampleoutput[,4]), StdDev(sampleoutput[,4])*qnorm((1+CI)/2)),
                     CI_upper(mean(sampleoutput[,4]), StdDev(sampleoutput[,4])*qnorm((1+CI)/2)))
-
+  
   CI_sharpe <- cbind(CI_lower(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)),
                      CI_upper(mean(sampleoutput[,5]), StdDev(sampleoutput[,5])*qnorm((1+CI)/2)))
-
+  
   CI_totalPL <- cbind(CI_lower(mean(sampleoutput[,6]), StdDev(sampleoutput[,6])*qnorm((1+CI)/2)),
                       CI_upper(mean(sampleoutput[,6]), StdDev(sampleoutput[,6])*qnorm((1+CI)/2)))
-
+  
   # Build the Confidence Interval dataframes
   CIdf <- data.frame(matrix(nrow = 2, ncol = 6))
   colnames(CIdf) <- c("mean","median","stddev","maxDD","sharpe","totalPL")
   row.names(CIdf) <- c("Lower CI","Upper CI")
   CIdf$mean[row.names(CIdf) == "Lower CI"] <- CI_mean[1,1]
   CIdf$mean[row.names(CIdf) == "Upper CI"] <- CI_mean[1,2]
-
+  
   CIdf$median[row.names(CIdf) == "Lower CI"] <- CI_median[1,1]
   CIdf$median[row.names(CIdf) == "Upper CI"] <- CI_median[1,2]
-
+  
   CIdf$stddev[row.names(CIdf) == "Lower CI"] <- CI_stddev[1,1]
   CIdf$stddev[row.names(CIdf) == "Upper CI"] <- CI_stddev[1,2]
-
+  
   CIdf$maxDD[row.names(CIdf) == "Lower CI"] <- CI_maxDD[1,1]
   CIdf$maxDD[row.names(CIdf) == "Upper CI"] <- CI_maxDD[1,2]
-
+  
   CIdf$sharpe[row.names(CIdf) == "Lower CI"] <- CI_sharpe[1,1]
   CIdf$sharpe[row.names(CIdf) == "Upper CI"] <- CI_sharpe[1,2]
-
+  
   CIdf$totalPL[row.names(CIdf) == "Lower CI"] <- CI_totalPL[1,1]
   CIdf$totalPL[row.names(CIdf) == "Upper CI"] <- CI_totalPL[1,2]
-
+  
   # generate the return object
   ret <- list(
     replicates = reps,
@@ -1037,9 +1262,9 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         prefer <- dargs$prefer
       else
         prefer <- NULL
-
+      
       prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
-
+      
       # the rep list has a start, duration, quantity in each row
       # we'll loop by row over that object to create an object for addTxns
       # @TODO find something more efficient than a for loop here
@@ -1119,18 +1344,18 @@ txnsim.portnames <- function(Portfolio, replacement, n) {
 #' @export
 plot.txnsim <- function(x, y, ...) {
   cumpl <- x$cumpl
-
+  
   backtestpl <- cumpl[,1]
-
+  
   #TODO FIXME make grid.ticks.on smarter based on periodicity
   pt <- plot.xts(  cumpl
-                 , col = "lightgray"
-                 , main = paste(x$Portfolio, 'txnsim cumulative P&L',x$n,'reps. with replace=',x$replacement)
-                 , grid.ticks.on = 'years'
-                )
+                   , col = "lightgray"
+                   , main = paste(x$Portfolio, 'txnsim cumulative P&L',x$n,'reps. with replace=',x$replacement)
+                   , grid.ticks.on = 'years'
+  )
   pt <- lines(backtestpl, col = "red")
   print(pt)
-
+  
   invisible(cumpl)
 }
 
@@ -1161,18 +1386,18 @@ quantile.txnsim <- function(x, ...) {
 #'
 #' @export
 hist.txnsim <- function(x, ..., normalize=FALSE,
-                       methods = c("mean",
-                                   "median",
-                                   "stddev",
-                                   "maxDD",
-                                   "sharpe")) {
+                        methods = c("mean",
+                                    "median",
+                                    "stddev",
+                                    "maxDD",
+                                    "sharpe")) {
   ret <- x
   hh <- function(x, main, breaks="FD"
                  , xlab, ylab = "Density"
                  , col = "lightgray", border = "white", freq=FALSE, ...
                  , b, b.label, v, c.label, t, u, u.label, ci_L,ci_H, tci_L="Lower Confidence Interval", tci_H="Upper Confidence Interval"
   ){
-
+    
     hhh <- hist(x, main=main, breaks=breaks, xlab=xlab, ylab=ylab, col=col, border=border, freq=freq, cex.main=0.70)
     hhh
     box(col = "darkgray")
@@ -1268,7 +1493,7 @@ hist.txnsim <- function(x, ..., normalize=FALSE,
               }
       )
     }
-
+    
   } else {
     # do not normalize
     xname <- paste(ret$n, "replicates", ret$w, "using", ret$CI, "confidence interval")
