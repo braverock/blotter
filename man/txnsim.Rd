@@ -5,8 +5,8 @@
 \title{Monte Carlo analysis of round turn trades}
 \usage{
 txnsim(Portfolio, n = 10, replacement = TRUE,
-  tradeDef = c("increased.to.reduced", "flat.to.flat",
-  "flat.to.reduced"), ..., CI = 0.95)
+  tradeDef = c("increased.to.reduced", "flat.to.flat", "flat.to.reduced"),
+  ..., CI = 0.95)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}

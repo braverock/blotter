@@ -5,8 +5,8 @@
 \title{Calculates the portfolio weights for positions within a given portfolio.}
 \usage{
 calcPortfWgt(Portfolio, Symbols = NULL, Dates = NULL,
-  denominator = c("Gross.Value", "Net.Value", "Long.Value",
-  "Short.Value"), Account)
+  denominator = c("Gross.Value", "Net.Value", "Long.Value", "Short.Value"),
+  Account)
 }
 \arguments{
 \item{Portfolio}{a portfolio object structured with initPortf()}

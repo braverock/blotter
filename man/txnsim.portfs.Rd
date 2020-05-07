@@ -4,8 +4,7 @@
 \alias{txnsim.portfs}
 \title{convenience function to generate portfolios for txnsim replicates}
 \usage{
-txnsim.portfs(Portfolio, replacement, n, symbols, initDate, currency,
-  initEq)
+txnsim.portfs(Portfolio, replacement, n, symbols, initDate, currency, initEq)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}

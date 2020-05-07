@@ -10,7 +10,7 @@ initAcct(name = "default", portfolios, initDate = "1950-01-01",
 \arguments{
 \item{name}{Account name, as string}
 
-\item{portfolios}{character vector of strings naming portfolios included in this account}
+\item{portfolios}{character vector of strigs naming portfolios included in this account}
 
 \item{initDate}{A date prior to the first close price given, used to contain initial account equity and initial position}
 

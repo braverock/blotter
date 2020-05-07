@@ -1,8 +1,8 @@
 Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems P&L
-Version: 0.14.8
-Date: 2020-04-05 $Date$
+Version: 0.15.0
+Date: 2019-07-01 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Joshua Ulrich [ctb],
@@ -23,6 +23,7 @@ Description: Transaction infrastructure for defining
     portfolios.  Actively maintained and developed.
 License: GPL-3
 LazyLoad: yes
+LazyData: TRUE
 Depends:
     R (>= 3.0.0),
     xts (>= 0.10-0),
@@ -41,7 +42,10 @@ Imports:
 Suggests:
     Hmisc,
     RUnit,
+    knitr,
+    rmarkdown
 URL: https://github.com/braverock/blotter
 Copyright: (c) 2008-2019
 ByteCompile: TRUE
-RoxygenNote: 6.1.1.9000
+RoxygenNote: 7.0.2
+VignetteBuilder: knitr

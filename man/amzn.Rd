@@ -7,6 +7,6 @@
 Two xts objects containing 1-min OHLCV data for one hour of AMZN market activity, 
 and object 'amzn.trades' containing hypothetical transactions over that period.
 }
-\usage{managers}
+\usage{amzn}
 \keyword{datasets}
 \keyword{ ts } 

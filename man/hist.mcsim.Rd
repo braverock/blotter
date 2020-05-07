@@ -4,8 +4,8 @@
 \alias{hist.mcsim}
 \title{hist method for objects of type \code{mcsim}}
 \usage{
-\method{hist}{mcsim}(x, ..., normalize = TRUE, methods = c("mean",
-  "median", "stddev", "maxDD", "sharpe"))
+\method{hist}{mcsim}(x, ..., normalize = TRUE, methods = c("mean", "median",
+  "stddev", "maxDD", "sharpe"))
 }
 \arguments{
 \item{x}{object of type mcsim to plot}

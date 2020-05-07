@@ -6,11 +6,10 @@
 \title{Add transactions to a portfolio.}
 \usage{
 addTxn(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees = 0,
-  allowRebates = FALSE, ConMult = NULL, verbose = TRUE,
-  eps = 1e-06)
+  allowRebates = FALSE, ConMult = NULL, verbose = TRUE, eps = 1e-06)
 
-addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ...,
-  ConMult = NULL, allowRebates = FALSE, eps = 1e-06)
+addTxns(Portfolio, Symbol, TxnData, verbose = FALSE, ..., ConMult = NULL,
+  allowRebates = FALSE, eps = 1e-06)
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with \code{initPortf()}}
