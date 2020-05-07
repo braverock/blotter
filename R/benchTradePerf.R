@@ -472,7 +472,7 @@ summary.txnsPerf <- function(object, ...) {
 #' 
 #' @examples 
 #' 
-#' @author Vito Lestingi
+#' @author Vito Lestingi, Jasen Mackie
 #' 
 #' @export
 #' 
@@ -516,7 +516,7 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     yinf <- ceiling(min(perf, na.rm = TRUE) * 1.05)
     ysup <- ceiling(max(perf, na.rm = TRUE) * 1.05)
     ylims = c(yinf, ysup)
-    ylab <- "bps"
+    ylab <- "bps" # 'ylab' does not pass through in plot.xts, issue raised see https://github.com/joshuaulrich/xts/issues/333
   } else {
     ylims <- c(-0.1, 1.1)
     ylab <- NULL
@@ -542,7 +542,7 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     
     # Zero performance horizontal line
     thresholdPerf <- xts(rep(0, length(dates)), dates)
-    lines(thresholdPerf, lty = "dashed", lwd = 1.5, col = "grey23")
+    lines(thresholdPerf, lty = "dashed", lwd = 1.2, col = "grey23")
     
     if (colnames(benchPrice) == 'VWAP.full') {
       # addEventLines(rbind.xts(perf[first(which(!is.na(perf)))], perf[last(which(!is.na(perf)))]), c("enter", "exit"), on = 1, col = "red") # pos = 0, str = 0
@@ -551,8 +551,7 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
       # points(perf[last(which(!is.na(perf)))], col = "red", pch = 19)
     }
     
-    lines(p_avg, col = "blue", on = NA) # TODO: add labels
-    lines(benchPrice, col = 3) # col = 'green'
+    lines(cbind(p_avg, benchPrice), on = NA, col = c('firebrick', 'black')) # TODO: add labels
     
     if (colnames(benchPrice) == 'VWAP.full') {
       # addEventLines(rbind.xts(p_avg[first(which(!is.na(p_avg)))], p_avg[last(which(!is.na(p_avg)))]), c("enter", "exit"), on = 1, col = "red") # pos = 0, str = 0
@@ -563,20 +562,20 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     
     addLegend(legend.loc = legend.loc, on = 2,
               legend.names = c(colnames(p_avg), colnames(benchPrice)),
-              lty = c(1,1), lwd = c(1,1), col = c('blue', 3))
+              lty = c(1,1), lwd = c(1,1), col = c('firebrick', "black"))
     
     # TODO: add market volume and rescale its yaxis 
     # if (benchmark == 'TradeBench' | benchmark == 'MktBench') {
     #   lines(MktData[, 'MktQty'], type = "b", pch = 21, col = "green", on = NA)
     # }
     
-    if (benchmark == 'PWP') {
-      lines(cumTxnQty, type = "b", pch = 3, col = "blue", on = NA)
-      lines(pwpShares, type = "b", pch = 8, col = 3)
-      addLegend(legend.loc = 'bottomright',
-                legend.names = c(colnames(cumTxnQty), colnames(pwpShares)),
-                pch = c(3, 8), col = c('blue', 3))
-    }
+    # if (benchmark == 'PWP') {
+    #   lines(cumTxnQty, type = "b", pch = 3, col = "blue", on = NA)
+    #   lines(pwpShares, type = "b", pch = 8, col = 3)
+    #   addLegend(legend.loc = 'bottomright',
+    #             legend.names = c(colnames(cumTxnQty), colnames(pwpShares)),
+    #             pch = c(3, 8), col = c('blue', 3))
+    # }
     
   } else {
     # RPM bounds and mid-line
@@ -588,11 +587,11 @@ plot.txnsPerf <- function(x, benchmark, legend.loc, ...) {
     lines(minRPM, lty = "dashed", lwd = 1.5, col = "grey23")
     
     # relative volume panel
-    lines(tFavQty, on = NA, type = "b", pch = 24, col = 3)
-    lines(tUnfavQty, type = "b", pch = 25, col = "red")
-    addLegend(legend.loc = legend.loc, on = 2,
+    lines(cbind(tFavQty, tUnfavQty), on = NA, type = "b", pch = 24, col = c('green4', 'firebrick'))
+    # lines(tUnfavQty, type = "b", pch = 25, col = "red")
+    addLegend(legend.loc = 'bottomright', on = 2,
               legend.names = c(colnames(tFavQty), colnames(tUnfavQty)),
-              pch = c(24, 25), col = c(3, 'red'))
+              pch = c(24, 25), col = c('green4', 'firebrick'))
     # TODO: potentially combine into stacked barplot
     # tMktQty <- xts(x[, 't.Mkt.Qty'], dates)
     # colnames(tMktQty) <- "t.Mkt.Qty"
