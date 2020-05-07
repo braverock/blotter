@@ -23,6 +23,7 @@ Description: Transaction infrastructure for defining
     portfolios.  Actively maintained and developed.
 License: GPL-3
 LazyLoad: yes
+LazyData: TRUE
 Depends:
     R (>= 3.0.0),
     xts (>= 0.10-0),
@@ -46,5 +47,5 @@ Suggests:
 URL: https://github.com/braverock/blotter
 Copyright: (c) 2008-2019
 ByteCompile: TRUE
-RoxygenNote: 6.1.1.9000
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
