@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.org/braverock/blotter.svg?branch=master)](https://travis-ci.org/braverock/blotter)
+[![Travis build status](https://travis-ci.org/JustinMShea/ExpectedReturns.svg?branch=master)](https://travis-ci.org/JustinMShea/ExpectedReturns)
 
 # blotter - Tools for Transaction-Oriented Trading Systems Development
 
