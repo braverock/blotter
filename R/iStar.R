@@ -342,7 +342,7 @@ iStarPostTrade <- function(MktData
                            , minGroupDps
                            , paramsBounds
                            , paramsInit
-                           , OrdData 
+                           , OrdData = NULL
                            , ...)
 { 
   outstore <- list()
