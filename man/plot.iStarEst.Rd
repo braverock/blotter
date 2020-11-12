@@ -4,7 +4,7 @@
 \alias{plot.iStarEst}
 \title{Plot method for object of type \code{iStarEst}}
 \usage{
-\method{plot}{iStarEst}(x, xVar, fixVars, fixVals, params, ...)
+\method{plot}{iStarEst}(x, xVar, fixVars, fixVals, params, multiple = FALSE, ...)
 }
 \arguments{
 \item{x}{An object of class \code{iStarEst}, from \code{iStarPostTrade}. See 'Details'}
@@ -16,6 +16,8 @@
 \item{fixVals}{A vector with named elements representing the values to fix \code{fixVars} at, in decimal units}
 
 \item{params}{A vector with named elements being 'a_1:4' and 'b_1', the parameters to compute the market impact with. See 'Details'}
+
+\item{multiple}{A boolean indicating whether or not to plot a single cost curve or multiple cost curves.}
 
 \item{...}{Any other passthrough parameter}
 }
@@ -46,7 +48,7 @@ parameters of interest (whether estimated or not).
 When the \code{x} object passed comes for , there is no need to explicitly 
 pass the estimated parameters. Whereas if \code{iStarPostTrade} was simply 
 used to obtain the I-Star model impact estimates with provided parameters then
-- although the rusulting \code{x} object is of class \code{iStarEst} one needs
+- although the rusulting \code{x} object is of class \code{iStarEst} - one needs
 to explicitly pass parameters to the plotting method as well, via \code{params}.
 
 Furthrmore, for consistency it should be noted that \code{params} must be within 
@@ -54,6 +56,21 @@ their respective bounds, provided by the author and reported in \code{iStarPostT
 documentation.
 }
 \examples{
+
+# Assuming you have previously run iStarPostTrade() to estimate model parameters and
+# assigned to iStarEst. Alternatively you can specify your own model parameters with
+# the params argument.
+
+\dontrun{
+# Single Cost Curve
+plot(iStarEst, fixVals = c('POV'=0.1, 'AnnualVol'=0.25))
+
+# Multiple Cost Curves
+plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), multiple = TRUE)
+
+# Assuming user would like to specify their own params. Example uses params for Scenario 'All Data' from Table 5.4 in Kissell2014
+plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), params = c(a_1 = 708, a_2=0.55, a_3=0.71, a_4=0.5, b_1=0.98), multiple = TRUE)
+} #end dontrun
 
 }
 \references{

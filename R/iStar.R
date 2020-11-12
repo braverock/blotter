@@ -927,6 +927,7 @@ plot.iStarEst <- function(x
     
   } else { # multiple == TRUE
     if (missing(fixVals) | length(fixVals) == 2) stop("Need to specify more values for fixVals when arg multiple=TRUE")
+    if (xVar != "Size") stop("Need to specify xVar = 'Size' for modelling multiple cost curves")
     MI_estimate <- function(x, a_1, a_2, a_3, a_4, b_1, sigma, POV, Size) {
       I <- a_1 * (Size ^ a_2) * (sigma ^ a_3)
       MI <- b_1 * I * (POV ^ a_4) + ((1 - b_1) * I)
