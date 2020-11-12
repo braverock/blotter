@@ -854,6 +854,7 @@ iStarSensitivity <- function(object
 #' @param fixVars A vector of character specifying the variable to fix. A couple of 'Size', 'POV' (default) or 'AnnualVol' (default)
 #' @param fixVals A vector with named elements representing the values to fix \code{fixVars} at, in decimal units 
 #' @param params A vector with named elements being 'a_1:4' and 'b_1', the parameters to compute the market impact with. See 'Details'
+#' @param multiple A boolean indicating whether or not to plot a single cost curve or multiple cost curves.
 #' @param ... Any other passthrough parameter
 #' 
 #' @return 
@@ -875,6 +876,21 @@ iStarSensitivity <- function(object
 #' 
 #' @examples
 #' 
+#' # Assuming you have previously run iStarPostTrade() to estimate model parameters and
+#' # assigned to iStarEst. Alternatively you can specify your own model parameters with
+#' # the params argument.
+#' 
+#' \dontrun{
+#' # Single Cost Curve
+#' plot(iStarEst, fixVals = c('POV'=0.1, 'AnnualVol'=0.25))
+#' 
+#' # Multiple Cost Curves
+#' plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), multiple = TRUE)
+#' 
+#' # Assuming user would like to specify their own params. Example uses params for Scenario 'All Data' from Table 5.4 in Kissell2014
+#' plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), params = c(a_1 = 708, a_2=0.55, a_3=0.71, a_4=0.5, b_1=0.98), multiple = TRUE)
+#' } #end dontrun
+#' 
 #' @export
 #'
 plot.iStarEst <- function(x
@@ -882,6 +898,7 @@ plot.iStarEst <- function(x
                           , fixVars
                           , fixVals
                           , params
+                          , multiple = FALSE
                           , ...) 
 {
   if (missing(xVar)) xVar <- 'Size'
@@ -889,22 +906,58 @@ plot.iStarEst <- function(x
   if (missing(fixVals)) fixVals <- c('POV' = 0.10, 'AnnualVol' = 0.25)
   if (missing(params)) params <- coef(x$nls.impact.fit) 
   
-  xVarValues <- seq(0.01, 1, 0.01)
-  dummyValues <- rep(NA, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values assigned to workaround iStarPostTrade error for missing columns
-  if (xVar == 'Size') {
-    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = xVarValues, 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
-  } else if (xVar == 'POV') {
-    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = xVarValues, 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
-  } else if (xVar == 'AnnualVol') {
-    tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = xVarValues)
-  } 
-  tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = params))
-  mktImpact <- tmp$iStar.Impact.Estimates$Mkt.Impact
+  xVarValues <- seq(0.01, 0.5, 0.01)
   
-  plot(xVarValues * 100, mktImpact, type = 'l',
-       main = "Cost curves estimated trading costs",
-       xlab = paste0(xVar, " (%)"), ylab = "Market impact (bps)", ...)
-  grid()
+  if(multiple == FALSE) {
+    dummyValues <- rep(NA, length(xVarValues)) # 'Side', 'ArrPrice' and 'AvgExecPrice' are irrelevant for impacts: dummy values assigned to workaround iStarPostTrade error for missing columns
+    if (xVar == 'Size') {
+      tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = xVarValues, 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
+    } else if (xVar == 'POV') {
+      tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = xVarValues, 'AnnualVol' = rep(fixVals['AnnualVol'], length(xVarValues)))
+    } else if (xVar == 'AnnualVol') {
+      tmpOrdData <- data.frame('Side' = dummyValues, 'Size' = rep(fixVals['Size'], length(xVarValues)), 'ArrPrice' = dummyValues, 'AvgExecPrice' = dummyValues, 'POV' = rep(fixVals['POV'], length(xVarValues)), 'AnnualVol' = xVarValues)
+    } 
+    tmp <- iStarPostTrade(OrdData = list('Order.Data' = tmpOrdData, 'Params' = params))
+    mktImpact <- tmp$iStar.Impact.Estimates$Mkt.Impact
+    
+    plot(xVarValues * 100, mktImpact, type = 'l',
+         main = "Cost curves estimated trading costs",
+         xlab = paste0(xVar, " (%)"), ylab = "Market impact (bps)", ...)
+    grid()
+    
+  } else { # multiple == TRUE
+    if (missing(fixVals) | length(fixVals) == 2) stop("Need to specify more values for fixVals when arg multiple=TRUE")
+    MI_estimate <- function(x, a_1, a_2, a_3, a_4, b_1, sigma, POV, Size) {
+      I <- a_1 * (Size ^ a_2) * (sigma ^ a_3)
+      MI <- b_1 * I * (POV ^ a_4) + ((1 - b_1) * I)
+      return(MI)
+    }
+    cost_curves <- list()
+    for(i in 1:(length(fixVals) - 1)) { # minus 1 for AnnualVol which is a fixed single value
+      if(i == 1) {
+        cost_curves <- sapply(length(fixVals)-1, MI_estimate, a_1 = params[1], a_2 = params[2], a_3 = params[3], a_4 = params[4], b_1 = params[5], sigma = fixVals["AnnualVol"], POV = fixVals[i], Size = xVarValues)
+      } else {
+        cost_curves <- cbind(cost_curves, sapply(length(fixVals)-1, MI_estimate, a_1 = params[1], a_2 = params[2], a_3 = params[3], a_4 = params[4], b_1 = params[5], sigma = fixVals["AnnualVol"], POV = fixVals[i], Size = xVarValues))
+      }
+    }
+    colnames(cost_curves) <- paste0("POV = ", fixVals[-length(fixVals)] * 100, "%")
+    rownames(cost_curves) <- paste0("Size = ", xVarValues * 100, "%")
+    
+    colors = c('cyan4', 'firebrick1', 'forestgreen', 'dodgerblue4', 'goldenrod3',
+               'darkslategray','green4','lightblue4','indianred4','mediumvioletred')
+    max.y <- max(cost_curves)
+    min.y <- min(cost_curves)
+    i=1
+    plot(x = xVarValues, y = cost_curves[,1], main = paste0("Cost Curves assuming Volatility = ", fixVals[length(fixVals)]*100, "%"), 
+         xlab = "Order Size (Q/ADV)", ylab = "Market Impact (bps)", ylim = c(min.y, max.y), type = 'l', col = colors[i])
+    for (i in 2:(length(fixVals)-1)) {
+      lines(x = xVarValues, y = cost_curves[,i], type = "l", lwd = 2, col = colors[i],
+            xlab = "", ylab = "")
+    }
+    legend("bottomright", legend = colnames(cost_curves), col=colors, 
+           lwd = 2, cex = 0.7, inset = c(0.1, 0.1)) # TODO: use another plotting engine for better dynamic management of legend position
+
+  }
 }
 
 
