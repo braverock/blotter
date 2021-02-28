@@ -1264,6 +1264,9 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         prefer <- NULL
       
       prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
+      if(class(index(prices)) != "POSIXct" | class(index(prices)) != "POSIXt") {
+        index(prices) <- as.POSIXct(index(prices))
+      }
       
       # the rep list has a start, duration, quantity in each row
       # we'll loop by row over that object to create an object for addTxns
