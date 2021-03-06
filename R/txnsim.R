@@ -1103,6 +1103,7 @@ txnsim <- function(Portfolio,
   
   # compute p-values
   ranks <- apply(-sampleoutput,2,rank)
+  ranks[,3] <- rank(sampleoutput[,3])
   # correct calc for unbiased p-value is rank+1/nsamples+1
   # where rank is rank of the sample statistic of the observation vs. samples
   # we've included the observed series in the sample, so the correct calc
