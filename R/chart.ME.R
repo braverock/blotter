@@ -9,13 +9,13 @@
 #' @param type string specifying MAE (Adverse) or MFE (Favourable) chart type
 #' @param scale string specifying 'cash', or 'percent' for percentage of investment, or 'tick'
 #' @param \dots any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())
-#' @param legend.loc string specifying the position of legend. If missing, "bottomright" will be used
+#' @param legend.loc string specifying the position of legend, set NULL to omit legend. If missing, "bottomright" will be used
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
 #' @seealso \code{\link{perTradeStats}} for the calculations used by this chart, 
 #' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
-chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ..., legend.loc)
+chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), legend.loc='bottomright', ...)
 {   # @author Jan Humme
     
     #edits
@@ -91,7 +91,8 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
     points(abs(trades[!profitable, .cols]), pch=25, col='red', bg='red', cex=0.6)
 
     abline(a=0, b=1, lty='dashed', col='darkgrey')
-
+    
+    if (!is.null(legend.loc)) {
     legend(
             x=legend.loc, inset=0.1,
             legend=c('Profitable Trade','Losing Trade'),
@@ -99,6 +100,7 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
             col=c('green','red'),
             pt.bg=c('green','red')
     )
+    }
 }
 
 ###############################################################################
