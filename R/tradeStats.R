@@ -160,7 +160,7 @@ tradeStats <- function( Portfolios
         
         ## Trade Statistics
         for (symbol in symbols){
-            txn   <- Portfolio$symbols[[symbol]]$txn[Dates]
+            txn   <- Portfolio$symbols[[symbol]]$txn
             posPL <- Portfolio$symbols[[symbol]]$posPL[Dates]
             posPL <- posPL[-1,]
 
@@ -373,12 +373,13 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
         ## Trade Statistics
         for (symbol in symbols){
             if (isTRUE(native)){
-              posPL <- Portfolio$symbols[[symbol]]$posPL[Dates]
+              posPL <- Portfolio$symbols[[symbol]]$posPL
             } else {
               currPosPL <- paste0('posPL.',attributes(Portfolio)$currency)
-              posPL <- Portfolio$symbols[[symbol]][[currPosPL]][Dates]
+              posPL <- Portfolio$symbols[[symbol]][[currPosPL]]
             }
             posPL <- posPL[-1,] # remove initialization row
+            posPL <- posPL[Dates]
             
             Equity <- cumsum(posPL$Net.Trading.PL)
             if(!nrow(Equity)){
@@ -408,6 +409,9 @@ dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...,
                        envir=.blotter, native=TRUE, Dates=NULL)
 {
     use=use[1] #take the first value if the user didn't specify
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     switch (use,
             Eq =, eq =, Equity =, equity =, cumPL = {
                 dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native, Dates=NULL)
