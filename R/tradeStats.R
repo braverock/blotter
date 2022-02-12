@@ -414,7 +414,7 @@ dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...,
     }
     switch (use,
             Eq =, eq =, Equity =, equity =, cumPL = {
-                dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native, Dates=NULL)
+                dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native, Dates=Dates)
             },
             Txns =, txns =, Trades =, trades = {
                 dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir)
