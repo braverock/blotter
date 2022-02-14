@@ -160,7 +160,7 @@ tradeStats <- function( Portfolios
         
         ## Trade Statistics
         for (symbol in symbols){
-            txn   <- Portfolio$symbols[[symbol]]$txn
+            txn   <- Portfolio$symbols[[symbol]]$txn[Dates]
             posPL <- Portfolio$symbols[[symbol]]$posPL[Dates]
             posPL <- posPL[-1,]
 
@@ -321,8 +321,11 @@ tradeStats <- function( Portfolios
 #' @seealso tradeStats
 #' @export
 dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
-                       envir=.blotter)
+                       envir=.blotter, Dates=NULL)
 {
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
@@ -337,6 +340,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
         for (symbol in symbols){
             txn <- Portfolio$symbols[[symbol]]$txn
             txn <- txn[-1,] # remove initialization row
+            txn <- txn[Dates]
             
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
             if(!nrow(PL.ne0)){
@@ -361,6 +365,9 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
 dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
                       envir=.blotter, native=TRUE, Dates=NULL, ...)
 {
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
@@ -417,7 +424,7 @@ dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...,
                 dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native, Dates=Dates)
             },
             Txns =, txns =, Trades =, trades = {
-                dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir)
+                dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir, Dates=Dates)
             }
             )
     
