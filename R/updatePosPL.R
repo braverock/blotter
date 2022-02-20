@@ -212,7 +212,9 @@
             if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
 			else CcyMult <- FXrate[dateRange]
 			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
-			CcyMult <- CcyMult[index(TmpPeriods)]
+			if ((nrow(CcyMult) != nrow(TmpPeriods))){
+			  CcyMult <- CcyMult[index(TmpPeriods)]
+			}
 		} else {
 			CcyMult<-as.numeric(FXrate)
 		}
