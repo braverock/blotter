@@ -1,8 +1,8 @@
 Package: blotter
 Type: Package
 Title: Tools for Transaction-Oriented Trading Systems P&L
-Version: 0.15.0
-Date: 2019-07-01 $Date$
+Version: 0.16.0
+Date: 2022-04-04 $Date$
 Author: Peter Carl [aut],
     Brian G. Peterson [aut, cre],
     Joshua Ulrich [ctb],

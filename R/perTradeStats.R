@@ -276,6 +276,8 @@ perTradeStats <- function(  Portfolio
     n <- nrow(trade)
     # calculate cost basis, PosPL, Pct.PL, tick.PL columns
     Pos.Qty <- trade[,"Pos.Qty"]   # avoid repeated subsetting
+    Pos.Chg <- diff(Pos.Qty)
+    Pos.Chg[1] <- 0 #get rid of leading NA
 
     # position sizes
     Max.Pos.Qty.loc <- which.max(abs(Pos.Qty))     # find max position quantity location
@@ -336,7 +338,8 @@ perTradeStats <- function(  Portfolio
              #colnames(Cum.PL) <- 'Cum.PL'
            },
            increased.to.reduced = {
-             tradeqty <- as.numeric((coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))) # used in computing trade.PL
+#             tradeqty <- as.numeric((coredata(trade[n,'Pos.Qty']) - coredata(trade[n-1,'Pos.Qty']))) # used in computing trade.PL
+             tradeqty <- Pos.Chg[n]
              gettxns <- getTxns(Portfolio, Symbol) # used in computing trade.cost
              if(index(trade[nrow(trade),]) %in% index(gettxns)){
                closeqty <- coredata(gettxns$Txn.Qty[index(trade[nrow(trade),])]) # total qty traded at closure of round-turn/s
