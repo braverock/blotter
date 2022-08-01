@@ -1265,7 +1265,7 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
         prefer <- NULL
       
       prices <- getPrice(get(symbol, pos = env), prefer = prefer)[, 1]
-      if(class(index(prices)) != "POSIXct" | class(index(prices)) != "POSIXt") {
+      if(! "POSIXct" %in% class(index(prices))) {
         index(prices) <- as.POSIXct(index(prices))
       }
       
