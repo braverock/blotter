@@ -271,6 +271,7 @@ perTradeStats <- function(  Portfolio
   # calculate information about each round turn 'trade'
   for(i in 1:N)
   {
+
     timespan <- seq.int(trades$Start[i], trades$End[i])
     trade <- posPL[timespan]
     n <- nrow(trade)
@@ -370,7 +371,7 @@ perTradeStats <- function(  Portfolio
              trade.PL <- trade.PL + fees 
              # remove fees not part of this round turn
              # increased.to.reduced has precisely one opening and closing trade
-             trade$Txn.Fees[2:(n-1)] <- 0 
+             if(nrow(trade)>1) trade$Txn.Fees[2:(n-1)] <- 0 
              # scale opening trade fees to correct proportion
              trade$Txn.Fees[1] <- trade[1,'Txn.Fees'] * prorata 
              # for cumulative P&L for increased.to.reduced/acfifo, we have precise
