@@ -10,12 +10,13 @@
 #' @param scale string specifying 'cash', or 'percent' for percentage of investment, or 'tick'
 #' @param \dots any other passthrough parameters, in particular includeOpenTrades (see perTradeStats())
 #' @param legend.loc string specifying the position of legend. If missing, "bottomright" will be used
+#' @param trim.ax if FALSE, axes will not be trimmed, else the trim quantile will be used for trimming axes, useful for data with outliers either a single 0-1 floating point number or a c(x,y) option is supported
 #' @author Jan Humme
 #' @references Tomasini, E. and Jaekle, U. \emph{Trading Systems - A new approach to system development and portfolio optimisation} (ISBN 978-1-905641-79-6), section 3.5
 #' @seealso \code{\link{perTradeStats}} for the calculations used by this chart, 
 #' and \code{\link{tradeStats}} for a summary view of the performance
 #' @export
-chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ..., legend.loc)
+chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','percent','tick'), ..., legend.loc, trim.ax=FALSE)
 {   # @author Jan Humme
     
     #edits
@@ -81,9 +82,18 @@ chart.ME <- function(Portfolio, Symbol, type=c('MAE','MFE'), scale=c('cash','per
         }
     )
 
+    if(!trim.ax){
+      .xlim<-NULL
+      .ylim<-NULL
+    } else {
+      if(length(trim_ax)==1) trim_ax[2] <- trim_ax
+      .xlim <- c(0,abs(quantile(trades[,.cols[1]],probs=trim_ax[1])))
+      .ylim <- c(0,abs(quantile(trades[,.cols[2]],probs=trim_ax[2])))
+    }
+    
     .main<-paste(Symbol,.main)
     
-    plot(abs(trades[, .cols]), type='n', xlab=.xlab, ylab=.ylab, main=.main)
+    plot(abs(trades[, .cols]), type='n', xlab=.xlab, ylab=.ylab, xlim=.xlim, ylim=.ylim, main=.main)
 
     grid()
 
