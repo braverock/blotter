@@ -28,7 +28,7 @@ SEXP calcPosAvgCost (SEXP PrevPosQty, SEXP PrevPosAvgCost, SEXP TxnValue, SEXP P
         if(d_PosQty[i] == 0.0) {
             d_PosAvgCost[i] = 0.0;
         } else
-        if(abs(d_PrevPosQty) > abs(d_PosQty[i])){
+        if(fabs(d_PrevPosQty) > fabs(d_PosQty[i])){
             /* position is decreasing, pos avg cost for the open position remains the same */
             d_PosAvgCost[i] = d_PrevPosAvgCost;
         } else {
