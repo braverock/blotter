@@ -147,6 +147,9 @@ tradeStats <- function( Portfolios
                       stringsAsFactors   = FALSE)
     
     use <- use[1] #use the first(default) value only if user hasn't specified
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     tradeDef <- tradeDef[1]
     for (Portfolio in Portfolios){
         pname <- Portfolio
@@ -158,8 +161,12 @@ tradeStats <- function( Portfolios
         ## Trade Statistics
         for (symbol in symbols){
             txn   <- Portfolio$symbols[[symbol]]$txn
+            if (nrow(txn[Dates]) > 0) {
+              txn   <- rbind(txn[1,], txn[Dates])
+            }
             posPL <- Portfolio$symbols[[symbol]]$posPL
             posPL <- posPL[-1,]
+            posPL <- posPL[Dates]
 
             # Use gross transaction P&L to identify transactions that realized
             # (non-fee) P&L, but use net transaction P&L to calculate statistics.
@@ -192,7 +199,7 @@ tradeStats <- function( Portfolios
                        #moved above for daily stats for now
                    },
                    trades = {
-                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef, envir=envir)
+                       trades <- perTradeStats(pname,symbol,tradeDef=tradeDef, envir=envir, Dates=Dates)
                        PL.gt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  > 0]
                        PL.lt0 <- trades$Net.Trading.PL[trades$Net.Trading.PL  < 0]
                        PL.ne0 <- trades$Net.Trading.PL[trades$Net.Trading.PL != 0]
@@ -317,8 +324,12 @@ tradeStats <- function( Portfolios
 #' @return a multi-column \code{xts} time series, one column per symbol, one row per day
 #' @seealso tradeStats
 #' @export
-dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, ...)
+dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
+                       envir=.blotter, Dates=NULL)
 {
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
@@ -333,6 +344,7 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
         for (symbol in symbols){
             txn <- Portfolio$symbols[[symbol]]$txn
             txn <- txn[-1,] # remove initialization row
+            txn <- txn[Dates]
             
             PL.ne0 <- txn$Net.Txn.Realized.PL[txn$Net.Txn.Realized.PL != 0]
             if(!nrow(PL.ne0)){
@@ -354,8 +366,12 @@ dailyTxnPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, en
 #' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @rdname dailyTxnPL
 #' @export
-dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, envir=.blotter, native=TRUE, ...)
+dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE,
+                      envir=.blotter, native=TRUE, Dates=NULL, ...)
 {
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     ret <- NULL
     for (Portfolio in Portfolios){
         pname <- Portfolio
@@ -374,6 +390,7 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, env
               posPL <- Portfolio$symbols[[symbol]][[currPosPL]]
             }
             posPL <- posPL[-1,] # remove initialization row
+            posPL <- posPL[Dates]
             
             Equity <- cumsum(posPL$Net.Trading.PL)
             if(!nrow(Equity)){
@@ -399,15 +416,19 @@ dailyEqPL <- function(Portfolios, Symbols, drop.time=TRUE, incl.total=FALSE, env
 #' @param native if TRUE, return statistics in the native currency of the instrument, otherwise use the Portfolio currency, default TRUE
 #' @param \dots any other passthrough params (e.g. \code{method} for skewness/kurtosis)
 #' @export
-dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,..., envir=.blotter, native=TRUE)
+dailyStats <- function(Portfolios,use=c('equity','txns'),perSymbol=TRUE,...,
+                       envir=.blotter, native=TRUE, Dates=NULL)
 {
     use=use[1] #take the first value if the user didn't specify
+    if (is.null(Dates)) {
+      Dates <- "/"
+    }
     switch (use,
             Eq =, eq =, Equity =, equity =, cumPL = {
-                dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native)
+                dailyPL <- dailyEqPL(Portfolios, ..., envir=envir, native=native, Dates=Dates)
             },
             Txns =, txns =, Trades =, trades = {
-                dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir)
+                dailyPL <- dailyTxnPL(Portfolios, ..., envir=envir, Dates=Dates)
             }
             )
     
