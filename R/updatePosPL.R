@@ -175,8 +175,8 @@
   # now do the currency conversions for the whole date range
   TmpPeriods<-Portfolio$symbols[[Symbol]]$posPL[dateRange]
   
-	CcyMult = NA 
-	FXrate = NA
+	CcyMult = NULL
+	FXrate = NULL
 	invert=FALSE
 	if(!is.null(attr(Portfolio,'currency'))) {
 		if (tmp_instr$currency==p.ccy.str) {
@@ -207,7 +207,7 @@
 		message("no currency set on portfolio, using currency multiplier of 1")
 		CcyMult =1
 	}
-	if(is.na(CcyMult) && !is.na(FXrate)) {
+	if(is.null(CcyMult) && !is.null(FXrate)) {
 		if(inherits(FXrate,'xts')){
             if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
 			else CcyMult <- FXrate[dateRange]
