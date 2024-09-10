@@ -207,7 +207,7 @@
 		message("no currency set on portfolio, using currency multiplier of 1")
 		CcyMult =1
 	}
-	if(is.na(CcyMult) && !is.na(FXrate)) {
+	if(is.na(CcyMult) && any(!is.na(FXrate))) {
 		if(inherits(FXrate,'xts')){
             if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
 			else CcyMult <- FXrate[dateRange]
