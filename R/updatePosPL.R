@@ -211,8 +211,10 @@
 		if(inherits(FXrate,'xts')){
             if(ncol(FXrate)>1) CcyMult <- getPrice(FXrate[dateRange],...)
 			else CcyMult <- FXrate[dateRange]
-			CcyMult <- na.locf(merge(CcyMult,index(TmpPeriods)))
-			CcyMult <- CcyMult[index(TmpPeriods)]
+                        TmpCcy <- xts(, index(TmpPeriods))
+                        CcyMult <- merge(TmpCcy, CcyMult, fill=na.locf)
+                        # only keep timestamps in TmpCcy (TmpPeriods)
+                        CcyMult <- merge(TmpCcy, CcyMult, join="left")
 		} else {
 			CcyMult<-as.numeric(FXrate)
 		}
