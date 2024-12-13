@@ -1,4 +1,3 @@
-
 #' Monte Carlo analysis of round turn trades
 #'
 #' Running simulations with similar properties as the backtest or production
@@ -190,7 +189,7 @@ txnsim <- function(Portfolio,
                    ...,
                    CI = 0.95)
 {
-  # befor doing anything inside the function which would affect the state,
+  # before doing anything inside the function which would affect the state,
   # store the current random seed for later replication, if needed
   seed <- .GlobalEnv$.Random.seed
   
@@ -291,13 +290,13 @@ txnsim <- function(Portfolio,
     
     longcheck <- try(missing(maxlongpos), silent = TRUE)
     shortcheck <- try(missing(maxshortpos), silent = TRUE)
-    if (class(longcheck) != "try-error") attr(txnsimdf,"maxlongpos") <- maxlongpos
-    if (class(shortcheck) != "try-error") attr(txnsimdf,"maxshortpos") <- maxshortpos
+    if (!inherits(longcheck, "try-error")) attr(txnsimdf,"maxlongpos") <- maxlongpos
+    if (!inherits(shortcheck, "try-error")) attr(txnsimdf,"maxshortpos") <- maxshortpos
     
     longcheck <- try(missing(maxlongpos), silent = TRUE)
     shortcheck <- try(missing(maxshortpos), silent = TRUE)
-    if (class(longcheck) != "try-error") attr(txnsimdf,"longstartdiff") <- longstartdiff
-    if (class(shortcheck) != "try-error") attr(txnsimdf,"shortstartdiff") <- shortstartdiff
+    if (!inherits(longcheck, "try-error")) attr(txnsimdf,"longstartdiff") <- longstartdiff
+    if (!inherits(shortcheck, "try-error")) attr(txnsimdf,"shortstartdiff") <- shortstartdiff
     
     txnsimdf
   }
@@ -1274,7 +1273,7 @@ txnsim.txns <- function (reps, Portfolio, replacement, n, ...) {
       # @TODO find something more efficient than a for loop here
       # txns <- list()
       df <- reps[[symbol]][[i]]
-      if (class(df) == 'data.frame')
+      if (inherits(df, "data.frame"))
         df <- list('1' = df)
       dflist <- df
       txnlist <- list()

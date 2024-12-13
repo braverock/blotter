@@ -14,7 +14,6 @@
 #' 
 #' @export
 #'
-#' @examples
 #' 
 trdPrcPerf <- function(Portfolio, Symbol, side="Buy")
 {
