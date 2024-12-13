@@ -45,7 +45,17 @@ iStarPostTrade(
 \item{...}{Any other passthrough parameter}
 }
 \value{
-
+A list whose elements depends on the chosen \code{grouping} and the 
+usage of \code{OrdData}. It can contain:
+\describe{
+     \item{\code{'Rolling.Variables'}: }{A \code{list} whose elements are 'ADV', Annual.Vol', 'Arrival.Cost', 'Imb', 'Imb.Size', 'Imb.Side', 'POV' and 'VWAP' computed depending on the original \code{MktData} dataset provided and over specified \code{horizon} and \code{sessions}}
+     \item{\code{'Groups.Buckets'}: }{A \code{data.frame} providing the per-group imbalance size, percentage of volume and annualized volatility bounds built from provided sequences}
+     \item{\code{'Rolling.Variables.Groups'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' indices}
+     \item{\code{'Rolling.Variables.Samples'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' values}
+     \item{\code{'Regression.Variables'}: }{A \code{data.frame} consisting of the nonlinear regression model data}
+     \item{\code{'nls.impact.fit'}: }{The \code{nls} object resulting from the nonlinear model being fitted on 'Regression.Variables'}
+     \item{\code{'iStar.Impact.Estimates'}: }{A \code{data.frame} with I-Star model impact estimates, error measures and orders arrival cost for comparison}
+}
 }
 \description{
 The model is a cost allocation method to quantify the market impact of financial
@@ -143,6 +153,213 @@ function flow already in place, see it in light of further analyses such as
 error analysis. Also for testing purposes other kind of data such as market 
 capitalization is needed)
 }
+\section{Market "tic data" and variables}{
+
+   
+In its most general setting, the model is based on market "tic data" only. 
+It is difficult to relate Kissell's provided notion of "tic data" with respect 
+to current data provision standards, which in turn may also vary by data vendors. 
+Here should suffice to mention that an ideal market intraday dataset to input 
+into the model includes trades prices and volumes, "bid" and "ask" prices 
+in order to compute the spreads and possibly the so called "reason" (i.e, the 
+classification of trades as "bid" or "ask"); for each security involved in the 
+analysis.
+
+All the historical variables needed the model are computed internally from 
+market data and most of them are "rolling end-of-day quantities", meaning that 
+they are based on previous variables over a specified \emph{horizon} 
+(\eqn{t = 1,...,T}) that rolls one step ahead until data available allows.
+Some variables are annualized and hence need the total number of business days 
+in a given market and within a given year (typically a factor of 252 days, in 
+the US markets, or of 250 days), we denote it \eqn{T_{m}}.
+These and other quantities involved are defined below: 
+
+\describe{
+  \item{\emph{Arrival Price}. }{
+  Ideally is the first bid-ask spreads midpoint. 
+  When missing spread data, the first daily market price is used as a proxy.
+  }
+  
+  \item{\emph{Annualized volatility}. }{
+  Is the standard deviation of the 
+  close-to-close security returns, scaled on the number of business days in a 
+  given year:
+  \deqn{\sigma = \sqrt{\frac{T_{m}}{T - 1} . \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}}}
+  It is expressed in decimal units.
+  } 
+
+  \item{\emph{Average Daily Volume} (ADV). }{
+  Over the specified horizon:
+  \deqn{ADV = \frac{1}{T} . \sum_{t}^{T} V_{t}}
+  }
+      
+  \item{\emph{Imbalance} (Q). }{
+  It is calculated from "buy initiated trades" and "sell initiated trades". 
+  When trade 'Reason' is already available there is no need to explicitly infere 
+  trades direction. In cases such a 'Reason' is missing, the Lee-Ready \emph{tick test} 
+  will be used to infere trading direction. In its essence, the test is based 
+  on determining the sign of price changes: uptick or zero-uptick trades are 
+  considered "buy initiated", whereas downtick or zero-downtick tradesare counted 
+  as "sell initiated". We express it as:
+  \deqn{Q = |\sum{Buy initiated trades volume} - \sum{Sell initiated trades volume}|}
+  To note is that, as the "reason" refers to each trade, "buy initiated trades" 
+  and "sell initiated trades" can only be deduced from intraday data and then
+  taken to a daily scale.
+  }
+
+  \item{\emph{Imbalance size}. }{
+  It is defined as the ratio:
+  \deqn{\frac{Q_{t}}{ADV}}
+  It is expressed on a daily basis and the values are in decimal units.
+  In the I-Star modeling context it represents a proxy of a private agent order size. 
+  }
+
+  \item{\emph{Imbalance side}. }{
+  It is the signed imbalance and it indicates
+  which side of the market is prevailing. Either +1 or -1 indicating respectively
+  prevailing buy or sell initiated trades.
+  }
+
+  \item{\emph{Percentage of volume} (POV).}{
+  The ratio between market imbalance 
+  and the market daily volume traded over a given day:
+  \deqn{\frac{Q_{t}}{V_{t}}}
+  }
+
+  \item{ \emph{Volume Weighted Average Price} (VWAP). }{
+  Expressed as
+  \deqn{VWAP = \frac{\sum{P_{t}Q_{t}}}{\sum{Q_{t}}}}
+  it is commonly used as a proxy of fair market price. In the present context is
+  specifically used as a proxy of the average execution price.
+  }
+
+  \item{\emph{Arrival Cost}. }{
+  The usual arrival cost benchmark metric. In a 
+  single security analysis framework it refers to the arrival cost of private 
+  order transactions, whereas with respect to the full model with market tic 
+  data only is an analogous metric based on the VWAP as proxy of a fair average 
+  execution price:   
+  \deqn{Arrival Cost = ln(\frac{VWAP}{P_{0}}) . Imbalance Side . 10^{4}}
+  }
+}
+}
+
+\section{The I-Star model equations}{
+
+
+We start from calculating the total cost of transacting the entire order and 
+then distribute this quantity within single trade periods that took place.  
+Also, with respect to each trade period impact we can distinguish between a 
+temporary and a permanent market impact (Lee-Ready, 1991).
+
+The I-Star model is made of three main components, all expressed in basis points:
+\enumerate{
+  \item \emph{Instantaneous impact} (I) 
+  It is the theoretical impact of executing the entire order at once. We express 
+  it here in its "power" functional form, suggested by the author as the empirically 
+  most robust, stable and accurate over time one with respect to linear and 
+  non-linear alternatives: 
+  \deqn{I = a_1 . (\frac{Q}{ADV})^{a_2} . \sigma^{a_{3}}}
+  where the parameter \eqn{a_1} is the \emph{sensitivity to trade size}, \eqn{a_2}
+  is the \emph{order shape parameter} and \eqn{a_3} the \emph{volatility shape parameter}.
+  
+  \item \emph{Market impact} (MI)
+  It represents the period-by-period impact cost due to a given trading strategy
+  and is expressed as:
+  \deqn{MI = b_1 . POV^{a_4} . I + (1 - b_1) . I}
+  where \eqn{a_4} is said \emph{POV shape parameter} and \eqn{b_1} is the 
+  \emph{percentage of total temporary market impact}.
+  
+  \item \emph{Timing risk measure}
+  It is a proxy for the uncertainty surrounding the cost estimate
+  \deqn{TR = \sigma . \sqrt{\frac{S . (1 - POV)}{3 . T_{m} . ADV . POV}} * 10^{4}}
+  where \eqn{S} is the private order size. 
+} 
+
+The first two equations are part of the model estimation, whereas the last one
+is used as a measure of risk esposure for a given order.
+}
+
+\section{Outliers analysis}{
+
+
+TODO: add outliers criteria (consistency still under discussion)
+}
+
+\section{Data grouping procedure}{
+
+
+The grouping may be carried before procedeeding with the non-linear regression estimation.
+The grouping is based on buckets built with respect to three variables: the Imbalance size, 
+the POV and the annualized volatility. It is irrespective of the security whose values fall
+into the buckets. A datapoints threshold in each bucket has to be reached in order to include 
+the corresponding group in the estimation process.
+
+Several aspects are worth empashizing. First of all, using Kissell's words "too fine increments 
+[lead to] excessive groupings surface and we have found that a substantially large data grouping 
+does not always uncover a statistical relationship between cost and our set of explanatory factors."
+This in turn points to an important consideration: also depending on the datapoints threshold 
+specified, the data grouping may result in discarding data and this allows to exclude anomalous 
+observations (outliers) with respect to the explanatory variables.
+On one hand is therefore understood how this step offers improvement margins to the nonlinear 
+least squares estimation procedure, on the other it may cause convergence issues dependending 
+on the effective shrinkage datapoints go through.
+}
+
+\section{Parameters estimation}{
+
+
+The author suggests three methods to estimate model paramaters from the instantaneous and the 
+market impact equations.
+
+\describe{
+  \item{\emph{Two-step process}: }{
+  Not implemented at present.
+  } 
+  \item{\emph{Guesstimate technique}: }{
+  Not implemented at present.
+  }
+  \item{\emph{Nonlinear regression}: }{
+  The full model parameters are estimated by means of nonlinear least squares. 
+  There is a wide theory behind such approach, rich of pros and contra inherent 
+  to the specific iterative procedure used and their peculiarities in achieving 
+  converge. The interested reader may consult Venables and Ripley (2002).
+  A general warning in estimating this model comes from the author himself:
+  "Analysts choosing to solve the parameters of the model via non-linear regression 
+  of the full model need to thoroughly understand the repercussions of non-linear 
+  regression analysis as well as the sensitivity of the parameters, and potential 
+  solution ranges for the parameters."
+  
+  In his modeling context the author sets a constrained problem providing bounds 
+  on parameters, in order to ensure feasible estimated values.
+  The author's suggested bounds are implemented by default to follow his methodology, 
+  as reported in 'Details'. However, the opportunity to provide bounds is supported 
+  and left to the users. Likewise, initial parameters values to start the iterative
+  constrained minimization problem resolution from is left to the user: to my 
+  knowledge at the time of writing, the author does not provide any specific 
+  clue in the estimation procedure used and especially there is no suggestion 
+  on particular starting values to begin with. It is valuable for a user to control
+  starting values, as a way to check whether the estimated parameters come form 
+  a local optimum or if a global optimum may have been reasonably achieved.
+  }
+}
+}
+
+\section{Impact estimates, error and sensitivity analyses}{
+
+ 
+Once the parameters have been estimated, the I-Star best fit equations provide 
+impact costs estimates for a given market parent order specified by its size,
+POV, annualized volatility, side and arrival price.
+The instantaneous, market impacts (both temporary and permanent) and timing
+risk are described by the I-Star model equations explained above.
+The \emph{cost error} is assessed as the difference between the arrival cost 
+of the order and the market impact estimate.
+The \emph{z-score} is a "risk-adjusted error" and is expressed as the ratio 
+between the cost error and timining risk. The author reports that most accurate 
+models possess z-scores distributions with mean zero and unit variance.
+}
+
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
 \emph{A Practical Framework for Estimating Transaction Costs and Developing Optimal Trading Strategies to Achieve Best Execution} (Kissell, Glantz and Malamut, 2004), Finance Research Letters.

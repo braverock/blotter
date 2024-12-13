@@ -17,7 +17,7 @@
 #' proxies of the corresponding order-related variables. 
 #' 
 #' 
-#' @section Market "tic data" and variables
+#' @section Market "tic data" and variables:
 #'    
 #' In its most general setting, the model is based on market "tic data" only. 
 #' It is difficult to relate Kissell's provided notion of "tic data" with respect 
@@ -106,7 +106,8 @@
 #'   }
 #' }
 #' 
-#' @section The I-Star model equations
+#' @section The I-Star model equations:
+#' 
 #' We start from calculating the total cost of transacting the entire order and 
 #' then distribute this quantity within single trade periods that took place.  
 #' Also, with respect to each trade period impact we can distinguish between a 
@@ -139,10 +140,12 @@
 #' The first two equations are part of the model estimation, whereas the last one
 #' is used as a measure of risk esposure for a given order. 
 #' 
-#' @section Outliers analysis
+#' @section Outliers analysis:
+#' 
 #' TODO: add outliers criteria (consistency still under discussion)
 #' 
-#' @section Data grouping procedure
+#' @section Data grouping procedure:
+#' 
 #' The grouping may be carried before procedeeding with the non-linear regression estimation.
 #' The grouping is based on buckets built with respect to three variables: the Imbalance size, 
 #' the POV and the annualized volatility. It is irrespective of the security whose values fall
@@ -159,7 +162,8 @@
 #' least squares estimation procedure, on the other it may cause convergence issues dependending 
 #' on the effective shrinkage datapoints go through.
 #' 
-#' @section Parameters estimation
+#' @section Parameters estimation:
+#' 
 #' The author suggests three methods to estimate model paramaters from the instantaneous and the 
 #' market impact equations.
 #' 
@@ -195,7 +199,8 @@
 #'   }
 #' }
 #' 
-#' @section Impact estimates, error and sensitivity analyses 
+#' @section Impact estimates, error and sensitivity analyses:
+#'  
 #' Once the parameters have been estimated, the I-Star best fit equations provide 
 #' impact costs estimates for a given market parent order specified by its size,
 #' POV, annualized volatility, side and arrival price.
@@ -229,10 +234,10 @@
 #' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'
 #' @param ... Any other passthrough parameter
 #' 
-#' @return A list whose elements depends on the chosen \code{grouping} and the usage of \code{OrdData}.
-#' It can contain:
+#' @return A list whose elements depends on the chosen \code{grouping} and the 
+#' usage of \code{OrdData}. It can contain:
 #' \describe{
-#'      \item{\code{'Rolling.Variables'}: }{A \code{list} whose elements are 'ADV', Annual.Vol', 'Arrival.Cost', 'Imb', 'Imb.Size', 'Imb.Side', 'POV' and 'VWAP' computed depending on the original \code{MktData} dataset provided and over specified \code{horizon} and \{sessions}}
+#'      \item{\code{'Rolling.Variables'}: }{A \code{list} whose elements are 'ADV', Annual.Vol', 'Arrival.Cost', 'Imb', 'Imb.Size', 'Imb.Side', 'POV' and 'VWAP' computed depending on the original \code{MktData} dataset provided and over specified \code{horizon} and \code{sessions}}
 #'      \item{\code{'Groups.Buckets'}: }{A \code{data.frame} providing the per-group imbalance size, percentage of volume and annualized volatility bounds built from provided sequences}
 #'      \item{\code{'Rolling.Variables.Groups'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' indices}
 #'      \item{\code{'Rolling.Variables.Samples'}: }{A \code{list} of groups compositions, by securities and their respective 'Rolling.Variables' values}
@@ -714,7 +719,6 @@ iStarPostTrade <- function(MktData
 #' 
 #' @importFrom utils combn
 #' 
-#' @examples 
 #' 
 #' @export
 #' 
@@ -984,7 +988,6 @@ plot.iStarEst <- function(x
 #'
 #' @author Vito Lestingi
 #'
-#' @examples
 #'
 #' @export
 #'
