@@ -177,21 +177,35 @@
 #' 
 #' ## Paired observations approach tests 
 #' # Sign test, VWAP full and VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
-#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
-#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', conf.level = 0.95, alternative = "two.sided")
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, 
+#'                 type = list(vwap = 'full'), metric = 1,
+#'                 OrdersMktData = OrdersMktData, approach = 'paired', 
+#'                 test = 'Sign', conf.level = 0.95, alternative = "two.sided")
+#'                 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, 
+#'                 type = list(vwap = 'interval'), OrdersMktData = OrdersMktData, 
+#'                 approach = 'paired', test = 'Sign', conf.level = 0.95, 
+#'                 alternative = "two.sided")
+#'                 
 #' # Wilcoxon test, VWAP full and VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'full'), metric = 1,
-#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, 
+#'                 type = list(vwap = 'full'), metric = 1,OrdersMktData = OrdersMktData, 
+#'                 approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, 
+#'                 alternative = "two.sided") 
+#'                 
 #' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), 
-#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', conf.level = 0.95, alternative = "two.sided") 
+#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Wilcoxon', 
+#'                 conf.level = 0.95, alternative = "two.sided") 
+#' 
 #' # Sign test, ChiSq test on VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
-#'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, 
+#'                 type = list(vwap = 'interval'), metric = 1, OrdersMktData = OrdersMktData, 
+#'                 approach = 'paired', test = 'Sign', dgptest = 'ChiSq', 
 #'                 conf.level = 0.95, alternative = "two.sided")
+#' 
 #' # Sign test and KS test on VWAP interval
-#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, type = list(vwap = 'interval'), metric = 1,
+#' benchTradeStats(Portfolio = ordNames, benchmark = "VWAP", side = 1, 
+#'                 type = list(vwap = 'interval'), metric = 1,
 #'                 OrdersMktData = OrdersMktData, approach = 'paired', test = 'Sign', dgptest = 'KS', 
 #'                 conf.level = 0.95, alternative = "two.sided")
 #' 
@@ -200,22 +214,28 @@
 #' OrdersMktDataIndp <- list(list(OrdersMktData$OrdersMktData1, OrdersMktData$OrdersMktData2), 
 #'                           list(OrdersMktData$OrdersMktData1 * 2, OrdersMktData$OrdersMktData2 * 3),
 #'                           list(OrdersMktData$OrdersMktData1 * 4, OrdersMktData$OrdersMktData2 * 5)) 
+#' 
 #' # Median test, TradeBench
 #' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1, 
 #'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
 #'                 test = 'Median', conf.level = 0.95, alternative = "two.sided")
+#' 
 #' # Wilcoxon-Mann-Whitney test, TradeBench
 #' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
 #'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent',
 #'                 test = 'WMW', conf.level = 0.95, alternative = "two.sided")
+#' 
 #' # Median test, ChiSq test on TradeBench (two reports produced)
 #' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
-#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'Median', dgptest = 'ChiSq',
-#'                 conf.level = 0.95, alternative = "two.sided")
+#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', 
+#'                 test = 'Median', dgptest = 'ChiSq', conf.level = 0.95, 
+#'                 alternative = "two.sided")
+#' 
 #' # WMW test and KS test on TradeBench 
 #' benchTradeStats(Portfolio = ordNames, benchmark = "TradeBench", side = 1, metric = -1,
-#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', test = 'WMW', dgptest = 'KS',
-#'                 conf.level = 0.95, alternative = "two.sided")
+#'                 OrdersMktData = OrdersMktDataIndp, approach = 'independent', 
+#'                 test = 'WMW', dgptest = 'KS', conf.level = 0.95, 
+#'                 alternative = "two.sided")
 #' }
 #' 
 #' @export
