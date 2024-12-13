@@ -16,7 +16,6 @@
 #' 
 #' @export
 #'
-#' @examples
 #' 
 ArrivalCost <- function(Portfolio, Symbol, side="Buy")
 {
@@ -57,7 +56,6 @@ ArrivalCost <- function(Portfolio, Symbol, side="Buy")
 #' 
 #' @export
 #'
-#' @examples
 #' 
 IndexCost <- function(Portfolio, IndexSymbol){
   pname <- Portfolio
@@ -87,7 +85,6 @@ IndexCost <- function(Portfolio, IndexSymbol){
 #' 
 #' @export
 #'
-#' @examples
 #' 
 IndexAdjustedCost <- function(ArrivalCost, IndexCost, beta){
   iac <- ArrivalCost - (beta * IndexCost)

@@ -136,7 +136,12 @@ the I-Star equations to compute the impact costs and the error measures.
 This is useful in cases one already has estimated parameters for the model or 
 simply wants to see what I-Star model values would look like with different 
 paramaters, perhaps those coming from the sensitivity analysis carried with 
-\code{iStarSensitivity}.
+\code{iStarSensitivity}.   
+
+TODO: stock specific analysis is a WIP (it shouldn't be hard to integrate in 
+function flow already in place, see it in light of further analyses such as 
+error analysis. Also for testing purposes other kind of data such as market 
+capitalization is needed)
 }
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.

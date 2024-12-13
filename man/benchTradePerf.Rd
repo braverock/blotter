@@ -212,8 +212,7 @@ the VWAP benchmark to use in the PnL metric computation, namely the Interval VWA
 }
 \examples{
 
-# examples consider daily data, perhaps the most common use case for the 
-practitioners of the field
+# examples consider daily data, a common use case for practitioners in the field
 
 \donttest{
 set.seed(333)
