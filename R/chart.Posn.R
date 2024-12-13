@@ -1,13 +1,18 @@
-#' Chart trades against market data, position through time, and cumulative P\&L
+#' Chart trades against market data, position through time, and cumulative Profit and Loss.
 #'
-#' Produces a three-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, and a cumulative profit-loss line chart in the third.
-#' @note Expect changes to this function, since the underlying charts are experimental functions in quantmod.
+#' Produces a three-panel chart of time series charts that contains prices and 
+#' transactions in the top panel, the resulting position in the second, and a 
+#' cumulative profit-loss line chart in the third.
+#' @note Expect changes to this function, since the underlying charts are 
+#' experimental functions in quantmod.
 #'
 #' @param Portfolio string identifying the portfolio to chart
-#' @param Symbol string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used
+#' @param Symbol string identifying the symbol to chart. If missing, the first 
+#' symbol found in the \code{Portfolio} portfolio will be used
 #' @param Dates xts ISO 8601 style subsetting
 #' @param \dots any other passthru parameters to \code{\link[quantmod]{chart_Series}}
-#' @param TA a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}
+#' @param TA a string defining a technical indicator function that will be 
+#' applied to the chart, using \code{\link{eval}}
 #' @param env environment to locate market data in.  default .GlobalEnv
 #' @export
 chart.Posn <- function(Portfolio, Symbol, Dates = NULL, ...,TA=NULL,env=.GlobalEnv)

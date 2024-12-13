@@ -2,26 +2,31 @@
 % Please edit documentation in R/chart.Posn.R
 \name{chart.Posn}
 \alias{chart.Posn}
-\title{Chart trades against market data, position through time, and cumulative P\&L}
+\title{Chart trades against market data, position through time, and cumulative Profit and Loss.}
 \usage{
 chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL, env = .GlobalEnv)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio to chart}
 
-\item{Symbol}{string identifying the symbol to chart. If missing, the first symbol found in the \code{Portfolio} portfolio will be used}
+\item{Symbol}{string identifying the symbol to chart. If missing, the first 
+symbol found in the \code{Portfolio} portfolio will be used}
 
 \item{Dates}{xts ISO 8601 style subsetting}
 
 \item{\dots}{any other passthru parameters to \code{\link[quantmod]{chart_Series}}}
 
-\item{TA}{a string defining a technical indicator function that will be applied to the chart, using \code{\link{eval}}}
+\item{TA}{a string defining a technical indicator function that will be 
+applied to the chart, using \code{\link{eval}}}
 
 \item{env}{environment to locate market data in.  default .GlobalEnv}
 }
 \description{
-Produces a three-panel chart of time series charts that contains prices and transactions in the top panel, the resulting position in the second, and a cumulative profit-loss line chart in the third.
+Produces a three-panel chart of time series charts that contains prices and 
+transactions in the top panel, the resulting position in the second, and a 
+cumulative profit-loss line chart in the third.
 }
 \note{
-Expect changes to this function, since the underlying charts are experimental functions in quantmod.
+Expect changes to this function, since the underlying charts are 
+experimental functions in quantmod.
 }
