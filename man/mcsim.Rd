@@ -44,27 +44,28 @@ Profit and Loss , default = "equity" ie. daily}
 }
 \value{
 a list object of class 'mcsim' containing:
+
 \itemize{
-  \item{\code{replicates}:}{an xts object containing all the resampled time series replicates}
-  \item{\code{percreplicates}:}{an xts object containing all the resampled time series replicates in percent}
-  \item{\code{dailypl}:}{an xts object containing daily P&L from the original backtest}
-  \item{\code{percdailypl}:}{an xts object containing daily P&L in percent from the original backtest}
-  \item{\code{initeq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
-  \item{\code{num}:}{a numeric variable reporting the number of replicaes in the simulation}
-  \item{\code{length}:}{a numeric variable reporting the block length used in the simulation, if any}
-  \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
-  \item{\code{percsamplestats}:}{a numeric dataframe of various statistics for each replicate series in percent}
-  \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
-  \item{\code{percoriginal}:}{a numeric dataframe of the statistics for the original series in percent terms}
-  \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
-  \item{\code{percstderror}:}{a numeric dataframe of the standard error of the statistics for the replicates in percent}
-  \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.mcsim(), default 0.95}
-  \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
-  \item{\code{CIdf_perc}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates in percent}
-  \item{\code{w}:}{a string containing information on whether the simulation is with or without replacement}
-  \item{\code{use}:}{ a string with the value of the 'use' parameter, for checking later}
-  \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
-  \item{\code{call}:}{an object of type \code{call} that contains the \code{mcsim} call}
+  \item \code{replicates}: an \code{xts} object containing all the resampled time series replicates
+  \item \code{percreplicates}: an \code{xts} object containing all the resampled time series replicates in percent
+  \item \code{dailypl}: an \code{xts} object containing daily P&L from the original backtest
+  \item \code{percdailypl}: an \code{xts} object containing daily P&L in percent from the original backtest
+  \item \code{initeq}: a numeric variable containing the \code{initEq} of the portfolio, for starting portfolio value
+  \item \code{num}: a numeric variable reporting the number of replicates in the simulation
+  \item \code{length}: a numeric variable reporting the block length used in the simulation, if any
+  \item \code{samplestats}: a numeric \code{data.frame} of various statistics for each replicate series
+  \item \code{percsamplestats}: a numeric \code{data.frame} of various statistics for each replicate series in percent
+  \item \code{original}: a numeric \code{data.frame} of the statistics for the original series
+  \item \code{percoriginal}: a numeric \code{data.frame} of the statistics for the original series in percent terms
+  \item \code{stderror}: a numeric \code{data.frame} of the standard error of the statistics for the replicates
+  \item \code{percstderror}: a numeric \code{data.frame} of the standard error of the statistics for the replicates in percent
+  \item \code{CI}: numeric specifying the desired Confidence Interval used in \code{hist.mcsim()}, default 0.95
+  \item \code{CIdf}: a numeric \code{data.frame} of the Confidence Intervals of the statistics for the bootstrapped replicates
+  \item \code{CIdf_perc}: a numeric \code{data.frame} of the Confidence Intervals of the statistics for the bootstrapped replicates in percent
+  \item \code{w}: a string containing information on whether the simulation is with or without replacement
+  \item \code{use}: a string with the value of the \code{'use'} parameter, for checking later
+  \item \code{seed}: the value of \code{.Random.seed} for replication, if required
+  \item \code{call}: an object of type \code{call} that contains the \code{mcsim} call
 }
 
 If \code{use='cash'}, you must also supply a daily (or other regular frequency) 
@@ -93,22 +94,23 @@ sample round turn trades, as provided in (TODO: add link once function exists).
 
 A few of the arguments and methods probably deserve more discussion as well.
 
-\code{use} describes the method to use to generate the initial daily Profit and Loss  to
-be sampled from.  The options are:
+\code{use} describes the method to use to generate the initial daily 
+Profit and Loss to be sampled from.  The options are:
+
 \itemize{
-  \item{equity}{will use daily portfolio cash Profit and Loss}
-  \item{txn}{will use transaction \code{Net.Trading.PL}}
+  \item \code{equity} will use daily portfolio cash Profit and Loss
+  \item \code{txn} will use transaction \code{Net.Trading.PL}
 }
 
 Sampling may be performed either with or without replacement.
 \itemize{
-  \item{without replacement}{If sampled **without** replacement, the replicated
+  \item \code{without replacement} If sampled **without** replacement, the replicated
   equity curves will use all the same data as the input series, only reordered.
   This will lead to all the replicates having identical final Profit and Loss 
-  and mean returns, but different paths along the way.}
-  \item{with replacement}{If sampled **with** replacement, individual
+  and mean returns, but different paths along the way.
+  \item \code{with replacement} If sampled **with** replacement, individual
   observations may be reused.  This will tend to create more variability than
-  replicates without replacement.}
+  replicates without replacement.
 }
 
 If the post-trade or backtested equity curve exhibits autocorrelation, runs,
