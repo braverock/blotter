@@ -194,8 +194,7 @@
 #' 
 #' @examples
 #' 
-#' # examples consider daily data, perhaps the most common use case for the 
-#' practitioners of the field
+#' # examples consider daily data, a common use case for practitioners in the field
 #' 
 #' \donttest{
 #' set.seed(333)
@@ -489,7 +488,6 @@ summary.txnsPerf <- function(object, ...) {
 #' 
 #' @seealso \code{\link[xts]{plot.xts}}
 #' 
-#' @examples 
 #' 
 #' @author Vito Lestingi, Jasen Mackie
 #' 

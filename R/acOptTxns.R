@@ -193,7 +193,7 @@
 #' time for liquidation in numeric terms (e.g. 1 day), 'Trade.Periods' is number 
 #' of trading periods in between the program (expressed in terms of 'Complete.by').
 #' 
-#' @examples 
+#' @importFrom stats rnorm
 #' 
 #' @export
 #'

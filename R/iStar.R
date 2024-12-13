@@ -16,8 +16,10 @@
 #' focusing on the use of market "tic data" and derived quantities that represent 
 #' proxies of the corresponding order-related variables. 
 #' 
-#' @section Market "tic data" and variables   
-#' In its most genearl setting, the model is based on market "tic data" only. 
+#' 
+#' @section Market "tic data" and variables
+#'    
+#' In its most general setting, the model is based on market "tic data" only. 
 #' It is difficult to relate Kissell's provided notion of "tic data" with respect 
 #' to current data provision standards, which in turn may also vary by data vendors. 
 #' Here should suffice to mention that an ideal market intraday dataset to input 
@@ -227,8 +229,7 @@
 #' @param OrdData A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'
 #' @param ... Any other passthrough parameter
 #' 
-#' @return
-#' A list whose elements depends on the chosen \code{grouping} and the usage of \code{OrdData}.
+#' @return A list whose elements depends on the chosen \code{grouping} and the usage of \code{OrdData}.
 #' It can contain:
 #' \describe{
 #'      \item{\code{'Rolling.Variables'}: }{A \code{list} whose elements are 'ADV', Annual.Vol', 'Arrival.Cost', 'Imb', 'Imb.Size', 'Imb.Side', 'POV' and 'VWAP' computed depending on the original \code{MktData} dataset provided and over specified \code{horizon} and \{sessions}}
@@ -321,14 +322,11 @@
 #' paramaters, perhaps those coming from the sensitivity analysis carried with 
 #' \code{iStarSensitivity}.   
 #' 
-#' 
-#' @notes
 #' TODO: stock specific analysis is a WIP (it shouldn't be hard to integrate in 
 #' function flow already in place, see it in light of further analyses such as 
 #' error analysis. Also for testing purposes other kind of data such as market 
 #' capitalization is needed)
 #' 
-#' @examples 
 #' 
 #' @export
 #'
@@ -713,6 +711,8 @@ iStarPostTrade <- function(MktData
 #' 
 #' \code{paramSteps} default is 50 for \eqn{a_1}, 0.1 for \eqn{a_2} and \eqn{a_3},
 #' 0.05 for \eqn{a_4} and 0.01 for \eqn{b_1}.
+#' 
+#' @importFrom utils combn
 #' 
 #' @examples 
 #' 
