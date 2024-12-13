@@ -1,6 +1,6 @@
 # Author: Peter Carl -> RUnit port by Ben McCann -> tinytest port by Justin Shea
-
 library(tinytest)
+Sys.setenv(TZ='GMT')
 
 test_addTxn <- function() {
 
@@ -10,7 +10,6 @@ test_addTxn <- function() {
     stock(symbol, currency = "USD", multiplier = 1)
 
     data(IBM, package = "blotter")
-    IBM <- xts:::.update_index_attributes(IBM)
     
     # Initialize a portfolio object
     p <- initPortf("runitAddTxn", symbols = symbol)
@@ -36,3 +35,5 @@ addTxn(p, "IBM", '2007-01-31', -25,  98.80, TxnFees = -0.05 * 25, verbose=FALSE)
 }
 
 test_addTxn()
+
+
