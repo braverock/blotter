@@ -33,11 +33,14 @@
 #' 
 #' \deqn{Actual Portfolio Return = (\sum s_{j}) . P_{n} - \sum s_{j}p_{j} - fees}
 #' 
-#' \eqn{(\sum s_{j})} represents the total number of shares in the portfolio
+#' \itemize{
 #' 
-#' \eqn{(\sum s_{j}) . {P_n}} is the ending portfolio value
-#' 
-#' \eqn{(\sum s_{j} p_{j}} is the price paid to acquire the portfolio
+#'   \item \eqn{ (\sum s_{j}) } represents the total number of shares in the portfolio 
+#'  
+#'   \item \eqn{ (\sum s_{j}) . P_{n} } is the ending portfolio value  
+#'  
+#'   \item \eqn{\sum s_{j} p_{j}} is the price paid to acquire the portfolio  
+#' }
 #' 
 #' Implementation Shortfall can be implemented in 4 ways:
 #' 
@@ -110,61 +113,59 @@
 #' @references Perold, A. F. \emph{The implementation shortfall: Paper versus reality}. The Journal of Portfolio Management, 1988
 #' @return
 #' 
+#' 
 #' Return depends on the method used.
-#' 
-#' 'Complete' - default, return is a \code{data.frame} containing:
-#' 
-#' \itemize{
-#'   \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
-#'   \item{\code{Method}: }{The method used}
-#'   \item{\code{Paper.Ret}: }{The paper portfolio return}
-#'   \item{\code{Actual.Ret}: }{The actual portfolio return}
-#'   \item{\code{IS}: }{The Implementation Shortfall measure}
-#' }
-#' 
-#' 
-#' 'Perold' - return is a \code{data.frame} containing:
-#' 
-#' \itemize{
-#'   \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
-#'   \item{\code{Method}: }{The method used}
-#'   \item{\code{t.Txn.Qty}: }{The total number of transacted units}
-#'   \item{\code{u.Txn.Qty}: }{The number of untransacted units}
-#'   \item{\code{Exe.Cost}: }{The execution cost component of the IS}
-#'   \item{\code{Opp.Cost}: }{The Perold's opportunity cost component of the IS}
-#'   \item{\code{Fees}: }{The total fees paid on transactions}
-#'   \item{\code{Shortfall}: }{The Implementation Shortfall measure}
-#' }
-#' 
+#'
+#'\strong{'Complete'}: Returns a \code{data.frame} containing:
+#'  \itemize{
+#'    \item \code{Symbol}: The traded symbol for which to calculate the IS
+#'    \item \code{Method}: The method used
+#'    \item \code{Paper.Ret}: The paper portfolio return
+#'    \item \code{Actual.Ret}: The actual portfolio return
+#'    \item \code{IS}: The Implementation Shortfall measure
+#'  }
+#'
+#'\strong{'Perold'}: Returns a \code{data.frame} containing:
+#'  \itemize{
+#'    \item \code{Symbol}: The traded symbol for which to calculate the IS
+#'    \item \code{Method}: The method used
+#'    \item \code{t.Txn.Qty}: The total number of transacted units
+#'    \item \code{u.Txn.Qty}: The number of untransacted units
+#'    \item \code{Exe.Cost}: The execution cost component of the IS
+#'    \item \code{Opp.Cost}: The Perolds opportunity cost component of the IS
+#'    \item \code{Fees}: The total fees paid on transactions
+#'    \item \code{Shortfall}: The Implementation Shortfall measure
+#'  }
+#'
 #' 
 #' 'Wagner' - return is a \code{data.frame} containing:
 #' 
 #' \itemize{
-#'   \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
-#'   \item{\code{Method}: }{The method used}
-#'   \item{\code{t.Txn.Qty}: }{The total number of transacted units}
-#'   \item{\code{u.Txn.Qty}: }{The number of untransacted units}
-#'   \item{\code{Opp.Delay}: }{The opportunity delay component of the Delay cost}
-#'   \item{\code{Trade.Delay}: }{The trading delay component of the Delay cost}
-#'   \item{\code{Delay.Cost}: }{The delay related component of the IS}
-#'   \item{\code{Trade.Cost}: }{The trading related component of the IS}
-#'   \item{\code{Opp.Cost}: }{The Wagner's opportunity cost component of the IS}
-#'   \item{\code{Fees}: }{The total fees paid on transactions}
-#'   \item{\code{Shortfall}: }{The Implementation Shortfall measure}
+#'   \item \code{Symbol}: The traded symbol for which to calculate the IS
+#'   \item \code{Method}: The method used
+#'   \item \code{t.Txn.Qty}: The total number of transacted units
+#'   \item \code{u.Txn.Qty}: The number of untransacted units
+#'   \item \code{Opp.Delay}: The opportunity delay component of the Delay cost
+#'   \item \code{Trade.Delay}: The trading delay component of the Delay cost
+#'   \item \code{Delay.Cost}: The delay-related component of the IS
+#'   \item \code{Trade.Cost}: The trading-related component of the IS
+#'   \item \code{Opp.Cost}: The Wagner's opportunity cost component of the IS
+#'   \item \code{Fees}: The total fees paid on transactions
+#'   \item \code{Shortfall}: The Implementation Shortfall measure
 #' }
 #' 
 #' 
 #' 'Market' - return is a \code{data.frame} containing:
 #' 
 #' \itemize{
-#'   \item{\code{Symbol}: }{The traded symbol for which to calculate the IS}
-#'   \item{\code{Method}: }{The method used}
-#'   \item{\code{t.Txn.Qty}: }{The total number of transacted units}
-#'   \item{\code{u.Txn.Qty}: }{The number of untransacted units}
-#'   \item{\code{Trade.Cost}: }{The trading related component of the Shortafll}
-#'   \item{\code{Opp.Cost}: }{The Wagner's opportunity cost component of the Shortfall}
-#'   \item{\code{Fees}: }{The total fees paid on transactions}
-#'   \item{\code{Shortfall}: }{The Shortfall measure}
+#'   \item \code{Symbol}: The traded symbol for which to calculate the IS
+#'   \item \code{Method}: The method used
+#'   \item \code{t.Txn.Qty}: The total number of transacted units
+#'   \item \code{u.Txn.Qty}: The number of untransacted units
+#'   \item \code{Trade.Cost}: The trading-related component of the Shortfall
+#'   \item \code{Opp.Cost}: The Wagner's opportunity cost component of the Shortfall
+#'   \item \code{Fees}: The total fees paid on transactions
+#'   \item \code{Shortfall}: The Shortfall measure
 #' }
 #' 
 #' @examples

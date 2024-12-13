@@ -1,12 +1,13 @@
 #' Monte Carlo analysis of round turn trades
 #'
+#'@description
 #' Running simulations with similar properties as the backtest or production
 #' portfolio may allow the analyst to evaluate the distribution of returns
 #' possible with similar trading approaches and evaluate skill versus luck or
 #' overfitting.
+#' 
 #'
 #' @details
-#'
 #' Statisticians talk about the 'stylized facts' of a data set.  If you consider
 #' the stylized facts of a series of transactions that are the output of a
 #' discretionary or systematic trading strategy, it should be clear that there
@@ -24,13 +25,13 @@
 #' With \code{tradeDef='increased.to.reduced'}, typically used for more complex
 #' strategies, the simulation is also significantly more complicated, especially
 #' with \code{replacement=TRUE}.  In this latter case, the simulation must try
-#' to retain stylized factos of the observed strategy, specifically:
+#' to retain stylized facts of the observed strategy, specifically:
 #'
 #' \itemize{
-#'   \item{percent time in market}
-#'   \item{percent time flat}
-#'   \item{ratio of long to short position taking}
-#'   \item{number of levels or layered trades observed}
+#'   \item percent time in market
+#'   \item percent time flat
+#'   \item ratio of long to short position taking
+#'   \item number of levels or layered trades observed
 #' }
 #'
 #' In order to do this, samples are taken and randomized for flat periods,
@@ -82,28 +83,28 @@
 #' @param tradeDef string to determine which definition of 'trade' to use. See \code{\link{tradeStats}}
 #' @param \dots any other passthrough parameters
 #' @param CI numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95
-#'
-#' @return a list object of class 'txnsim' containing:
+#' 
+#' @return A list object of class \code{txnsim}. The list contains the following elements:
 #' \itemize{
-#'   \item{\code{replicates}:}{a list by symbol containing all the resampled start,quantity, duration time series replicates}
-#'   \item{\code{transactions}:}{a list by symbol for each replicate of the Txn object passed to \code{\link{addTxns}}}
-#'   \item{\code{backtest.trades}:}{list by symbol containing trade start, quantity, duration from the original backtest}
-#'   \item{\code{cumpl}:}{an \code{xts} object containing the cumulative P&L of each replicate portfolio}
-#'   \item{\code{initEq}:}{a numeric variable containing the initEq of the portfolio, for starting portfolio value}
-#'   \item{\code{seed}:}{ the value of \code{.Random.seed} for replication, if required}
-#'   \item{\code{call}:}{an object of type \code{call} that contains the \code{txnsim} call}
-#'   \item{\code{Portfolio}:}{ string identifying a portfolio}
-#'   \item{\code{n}:}{ number of simulations, default = 100}
-#'   \item{\code{replacement}:}{ sample with or without replacement, default TRUE}
-#'   \item{\code{samplestats}:}{a numeric dataframe of various statistics for each replicate series}
-#'   \item{\code{original}:}{a numeric dataframe of the statistics for the original series}
-#'   \item{\code{ranks}:}{a numeric dataframe containing the ranking of the statistics}
-#'   \item{\code{pvalues}:}{a numeric dataframe containing the pvalues for the observed backtest compared to the sampled ranks }
-#'   \item{\code{stderror}:}{a numeric dataframe of the standard error of the statistics for the replicates}
-#'   \item{\code{CI}:}{numeric specifying desired Confidence Interval used in hist.txnsim(), default 0.95}
-#'   \item{\code{CIdf}:}{a numeric dataframe of the Confidence Intervals of the statistics for the bootstrapped replicates}
+#'   \item \code{replicates}: A list by symbol containing all the resampled start, quantity, and duration time series replicates.
+#'   \item \code{transactions}: A list by symbol for each replicate of the Txn object passed to \code{\link{addTxns}}.
+#'   \item \code{backtest.trades}: A list by symbol containing trade start, quantity, and duration from the original backtest.
+#'   \item \code{cumpl}: An \code{xts} object containing the cumulative P&L of each replicate portfolio.
+#'   \item \code{initEq}: A numeric variable containing the \code{initEq} of the portfolio, for starting portfolio value.
+#'   \item \code{seed}: The value of \code{.Random.seed} for replication, if required.
+#'   \item \code{call}: An object of type \code{call} that contains the \code{txnsim} call.
+#'   \item \code{Portfolio}: A string identifying a portfolio.
+#'   \item \code{n}: The number of simulations, default = 100.
+#'   \item \code{replacement}: Whether to sample with or without replacement, default \code{TRUE}.
+#'   \item \code{samplestats}: A numeric \code{data.frame} of various statistics for each replicate series.
+#'   \item \code{original}: A numeric \code{data.frame} of the statistics for the original series.
+#'   \item \code{ranks}: A numeric \code{data.frame} containing the ranking of the statistics.
+#'   \item \code{pvalues}: A numeric \code{data.frame} containing the p-values for the observed backtest compared to the sampled ranks.
+#'   \item \code{stderror}: A numeric \code{data.frame} of the standard error of the statistics for the replicates.
+#'   \item \code{CI}: Numeric specifying the desired Confidence Interval used in \code{hist.txnsim()}, default \code{0.95}.
+#'   \item \code{CIdf}: A numeric \code{data.frame} of the Confidence Intervals of the statistics for the bootstrapped replicates.
 #' }
-#'
+#' 
 #' Note that this object and its slots may change in the future.
 #' Slots \code{replicates},\code{transactions}, and \code{call} are likely
 #' to exist in all future versions of this function, but other slots may be added
@@ -112,25 +113,27 @@
 #' The \code{backtest.trades} object contains the stylized facts of the observed
 #' series, and consists of a list with one slot per instrument in the input
 #' portfolio.  Each slot in that list contains a \code{data.frame} of
+#' 
 #' \itemize{
-#'   \item{\code{Start}:}{timestamp of the start of the round turn, discarded later}
-#'   \item{\code{duration}:}{duration (difference from beginning ot end) of the observed round turn trade}
-#'   \item{\code{quantity}:}{quantity of the round turn trade, or 0 for flat periods}
+#'   \item \code{Start:} time stamp of the start of the round turn, discarded later
+#'   \item \code{duration:} duration (difference from beginning or end) of the observed round turn trade
+#'   \item \code{quantity:} quantity of the round turn trade, or 0 for flat periods
 #' }
 #'
 #' with additional attributes for the observed stylized facts:
 #'
 #' \itemize{
-#'   \item{\code{calendar.duration}:}{total length/duration of the observed series}
-#'   \item{\code{trade.duration}:}{total length/durtation used by round turn trades }
-#'   \item{\code{flat.duration}:}{aggregate length/duration of periods when observed series was flat}
-#'   \item{\code{flat.stddev}:}{standard deviation of the duration of individual flat periods}
-#'   \item{\code{first.start}:}{timestamp of the start of the first trade, to avoid starting simulations during a training period}
-#'   \item{\code{period}:}{periodicity of the observed series}
+#'   \item \code{calendar.duration:} total length/duration of the observed series
+#'   \item \code{trade.duration:} total length/duration used by round turn trades 
+#'   \item \code{flat.duration:} aggregate length/duration of periods when observed series was flat
+#'   \item \code{flat.stddev:} standard deviation of the duration of individual flat periods
+#'   \item \code{first.start:} timestamp of the start of the first trade, to avoid starting simulations during a training period
+#'   \item \code{period:} periodicity of the observed series
 #' }
 #'
 #'
 #' @author Jasen Mackie, Brian G. Peterson
+#' 
 #' @references
 #' Burns, Patrick. 2006. Random Portfolios for Evaluating Trading Strategies. http://papers.ssrn.com/sol3/papers.cfm?abstract_id=881735
 #'
@@ -139,6 +142,7 @@
 #' Davison & Hinkley. 1997. Bootstrap methods and their application.
 #'
 #' @seealso \code{\link{mcsim}}, \code{\link{updatePortf}} , \code{\link{perTradeStats}}, \code{\link{hist.txnsim}}, \code{\link{quantile.txnsim}}
+#' 
 #' @examples
 #' \dontrun{
 #'
