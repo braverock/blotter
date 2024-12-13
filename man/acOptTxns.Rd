@@ -4,8 +4,7 @@
 \alias{acOptTxns}
 \title{The Almgren-Chriss Market Impact Model}
 \usage{
-acOptTxns(Securities, mu = 0, sigma, gamma, epsilon = NULL, eta,
-  lambda)
+acOptTxns(Securities, mu = 0, sigma, gamma, epsilon = NULL, eta, lambda)
 }
 \arguments{
 \item{Securities}{A \code{data.frame} with required columns 'Symbol', 'Init.Price', 'Units' (total number of units to liquidate), 'Complete.by' (total time for liquidation), 'Trade.Periods' (number of periods, in terms of 'Complete.by')}
@@ -206,9 +205,6 @@ notwithstanding that gains from introducing these components into the dynamics
 is argued to be negligible for large portfolios with respect to the impact costs.
 }
 
-\examples{
-
-}
 \references{
 \emph{Value Under Liquidation} (Almgren and Chriss, 1999), working paper. \url{https://www.math.nyu.edu/faculty/chriss/optliq_r.pdf}
 \emph{Optimal Execution of Portfolio Transactions} (Almgren and Chriss, 2000), Journal of Risk. \url{http://corp.bankofamerica.com/publicpdf/equities/Optimal_Execution.pdf}

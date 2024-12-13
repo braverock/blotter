@@ -4,10 +4,20 @@
 \alias{benchTradeStats}
 \title{Trade Execution Performance Benchmarks Statistical Testing}
 \usage{
-benchTradeStats(Portfolio, benchmark, side, type, metric, POV,
-  OrdersMktData, approach = c("paired", "independent"),
-  test = c("Sign", "Wilcoxon", "Median", "WMW"), dgptest = c("ChiSq",
-  "KS"), conf.level, alternative)
+benchTradeStats(
+  Portfolio,
+  benchmark,
+  side,
+  type,
+  metric,
+  POV,
+  OrdersMktData,
+  approach = c("paired", "independent"),
+  test = c("Sign", "Wilcoxon", "Median", "WMW"),
+  dgptest = c("ChiSq", "KS"),
+  conf.level,
+  alternative
+)
 }
 \arguments{
 \item{Portfolio}{A vector of character strings idenfifying initilized Portfolio 

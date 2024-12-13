@@ -4,8 +4,14 @@
 \alias{addAcctTxn}
 \title{Add capital account transactions, such as capital additions and withdrawals or interest income (expense)}
 \usage{
-addAcctTxn(Account, TxnDate, TxnType = c("Additions", "Withdrawals",
-  "Interest"), Amount, ..., verbose = TRUE)
+addAcctTxn(
+  Account,
+  TxnDate,
+  TxnType = c("Additions", "Withdrawals", "Interest"),
+  Amount,
+  ...,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{Account}{Account name, as string}

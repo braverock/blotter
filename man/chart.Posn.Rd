@@ -4,8 +4,7 @@
 \alias{chart.Posn}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL,
-  env = .GlobalEnv)
+chart.Posn(Portfolio, Symbol, Dates = NULL, ..., TA = NULL, env = .GlobalEnv)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio to chart}

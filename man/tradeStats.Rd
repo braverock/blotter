@@ -3,15 +3,26 @@
 \name{tradeStats}
 \alias{tradeStats}
 \alias{dailyStats}
-\alias{dailyStats}
 \title{calculate statistics on transactions and P&L for a symbol or symbols in a portfolio or portfolios}
 \usage{
-tradeStats(Portfolios, Symbols, use = c("txns", "trades"),
-  tradeDef = "flat.to.flat", inclZeroDays = FALSE, envir = .blotter,
-  Dates = NULL)
+tradeStats(
+  Portfolios,
+  Symbols,
+  use = c("txns", "trades"),
+  tradeDef = "flat.to.flat",
+  inclZeroDays = FALSE,
+  envir = .blotter,
+  Dates = NULL
+)
 
-dailyStats(Portfolios, use = c("equity", "txns"), perSymbol = TRUE, ...,
-  envir = .blotter, native = TRUE)
+dailyStats(
+  Portfolios,
+  use = c("equity", "txns"),
+  perSymbol = TRUE,
+  ...,
+  envir = .blotter,
+  native = TRUE
+)
 }
 \arguments{
 \item{Portfolios}{portfolio string}
@@ -107,7 +118,7 @@ Special Thanks for contributions to this function from:
   \item{Josh Ulrich}{ for adding multiple-portfolio support, fixing bugs, and improving readability of the code }
   \item{Klemen Koselj}{ for median stats, num trades, and win/loss ratios }
   \item{Mark Knecht}{ for suggesting Profit Factor and largest winner/largest loser }
-}
+}  
 
 WARNING: we're not sure this function is stable/complete yet.  If you're using it, please give us feedback!
 }

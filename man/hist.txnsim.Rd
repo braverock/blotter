@@ -4,8 +4,12 @@
 \alias{hist.txnsim}
 \title{hist method for objects of type \code{txnsim}}
 \usage{
-\method{hist}{txnsim}(x, ..., normalize = FALSE, methods = c("mean",
-  "median", "stddev", "maxDD", "sharpe"))
+\method{hist}{txnsim}(
+  x,
+  ...,
+  normalize = FALSE,
+  methods = c("mean", "median", "stddev", "maxDD", "sharpe")
+)
 }
 \arguments{
 \item{x}{object of type txnsim to plot}

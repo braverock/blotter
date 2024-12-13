@@ -25,6 +25,3 @@ a commonly used proxy is an ETF tracking the relevant index.
 
 Positive means a cost, negative means a saving.
 }
-\examples{
-
-}

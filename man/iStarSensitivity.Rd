@@ -54,9 +54,6 @@ If paramaters fixed sequences values lead to nonlinear least squares estimation
 failures, an \code{NA} is put in place of the other paramaters being estimated
 and of the residual sum of squares, as they cannot be provided.
 }
-\examples{
-
-}
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
 }

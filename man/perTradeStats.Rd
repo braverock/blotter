@@ -4,9 +4,17 @@
 \alias{perTradeStats}
 \title{calculate trade statistics for round turn trades.}
 \usage{
-perTradeStats(Portfolio, Symbol, includeOpenTrade = TRUE,
-  tradeDef = "flat.to.flat", ..., includeFlatPeriods = FALSE,
-  combn.method = c("rbind", "list"), envir = .blotter, Dates = NULL)
+perTradeStats(
+  Portfolio,
+  Symbol,
+  includeOpenTrade = TRUE,
+  tradeDef = "flat.to.flat",
+  ...,
+  includeFlatPeriods = FALSE,
+  combn.method = c("rbind", "list"),
+  envir = .blotter,
+  Dates = NULL
+)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}

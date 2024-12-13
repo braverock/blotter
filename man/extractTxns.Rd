@@ -21,7 +21,7 @@ after each \code{addTxn} call.
 }
 \details{
 While market data, expected results, portfolio and account setup, etc, are also required, 
-these can usually be deduced or equivalent formulations can be found.
+these can usually be deduced or equivalent formulations can be found.  
 
 For transactions, only the exact \code{addTxn} parameters will recreate the $txn slot. 
 This function creates that reproducibility, since the result (stored in 'x') 

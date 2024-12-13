@@ -17,8 +17,10 @@
 S3 method to conveniently plot \code{iStarSensitivity} results on I-Star model 
 parameters sensitivity.
 }
-\examples{
-
+\details{
+The chosen parameter, or better its given sequence specified in the \code{iStarSensitivity}
+call, is plotted against the \code{RSE} of the models fitted on the remaining 
+parameters.
 }
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.

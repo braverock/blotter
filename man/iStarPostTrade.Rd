@@ -4,9 +4,20 @@
 \alias{iStarPostTrade}
 \title{The Kissell-Malamut \emph{I-Star} Market Impact model}
 \usage{
-iStarPostTrade(MktData, sessions = NULL, yrBizdays = 250,
-  horizon = 30, xtsfy = FALSE, grouping = FALSE, groupsBounds,
-  minGroupDps, paramsBounds, paramsInit, OrdData, ...)
+iStarPostTrade(
+  MktData,
+  sessions = NULL,
+  yrBizdays = 250,
+  horizon = 30,
+  xtsfy = FALSE,
+  grouping = FALSE,
+  groupsBounds,
+  minGroupDps,
+  paramsBounds,
+  paramsInit,
+  OrdData = NULL,
+  ...
+)
 }
 \arguments{
 \item{MktData}{A list of \code{xts} objects, each representing a security market data. See 'Details'}
@@ -32,6 +43,9 @@ iStarPostTrade(MktData, sessions = NULL, yrBizdays = 250,
 \item{OrdData}{A \code{data.frame} providing custom order data specifics to estimate the impacts for, with required columns 'Side', 'Size', 'ArrPrice', 'AvgExecPrice', 'POV' and 'AnnualVol'. Or a \code{list} consisting of 'Order.Data' and 'Params' items. See 'Details'}
 
 \item{...}{Any other passthrough parameter}
+}
+\value{
+
 }
 \description{
 The model is a cost allocation method to quantify the market impact of financial
@@ -123,9 +137,6 @@ This is useful in cases one already has estimated parameters for the model or
 simply wants to see what I-Star model values would look like with different 
 paramaters, perhaps those coming from the sensitivity analysis carried with 
 \code{iStarSensitivity}.
-}
-\examples{
-
 }
 \references{
 \emph{The Science of Algorithmic Trading and Portfolio Management} (Kissell, 2013), Elsevier Science.
