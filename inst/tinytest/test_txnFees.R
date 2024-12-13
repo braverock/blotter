@@ -4,14 +4,14 @@
 library(tinytest)
 
 test_txnFees <- function() {
-  try({
+
     # Set up currency and stock symbols
     currency("USD")
     symbols <- c("IBM")
-    for (symbol in symbols) {
-      stock(symbol, currency = "USD", multiplier = 1)
-    }
+    stock(symbols, currency = "USD", multiplier = 1)
+ 
     data(IBM, package = "blotter")
+    IBM <- xts:::.update_index_attributes(IBM)
     
     # Simple portfolio with one transaction
     p1 <- initPortf(name = "p1runitUpdatePortf", symbols = symbols)
@@ -23,7 +23,8 @@ test_txnFees <- function() {
       TxnPrice = 96.5,
       TxnFees = -0.05 * 100,
       verbose = FALSE
-    )
+      )
+    
     p1 <- updatePortf(Portfolio = "p1runitUpdatePortf", Dates = '2007-01-03::2007-01-10')
     a1 <- initAcct(name = "a1runitUpdatePortf", portfolios = "p1runitUpdatePortf")
     a1 <- updateAcct(a1, '2007-01')
@@ -44,6 +45,7 @@ test_txnFees <- function() {
       TxnFees = fiveCents,
       verbose = FALSE
     )
+    
     p2 <- updatePortf(Portfolio = "p2runitUpdatePortf", Dates = '2007-01-03::2007-01-10')
     a2 <- initAcct(name = "a2runitUpdatePortf", portfolios = "p2runitUpdatePortf")
     a2 <- updateAcct(a2, '2007-01')
@@ -52,7 +54,6 @@ test_txnFees <- function() {
     # Compare account end equity
     expect_equal(getAccount(a1)$summary$End.Eq, getAccount(a2)$summary$End.Eq)
     
-  }, silent = TRUE)
 }
 
 test_txnFees()
