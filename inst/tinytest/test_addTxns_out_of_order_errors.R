@@ -1,3 +1,6 @@
+# Author: Peter Carl -> RUnit port by Ben McCann -> 
+# -> tinytest port by Justin Shea
+
 library(tinytest)
 
     currency("USD")
