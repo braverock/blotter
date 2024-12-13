@@ -181,11 +181,13 @@ These and other quantities involved are defined below:
   }
   
   \item{\emph{Annualized volatility}. }{
-  Is the standard deviation of the 
-  close-to-close security returns, scaled on the number of business days in a 
-  given year:
+  Is the standard deviation of the close-to-close security returns, scaled on
+  the number of business days in a given year:
+  
   \deqn{\sigma = \sqrt{\frac{T_{m}}{T - 1} . \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}}}
+  
   It is expressed in decimal units.
+  
   } 
 
   \item{\emph{Average Daily Volume} (ADV). }{

@@ -16,7 +16,6 @@
 #' focusing on the use of market "tic data" and derived quantities that represent 
 #' proxies of the corresponding order-related variables. 
 #' 
-#' 
 #' @section Market "tic data" and variables:
 #'    
 #' In its most general setting, the model is based on market "tic data" only. 
@@ -44,11 +43,13 @@
 #'   }
 #'   
 #'   \item{\emph{Annualized volatility}. }{
-#'   Is the standard deviation of the 
-#'   close-to-close security returns, scaled on the number of business days in a 
-#'   given year:
+#'   Is the standard deviation of the close-to-close security returns, scaled on
+#'   the number of business days in a given year:
+#'   
 #'   \deqn{\sigma = \sqrt{\frac{T_{m}}{T - 1} . \sum_{t = 2}^{T}{(r_{i} - r_{avg})^{2}}}}
+#'   
 #'   It is expressed in decimal units.
+#'   
 #'   } 
 #' 
 #'   \item{\emph{Average Daily Volume} (ADV). }{
