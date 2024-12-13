@@ -20,6 +20,3 @@ A numeric value in basis points
 Trading Price Performance or trading PnL is the measure of cost during trading and tell whether the investor 
 did better or worse as compared to arrival price.
 }
-\examples{
-
-}

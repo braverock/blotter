@@ -4,8 +4,14 @@
 \alias{initPortf}
 \title{Initializes a portfolio object.}
 \usage{
-initPortf(name = "default", symbols, initPosQty = 0,
-  initDate = "1950-01-01", currency = "USD", ...)
+initPortf(
+  name = "default",
+  symbols,
+  initPosQty = 0,
+  initDate = "1950-01-01",
+  currency = "USD",
+  ...
+)
 }
 \arguments{
 \item{name}{A name for the resulting portfolio object}

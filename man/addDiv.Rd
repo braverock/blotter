@@ -4,8 +4,16 @@
 \alias{addDiv}
 \title{Add cash dividend transactions to a portfolio.}
 \usage{
-addDiv(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees = 0,
-  ConMult = NULL, verbose = TRUE)
+addDiv(
+  Portfolio,
+  Symbol,
+  TxnDate,
+  DivPerShare,
+  ...,
+  TxnFees = 0,
+  ConMult = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{Portfolio}{A portfolio name that points to a portfolio object structured with \code{\link{initPortf}}.}

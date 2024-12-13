@@ -4,8 +4,13 @@
 \alias{AcctReturns}
 \title{Calculate account returns}
 \usage{
-AcctReturns(Account, Dates = NULL, Portfolios = NULL,
-  method = c("timeweighted", "dietz"), ...)
+AcctReturns(
+  Account,
+  Dates = NULL,
+  Portfolios = NULL,
+  method = c("timeweighted", "dietz"),
+  ...
+)
 }
 \arguments{
 \item{Account}{string name of the account to generate returns for}

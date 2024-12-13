@@ -1,6 +1,8 @@
 
 # blotter - Tools for Transaction-Oriented Trading Systems Development
 
+[![R-CMD-check](https://github.com/JustinMShea/blotter/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/JustinMShea/blotter/actions/workflows/R-CMD-check.yaml)
+
 Transaction infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation. Provides portfolio support for multi-asset class and multi-currency
 portfolios. Actively maintained and developed.
 

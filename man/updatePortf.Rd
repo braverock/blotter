@@ -4,8 +4,14 @@
 \alias{updatePortf}
 \title{update Portfilio P&L over a Dates range}
 \usage{
-updatePortf(Portfolio, Symbols = NULL, Dates = NULL, Prices = NULL,
-  Interval = Interval, ...)
+updatePortf(
+  Portfolio,
+  Symbols = NULL,
+  Dates = NULL,
+  Prices = NULL,
+  Interval = Interval,
+  ...
+)
 }
 \arguments{
 \item{Portfolio}{string identifying a portfolio}

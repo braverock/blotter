@@ -24,6 +24,3 @@ order was entered into the market, ie. the Arrival Price.
 \details{
 Positive means a cost, negative means a saving.
 }
-\examples{
-
-}

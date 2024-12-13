@@ -18,12 +18,9 @@
 \description{
 Plot method for object of type \code{txnsPerf}
 }
-\examples{
-
-}
 \seealso{
 \code{\link[xts]{plot.xts}}
 }
 \author{
-Vito Lestingi
+Vito Lestingi, Jasen Mackie
 }

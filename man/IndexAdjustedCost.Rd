@@ -20,6 +20,3 @@ The Index Adjusted Cost
 A market or index adjusted metric accounting for price trend in a stock
 due to the overall market.
 }
-\examples{
-
-}

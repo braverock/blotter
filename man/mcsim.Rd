@@ -4,9 +4,19 @@
 \alias{mcsim}
 \title{Monte Carlo simulate strategy results}
 \usage{
-mcsim(Portfolio = NULL, Account = NULL, n = 1000, replacement = TRUE,
-  ..., use = c("equity", "txns", "returns", "cash"), l = 1,
-  varblock = FALSE, gap = 1, CI = 0.95, cashPL = NULL)
+mcsim(
+  Portfolio = NULL,
+  Account = NULL,
+  n = 1000,
+  replacement = TRUE,
+  ...,
+  use = c("equity", "txns", "returns", "cash"),
+  l = 1,
+  varblock = FALSE,
+  gap = 1,
+  CI = 0.95,
+  cashPL = NULL
+)
 }
 \arguments{
 \item{Portfolio}{string identifier of portfolio name}

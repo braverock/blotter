@@ -4,8 +4,14 @@
 \alias{PortfReturns}
 \title{Calculate portfolio instrument returns}
 \usage{
-PortfReturns(Account, method = c("contribution"), ..., Dates = NULL,
-  Portfolios = NULL, period = c("daily", "none"))
+PortfReturns(
+  Account,
+  method = c("contribution"),
+  ...,
+  Dates = NULL,
+  Portfolios = NULL,
+  period = c("daily", "none")
+)
 }
 \arguments{
 \item{Account}{string name of the account to generate returns for}

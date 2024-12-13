@@ -2,8 +2,8 @@
 % Please edit documentation in R/blotter-package.R
 \docType{package}
 \name{blotter}
-\alias{blotter}
 \alias{blotter-package}
+\alias{blotter}
 \title{Tools for Transaction-Oriented Trading Systems Development}
 \description{
 Transaction-oriented infrastructure for constructing transactions, portfolios
@@ -105,11 +105,11 @@ getSymbols(symbols, from='2007-01-01', to='2007-01-31', src='yahoo',
 index.class=c("POSIXt","POSIXct"))
 
 # Initialize a portfolio object 'p'
-print('Creating portfolio \\"p\\"...')
+print('Creating portfolio \"p\"...')
 initPortf('p', symbols=symbols, currency="USD")
 
 ## Trades must be made in date order.
-print('Adding trades to \\"p\\"...')
+print('Adding trades to \"p\"...')
 # Make a couple of trades in IBM
 addTxn(Portfolio = "p", Symbol = "IBM", TxnDate = '2007-01-03', TxnQty = 50, 
 TxnPrice = 96.5, TxnFees = -0.05*50)
@@ -135,12 +135,12 @@ addTxn("p", "MMM", '2007-01-05', -50, 77.9, TxnFees = -0.05*50)
 addTxn("p", "MMM", '2007-01-08', 50, 77.6, TxnFees = -0.05*50)
 addTxn("p", "MMM", '2007-01-09', 50, 77.6, TxnFees = -0.05*50)
 
-print('Updating portfolio \\"p\\"...')
+print('Updating portfolio \"p\"...')
 updatePortf(Portfolio="p",Dates='2007-01')
 
-print('Creating account \\"a\\" for portfolio \\"p\\"...')
+print('Creating account \"a\" for portfolio \"p\"...')
 initAcct(name="a", portfolios="p", initEq=10000, currency="USD")
-print('Updating account \\"a\\"...')
+print('Updating account \"a\"...')
 updateAcct("a",'2007-01') # Check out the sweet date scoping. Thanks, xts.
 updateEndEq("a",'2007-01')
 PortfReturns(Account="a",Dates="2007", Portfolios="p")

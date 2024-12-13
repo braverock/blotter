@@ -4,8 +4,13 @@
 \alias{tradeQuantiles}
 \title{quantiles of per-trade stats}
 \usage{
-tradeQuantiles(Portfolio, Symbol, ..., scale = c("cash", "percent", "tick"),
-  probs = c(0.5, 0.75, 0.9, 0.95, 0.99, 1))
+tradeQuantiles(
+  Portfolio,
+  Symbol,
+  ...,
+  scale = c("cash", "percent", "tick"),
+  probs = c(0.5, 0.75, 0.9, 0.95, 0.99, 1)
+)
 }
 \arguments{
 \item{Portfolio}{string identifying the portfolio}

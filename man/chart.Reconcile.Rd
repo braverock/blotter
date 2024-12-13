@@ -4,8 +4,15 @@
 \alias{chart.Reconcile}
 \title{Chart trades against market data, position through time, and cumulative P\&L}
 \usage{
-chart.Reconcile(theoPort, actualPort, Symbol, Dates = NULL, ...,
-  PLdiff = c("cumulative", "episodic"), data = c(FALSE, "View", "return"))
+chart.Reconcile(
+  theoPort,
+  actualPort,
+  Symbol,
+  Dates = NULL,
+  ...,
+  PLdiff = c("cumulative", "episodic"),
+  data = c(FALSE, "View", "return")
+)
 }
 \arguments{
 \item{theoPort}{string identifying the theoretical portfolio to chart}
@@ -28,12 +35,12 @@ the resulting position in the second, a cumulative profit-loss line chart in the
 }
 \details{
 The theoretical trades, positions, and P&L are plotted first, in the 'light' versions of the colors, and then the actual values are overplotted in the main color.  
-If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines.
+If they agree completely, the theoretical values will not be visible.  Differences will make themselves visible by misalignment of the symbols or lines. 
 
 The fourth panel is the difference in P&L between the theoretical and actual values, and could be considered 'slippage', which could be positive or negative.  
 It is calculated by subtracting the theoretical P&L from the actual P&L.  
 If parameter \code{PLdiff} is 'cumulative', then this panel will display the cumsum of difference between the theoretical and actual portfolios.
-If parameter \code{PLdiff} is 'episodic' it will display the differences in P&L
+If parameter \code{PLdiff} is 'episodic' it will display the differences in P&L    
 
 The \code{data} parameter allows the user to either \code{\link{View}} or \code{\link{return}} the data calculated inside the chart.  Default FALSE (only chart)
 }
