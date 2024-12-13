@@ -29,7 +29,8 @@ mcsim(
 
 \item{\dots}{any other passthrough parameters}
 
-\item{use}{determines whether to use 'equity', 'txn', 'returns', or 'cash' P\&L, default = "equity" ie. daily}
+\item{use}{determines whether to use 'equity', 'txn', 'returns', or 'cash',
+Profit and Loss , default = "equity" ie. daily}
 
 \item{l}{block length, default = 1}
 
@@ -92,10 +93,10 @@ sample round turn trades, as provided in (TODO: add link once function exists).
 
 A few of the arguments and methods probably deserve more discussion as well.
 
-\code{use} describes the method to use to generate the initial daily P\&L to
+\code{use} describes the method to use to generate the initial daily Profit and Loss  to
 be sampled from.  The options are:
 \itemize{
-  \item{equity}{will use daily portfolio cash P&L}
+  \item{equity}{will use daily portfolio cash Profit and Loss}
   \item{txn}{will use transaction \code{Net.Trading.PL}}
 }
 
@@ -103,10 +104,10 @@ Sampling may be performed either with or without replacement.
 \itemize{
   \item{without replacement}{If sampled **without** replacement, the replicated
   equity curves will use all the same data as the input series, only reordered.
-  This will lead to all the replicates having identical final P\&L and mean
-  returns, but different paths along the way.}
+  This will lead to all the replicates having identical final Profit and Loss 
+  and mean returns, but different paths along the way.}
   \item{with replacement}{If sampled **with** replacement, individual
-  observations may be re-used.  This will tend to create more variability than
+  observations may be reused.  This will tend to create more variability than
   replicates without replacement.}
 }
 

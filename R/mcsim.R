@@ -16,10 +16,10 @@
 #'
 #' A few of the arguments and methods probably deserve more discussion as well.
 #'
-#' \code{use} describes the method to use to generate the initial daily P\&L to
+#' \code{use} describes the method to use to generate the initial daily Profit and Loss  to
 #' be sampled from.  The options are:
 #' \itemize{
-#'   \item{equity}{will use daily portfolio cash P&L}
+#'   \item{equity}{will use daily portfolio cash Profit and Loss}
 #'   \item{txn}{will use transaction \code{Net.Trading.PL}}
 #' }
 #'
@@ -27,10 +27,10 @@
 #' \itemize{
 #'   \item{without replacement}{If sampled **without** replacement, the replicated
 #'   equity curves will use all the same data as the input series, only reordered.
-#'   This will lead to all the replicates having identical final P\&L and mean
-#'   returns, but different paths along the way.}
+#'   This will lead to all the replicates having identical final Profit and Loss 
+#'   and mean returns, but different paths along the way.}
 #'   \item{with replacement}{If sampled **with** replacement, individual
-#'   observations may be re-used.  This will tend to create more variability than
+#'   observations may be reused.  This will tend to create more variability than
 #'   replicates without replacement.}
 #' }
 #'
@@ -48,7 +48,8 @@
 #' @param n number of simulations, default = 1000
 #' @param replacement sample with or without replacement, default TRUE
 #' @param \dots any other passthrough parameters
-#' @param use determines whether to use 'equity', 'txn', 'returns', or 'cash' P\&L, default = "equity" ie. daily
+#' @param use determines whether to use 'equity', 'txn', 'returns', or 'cash',
+#'             Profit and Loss , default = "equity" ie. daily
 #' @param l block length, default = 1
 #' @param varblock boolean to determine whether to use variable block length, default FALSE
 #' @param gap numeric number of periods from start of series to start on, to eliminate leading NA's

@@ -35,7 +35,7 @@
 #' 
 #' \eqn{(\sum s_{j})} represents the total number of shares in the portfolio
 #' 
-#' \eqn{(\sum s_{j}) . P_{n}} is the ending portfolio value
+#' \eqn{(\sum s_{j}) . {P_n}} is the ending portfolio value
 #' 
 #' \eqn{(\sum s_{j} p_{j}} is the price paid to acquire the portfolio
 #' 
