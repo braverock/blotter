@@ -887,8 +887,11 @@ iStarSensitivity <- function(object
 #' # Multiple Cost Curves
 #' plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), multiple = TRUE)
 #' 
-#' # Assuming user would like to specify their own params. Example uses params for Scenario 'All Data' from Table 5.4 in Kissell2014
-#' plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), params = c(a_1 = 708, a_2=0.55, a_3=0.71, a_4=0.5, b_1=0.98), multiple = TRUE)
+#' # Assuming user would like to specify their own params. Example uses params for 
+#' Scenario 'All Data' from Table 5.4 in Kissell2014
+#' plot(iStarEst, fixVals = c('POV'=c(0.1,0.2,0.3,0.4,0.5), 'AnnualVol'=0.25), 
+#'      params = c(a_1 = 708, a_2=0.55, a_3=0.71, a_4=0.5, b_1=0.98), 
+#'      multiple = TRUE)
 #' } #end dontrun
 #' 
 #' @export
