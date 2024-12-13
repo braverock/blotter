@@ -2,7 +2,7 @@
 % Please edit documentation in R/chart.Reconcile.R
 \name{chart.Reconcile}
 \alias{chart.Reconcile}
-\title{Chart trades against market data, position through time, and cumulative P\&L}
+\title{Chart trades against market data, position through time, and cumulative Profit and Loss.}
 \usage{
 chart.Reconcile(
   theoPort,

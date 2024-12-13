@@ -1,4 +1,4 @@
-#' Chart trades against market data, position through time, and cumulative P\&L
+#' Chart trades against market data, position through time, and cumulative Profit and Loss.
 #'
 #' Produces a three or four-panel or chart of time series charts that contains prices and transactions in the top panel, 
 #' the resulting position in the second, a cumulative profit-loss line chart in the third.  
